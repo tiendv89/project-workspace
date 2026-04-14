@@ -1,9 +1,9 @@
 feature_id: distributed-agent-team
 title: Distributed agent team (self-activating agents pulling work from workspace)
 
-feature_status: in_handoff
+feature_status: done
 current_stage: handoff
-next_action: Human reviews handoff document at handoffs/distributed-agent-team.md and approves to advance feature to done.
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -53,11 +53,15 @@ stages:
         at: 2026-04-14T00:00:00Z
         comment: Approved — 11 tasks (T1–T11), per-phase model allowlist (workspace defaults + task overrides) replaces per-task Opus approval fields, agent.yaml drops models section, old T11 Opus wiring folded into T6/T11(docs). TypeScript runtime.
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-14T11:19:56Z
+    review_comment: Handoff approved. All 11 tasks delivered, workflow rules enforced, operator docs and integration tests complete.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-14T11:19:56Z
+        comment: Handoff approved. All 11 tasks delivered, workflow rules enforced, operator docs and integration tests complete.
 
 history:
   - action: feature_created
@@ -96,6 +100,10 @@ history:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T11:13:32Z
     note: All 11 tasks done (T1–T11, PRs merged). Handoff document created at handoffs/distributed-agent-team.md. Feature advanced to in_handoff.
+  - action: handoff_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T11:19:56Z
+    note: Handoff approved. Feature advanced to done.
 
 revalidation:
   product_spec_required: false
