@@ -1,15 +1,15 @@
 id: T5
 title: Implement zero-token eligibility matcher
 repo: workflow
-status: ready
+status: in_progress
 depends_on: [T1, T2, T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T5
 
 execution:
   actor_type: human
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-14T00:00:00Z
 
 pr:
   url: ""
@@ -28,3 +28,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "Auto-ready rule applied — T3 marked done, all depends_on [T1, T2, T3] now satisfied. Status advanced from todo to ready."
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "Status advanced to in_progress. Branch feature/distributed-agent-team-T5 created in workflow repo."
