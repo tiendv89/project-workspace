@@ -1,7 +1,7 @@
 id: T5
 title: Implement zero-token eligibility matcher
 repo: workflow
-status: in_review
+status: done
 depends_on: [T1, T2, T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T5
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/6"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -36,3 +36,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "PR #6 opened: https://github.com/tiendv89/agent-workflow/pull/6 — implements parse-tasks-md.ts and match.ts with 39 new tests (98 total passing, typecheck clean)."
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "PR #6 merged. T5 complete — zero-token eligibility matcher (parse-tasks-md + match) implemented and tested."
