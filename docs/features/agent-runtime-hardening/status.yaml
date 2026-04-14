@@ -1,0 +1,48 @@
+feature_id: agent-runtime-hardening
+title: Agent runtime hardening — credential delivery, full bootstrap, and PR lifecycle
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Draft and submit the product spec for approval.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - action: feature_created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Feature initialized — three gaps identified after distributed-agent-team v1 shipped:
+      (1) SSH credential only deliverable via file mount, breaks K8s/CI;
+      (2) bootstrap only clones management repo, not implementation repos;
+      (3) no PR is ever opened after task completion.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
