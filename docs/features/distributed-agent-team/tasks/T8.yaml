@@ -1,30 +1,42 @@
 id: T8
 title: Container-start workspace pull with fail-fast validation and skill_reference_audit
 repo: workflow
-status: ready
+status: done
 depends_on: [T1, T2]
 blocked_reason: null
 branch: feature/distributed-agent-team-T8
 
 execution:
   actor_type: human
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-14T09:05:00Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/10"
+  status: merged
 
 log:
   - action: created
     by: tiendv.52@gmail.com
-    at: 2026-04-14T00:00:00Z
+    at: 2026-04-14T08:00:00Z
     note: Task drafted. Container-start bootstrap — clone/pull watched workspaces, validate agent.yaml, and emit skill_reference_audit stdout events for any ### Required skills slug that doesn't exist under workflow/technical_skills/. Non-fatal audit; fail-fast on dirty git state or invalid agent.yaml. Requires T1 (grammar) + T2 (validator).
   - action: status_auto_ready
     by: matthew@liquid-labs.xyz
-    at: 2026-04-14T00:00:00Z
+    at: 2026-04-14T08:15:00Z
     note: Auto-ready rule applied — dependencies T1 and T2 are both done. Status advanced from todo to ready.
   - action: schema_updated
     by: matthew@liquid-labs.xyz
-    at: 2026-04-14T00:00:00Z
+    at: 2026-04-14T08:30:00Z
     note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T08:35:00Z
+    note: Implementation started. Branch feature/distributed-agent-team-T8 created from main.
+  - action: moved_to_in_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:00:00Z
+    note: "PR #10 opened: https://github.com/tiendv89/agent-workflow/pull/10"
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:05:00Z
+    note: PR #10 merged. T8 complete.

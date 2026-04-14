@@ -1,26 +1,42 @@
 id: T10
 title: Produce orchestration templates (k8s CronJob + alternatives)
 repo: workflow
-status: todo
+status: done
 depends_on: [T9]
 blocked_reason: null
 branch: feature/distributed-agent-team-T10
 
 execution:
   actor_type: human
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-14T09:50:00Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/12"
+  status: merged
 
 log:
   - action: created
     by: tiendv.52@gmail.com
-    at: 2026-04-14T00:00:00Z
+    at: 2026-04-14T08:00:00Z
     note: Task drafted. k8s CronJob (primary target) plus docker-compose, systemd, and scheduled GitHub Actions alternatives. Each template documents env contract + ConfigMap/Secret wiring.
   - action: schema_updated
     by: matthew@liquid-labs.xyz
-    at: 2026-04-14T00:00:00Z
+    at: 2026-04-14T08:30:00Z
     note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."
+  - action: status_auto_ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:25:00Z
+    note: Auto-ready rule applied — dependency T9 is done. Status advanced from todo to ready.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:30:00Z
+    note: Implementation started. Branch feature/distributed-agent-team-T10 created from main.
+  - action: moved_to_in_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:45:00Z
+    note: "PR #12 opened: https://github.com/tiendv89/agent-workflow/pull/12"
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T09:50:00Z
+    note: "PR #12 merged. Orchestration templates complete: k8s CronJob, unified docker-compose (dev + prod profiles), systemd timer/service, scheduled GitHub Actions."
