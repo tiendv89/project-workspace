@@ -83,6 +83,8 @@ any → cancelled     (human only)
 - `todo → in_progress` is **never valid** — a task must pass through `ready` first.
 - `start-implementation` must hard-stop if the task status is not `ready`.
 
+![Task Status Workflow](docs/task-workflow.png)
+
 ## Task log rules
 
 - Every task state change should be recorded in the task file `log`
