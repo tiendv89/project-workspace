@@ -1,7 +1,7 @@
 id: T11
 title: End-to-end bootstrap scripts, integration tests, and operator docs
 repo: workflow
-status: in_review
+status: done
 depends_on: [T9, T10]
 blocked_reason: null
 branch: feature/distributed-agent-team-T11
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/13"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -36,3 +36,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T09:57:12Z
     note: "PR #13 opened: https://github.com/tiendv89/agent-workflow/pull/13"
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T10:29:34Z
+    note: "PR #13 merged. T11 complete: bootstrap-agent-host.sh, OPERATOR-GUIDE.md, TROUBLESHOOTING.md, integration test suite (157 tests passing)."
