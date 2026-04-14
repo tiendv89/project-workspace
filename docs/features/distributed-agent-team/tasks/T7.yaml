@@ -1,7 +1,7 @@
 id: T7
 title: Implement git-based claim protocol with commit-SHA contention
 repo: workflow
-status: ready
+status: in_progress
 depends_on: [T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T7
@@ -28,3 +28,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "Auto-ready rule applied — T3 marked done, all depends_on [T3] now satisfied. Status advanced from todo to ready."
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "Implementation started on branch feature/distributed-agent-team-T7. Repo workflow, base branch main (bd6b8fc)."
