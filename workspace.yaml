@@ -43,7 +43,15 @@ model_policy:
 automation:
   enabled: false
 
+management_repo: management-repo
+
 repos:
+  - id: management-repo
+    github: git@github.com:tiendv89/project-workspace.git
+    local_path: env:WORKSPACE_MGMT_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
   - id: workflow
     github: git@github.com:tiendv89/agent-workflow.git
     local_path: env:WORKFLOW_LOCAL_PATH

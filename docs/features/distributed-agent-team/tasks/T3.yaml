@@ -1,7 +1,7 @@
 id: T3
 title: Extend task + workspace schemas (model_policy, escalation, drop role)
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: [T1]
 blocked_reason: null
 branch: feature/distributed-agent-team-T3
@@ -12,8 +12,8 @@ execution:
   last_updated_at: null
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/4"
+  status: open
 
 log:
   - action: created
@@ -32,3 +32,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "W6 verification: no role: field present. Task YAML conforms to updated schema (blocked_reason enum + blocked_details documented in task.schema.json)."
+  - action: pr_created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "PR created via GitHub REST API. tiendv89/agent-workflow#4. Status advanced to in_review."

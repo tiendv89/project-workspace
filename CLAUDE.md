@@ -150,6 +150,13 @@ Rules:
 - If `SSH_KEY_PATH` is missing, require the user to provide it
 - If a repo requires SSH auth, the workflow should use the resolved `SSH_KEY_PATH` explicitly
 
+## PR creation rule
+
+- **Do not use `gh` CLI to create pull requests.** Use the `pr-create` skill instead.
+- `pr-create` uses the GitHub REST API via `curl` with `GITHUB_TOKEN` from project `.env` — this avoids requiring `gh` to be installed on the host or in agent containers.
+- Any workflow skill or agent that needs to open a PR must invoke `pr-create` rather than calling `gh pr create` directly.
+- `GITHUB_TOKEN` is required in project `.env` for PR creation. If missing, `pr-create` falls back to `~/.config/gh/hosts.yml`.
+
 ## Shared environment resolution rule
 
 - Workflow skills that perform repo, git, PR, or SSH-related work must use `resolve-project-env`
