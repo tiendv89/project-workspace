@@ -1,7 +1,7 @@
 id: T4
 title: Implement git-commit log sink library (TypeScript)
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/distributed-agent-team-T4
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/5"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -36,3 +36,11 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T06:04:13Z
     note: "PR #5 created — https://github.com/tiendv89/agent-workflow/pull/5. Implements log-sink.ts (openLogSink factory, emit/close, pure-append JSONL) + 22 unit tests. Also carries CLAUDE.shared.md PR-creation rule. All 59 tests pass, typecheck clean."
+  - action: pr_merged
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: PR #5 merged to main.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: T4 complete. Git-commit log sink library shipped — openLogSink, emit/close, pure-append JSONL, 22 unit tests.
