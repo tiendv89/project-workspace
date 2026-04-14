@@ -1,7 +1,7 @@
 id: T4
 title: Implement git-commit log sink library (TypeScript)
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/distributed-agent-team-T4
@@ -28,3 +28,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Implementation started on branch feature/distributed-agent-team-T4. Repo workflow, base branch main (18eb479).
