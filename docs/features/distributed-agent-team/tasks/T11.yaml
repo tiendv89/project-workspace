@@ -1,0 +1,26 @@
+id: T11
+title: End-to-end bootstrap scripts, integration tests, and operator docs
+repo: workflow
+status: todo
+depends_on: [T9, T10]
+blocked_reason: null
+branch: feature/distributed-agent-team-T11
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted (renumbered from T12 after old T11 Opus-wiring task was folded into T6/docs). Final integration — bootstrap-agent-host.sh single-command host setup, OPERATOR-GUIDE.md (incl. model policy + escalation triage), TROUBLESHOOTING.md, and a full integration test suite.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

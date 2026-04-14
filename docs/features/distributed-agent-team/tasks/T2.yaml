@@ -1,0 +1,46 @@
+id: T2
+title: Define agent.yaml schema and TypeScript validator
+repo: workflow
+status: done
+depends_on: []
+blocked_reason: null
+branch: feature/distributed-agent-team-T2
+
+execution:
+  actor_type: human
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-14T00:00:00Z
+
+pr:
+  url: https://github.com/tiendv89/agent-workflow/pull/3
+  status: merged
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Lean agent.yaml (no roles/skills/models — model selection via workspace.yaml model_policy), JSON Schema + Ajv validator in TypeScript. Foundational for T5/T6/T8.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Started T2 implementation. Branch feature/distributed-agent-team-T2 created from main (2656001).
+  - action: moved_to_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "T2 implementation complete: agent.yaml.example (annotated), agent.schema.json (draft-07, additionalProperties:false), validate-agent-yaml.ts (Ajv + typed AgentConfig export), 13 unit tests (all pass), README.md with examples."
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "PR #3: https://github.com/tiendv89/agent-workflow/pull/3"
+  - action: pr_merged
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: PR #3 merged.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: T2 complete. agent.yaml schema, TypeScript validator, and test suite shipped.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

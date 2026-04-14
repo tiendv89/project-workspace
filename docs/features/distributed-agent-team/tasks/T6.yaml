@@ -1,0 +1,26 @@
+id: T6
+title: Integrate Anthropic Agent SDK tool-use loop with budget enforcement, dynamic skill loading, and model policy resolution
+repo: workflow
+status: todo
+depends_on: [T2, T3]
+blocked_reason: null
+branch: feature/distributed-agent-team-T6
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Anthropic TS SDK tool-use loop. Dynamic skill loading — reads ### Required skills from tasks.md. Model selection per phase via workspace.yaml model_policy merged with task's ### Model overrides from tasks.md. Fallback to cheapest allowed model. Escalation path writes blocked_reason model_escalation_requested. Enforces budget + iteration + no-progress caps. Runtime errors land tasks in blocked, never orphan in_progress (Constraint #11).
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

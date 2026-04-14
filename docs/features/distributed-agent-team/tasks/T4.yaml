@@ -1,0 +1,30 @@
+id: T4
+title: Implement git-commit log sink library (TypeScript)
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/distributed-agent-team-T4
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Per-run JSONL task-scoped logs at docs/features/<feature_id>/logs/T<n>_<ISO-start>.jsonl. Pure append — no RMW contention. Independent of other Wave 1 tasks.
+  - action: status_auto_ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Auto-ready rule applied — depends_on is empty, task has always been unblocked. Status advanced from todo to ready.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

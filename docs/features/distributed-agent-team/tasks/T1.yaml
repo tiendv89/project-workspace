@@ -1,0 +1,42 @@
+id: T1
+title: Update workflow rules for per-task skills + full-stack agents + model policy grammar (W1–W9, W12–W13)
+repo: workflow
+status: done
+depends_on: []
+blocked_reason: null
+branch: feature/distributed-agent-team-T1
+
+execution:
+  actor_type: human
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-14T00:00:00Z
+
+pr:
+  url: "https://github.com/tiendv89/agent-workflow/pull/2"
+  status: merged
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted after technical design re-approval. Covers W1–W11 from the technical-design.md Workflow ripple list — CLAUDE.shared.md, tech-lead SKILL.md, schemas/task.yaml.example, init-workspace/init-feature templates, start-implementation skill, model_policy grammar in tasks.md and workspace.yaml templates.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Implementation started on branch feature/distributed-agent-team-T1. Repo workflow, base branch main.
+  - action: moved_to_review
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: PR #2 created — https://github.com/tiendv89/agent-workflow/pull/2. Implements W1-W5, W7-W9, W12-W13 plus pr-create REST API fix.
+  - action: pr_merged
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: PR #2 merged to main.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: T1 complete. Workflow rules updated for full-stack agents, per-task skills, and per-phase model policy.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

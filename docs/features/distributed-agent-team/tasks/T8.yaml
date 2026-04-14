@@ -1,0 +1,30 @@
+id: T8
+title: Container-start workspace pull with fail-fast validation and skill_reference_audit
+repo: workflow
+status: ready
+depends_on: [T1, T2]
+blocked_reason: null
+branch: feature/distributed-agent-team-T8
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Container-start bootstrap — clone/pull watched workspaces, validate agent.yaml, and emit skill_reference_audit stdout events for any ### Required skills slug that doesn't exist under workflow/technical_skills/. Non-fatal audit; fail-fast on dirty git state or invalid agent.yaml. Requires T1 (grammar) + T2 (validator).
+  - action: status_auto_ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Auto-ready rule applied — dependencies T1 and T2 are both done. Status advanced from todo to ready.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

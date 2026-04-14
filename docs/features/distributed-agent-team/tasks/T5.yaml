@@ -1,0 +1,26 @@
+id: T5
+title: Implement zero-token eligibility matcher
+repo: workflow
+status: todo
+depends_on: [T1, T2, T3]
+blocked_reason: null
+branch: feature/distributed-agent-team-T5
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Pure-code filter — parses tasks.md for ### Required skills, checks workflow/technical_skills/ availability, enforces depends_on. No role filter. Requires T1 (grammar), T2 (agent.yaml shape), T3 (task YAML shape).
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

@@ -1,0 +1,34 @@
+id: T3
+title: Extend task + workspace schemas (model_policy, escalation, drop role)
+repo: workflow
+status: in_progress
+depends_on: [T1]
+blocked_reason: null
+branch: feature/distributed-agent-team-T3
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Adds model_policy to workspace.yaml schema, ### Model overrides parser for tasks.md, escalation blocked_reason values to task schema, removes role from existing feature YAMLs (W6, W10). No model_override fields on task YAML — model selection lives in workspace.yaml + tasks.md. Blocked on T1.
+  - action: status_auto_ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Auto-ready rule applied — dependency T1 is done, all depends_on satisfied. Status advanced from todo to ready.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: Implementation started on branch feature/distributed-agent-team-T3. Repo workflow, base branch main (3de0a25).
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification: no role: field present. Task YAML conforms to updated schema (blocked_reason enum + blocked_details documented in task.schema.json)."

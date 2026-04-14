@@ -1,0 +1,100 @@
+feature_id: distributed-agent-team
+title: Distributed agent team (self-activating agents pulling work from workspace)
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Begin implementation. Agents may claim ready tasks starting with Wave 1 (T1, T2, T4 — no blockers).
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-13T00:00:00Z
+    review_comment: Approved — 9 user stories, execution contract, DevX/cost models, and architectural decisions all locked.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-13T00:00:00Z
+        comment: Approved — 9 user stories, execution contract, DevX/cost models, and architectural decisions all locked.
+  technical_design:
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-14T00:00:00Z
+    review_comment: Re-approved after dynamic-skill-loading rework — Q6 now mandates full-stack agents, per-task `### Required skills` in tasks.md, agent.yaml drops roles[]/skills[], task YAML drops `role`. Constraints #10 (uniform fleet) and #11 (no auto-retry on failure) added. Workflow ripple list W1–W11 enumerates downstream rule/skill changes to apply after tasks are regenerated.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-13T00:00:00Z
+        comment: Approved — all 7 design questions resolved (Q1 three-tier w/ Opus human approval, Q2 Agent SDK, Q3 combined iteration cap, Q4 push-rejection contention, Q5 one-shot container + external trigger, Q6 pull at start fail-fast, Q7 git-commit log sink). Agent runtime stays in workflow repo under agent-runtime/.
+      - action: reopened
+        by: tiendv.52@gmail.com
+        at: 2026-04-13T00:00:00Z
+        comment: Stage rolled back via set-feature-stage to discuss dynamic skill loading (skills decided per task during tech-lead, not declared on agent.yaml).
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-14T00:00:00Z
+        comment: Re-approved after dynamic-skill-loading rework — Q6 now mandates full-stack agents, per-task `### Required skills` in tasks.md, agent.yaml drops roles[]/skills[], task YAML drops `role`. Constraints #10 (uniform fleet) and #11 (no auto-retry on failure) added. Workflow ripple list W1–W11 enumerates downstream rule/skill changes to apply after tasks are regenerated.
+  tasks:
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-14T00:00:00Z
+    review_comment: Approved — 11 tasks (T1–T11), per-phase model allowlist (workspace defaults + task overrides) replaces per-task Opus approval fields, agent.yaml drops models section, old T11 Opus wiring folded into T6/T11(docs). TypeScript runtime.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-13T00:00:00Z
+        comment: Approved — 11 tasks across 4 waves, hybrid tasks.md (narrative) + tasks/T<n>.yaml (state) split, dependencies reflect parallelization diagram, T6 commit-SHA self/other detection captured, per-run JSONL log sink confirmed.
+      - action: invalidated
+        by: tiendv.52@gmail.com
+        at: 2026-04-13T00:00:00Z
+        comment: Downstream invalidation — technical_design reopened for dynamic skill loading discussion.
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-14T00:00:00Z
+        comment: Approved — 11 tasks (T1–T11), per-phase model allowlist (workspace defaults + task overrides) replaces per-task Opus approval fields, agent.yaml drops models section, old T11 Opus wiring folded into T6/T11(docs). TypeScript runtime.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - action: feature_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: Feature initialized — decentralized agent team that self-activates and pulls ready tasks.
+  - action: product_spec_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: Product spec approved; feature advanced to in_tdd / technical_design.
+  - action: technical_design_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: Technical design approved; stage advanced to tasks. feature_status remains in_tdd until tasks stage is approved.
+  - action: tasks_drafted
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: 11 task YAMLs produced covering the 4 parallelization waves from technical-design.md. Awaiting human review.
+  - action: tasks_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: Tasks approved; feature advanced to ready_for_implementation. Agents may begin claiming ready tasks (T1–T4 in Wave 1).
+  - action: stage_reset
+    by: tiendv.52@gmail.com
+    at: 2026-04-13T00:00:00Z
+    note: set-feature-stage → technical_design. Rolled back from ready_for_implementation to in_tdd to reconsider skill-loading model (static agent.yaml skills[] vs per-task dynamic selection by tech-lead). Artifacts preserved; tasks flagged for revalidation; Wave 1 task statuses reset from ready/in_progress → todo.
+  - action: technical_design_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Technical design re-approved after dynamic-skill-loading rework. Stage advanced to tasks. Tasks must be regenerated (drop role, add ### Required skills, simplify matcher/loader subtasks) before feature_status can advance to ready_for_implementation.
+  - action: tasks_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Tasks approved — 11 tasks (T1–T11), per-phase model allowlist replaces Opus approval fields, agent.yaml drops models, old T11 folded in. Feature advanced to ready_for_implementation.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

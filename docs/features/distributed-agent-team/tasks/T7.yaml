@@ -1,0 +1,26 @@
+id: T7
+title: Implement git-based claim protocol with commit-SHA contention
+repo: workflow
+status: todo
+depends_on: [T3]
+blocked_reason: null
+branch: feature/distributed-agent-team-T7
+
+execution:
+  actor_type: human
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-14T00:00:00Z
+    note: Task drafted. Jittered first-claim-wins via git commit + push. Push rejection → fetch → compare local remembered push SHA vs remote HEAD SHA. No identity-based checks (safe when agents share GIT_AUTHOR_EMAIL). Includes suggested_next_step generation on blocked exits.
+  - action: schema_updated
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."

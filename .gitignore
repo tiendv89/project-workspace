@@ -1,0 +1,6 @@
+.env
+.claude/*
+.claude/settings.json
+.claude/settings.local.json
+.idea
+.vscode

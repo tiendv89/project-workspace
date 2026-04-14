@@ -1,0 +1,51 @@
+workspace_id: workspace
+name: workspace
+overview_doc: docs/overview.md
+
+approval:
+  actor_source: env:GIT_AUTHOR_EMAIL
+  fallback_actor: unknown@local
+  timestamp_source: local_time
+
+git:
+  branch_pattern: "feature/{feature_id}-{work_id}"
+
+environments:
+  develop:
+    enabled: true
+  staging:
+    enabled: false
+  production:
+    enabled: false
+
+roles:
+  - product_owner
+  - tech_lead
+
+# Declare which technical_skills each automated role uses in this project.
+# Every skill listed must exist as a directory under workflow/technical_skills/.
+role_skill_overrides: {}
+
+model_policy:
+  implementation:
+    allowed: [claude-sonnet-4-6]
+    default: claude-sonnet-4-6
+  self_review:
+    allowed: [claude-sonnet-4-6]
+    default: claude-sonnet-4-6
+  pr_description:
+    allowed: [claude-sonnet-4-6]
+    default: claude-sonnet-4-6
+  suggested_next_step:
+    allowed: [claude-haiku-4-5-20251001]
+    default: claude-haiku-4-5-20251001
+
+automation:
+  enabled: false
+
+repos:
+  - id: workflow
+    github: git@github.com:tiendv89/agent-workflow.git
+    local_path: env:WORKFLOW_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
