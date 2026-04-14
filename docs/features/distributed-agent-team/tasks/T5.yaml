@@ -1,7 +1,7 @@
 id: T5
 title: Implement zero-token eligibility matcher
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1, T2, T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T5
@@ -24,3 +24,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "W6 verification (T3): no role: field present. Task YAML conforms to updated schema."
+  - action: status_auto_ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "Auto-ready rule applied — T3 marked done, all depends_on [T1, T2, T3] now satisfied. Status advanced from todo to ready."
