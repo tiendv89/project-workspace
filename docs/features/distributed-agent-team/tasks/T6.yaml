@@ -1,7 +1,7 @@
 id: T6
 title: Integrate Anthropic Agent SDK tool-use loop with budget enforcement, dynamic skill loading, and model policy resolution
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: [T2, T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T6
@@ -12,8 +12,8 @@ execution:
   last_updated_at: 2026-04-14T00:00:00Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/8"
+  status: open
 
 log:
   - action: created
@@ -32,3 +32,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "Started T6 implementation. Branch feature/distributed-agent-team-T6 created from main (966efe6) and pushed to origin."
+  - action: in_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "Implementation complete. PR #8 opened — feat(T6): Anthropic SDK tool-use loop with budget enforcement and skill loading."
