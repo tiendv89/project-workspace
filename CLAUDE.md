@@ -65,11 +65,30 @@ Features follow this lifecycle:
   - `execution.actor_type`
   - `branch`
 
+## Task status transition rules
+
+Valid transitions only — skipping a step is a rule violation:
+
+```
+todo → ready        (auto-ready rule, applied by whoever marks the last dependency done)
+ready → in_progress (start-implementation only)
+in_progress → in_review  (agent or human, after work is complete)
+in_progress → blocked    (agent, when blocked)
+in_review → done    (human only)
+in_review → ready   (human, when rejecting for rework)
+blocked → ready     (human, after resolving the block)
+any → cancelled     (human only)
+```
+
+- `todo → in_progress` is **never valid** — a task must pass through `ready` first.
+- `start-implementation` must hard-stop if the task status is not `ready`.
+
 ## Task log rules
 
 - Every task state change should be recorded in the task file `log`
 - Both humans and agents append task log entries when they mutate task state
 - Marking a task `done` requires a human log entry
+- **Timestamp rule**: every log entry `at:` field must use a real UTC timestamp obtained at the time of the action via `date -u +%Y-%m-%dT%H:%M:%SZ`. Hardcoded or placeholder timestamps (e.g. `00:00:00Z`) are not acceptable.
 
 ## Task file scope
 
@@ -142,6 +161,7 @@ Rules:
 - **Claim commit rule**: before an agent begins implementation work in a target repo, it must commit and push the claim (status change to `in_progress` in `T_x.yaml`) to the management repo on the task's feature branch. If the push is rejected (non-fast-forward), the agent must stop — another agent won the claim.
 - The management repo commit is the canonical record of task ownership. Without it, the claim is not valid and the agent must not proceed with implementation.
 - Agents may only modify their own task file (`T_x.yaml`) in the management repo. See "Task file scope" rule.
+- **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
 
 ## Git / SSH rules
 
