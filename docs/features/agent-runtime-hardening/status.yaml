@@ -1,17 +1,31 @@
 feature_id: agent-runtime-hardening
 title: Agent runtime hardening — credential delivery, full bootstrap, and PR lifecycle
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft the technical design.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-14T18:17:42Z
+    review_comment: >
+      Approved — three gaps correctly identified and scoped. Architecture direction
+      confirmed: Claude Code CLI replaces raw SDK loop, agent CLAUDE.md design locked,
+      GITHUB_TOKEN and SSH_PRIVATE_KEY both required inputs, bootstrap to clone all
+      workspace.yaml repos and populate env vars. Q1 and Q3 closed; Q2 (token budget
+      mechanism) deferred to technical design with hard non-negotiable requirement.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-14T18:17:42Z
+        comment: >
+          Approved — three gaps correctly identified and scoped. Architecture direction
+          confirmed: Claude Code CLI replaces raw SDK loop, agent CLAUDE.md design locked,
+          GITHUB_TOKEN and SSH_PRIVATE_KEY both required inputs, bootstrap to clone all
+          workspace.yaml repos and populate env vars. Q1 and Q3 closed; Q2 (token budget
+          mechanism) deferred to technical design with hard non-negotiable requirement.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -40,6 +54,13 @@ history:
       (1) SSH credential only deliverable via file mount, breaks K8s/CI;
       (2) bootstrap only clones management repo, not implementation repos;
       (3) no PR is ever opened after task completion.
+  - action: product_spec_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T18:17:42Z
+    note: >
+      Product spec approved. Architecture confirmed: Claude Code CLI environment,
+      agent CLAUDE.md briefing design, full bootstrap from workspace.yaml, credential
+      delivery via env vars. Feature advanced to in_tdd / technical_design.
 
 revalidation:
   product_spec_required: false
