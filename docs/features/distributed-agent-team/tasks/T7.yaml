@@ -1,7 +1,7 @@
 id: T7
 title: Implement git-based claim protocol with commit-SHA contention
 repo: workflow
-status: in_review
+status: done
 depends_on: [T3]
 blocked_reason: null
 branch: feature/distributed-agent-team-T7
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/9"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -36,3 +36,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "PR created via GitHub REST API. tiendv89/agent-workflow#9. Status advanced to in_review."
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-14T00:00:00Z
+    note: "PR tiendv89/agent-workflow#9 merged by human reviewer. Task complete."
