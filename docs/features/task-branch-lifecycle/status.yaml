@@ -1,9 +1,9 @@
 feature_id: task-branch-lifecycle
 title: Task branch lifecycle — claim, execution, and blocked recovery
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Agents may begin claiming Wave 1 tasks (T1, T7).
+feature_status: done
+current_stage: handoff
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -64,11 +64,15 @@ stages:
           Approved — 7 tasks, 3 waves. T1 + T7 flipped to ready.
           Feature advanced to ready_for_implementation.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-15T18:00:05+0700
+    review_comment: All 7 tasks delivered. Handoff document approved. Feature done.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T18:00:05+0700
+        comment: All 7 tasks delivered. Handoff document approved. Feature done.
 
 history:
   - action: created
@@ -102,6 +106,16 @@ history:
     note: >
       Task breakdown approved. 7 tasks across 3 waves. T1 and T7 flipped to ready
       (Wave 1, no dependencies). Feature advanced to ready_for_implementation.
+  - action: handoff_submitted
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:59:40+0700
+    note: >
+      All 7 tasks done (T1–T7). Handoff document written at
+      handoffs/task-branch-lifecycle.md. Feature advanced to in_handoff.
+  - action: handoff_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T18:00:05+0700
+    note: Handoff approved. Feature status set to done.
 
 revalidation:
   product_spec_required: false
