@@ -1,9 +1,9 @@
 feature_id: task-branch-lifecycle
 title: Task branch lifecycle — claim, execution, and blocked recovery
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Draft task breakdown.
+next_action: Agents may begin claiming Wave 1 tasks (T1, T7).
 
 stages:
   product_spec:
@@ -47,11 +47,22 @@ stages:
           Approved — 7 tasks across 3 waves. D1–D6 decisions locked. D6 simplified
           to same-branch always for blocked recovery. Ready for task breakdown.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-15T09:13:26Z
+    review_comment: >
+      Approved — 7 tasks across 3 waves. T1 + T7 Wave 1 (no deps, flipped to
+      ready). T2, T3, T5, T6 Wave 2 (depend on T1, mutually independent). T4
+      Wave 3 (depends on T2 + T3). TypeScript tasks require typescript-best-practices.
+      T6 (SKILL.md) and T7 (template) are text-only. Subtasks and acceptance
+      criteria defined in tasks.md.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-15T09:13:26Z
+        comment: >
+          Approved — 7 tasks, 3 waves. T1 + T7 flipped to ready.
+          Feature advanced to ready_for_implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -85,6 +96,12 @@ history:
       Technical design approved. D1–D6 locked. 7 tasks across 3 waves confirmed.
       D6 simplified: blocked recovery always stays on canonical branch, no suffix
       counting. Feature advanced to in_tdd / tasks.
+  - action: tasks_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:13:26Z
+    note: >
+      Task breakdown approved. 7 tasks across 3 waves. T1 and T7 flipped to ready
+      (Wave 1, no dependencies). Feature advanced to ready_for_implementation.
 
 revalidation:
   product_spec_required: false

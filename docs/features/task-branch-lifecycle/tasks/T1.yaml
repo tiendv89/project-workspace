@@ -1,7 +1,7 @@
 id: T1
 title: Schema foundations — paths.ts taskBranchName + types/task.ts BlockedContext
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -27,3 +27,7 @@ log:
       Adds taskBranchName helper to paths.ts and BlockedContext + blocked_context
       + workspace_pr to types/task.ts. All Wave 2 tasks (T2, T3, T5, T6) depend
       on this schema being settled first.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:13:26Z
+    note: Tasks stage approved — no dependencies, flipped to ready.

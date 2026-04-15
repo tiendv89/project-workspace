@@ -1,7 +1,7 @@
 id: T7
 title: TASK.template.yaml — remove pre-set branch, add blocked_context and workspace_pr
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -27,3 +27,7 @@ log:
       Simple YAML change to templates/feature/tasks/TASK.template.yaml:
       set branch to empty string (claimTask writes it at claim time), add
       blocked_context: null and workspace_pr: null fields. No TypeScript changes.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:13:26Z
+    note: Tasks stage approved — no dependencies, flipped to ready.
