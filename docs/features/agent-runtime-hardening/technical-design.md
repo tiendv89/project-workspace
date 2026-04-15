@@ -37,7 +37,7 @@
 |---|---|---|---|
 | `claim-task.ts` | `resolve-model-policy.ts` | `run-task.ts` → deleted | `src/loop/run-claude.ts` |
 | `eligibility/match.ts` | `parse-model-overrides.ts` | `suggested-next-step.ts` → deleted | `src/bootstrap/agent-context.ts` |
-| `eligibility/parse-tasks-md.ts` | | `logging/log-sink.ts` → deleted | |
+| `eligibility/parse-tasks-md.ts` | `logging/log-sink.ts` | | |
 | `validate-agent-yaml.ts` | | | |
 | `types/task.ts` | | | |
 | `bootstrap.ts` (extended) | | | |
@@ -117,7 +117,9 @@ How does the per-activation task briefing reach Claude Code?
 - **B. Delete run-task.ts and the modules it exclusively owns** — clean break. Removes `suggested-next-step.ts` and `log-sink.ts`. `resolve-model-policy.ts` and `parse-model-overrides.ts` are retained because the new `agent-context.ts` uses them to pre-resolve the implementation model from `workspace.yaml` and embed the model directive in the agent CLAUDE.md prompt.
 - **C. Keep but disable** — comment out, leave as dead code.
 
-**Chosen: B.** The product spec is explicit: `run-task.ts` is replaced, not toggled. Dead code in a runtime is a maintenance burden. `suggested-next-step.ts` is deleted (Claude Code + agent CLAUDE.md handles triage hints natively). `log-sink.ts` is deleted (task YAML log entries written by skills provide the audit trail). `resolve-model-policy.ts` and `parse-model-overrides.ts` are **kept** — `agent-context.ts` calls them to pre-resolve the implementation model and write an explicit model directive into the agent CLAUDE.md, ensuring `workspace.yaml` model policy is honoured even when delegating execution to Claude Code CLI.
+**Chosen: B** (with amendment to `log-sink.ts`). The product spec is explicit: `run-task.ts` is replaced, not toggled. Dead code in a runtime is a maintenance burden. `suggested-next-step.ts` is deleted (Claude Code + agent CLAUDE.md handles triage hints natively). `resolve-model-policy.ts` and `parse-model-overrides.ts` are **kept** — `agent-context.ts` calls them to pre-resolve the implementation model and write an explicit model directive into the agent CLAUDE.md, ensuring `workspace.yaml` model policy is honoured even when delegating execution to Claude Code CLI.
+
+**Amendment — `log-sink.ts` is retained (not deleted).** The original design assumed task YAML log entries were sufficient. After implementation it became clear that logs must persist beyond the container lifetime: when the agent runs as a K8s CronJob pod, stdout is lost when the pod terminates. `run-claude.ts` therefore captures the full Claude Code subprocess stdout via `spawnSync` and flushes it to `docs/features/<featureId>/logs/<taskId>_<iso>.jsonl` in the management repo (git commit + push on the task's feature branch). This reuses `deriveLogPath` and `toSafeIso` from `log-sink.ts`, so that module is kept.
 
 ---
 
@@ -145,10 +147,14 @@ Container starts
       │     cwd: taskRepoRoot
       │     env: { ...process.env, GIT_SSH_COMMAND: ... }
       │     (args array — no shell interpolation, no injection risk)
+      │     stdout captured in memory (50 MB buffer)
       ├── on exit: read task YAML to determine outcome
       ├── if outcome == in_review → emit task_run_complete, exit 0
       ├── if outcome == blocked → check token count, emit, exit 0
-      └── if task YAML unchanged (crash before start-implementation) → mark blocked
+      ├── if task YAML unchanged (crash) → writeBlockedAndPush, mark blocked
+      └── if logSinkEnabled: flushLogAndPush                            [log persistence]
+            run_started + raw stdout + run_ended → management repo JSONL
+            git commit + push to taskBranch (survives pod deletion)
 ```
 
 ### New module: `src/bootstrap/agent-context.ts`
@@ -189,6 +195,8 @@ runClaude(opts: {
   maxTokens: number;           // budget.max_tokens_per_task — for post-exit audit
   sshKeyPath: string | undefined;
   gitAuthorEmail: string;
+  taskBranch: string;          // feature branch — used as push target for log flush
+  logSinkEnabled: boolean;     // config.log_sink.enabled — gates flushLogAndPush
 }): Promise<RunClaudeResult>
 ```
 
@@ -200,11 +208,28 @@ type RunClaudeResult =
 ```
 
 Internally:
-1. Invokes `["claude", "-p", agentContext, "--max-turns", String(maxTurns)]` via `spawnSync` with `cwd: taskRepoRoot`. Uses an args array (not a shell string) — no interpolation, no injection risk.
-2. After exit, reads task YAML. Task state drives outcome — not exit code.
-3. If task is `in_review` → `{ outcome: "in_review" }`.
-4. If task is `blocked` → check `task.execution.tokens_used` (see token audit note below); if field is present and total > `maxTokens`, override `blocked_reason` to `budget_exceeded`; return `{ outcome: "blocked", reason: task.blocked_reason }`.
-5. If task is still `in_progress` (crash before any state write) → write `blocked` with `runtime_error`, return blocked.
+1. Records `runStartIso = new Date().toISOString()`.
+2. Invokes `["claude", "-p", agentContext, "--max-turns", String(maxTurns)]` via `spawnSync` with `cwd: taskRepoRoot`. Uses an args array (not a shell string) — no interpolation, no injection risk. `spawnSync` captures full stdout in memory (50 MB buffer).
+3. After exit, reads task YAML. Task state drives outcome — not exit code.
+4. If task is `in_review` → `{ outcome: "in_review" }`.
+5. If task is `blocked` → check token count from stdout (see token audit note below); if total > `maxTokens`, override `blocked_reason` to `budget_exceeded`; return `{ outcome: "blocked", reason: ... }`.
+6. If task is still `in_progress` (crash before any state write) → write `blocked` with `runtime_error` via `writeBlockedAndPush`, return blocked.
+7. If `logSinkEnabled`, call `flushLogAndPush` (see below).
+
+**`flushLogAndPush` — log persistence for ephemeral containers:**
+
+Because the agent runs as a K8s CronJob pod, stdout is lost when the pod terminates. `flushLogAndPush` persists the full Claude Code session output:
+
+1. Derives the log file path via `deriveLogPath(workspaceRoot, featureId, taskId, runStartIso)` (from `log-sink.ts`).
+2. Creates `docs/features/<featureId>/logs/` in the management repo if absent.
+3. Writes a JSONL file `<taskId>_<safeIso>.jsonl` containing:
+   - `{ at: runStartIso, by: gitAuthorEmail, type: "run_started" }`
+   - Raw captured stdout from the `claude` subprocess (line-by-line; may be JSON events or plain text)
+   - `{ at: <now>, by: gitAuthorEmail, type: "run_ended", details: { outcome } }`
+4. Commits with `git -C workspaceRoot add <relPath>` and `git commit -m "chore: flush task log <taskId>"`.
+5. Pushes with `git -C workspaceRoot push origin <taskBranch>`.
+
+The log file is committed to `taskBranch` in the management repo. It survives pod deletion and is visible in the PR diff when the task moves to `in_review`.
 
 **Token audit note:** `TaskExecution` currently has no `tokens_used` field. Two options for implementation:
 - **Option X (preferred):** Parse Claude Code's structured stdout — `spawnSync` captures it; look for the JSON usage line Claude Code emits at session end. Write the total to `task.execution.tokens_used` before writing the outcome.
@@ -287,7 +312,6 @@ Add `GITHUB_TOKEN` to documented required env vars comment block.
 |---|---|
 | `src/loop/run-task.ts` | Replaced by `run-claude.ts` |
 | `src/claim/suggested-next-step.ts` | Claude Code + agent CLAUDE.md handles triage hints natively |
-| `src/logging/log-sink.ts` | Task YAML log entries written by skills provide the audit trail |
 
 ## Test Strategy
 
@@ -316,7 +340,7 @@ The integration test does **not** need to run a real Claude Code session — the
 | `workflow/` (`agent-runtime/`) | `src/main.ts`, `src/bootstrap/bootstrap.ts`, `Dockerfile`, `DOCKER.md`, `QUICKSTART.md` |
 | `workflow/` (`agent-runtime/`) | `orchestration/.env.example`, `orchestration/docker-compose.yml`, `orchestration/github-actions/scheduled.yml`, `orchestration/kubernetes/cronjob.yaml`, `orchestration/systemd/agent-runtime.service` |
 | `workflow/` (`agent-runtime/`) | Add: `src/bootstrap/agent-context.ts`, `src/loop/run-claude.ts` |
-| `workflow/` (`agent-runtime/`) | Delete: `src/loop/run-task.ts`, `src/claim/suggested-next-step.ts`, `src/logging/log-sink.ts` |
+| `workflow/` (`agent-runtime/`) | Delete: `src/loop/run-task.ts`, `src/claim/suggested-next-step.ts` |
 | `workspace/` (management repo) | `docs/features/agent-runtime-hardening/` only |
 
 No changes to `workspace.yaml`, `agent.yaml` schema, task YAML schema, or any workflow skill.
