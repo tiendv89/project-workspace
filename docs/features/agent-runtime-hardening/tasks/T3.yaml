@@ -1,19 +1,19 @@
 id: T3
 title: Dockerfile claude CLI install + GITHUB_TOKEN docs
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T3
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T13:37:37+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/16"
+  status: merged
 
 log:
   - action: created
@@ -28,3 +28,27 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T03:05:22Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T11:30:38+0700
+    note: >
+      Implementation started on branch feature/agent-runtime-hardening-T3.
+      Repo workflow, base branch main.
+  - action: implemented
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T11:35:50+0700
+    note: >
+      Dockerfile: npm install -g @anthropic-ai/claude-code.
+      GITHUB_TOKEN documented as required in DOCKER.md, .env.example,
+      docker-compose.yml, GHA scheduled.yml, k8s cronjob.yaml,
+      systemd service, and QUICKSTART.md. 8 files changed, tsc clean.
+  - action: moved_to_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T11:35:50+0700
+    note: >
+      PR opened: https://github.com/tiendv89/agent-workflow/pull/16
+      feature/agent-runtime-hardening-T3 → main
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T13:37:37+0700
+    note: PR #16 merged.
