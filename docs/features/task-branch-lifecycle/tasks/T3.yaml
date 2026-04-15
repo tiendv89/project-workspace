@@ -16,7 +16,9 @@ pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/22"
   status: merged
 
-workspace_pr: null
+workspace_pr:
+  url: "https://github.com/tiendv89/project-workspace/pull/14"
+  status: open
 
 log:
   - action: created
