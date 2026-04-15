@@ -1,7 +1,7 @@
 id: T2
 title: Bootstrap implementation repo cloning + env var population
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T2
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/15"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -48,3 +48,7 @@ log:
     note: >
       PR opened: https://github.com/tiendv89/agent-workflow/pull/15
       feature/agent-runtime-hardening-T2 → main
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T04:27:42Z
+    note: PR #15 merged. Includes paths.ts refactoring (centralised workflow artifact constants).
