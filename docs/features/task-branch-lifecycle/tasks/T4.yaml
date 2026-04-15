@@ -1,7 +1,7 @@
 id: T4
 title: main.ts wiring — openWorkspacePr after claim, blocked-recovery routing, taskBranch derivation
 repo: workflow
-status: in_review
+status: done
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -14,7 +14,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/23"
-  status: open
+  status: merged
 
 workspace_pr: null
 
@@ -44,3 +44,9 @@ log:
     note: >
       PR #23 opened: feat(task-branch-lifecycle/T4): main.ts wiring.
       tsc --noEmit clean. 172/172 tests passed.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:22:37+0700
+    note: >
+      PR #23 merged into main. Management repo PR opened to merge
+      feature/task-branch-lifecycle-T4 → main.
