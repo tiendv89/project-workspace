@@ -13,8 +13,8 @@ execution:
   last_updated_at: null
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/26"
+  status: open
 
 workspace_pr: null
 
@@ -37,3 +37,9 @@ log:
     note: >
       Implementation started on branch feature/task-branch-lifecycle-T7.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:55:18+0700
+    note: >
+      PR #26 opened: feat(task-branch-lifecycle/T7): update TASK.template.yaml
+      schema. Text-only change, 3 fields updated.
