@@ -1,7 +1,7 @@
 id: T1
 title: Schema foundations — paths.ts taskBranchName + types/task.ts BlockedContext
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/task-branch-lifecycle-T1
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-15T16:23:41+0700
+  last_updated_at: 2026-04-15T16:26:14+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/20"
+  status: open
 
 workspace_pr: null
 
@@ -37,3 +37,9 @@ log:
     note: >
       Implementation started on branch feature/task-branch-lifecycle-T1.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:26:14+0700
+    note: >
+      PR #20 opened: feat(T1): taskBranchName helper + BlockedContext schema.
+      tsc --noEmit clean. 158/158 tests passed.
