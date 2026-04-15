@@ -13,8 +13,8 @@ execution:
   last_updated_at: null
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/25"
+  status: open
 
 workspace_pr: null
 
@@ -40,3 +40,9 @@ log:
     note: >
       Implementation started on branch feature/task-branch-lifecycle-T6.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:45:33+0700
+    note: >
+      PR #25 opened: feat(task-branch-lifecycle/T6): update
+      start-implementation SKILL.md. Text-only changes, no tsc run required.
