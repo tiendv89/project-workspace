@@ -1,7 +1,7 @@
 id: T1
 title: Schema foundations — paths.ts taskBranchName + types/task.ts BlockedContext
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,8 +9,8 @@ branch: feature/task-branch-lifecycle-T1
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T16:23:41+0700
 
 pr:
   url: ""
@@ -31,3 +31,9 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-15T09:13:26Z
     note: Tasks stage approved — no dependencies, flipped to ready.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:23:41+0700
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T1.
+      Repo workflow, base branch main.
