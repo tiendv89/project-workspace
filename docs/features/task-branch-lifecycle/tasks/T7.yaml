@@ -1,7 +1,7 @@
 id: T7
 title: TASK.template.yaml — remove pre-set branch, add blocked_context and workspace_pr
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -31,3 +31,9 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-15T09:13:26Z
     note: Tasks stage approved — no dependencies, flipped to ready.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:52:42+0700
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T7.
+      Repo workflow, base branch main.
