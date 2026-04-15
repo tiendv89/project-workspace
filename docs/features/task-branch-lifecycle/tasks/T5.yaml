@@ -1,7 +1,7 @@
 id: T5
 title: run-claude.ts — write blocked_context on crash-block path
 repo: workflow
-status: ready
+status: done
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -13,8 +13,8 @@ execution:
   last_updated_at: null
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/24"
+  status: merged
 
 workspace_pr: null
 
@@ -33,3 +33,21 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T16:34:03+0700
     note: T1 done — sole dependency satisfied.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:28:00+0700
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T5.
+      Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:38:00+0700
+    note: >
+      PR #24 opened: feat(task-branch-lifecycle/T5): write blocked_context on
+      crash-block path. tsc --noEmit clean. 176/176 tests passed.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:40:09+0700
+    note: >
+      PR #24 merged into main. Management repo PR to merge
+      feature/task-branch-lifecycle-T5 → main opened.
