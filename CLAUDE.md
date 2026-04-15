@@ -185,6 +185,23 @@ Rules:
 - If `SSH_KEY_PATH` is missing, require the user to provide it
 - If a repo requires SSH auth, the workflow should use the resolved `SSH_KEY_PATH` explicitly
 
+## Git hard-reset safety rule
+
+Before running `git reset --hard`, `git checkout --force`, or any other destructive
+git operation on a repo, the agent **must** run both checks below and **hard-stop**
+if either fails:
+
+1. **Uncommitted changes check** — `git status --short`. If output is non-empty
+   (staged, unstaged, or untracked tracked files), stop. Do not reset.
+2. **Unpushed commits check** — `git log origin/<base_branch>..HEAD --oneline`.
+   If output is non-empty, stop. Do not reset.
+
+On hard-stop, report the exact output of the failing check and wait for the user to
+resolve it (e.g. push, stash, or explicitly confirm discard) before proceeding.
+
+This rule applies to every repo touched in the workflow — implementation repos,
+management repos, and the workflow repo itself.
+
 ## Test-before-PR rule
 
 - **Always run the full test suite before opening a PR.** This applies to every task, every workflow, every agent context.
