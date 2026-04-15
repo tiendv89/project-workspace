@@ -1,4 +1,4 @@
-# Tasks — blocked-task-recovery
+# Tasks — task-branch-lifecycle
 
 > Feature status: `in_design` — product spec and technical design drafted, awaiting approval.
 > Task stage: **not started** — tasks will be broken down after product spec and technical design are approved.

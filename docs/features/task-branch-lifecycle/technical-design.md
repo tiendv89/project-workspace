@@ -1,8 +1,8 @@
 # Technical Design
 
 ## Feature
-- Feature ID: `blocked-task-recovery`
-- Title: Blocked task recovery — artifact preservation and re-entry flow
+- Feature ID: `task-branch-lifecycle`
+- Title: Task branch lifecycle — claim, execution, and blocked recovery
 
 ## Current State
 

@@ -1,0 +1,74 @@
+feature_id: task-branch-lifecycle
+title: Task branch lifecycle — claim, execution, and blocked recovery
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft technical design.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-15T08:49:54Z
+    review_comment: >
+      Approved — 5 scenarios defined (S1 claim, S2 complete, S3 done, S4 block,
+      S5 recovery). Branch naming canonical: feature/<feature-id>/T<n>. PR opens
+      at claim time. All commits on same branch. Pull-before-claim required.
+      Branch-exists edge cases handled. S3 human-driven; todo→ready propagation
+      automatic. S5 PR inheritance with -<attempt> fallback. Scope confirmed:
+      management repo only.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-15T08:49:54Z
+        comment: >
+          Approved — 5 scenarios defined (S1 claim, S2 complete, S3 done, S4 block,
+          S5 recovery). Branch naming canonical: feature/<feature-id>/T<n>. PR opens
+          at claim time. All commits on same branch. Pull-before-claim required.
+          Branch-exists edge cases handled. S3 human-driven; todo→ready propagation
+          automatic. S5 PR inheritance with -<attempt> fallback. Scope confirmed:
+          management repo only.
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:05:00+0700
+    note: Feature created from discussion during agent-runtime-hardening T4 implementation.
+  - action: renamed
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00+0700
+    note: >
+      Renamed from blocked-task-recovery. Scope expanded to cover the full task branch
+      lifecycle: claim protocol (branch-not-PR at claim time), undefined branch-exists
+      edge case, and the original blocked recovery flow.
+  - action: product_spec_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T08:49:54Z
+    note: >
+      Product spec approved. 5 scenarios locked: S1 claim, S2 complete, S3 done
+      (human-driven), S4 blocked exit, S5 blocked recovery. Scope: management repo
+      only. Feature advanced to in_tdd / technical_design.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
