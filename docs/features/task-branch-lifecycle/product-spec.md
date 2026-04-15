@@ -143,13 +143,11 @@ Triggered from S1 when the agent detects this condition.
 3. Agent reads `blocked_reason` and `suggested_next_step` as additional context.
 4. Agent continues implementation on top of the existing WIP commits (does not
    reset to base, does not squash WIP commits).
-5. **PR inheritance:** agent attempts to reuse the existing open PR on the
-   management repo for this branch.
+5. **PR inheritance:** agent checks for an existing open PR on the task branch.
    - If the PR is open: continue using it. No new PR is opened.
-   - If the PR was closed or cannot be found: open a new PR from a new branch
-     named `feature/<feature-id>/T<n>-<attempt>` where `<attempt>` increments
-     from 2 (e.g. `T3-2`, `T3-3`). Record the new branch name in
-     `blocked_context.wip_branch`.
+   - If the PR was closed or cannot be found: open a new PR on the **same branch**.
+     The branch is never renamed; `blocked_context.wip_branch` always equals the
+     canonical `feature/<feature-id>-<task-id>` name.
 6. On successful completion (S2): agent clears `blocked_context` (sets to `null`)
    in the task YAML.
 
@@ -175,7 +173,7 @@ Triggered from S1 when the agent detects this condition.
   - `blocked_context` non-null: enter blocked recovery (S5).
 - A blocked agent always leaves a pushed branch with at least one WIP commit
   and a populated `blocked_context` in the task YAML.
-- S5 reuses the existing PR if open; opens a new `-<attempt>` branch PR if not.
+- S5 reuses the existing PR if open; opens a new PR on the same branch if the original was closed.
 - `blocked_context` is cleared after a successful recovery completion.
 - S3: human merges PR and sets `status: done`. Dependency propagation (`todo → ready`)
   fires automatically — not a human responsibility.

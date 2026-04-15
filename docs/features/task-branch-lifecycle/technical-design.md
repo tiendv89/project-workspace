@@ -167,15 +167,28 @@ The agent writes it via the `start-implementation` blocking exit rule. This is t
 
 ### D6 — Blocked recovery PR inheritance
 
-**Option A (chosen): reuse open PR if it exists; open `-<attempt>` branch if not**
+**Option A: reuse open PR if it exists; open `-<attempt>` branch if not**
 
-In S5 (blocked recovery), `openWorkspacePr` checks for an existing open PR on the
-WIP branch. If found, no new PR is opened. If not found (PR was closed), a new
-branch `feature/<featureId>-<taskId>-2` (or `-3`, etc.) is created, and a new PR
-is opened. The new branch name is written to `blocked_context.wip_branch`.
+If the original PR was closed, create a new branch with a numeric suffix
+(`-2`, `-3`, …) and open a PR from that. Write the new branch name to
+`blocked_context.wip_branch` so the next recovery knows where to look.
 
-- Pros: minimal PR churn in the normal recovery case.
-- Cons: requires an extra GitHub API call to search for an existing PR.
+- Pros: every PR has exactly one branch; no branch reuse across attempts.
+- Cons: requires counting prior attempts; `blocked_context.wip_branch` drifts
+  from the canonical `feature/<featureId>-<taskId>` name; recovery reads a
+  different branch each attempt, adding complexity with no clear benefit.
+
+**Option B (chosen): always stay on the canonical branch; open a new PR if closed**
+
+`openWorkspacePr` checks for an existing open PR on `feature/<featureId>-<taskId>`.
+- If found: continue using it. No new PR opened.
+- If closed (or not found): open a **new PR on the same branch**. The branch is
+  never renamed; `blocked_context.wip_branch` always equals the canonical name.
+
+- Pros: no suffix counting; `blocked_context.wip_branch` is always the canonical
+  branch name; `openWorkspacePr` logic is the same for claim and recovery;
+  the branch accumulates the full commit history across all recovery attempts.
+- Cons: requires one GitHub API search call to check for an open PR.
 
 ## Chosen Design
 
