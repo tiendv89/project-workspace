@@ -1,7 +1,7 @@
 id: T4
 title: Agent context generator — src/bootstrap/agent-context.ts
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T4
@@ -9,11 +9,11 @@ branch: feature/agent-runtime-hardening-T4
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-15T13:49:08+0700
+  last_updated_at: 2026-04-15T13:55:51+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/17"
+  status: open
 
 log:
   - action: created
@@ -35,3 +35,10 @@ log:
     note: >
       Implementation started on branch feature/agent-runtime-hardening-T4.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T13:55:51+0700
+    note: >
+      PR #17 opened: feat(T4): agent context generator — generateAgentContext
+      pure function + unit tests. 21 unit tests + tsc --noEmit passed.
+      Full suite: 188/188 passed.
