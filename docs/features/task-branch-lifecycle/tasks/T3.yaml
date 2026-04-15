@@ -1,0 +1,30 @@
+id: T3
+title: open-workspace-pr.ts — GitHub API PR creation and dedup for management repo
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+blocked_context: null
+branch: feature/task-branch-lifecycle-T3
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:09:12Z
+    note: >
+      Task created from approved task breakdown. Wave 2 — depends on T1.
+      New module src/claim/open-workspace-pr.ts: checks for existing open PR
+      on task branch (GitHub REST API via curl), opens new PR on same branch
+      if not found, writes workspace_pr to task YAML, commits and pushes.
+      T4 (main.ts) depends on this task.

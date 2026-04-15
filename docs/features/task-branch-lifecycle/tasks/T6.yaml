@@ -1,0 +1,32 @@
+id: T6
+title: start-implementation SKILL.md — management-repo checkout, blocked recovery mode, blocking exit rule
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+blocked_context: null
+branch: feature/task-branch-lifecycle-T6
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:09:12Z
+    note: >
+      Task created from approved task breakdown. Wave 2 — depends on T1 for
+      the blocked_context schema. Three changes to start-implementation SKILL.md:
+      (1) management-repo branch setup switches from create to checkout (branch
+      already exists after claimTask); (2) add blocked recovery mode triggered
+      when status=ready and blocked_context is non-null; (3) update blocking exit
+      rule to commit WIP, push impl repo branch, and write blocked_context to
+      task YAML before exiting.

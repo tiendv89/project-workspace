@@ -1,0 +1,31 @@
+id: T5
+title: run-claude.ts — write blocked_context on crash-block path
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+blocked_context: null
+branch: feature/task-branch-lifecycle-T5
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:09:12Z
+    note: >
+      Task created from approved task breakdown. Wave 2 — depends on T1.
+      Extends writeBlockedAndPush in run-claude.ts to write blocked_context
+      (wip_branch, wip_sha via git rev-parse HEAD, pushed_at timestamp) on the
+      crash-block path (task still in_progress after subprocess exit). The
+      graceful-block path is handled inside the Claude subprocess via
+      start-implementation's blocking exit rule (T6).

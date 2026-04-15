@@ -1,0 +1,29 @@
+id: T7
+title: TASK.template.yaml — remove pre-set branch, add blocked_context and workspace_pr
+repo: workflow
+status: todo
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/task-branch-lifecycle-T7
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:09:12Z
+    note: >
+      Task created from approved task breakdown. Wave 1 — no dependencies.
+      Simple YAML change to templates/feature/tasks/TASK.template.yaml:
+      set branch to empty string (claimTask writes it at claim time), add
+      blocked_context: null and workspace_pr: null fields. No TypeScript changes.

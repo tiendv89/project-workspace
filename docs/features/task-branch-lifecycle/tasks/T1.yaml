@@ -1,0 +1,29 @@
+id: T1
+title: Schema foundations — paths.ts taskBranchName + types/task.ts BlockedContext
+repo: workflow
+status: todo
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/task-branch-lifecycle-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:09:12Z
+    note: >
+      Task created from approved task breakdown. Wave 1 — no dependencies.
+      Adds taskBranchName helper to paths.ts and BlockedContext + blocked_context
+      + workspace_pr to types/task.ts. All Wave 2 tasks (T2, T3, T5, T6) depend
+      on this schema being settled first.
