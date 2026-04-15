@@ -1,15 +1,15 @@
 id: T5
 title: run-claude.ts + main.ts wiring (Claude Code subprocess invocation)
 repo: workflow
-status: todo
+status: ready
 depends_on: [T3, T4]
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T5
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T14:13:43+0700
 
 pr:
   url: ""
@@ -26,3 +26,9 @@ log:
       max-turns, reads task YAML for outcome, performs post-exit token
       audit. Wires into main.ts replacing runTask call. run-task.ts is
       NOT deleted here — that is T6.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:13:43+0700
+    note: >
+      Dependencies met: T3 (done, PR #16 merged) and T4 (done, PR #17 merged).
+      Task ready for implementation.
