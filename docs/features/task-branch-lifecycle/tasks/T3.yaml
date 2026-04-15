@@ -1,7 +1,7 @@
 id: T3
 title: open-workspace-pr.ts — GitHub API PR creation and dedup for management repo
 repo: workflow
-status: ready
+status: in_review
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -9,12 +9,12 @@ branch: feature/task-branch-lifecycle-T3
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T10:06:24Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/22"
+  status: open
 
 workspace_pr: null
 
@@ -38,3 +38,9 @@ log:
     note: >
       Implementation started on branch feature/task-branch-lifecycle-T3.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T10:06:24Z
+    note: >
+      PR #22 opened: feat(task-branch-lifecycle/T3): open-workspace-pr — GitHub
+      API PR creation + dedup. tsc --noEmit clean. 172/172 tests passed (11 new).
