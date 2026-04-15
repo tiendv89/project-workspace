@@ -1,7 +1,7 @@
 id: T6
 title: Delete orphaned modules + integration smoke test
 repo: workflow
-status: ready
+status: done
 depends_on: [T5]
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T6
@@ -9,11 +9,11 @@ branch: feature/agent-runtime-hardening-T6
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-15T14:40:53+0700
+  last_updated_at: 2026-04-15T15:13:19+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/19"
+  status: merged
 
 log:
   - action: created
@@ -31,3 +31,19 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T14:40:53+0700
     note: T5 merged — sole dependency satisfied. Task ready for implementation.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:49:16+0700
+    note: >
+      Implementation started on branch feature/agent-runtime-hardening-T6.
+      Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:55:32+0700
+    note: >
+      PR #19 opened: feat(T6): delete run-task.ts + suggested-next-step.ts;
+      add runClaude smoke test. tsc --noEmit clean. 158/158 tests passed.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T15:13:19+0700
+    note: PR #19 merged into main.
