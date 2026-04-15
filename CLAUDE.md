@@ -184,6 +184,13 @@ Rules:
 - If `SSH_KEY_PATH` is missing, require the user to provide it
 - If a repo requires SSH auth, the workflow should use the resolved `SSH_KEY_PATH` explicitly
 
+## Test-before-PR rule
+
+- **Always run the full test suite before opening a PR.** This applies to every task, every workflow, every agent context.
+- Required commands (run both): `npx vitest run` and `tsc --noEmit`
+- All tests must pass before invoking `pr-create`. Fix any failures and re-run until clean.
+- Do not open a PR for failing tests or a failing type check.
+
 ## PR creation rule
 
 - **Do not use `gh` CLI to create pull requests.** Use the `pr-create` skill instead.
