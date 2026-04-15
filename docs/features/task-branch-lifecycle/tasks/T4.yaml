@@ -32,3 +32,9 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T17:13:06+0700
     note: T2 and T3 both done — all dependencies satisfied.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:15:53+0700
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T4.
+      Repo workflow, base branch main.
