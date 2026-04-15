@@ -1,0 +1,31 @@
+id: T2
+title: Bootstrap implementation repo cloning + env var population
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/agent-runtime-hardening-T2
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Task created from approved task breakdown. Wave 1 — independent.
+      Closes Gap 2: bootstrap reads workspace.yaml after cloning management
+      repo, clones all non-management repos, and sets process.env[VAR] for
+      each local_path: env:<VAR> declaration. Also simplifies
+      resolveRepoLocalPath in main.ts to env-var-only (no fallback).
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:05:22Z
+    note: Task activated on tasks-stage approval — dependencies met.

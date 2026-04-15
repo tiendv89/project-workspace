@@ -1,9 +1,9 @@
 feature_id: agent-runtime-hardening
 title: Agent runtime hardening — credential delivery, full bootstrap, and PR lifecycle
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Draft the technical design.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Agents may begin Wave 1 tasks (T1, T2, T3, T4) in parallel. T5 starts after T3 and T4 merge. T6 starts after T5 merges.
 
 stages:
   product_spec:
@@ -27,17 +27,53 @@ stages:
           workspace.yaml repos and populate env vars. Q1 and Q3 closed; Q2 (token budget
           mechanism) deferred to technical design with hard non-negotiable requirement.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-15T00:00:00Z
+    review_comment: >
+      Approved after tech-lead review pass. All gaps addressed: implementationModel
+      param added to generateAgentContext, loadWorkspaceModelPolicy retained in main.ts,
+      resolveRepoLocalPath simplified (not deleted), spawnSync/execSync inconsistency
+      fixed, token audit field gap documented with X/Y options, bootstrap management
+      repo filtering and baseBranch source specified, test strategy added, all
+      orchestration templates in scope. Ready for task breakdown.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T00:00:00Z
+        comment: >
+          Approved — D1–D5 decisions locked. All orchestration templates (docker-compose,
+          GHA, K8s, systemd) added to scope. resolve-model-policy.ts and
+          parse-model-overrides.ts retained for agent-context.ts model directive.
+          Wave 1–3 parallelization confirmed. Ready for task breakdown.
+      - action: stage_reset
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T00:00:00Z
+        comment: >
+          Rolled back to technical_design for tech-lead review pass to improve the document.
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T00:00:00Z
+        comment: >
+          Approved after tech-lead review pass. All gaps addressed and test strategy added.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-15T00:00:00Z
+    review_comment: >
+      Approved — 6 tasks across 3 waves. T1–T4 independent (Wave 1),
+      T5 depends on T3+T4 (Wave 2), T6 depends on T5 (Wave 3). All tasks
+      assigned actor_type: agent. Subtasks and acceptance criteria defined
+      in tasks.md. Required skill: typescript-best-practices for all tasks.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T00:00:00Z
+        comment: >
+          Approved — 6 tasks across 3 waves. T1–T4 independent (Wave 1),
+          T5 depends on T3+T4 (Wave 2), T6 depends on T5 (Wave 3). All tasks
+          assigned actor_type: agent. Subtasks and acceptance criteria defined
+          in tasks.md. Required skill: typescript-best-practices for all tasks.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -61,6 +97,31 @@ history:
       Product spec approved. Architecture confirmed: Claude Code CLI environment,
       agent CLAUDE.md briefing design, full bootstrap from workspace.yaml, credential
       delivery via env vars. Feature advanced to in_tdd / technical_design.
+  - action: technical_design_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Technical design approved. D1–D5 decisions locked. All orchestration templates
+      added to scope. resolve-model-policy.ts and parse-model-overrides.ts retained.
+      Feature advanced to in_tdd / tasks.
+  - action: stage_reset_to_technical_design
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Stage reset to technical_design for tech-lead review pass to improve the document
+      before proceeding to task breakdown.
+  - action: technical_design_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Technical design approved after tech-lead review pass. All implementation gaps
+      addressed. Feature advanced to in_tdd / tasks.
+  - action: tasks_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Task breakdown approved. 6 tasks across 3 waves, all actor_type: agent.
+      Feature advanced to ready_for_implementation.
 
 revalidation:
   product_spec_required: false

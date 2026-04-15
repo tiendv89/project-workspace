@@ -1,0 +1,31 @@
+id: T4
+title: Agent context generator — src/bootstrap/agent-context.ts
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/agent-runtime-hardening-T4
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Task created from approved task breakdown. Wave 1 — independent.
+      New pure module: generateAgentContext returns the per-activation
+      agent CLAUDE.md briefing string (identity, claimed task, execution
+      sequence, model directive, behavioral rules). No file I/O.
+      Includes unit tests. T5 depends on this module.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:05:22Z
+    note: Task activated on tasks-stage approval — dependencies met.

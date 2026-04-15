@@ -33,15 +33,15 @@
 
 ### Things we keep vs. replace
 
-| Keep (unchanged) | Replace / delete | Add new |
-|---|---|---|
-| `claim-task.ts` | `run-task.ts` → deleted | `src/loop/run-claude.ts` |
-| `eligibility/match.ts` | `suggested-next-step.ts` → deleted | `src/bootstrap/agent-context.ts` |
-| `eligibility/parse-tasks-md.ts` | `logging/log-sink.ts` → deleted | |
-| `validate-agent-yaml.ts` | `config/resolve-model-policy.ts` → deleted | |
-| `types/task.ts` | `config/parse-model-overrides.ts` → deleted | |
-| `bootstrap.ts` (extended) | | |
-| `main.ts` (modified) | | |
+| Keep (unchanged) | Keep (used by new code) | Replace / delete | Add new |
+|---|---|---|---|
+| `claim-task.ts` | `resolve-model-policy.ts` | `run-task.ts` → deleted | `src/loop/run-claude.ts` |
+| `eligibility/match.ts` | `parse-model-overrides.ts` | `suggested-next-step.ts` → deleted | `src/bootstrap/agent-context.ts` |
+| `eligibility/parse-tasks-md.ts` | | `logging/log-sink.ts` → deleted | |
+| `validate-agent-yaml.ts` | | | |
+| `types/task.ts` | | | |
+| `bootstrap.ts` (extended) | | | |
+| `main.ts` (modified) | | | |
 
 ## Constraints
 
@@ -65,7 +65,7 @@ From product spec (non-negotiable):
 - **B. Env var only** — `SSH_PRIVATE_KEY` contains raw PEM; no file path support.
 - **C. Env var with file path fallback** — if `SSH_PRIVATE_KEY` is set, write it to a `0400` temp file at startup and use that as `sshKeyPath`. Fall back to `SSH_KEY_PATH` if not set.
 
-**Chosen: C.** Env var is preferred for K8s/CI; file path preserved for Docker Compose. Single resolution point in `main.ts` at startup; all downstream callers (`bootstrap.ts`, `claim-task.ts`, `log-sink.ts`) continue to receive a file path unchanged.
+**Chosen: C.** Env var is preferred for K8s/CI; file path preserved for Docker Compose. Single resolution point in `main.ts` at startup; all downstream callers (`bootstrap.ts`, `claim-task.ts`, and the new `run-claude.ts`) continue to receive a file path unchanged.
 
 ---
 
@@ -114,10 +114,10 @@ How does the per-activation task briefing reach Claude Code?
 
 **Options:**
 - **A. Keep run-task.ts as a fallback mode** — add an `AGENT_MODE=claude_code|sdk` env var toggle.
-- **B. Delete run-task.ts and all modules it exclusively owns** — clean break. Removes `suggested-next-step.ts`, `log-sink.ts`, `resolve-model-policy.ts`, `parse-model-overrides.ts`.
+- **B. Delete run-task.ts and the modules it exclusively owns** — clean break. Removes `suggested-next-step.ts` and `log-sink.ts`. `resolve-model-policy.ts` and `parse-model-overrides.ts` are retained because the new `agent-context.ts` uses them to pre-resolve the implementation model from `workspace.yaml` and embed the model directive in the agent CLAUDE.md prompt.
 - **C. Keep but disable** — comment out, leave as dead code.
 
-**Chosen: B.** The product spec is explicit: `run-task.ts` is replaced, not toggled. Dead code in a runtime is a maintenance burden. The modules it owns (`suggested-next-step.ts`, `log-sink.ts`, `resolve-model-policy.ts`, `parse-model-overrides.ts`) have no callers after the replacement and are deleted in the same task.
+**Chosen: B.** The product spec is explicit: `run-task.ts` is replaced, not toggled. Dead code in a runtime is a maintenance burden. `suggested-next-step.ts` is deleted (Claude Code + agent CLAUDE.md handles triage hints natively). `log-sink.ts` is deleted (task YAML log entries written by skills provide the audit trail). `resolve-model-policy.ts` and `parse-model-overrides.ts` are **kept** — `agent-context.ts` calls them to pre-resolve the implementation model and write an explicit model directive into the agent CLAUDE.md, ensuring `workspace.yaml` model policy is honoured even when delegating execution to Claude Code CLI.
 
 ---
 
@@ -141,9 +141,10 @@ Container starts
   ├── claim-task.ts (unchanged)
   └── run-claude.ts                                                       [D3, D4]
       ├── generate agent context string (agent-context.ts)
-      ├── execSync: claude -p "<context>" --max-turns <max_iterations>
+      ├── spawnSync: ["claude", "-p", agentContext, "--max-turns", String(maxTurns)]
       │     cwd: taskRepoRoot
       │     env: { ...process.env, GIT_SSH_COMMAND: ... }
+      │     (args array — no shell interpolation, no injection risk)
       ├── on exit: read task YAML to determine outcome
       ├── if outcome == in_review → emit task_run_complete, exit 0
       ├── if outcome == blocked → check token count, emit, exit 0
@@ -165,12 +166,13 @@ generateAgentContext(opts: {
   workspaceRoot: string;
   gitAuthorEmail: string;
   gitAuthorName: string;
+  implementationModel: string;   // pre-resolved by caller via resolve-model-policy.ts
 }): string
 ```
 
-Returns the full CLAUDE.md string following the design in the product spec: identity, claimed task, execution sequence (`/start-implementation` → work → `/pr-self-review` → `/pr-create`), and behavioral rules for headless operation.
+Returns the full CLAUDE.md string following the design in the product spec: identity, claimed task, execution sequence (`/start-implementation` → work → `/pr-self-review` → `/pr-create`), behavioral rules for headless operation, and an explicit `## Model` directive (`Use model: <implementationModel>`) so the `workspace.yaml` model policy is honoured even when delegating execution to Claude Code CLI.
 
-No file I/O — the caller writes it to wherever it chooses (tests can assert on the string directly).
+No file I/O — the caller resolves the model and passes it in; the caller writes the returned string wherever it chooses (tests can assert on the string directly).
 
 ### New module: `src/loop/run-claude.ts`
 
@@ -198,31 +200,40 @@ type RunClaudeResult =
 ```
 
 Internally:
-1. Invokes `claude -p "<agentContext>" --max-turns <maxTurns>` via `spawnSync` with `cwd: taskRepoRoot`.
+1. Invokes `["claude", "-p", agentContext, "--max-turns", String(maxTurns)]` via `spawnSync` with `cwd: taskRepoRoot`. Uses an args array (not a shell string) — no interpolation, no injection risk.
 2. After exit, reads task YAML. Task state drives outcome — not exit code.
 3. If task is `in_review` → `{ outcome: "in_review" }`.
-4. If task is `blocked` → read token usage from task log; if total > `maxTokens`, ensure `blocked_reason` is `budget_exceeded`; return `{ outcome: "blocked", reason: task.blocked_reason }`.
+4. If task is `blocked` → check `task.execution.tokens_used` (see token audit note below); if field is present and total > `maxTokens`, override `blocked_reason` to `budget_exceeded`; return `{ outcome: "blocked", reason: task.blocked_reason }`.
 5. If task is still `in_progress` (crash before any state write) → write `blocked` with `runtime_error`, return blocked.
+
+**Token audit note:** `TaskExecution` currently has no `tokens_used` field. Two options for implementation:
+- **Option X (preferred):** Parse Claude Code's structured stdout — `spawnSync` captures it; look for the JSON usage line Claude Code emits at session end. Write the total to `task.execution.tokens_used` before writing the outcome.
+- **Option Y (fallback):** Skip token audit if no field is present; `--max-turns` remains the only hard cap. Log a `budget_audit_skipped` event.
+
+**Chosen: X.** Implementer must verify the exact stdout format Claude Code uses for usage reporting before coding this path. If the format is unstable or absent, fall back to Y and open a follow-up to add explicit skill-side token reporting.
 
 ### Modified: `src/main.ts`
 
 Changes:
 - Add `writeFileSync` import.
-- After reading env vars: resolve `SSH_PRIVATE_KEY` → write to `/tmp/agent_id_rsa` (0400), set `sshKeyPath`.
-- Remove `runTask` import and call.
-- Add `runClaude` import and call with generated agent context.
-- Remove model policy loading (`loadWorkspaceModelPolicy`) — no longer needed.
-- Remove `resolveRepoLocalPath` function — now done in bootstrap.
+- After reading env vars: resolve `SSH_PRIVATE_KEY` → write to `/tmp/agent_id_rsa` (0400), set `sshKeyPath`. If neither `SSH_PRIVATE_KEY` nor `SSH_KEY_PATH` is set, emit a warning and proceed with `sshKeyPath = undefined` (management repos declared with HTTPS will still work; SSH-only repos will fail at clone time).
+- Remove `runTask` and `openLogSink` imports and calls.
+- Add `runClaude` import. After claim, call `loadWorkspaceModelPolicy` (kept), resolve `implementationModel` via `resolveModelPolicy`, call `generateAgentContext`, then call `runClaude` with the returned string.
+- **`loadWorkspaceModelPolicy` is kept** — it is called immediately before `generateAgentContext` to supply `implementationModel`. It is no longer passed to `runTask` (deleted), but it is still needed here.
+- **`resolveRepoLocalPath` is simplified, not deleted.** After bootstrap guarantees `process.env[VAR]` is set for every `local_path: env:<VAR>` repo, the function no longer needs the fallback path (`join(workspacesRoot, extractRepoName(...))`). The simplified version reads `workspace.yaml`, finds the `env:<VAR>` declaration, and returns `process.env[VAR]` (throws if the var is not set — bootstrap is responsible for that invariant). The fallback branch is removed.
 
 ### Modified: `src/bootstrap/bootstrap.ts`
 
 Changes:
-- Add `import { parse as parseYaml } from "yaml"`.
-- After each management repo is cloned (step 5), read `<managementRepoLocalPath>/workspace.yaml`.
-- Parse `repos[]`, filter out the `management_repo` entry.
-- For each remaining repo: call existing `syncRepo(repo.github, join(workspacesRoot, extractRepoName(repo.github)), baseBranch, gitEnv)`.
-- If `repo.local_path` starts with `env:`, set `process.env[VAR] = resolvedPath`.
-- Emit existing `workspace_cloned` / `workspace_pulled` events.
+- Add `import { parse as parseYaml } from "yaml"` (already imported in `main.ts`; bootstrap does not yet have it).
+- After each management repo is cloned/pulled (step 5), read `<managementRepoLocalPath>/workspace.yaml`.
+- Parse `repos[]`. Filter out entries whose `github` URL matches any URL already listed in `agent.yaml watches[]` (those are management repos — already cloned above, not cloned again).
+- For each remaining implementation repo:
+  - Derive `localPath = join(workspacesRoot, extractRepoName(repo.github))` (consistent with D2 decision).
+  - Use `repo.base_branch ?? workspaceBaseBranch` as the branch argument to `syncRepo`.
+  - Call `syncRepo(repo.github, localPath, branch, gitEnv)`.
+  - Emit existing `workspace_cloned` / `workspace_pulled` events with `workspace_url: repo.github`.
+  - If `repo.local_path?.startsWith("env:")`, extract the var name and set `process.env[VAR] = localPath`.
 - On clone failure: emit `bootstrap_failed` with reason `git_impl_repo_sync_failed`, return exit code 3.
 - If `workspace.yaml` is absent or has no `repos[]`: skip silently (non-fatal — management-only workspaces are valid).
 
@@ -235,29 +246,77 @@ RUN npm install -g @anthropic-ai/claude-code
 
 Add `GITHUB_TOKEN` to documented required env vars comment block.
 
-### Modified: docs (`DOCKER.md`, `.env.example`, `orchestration/kubernetes/cronjob.yaml`)
+### Modified: `DOCKER.md` and `orchestration/.env.example`
 
 - `GITHUB_TOKEN` added as required env var (alongside `ANTHROPIC_API_KEY`).
-- `SSH_PRIVATE_KEY` added as optional env var with `SSH_KEY_PATH` as file-mount fallback.
-- K8s Secret updated to hold `SSH_PRIVATE_KEY` and `GITHUB_TOKEN`; SSH volume mount removed.
+- `SSH_PRIVATE_KEY` added as optional env var with description; `SSH_KEY_PATH` retained as file-mount fallback.
+
+### Modified: `orchestration/docker-compose.yml`
+
+- `GITHUB_TOKEN` added to both dev agent definitions (`agent-1`, `agent-2`) and the `supervisor` service environment block and its inner `docker run` command.
+- `SSH_PRIVATE_KEY` added as a passthrough env var alongside the existing `SSH_KEY_PATH` file-mount. Both are supported simultaneously — `main.ts` D1 resolution picks whichever is set.
+
+### Modified: `orchestration/github-actions/scheduled.yml`
+
+- `GITHUB_TOKEN` added to required secrets list and passed via `-e GITHUB_TOKEN` to the docker run step.
+- `SSH_PRIVATE_KEY` replaces the current "Write SSH key" step: instead of writing the secret to `~/.ssh/id_rsa` and volume-mounting `~/.ssh`, the key is passed as `-e SSH_PRIVATE_KEY="${{ secrets.AGENT_SSH_KEY }}"` directly to the container. `main.ts` writes it to `/tmp/agent_id_rsa` (0400) at startup. The SSH volume mount (`-v ~/.ssh:/agent/ssh:ro`) and `SSH_KEY_PATH` env var are removed from this step.
+- `AGENT_SSH_KEY` secret remains the same secret name; its value (raw PEM) is now delivered as env var instead of file.
+
+### Modified: `orchestration/kubernetes/cronjob.yaml`
+
+- `GITHUB_TOKEN` added to the Secret `stringData` block.
+- `SSH_PRIVATE_KEY` added to the Secret `stringData` block (raw PEM value).
+- `SSH_PRIVATE_KEY` added as an env var in the CronJob container spec, sourced from the secret.
+- `SSH_KEY_PATH` env var and the `agent-ssh` volume + volumeMount removed — key delivery is now env-var-only in K8s.
+
+### Modified: `orchestration/systemd/agent-runtime.service`
+
+- `GITHUB_TOKEN` and `SSH_PRIVATE_KEY` added to the `docker run` env var passthrough (`-e GITHUB_TOKEN -e SSH_PRIVATE_KEY`).
+- SSH volume mount (`-v /etc/agent-runtime/ssh:/agent/ssh:ro`) and `-e SSH_KEY_PATH` removed from the ExecStart command.
+- `EnvironmentFile` comment updated to document that `SSH_PRIVATE_KEY` (raw PEM, one line or escaped) and `GITHUB_TOKEN` must be added to `/etc/agent-runtime/env`.
+
+### Modified: `QUICKSTART.md`
+
+- Add `GITHUB_TOKEN` to the "required env vars" quick-start checklist.
+- Replace the SSH key setup step (create file, set `SSH_KEY_PATH`) with: "set `SSH_PRIVATE_KEY` to the raw PEM content (preferred) or keep `SSH_KEY_PATH` pointing to the key file".
+- Remove references to `run-task.ts` behaviour; describe the Claude Code subprocess model.
 
 ### Deleted files
 
 | File | Reason |
 |---|---|
 | `src/loop/run-task.ts` | Replaced by `run-claude.ts` |
-| `src/claim/suggested-next-step.ts` | Claude Code + agent CLAUDE.md handles this |
-| `src/logging/log-sink.ts` | Task logging handled by `start-implementation` skill |
-| `src/config/resolve-model-policy.ts` | Model policy handled by `workspace.yaml` + Claude Code |
-| `src/config/parse-model-overrides.ts` | Same |
+| `src/claim/suggested-next-step.ts` | Claude Code + agent CLAUDE.md handles triage hints natively |
+| `src/logging/log-sink.ts` | Task YAML log entries written by skills provide the audit trail |
+
+## Test Strategy
+
+### Unit tests (new)
+| Module | What to test |
+|---|---|
+| `agent-context.ts` | `generateAgentContext` returns a string containing taskId, featureId, taskBranch, workspaceRoot, gitAuthorEmail, and the implementationModel directive. Pure function — no mocks needed. |
+| `main.ts` SSH resolution | Given `SSH_PRIVATE_KEY` set, verify temp file is written at `/tmp/agent_id_rsa` with mode `0o400`; given only `SSH_KEY_PATH`, verify it is used as-is; given neither, verify `sshKeyPath` is `undefined`. |
+
+### Integration test (T6)
+After T5 wiring, the existing integration test harness (if one exists) must pass with `run-claude.ts` in place of `run-task.ts`. If no harness exists, T6 must include a smoke test:
+- Build the Docker image with `claude` CLI installed.
+- Run the container against a test workspace with a pre-claimed `in_progress` task.
+- Assert the container exits `0` and the task YAML reflects the expected terminal state.
+
+The integration test does **not** need to run a real Claude Code session — the `claude` binary can be replaced with a stub script that writes a minimal `in_review` state to the task YAML and exits `0`.
+
+### Bootstrap test (T2)
+- Given a `workspace.yaml` with two repos (management + one impl), assert that after `runBootstrap` the impl repo is cloned at `join(workspacesRoot, repoName)` and `process.env[VAR]` is set.
+- Given `workspace.yaml` absent, assert bootstrap completes without error.
 
 ## Repository Impact
 
 | Repo | Files changed |
 |---|---|
-| `workflow/` (`agent-runtime/`) | `src/main.ts`, `src/bootstrap/bootstrap.ts`, `Dockerfile`, `DOCKER.md`, `orchestration/.env.example`, `orchestration/kubernetes/cronjob.yaml`, `QUICKSTART.md` |
+| `workflow/` (`agent-runtime/`) | `src/main.ts`, `src/bootstrap/bootstrap.ts`, `Dockerfile`, `DOCKER.md`, `QUICKSTART.md` |
+| `workflow/` (`agent-runtime/`) | `orchestration/.env.example`, `orchestration/docker-compose.yml`, `orchestration/github-actions/scheduled.yml`, `orchestration/kubernetes/cronjob.yaml`, `orchestration/systemd/agent-runtime.service` |
 | `workflow/` (`agent-runtime/`) | Add: `src/bootstrap/agent-context.ts`, `src/loop/run-claude.ts` |
-| `workflow/` (`agent-runtime/`) | Delete: `src/loop/run-task.ts`, `src/claim/suggested-next-step.ts`, `src/logging/log-sink.ts`, `src/config/resolve-model-policy.ts`, `src/config/parse-model-overrides.ts` |
+| `workflow/` (`agent-runtime/`) | Delete: `src/loop/run-task.ts`, `src/claim/suggested-next-step.ts`, `src/logging/log-sink.ts` |
 | `workspace/` (management repo) | `docs/features/agent-runtime-hardening/` only |
 
 No changes to `workspace.yaml`, `agent.yaml` schema, task YAML schema, or any workflow skill.
@@ -266,7 +325,7 @@ No changes to `workspace.yaml`, `agent.yaml` schema, task YAML schema, or any wo
 
 ```
 Wave 1 — all independent, run in parallel
-  T1: SSH_PRIVATE_KEY env var (main.ts + credential docs)
+  T1: SSH_PRIVATE_KEY env var (main.ts + credential docs + all orchestration templates)
   T2: Bootstrap impl repo cloning (bootstrap.ts)
   T3: Dockerfile claude CLI install + GITHUB_TOKEN docs
   T4: Agent context generator (src/bootstrap/agent-context.ts) — pure new file, no deps

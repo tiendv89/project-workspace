@@ -1,0 +1,31 @@
+id: T1
+title: SSH_PRIVATE_KEY env var delivery — main.ts + all orchestration templates
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/agent-runtime-hardening-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Task created from approved task breakdown. Wave 1 — independent.
+      Closes Gap 1: SSH key deliverable via SSH_PRIVATE_KEY env var in addition
+      to SSH_KEY_PATH file path. Updates main.ts and all five orchestration
+      templates (docker-compose, GHA, K8s, systemd) + DOCKER.md + .env.example
+      + QUICKSTART.md.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:05:22Z
+    note: Task activated on tasks-stage approval — dependencies met.

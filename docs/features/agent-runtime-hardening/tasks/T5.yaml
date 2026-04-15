@@ -1,0 +1,28 @@
+id: T5
+title: run-claude.ts + main.ts wiring (Claude Code subprocess invocation)
+repo: workflow
+status: todo
+depends_on: [T3, T4]
+blocked_reason: null
+branch: feature/agent-runtime-hardening-T5
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T00:00:00Z
+    note: >
+      Task created from approved task breakdown. Wave 2 — depends on T3
+      (claude binary in image) and T4 (agent-context.ts available).
+      Creates run-claude.ts: spawnSync claude with agent context and
+      max-turns, reads task YAML for outcome, performs post-exit token
+      audit. Wires into main.ts replacing runTask call. run-task.ts is
+      NOT deleted here — that is T6.
