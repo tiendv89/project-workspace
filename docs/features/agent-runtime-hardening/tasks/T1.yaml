@@ -1,15 +1,15 @@
 id: T1
 title: SSH_PRIVATE_KEY env var delivery — main.ts + all orchestration templates
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T1
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T03:10:20Z
 
 pr:
   url: ""
@@ -29,3 +29,18 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T03:05:22Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:10:20Z
+    note: >
+      Implementation started on branch feature/agent-runtime-hardening-T1.
+      Repo workflow, base branch main.
+  - action: implemented
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:10:20Z
+    note: >
+      All 8 files updated: main.ts SSH_PRIVATE_KEY resolution, DOCKER.md,
+      .env.example, docker-compose.yml, github-actions/scheduled.yml (dropped
+      file-staging step), kubernetes/cronjob.yaml (SSH volume removed),
+      systemd/agent-runtime.service (SSH volume removed), QUICKSTART.md.
+      tsc --noEmit passes. Branch pushed to remote.
