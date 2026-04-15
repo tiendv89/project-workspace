@@ -1,7 +1,7 @@
 id: T1
 title: SSH_PRIVATE_KEY env var delivery — main.ts + all orchestration templates
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T1
@@ -13,7 +13,7 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/14"
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -50,3 +50,7 @@ log:
     note: >
       PR opened: https://github.com/tiendv89/agent-workflow/pull/14
       feature/agent-runtime-hardening-T1 → main
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:36:04Z
+    note: PR #14 merged into main.
