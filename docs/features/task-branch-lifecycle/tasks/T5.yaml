@@ -33,3 +33,9 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T16:34:03+0700
     note: T1 done — sole dependency satisfied.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:28:00+0700
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T5.
+      Repo workflow, base branch main.
