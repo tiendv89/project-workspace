@@ -1,9 +1,9 @@
 feature_id: agent-runtime-hardening
 title: Agent runtime hardening — credential delivery, full bootstrap, and PR lifecycle
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Agents may begin Wave 1 tasks (T1, T2, T3, T4) in parallel. T5 starts after T3 and T4 merge. T6 starts after T5 merges.
+feature_status: done
+current_stage: handoff
+next_action: Feature complete. All 6 tasks merged. No further action required.
 
 stages:
   product_spec:
@@ -75,11 +75,20 @@ stages:
           assigned actor_type: agent. Subtasks and acceptance criteria defined
           in tasks.md. Required skill: typescript-best-practices for all tasks.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-15T15:17:54+0700
+    review_comment: >
+      All 6 tasks (T1–T6) merged across 3 waves. SSH key delivery via env var,
+      bootstrap impl repo cloning, Claude Code subprocess invocation, agent
+      context generator, and orphaned module cleanup all complete.
+      Feature approved and closed.
+    review_history:
+      - action: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-15T15:17:54+0700
+        comment: >
+          All 6 tasks merged. Feature complete.
 
 history:
   - action: feature_created
@@ -122,6 +131,14 @@ history:
     note: >
       Task breakdown approved. 6 tasks across 3 waves, all actor_type: agent.
       Feature advanced to ready_for_implementation.
+  - action: handoff_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T15:17:54+0700
+    note: >
+      All 6 tasks (T1–T6) merged across 3 waves. SSH key delivery via env var,
+      bootstrap impl repo cloning, Claude Code subprocess invocation, agent
+      context generator, and orphaned module cleanup all complete.
+      Feature approved and closed.
 
 revalidation:
   product_spec_required: false
