@@ -187,9 +187,9 @@ Rules:
 ## Test-before-PR rule
 
 - **Always run the full test suite before opening a PR.** This applies to every task, every workflow, every agent context.
-- Required commands (run both): `npx vitest run` and `tsc --noEmit`
+- Use whatever test commands the implementation repo specifies — check the README, `package.json`, `Makefile`, `go.mod`, or equivalent build config. Do not assume a specific test runner or language.
 - All tests must pass before invoking `pr-create`. Fix any failures and re-run until clean.
-- Do not open a PR for failing tests or a failing type check.
+- Do not open a PR for failing tests.
 
 ## PR creation rule
 
