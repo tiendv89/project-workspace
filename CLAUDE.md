@@ -216,6 +216,25 @@ management repos, and the workflow repo itself.
 - Any workflow skill or agent that needs to open a PR must invoke `pr-create` rather than calling `gh pr create` directly.
 - `GITHUB_TOKEN` is required in project `.env` for PR creation. If missing, `pr-create` falls back to `~/.config/gh/hosts.yml`.
 
+## PR title convention
+
+PR titles must follow the format:
+
+```
+<type>(<featureId>/T<n>): <short description>
+```
+
+Examples:
+- `feat(task-branch-lifecycle/T1): taskBranchName helper + BlockedContext schema`
+- `fix(agent-runtime-hardening/T3): correct Dockerfile claude CLI install path`
+
+Rules:
+- `<type>` follows conventional commits (`feat`, `fix`, `chore`, `refactor`, `docs`, etc.)
+- `<featureId>` is the feature directory name under `docs/features/`
+- `T<n>` is the task ID
+- Description is lowercase, imperative, no trailing period
+- Keep the full title under 72 characters
+
 ## Shared environment resolution rule
 
 - Workflow skills that perform repo, git, PR, or SSH-related work must use `resolve-project-env`

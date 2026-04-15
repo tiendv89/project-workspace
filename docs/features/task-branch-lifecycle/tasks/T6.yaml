@@ -1,7 +1,7 @@
 id: T6
 title: start-implementation SKILL.md — management-repo checkout, blocked recovery mode, blocking exit rule
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -30,3 +30,7 @@ log:
       when status=ready and blocked_context is non-null; (3) update blocking exit
       rule to commit WIP, push impl repo branch, and write blocked_context to
       task YAML before exiting.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:34:03+0700
+    note: T1 done — sole dependency satisfied.

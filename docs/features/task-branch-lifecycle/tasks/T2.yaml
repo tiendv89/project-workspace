@@ -1,7 +1,7 @@
 id: T2
 title: claim-task.ts rewrite — task-branch creation, branch-exists cases, task-branch push
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -28,3 +28,7 @@ log:
       handle three branch-exists cases, push to task branch (not main),
       add branch_blocked_recovery ClaimResult reason. T4 (main.ts) depends on
       this task.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:34:03+0700
+    note: T1 done — sole dependency satisfied.
