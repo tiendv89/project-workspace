@@ -1,7 +1,7 @@
 id: T2
 title: claim-task.ts rewrite — task-branch creation, branch-exists cases, task-branch push
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/task-branch-lifecycle-T2
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-15T16:38:39+0700
+  last_updated_at: 2026-04-15T16:47:17+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/21"
+  status: open
 
 workspace_pr: null
 
@@ -38,3 +38,9 @@ log:
     note: >
       Implementation started on branch feature/task-branch-lifecycle-T2.
       Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:47:17+0700
+    note: >
+      PR #21 opened: feat(task-branch-lifecycle/T2): rewrite claimTask.
+      tsc --noEmit clean. 161/161 tests passed (3 new cases).
