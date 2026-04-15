@@ -1,7 +1,7 @@
 id: T6
 title: Delete orphaned modules + integration smoke test
 repo: workflow
-status: ready
+status: in_progress
 depends_on: [T5]
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T6
@@ -9,7 +9,7 @@ branch: feature/agent-runtime-hardening-T6
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-15T14:40:53+0700
+  last_updated_at: 2026-04-15T14:49:16+0700
 
 pr:
   url: ""
@@ -31,3 +31,9 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T14:40:53+0700
     note: T5 merged — sole dependency satisfied. Task ready for implementation.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:49:16+0700
+    note: >
+      Implementation started on branch feature/agent-runtime-hardening-T6.
+      Repo workflow, base branch main.
