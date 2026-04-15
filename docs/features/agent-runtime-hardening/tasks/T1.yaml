@@ -1,7 +1,7 @@
 id: T1
 title: SSH_PRIVATE_KEY env var delivery — main.ts + all orchestration templates
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T1
@@ -12,8 +12,8 @@ execution:
   last_updated_at: 2026-04-15T03:10:20Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/14"
+  status: open
 
 log:
   - action: created
@@ -44,3 +44,9 @@ log:
       file-staging step), kubernetes/cronjob.yaml (SSH volume removed),
       systemd/agent-runtime.service (SSH volume removed), QUICKSTART.md.
       tsc --noEmit passes. Branch pushed to remote.
+  - action: moved_to_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T03:23:40Z
+    note: >
+      PR opened: https://github.com/tiendv89/agent-workflow/pull/14
+      feature/agent-runtime-hardening-T1 → main
