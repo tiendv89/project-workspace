@@ -1,15 +1,15 @@
 id: T6
 title: Delete orphaned modules + integration smoke test
 repo: workflow
-status: todo
+status: ready
 depends_on: [T5]
 blocked_reason: null
 branch: feature/agent-runtime-hardening-T6
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T14:40:53+0700
 
 pr:
   url: ""
@@ -21,7 +21,13 @@ log:
     at: 2026-04-15T00:00:00Z
     note: >
       Task created from approved task breakdown. Wave 3 — depends on T5
-      (run-claude.ts wired in before deletion). Deletes run-task.ts,
-      suggested-next-step.ts, log-sink.ts; removes all stale imports;
-      confirms tsc --noEmit passes; writes integration smoke test using
-      a stub claude binary that marks task in_review.
+      (run-claude.ts wired in before deletion). Deletes run-task.ts and
+      suggested-next-step.ts; removes all stale imports; confirms tsc
+      --noEmit passes; writes integration smoke test using a stub claude
+      binary that marks task in_review. log-sink.ts is NOT deleted —
+      run-claude.ts imports deriveLogPath/toSafeIso from it for log
+      persistence (see technical-design.md D5 amendment).
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T14:40:53+0700
+    note: T5 merged — sole dependency satisfied. Task ready for implementation.

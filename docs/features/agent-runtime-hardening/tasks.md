@@ -184,7 +184,9 @@ The core architectural change: replaces the 800-line raw Anthropic SDK tool-use 
 ## T6 — Delete orphaned modules + integration smoke test
 
 ### Description
-Final cleanup wave. Deletes `run-task.ts` and the two modules it exclusively owned (`suggested-next-step.ts`, `log-sink.ts`), removes all their imports, and verifies the project still compiles and passes the integration smoke test.
+Final cleanup wave. Deletes `run-task.ts` and `suggested-next-step.ts` (both orphaned after T5), removes all their imports, and verifies the project still compiles and passes the integration smoke test.
+
+Note: `log-sink.ts` is **not** deleted here — it is retained because `run-claude.ts` imports `deriveLogPath` and `toSafeIso` from it for log file persistence (see technical-design.md D5 amendment).
 
 **Must be last** — deleting these files before T5 wires in `run-claude.ts` would break compilation.
 
@@ -196,9 +198,8 @@ The integration smoke test: build the image; run the container against a test wo
 ### Subtasks
 - [ ] Delete `src/loop/run-task.ts`.
 - [ ] Delete `src/claim/suggested-next-step.ts`.
-- [ ] Delete `src/logging/log-sink.ts`.
-- [ ] Remove all `import` statements referencing the deleted modules from `src/main.ts` and any other file that still imports them. Run `grep -r "run-task\|suggested-next-step\|log-sink" src/` to confirm no stale references.
+- [ ] Remove all `import` statements referencing the deleted modules from `src/main.ts` and any other file that still imports them. Run `grep -r "run-task\|suggested-next-step" src/` to confirm no stale references.
 - [ ] Run `tsc --noEmit` — must pass with zero errors.
 - [ ] Run existing test suite — must pass.
 - [ ] Write integration smoke test: create a minimal test workspace fixture with a pre-claimed `in_progress` task YAML; create a stub `claude` script that writes `status: in_review` to the task YAML and exits 0; run the container with `CLAUDE_BIN` override or PATH override; assert container exits 0 and task YAML reads `status: in_review`.
-- [ ] Acceptance: `tsc --noEmit` passes, all tests pass, smoke test passes; `grep -r "run-task\|suggested-next-step\|log-sink" src/` returns empty.
+- [ ] Acceptance: `tsc --noEmit` passes, all tests pass, smoke test passes; `grep -r "run-task\|suggested-next-step" src/` returns empty.
