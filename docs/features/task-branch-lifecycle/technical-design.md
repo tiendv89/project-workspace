@@ -6,128 +6,428 @@
 
 ## Current State
 
-When an agent blocks:
-1. Sets `task.status: blocked`, writes `blocked_reason` and `suggested_next_step`
-   to the task YAML, appends a log entry, and exits.
-2. No code is committed or pushed — the implementation repo is left in whatever
-   state the agent left it (dirty working tree, unstaged changes, etc.).
-3. The `start-implementation` re-do mode only handles `in_review` tasks
-   (PR review comment fixes). There is no re-do path for `blocked` tasks.
+The current orchestrator flow (bootstrap → eligibility → claim → run-claude) has
+three behavioural gaps that this feature must close.
 
-The result: the only recovery data is the text in `blocked_reason`.
+### Gap 1 — Claim commits to `main`, not a task branch
+
+`src/claim/claim-task.ts::claimTask` commits the `ready → in_progress` status change
+directly to `baseBranch` (default: `"main"`) and pushes to `origin main`. No task
+branch is created or checked out by the orchestrator.
+
+`task.branch` in the task YAML is pre-populated by the human tech-lead author (e.g.
+`feature/agent-runtime-hardening-T6`) and never written programmatically by the runtime.
+The field exists purely as a briefing hint that `start-implementation` reads and uses.
+
+`start-implementation` creates the task branch on BOTH the management repo and the
+implementation repo from inside the Claude subprocess. After `start-implementation`
+runs, the management repo's local branch (inside the subprocess's view) is the task
+branch. The orchestrator process's own view of the management repo is still `main`.
+
+### Gap 2 — No management-repo PR is ever opened
+
+No code path in the runtime calls the GitHub API to open a PR on the management repo.
+The only PR-related code is in the `pr-create` skill, which the agent invokes for the
+implementation repo.
+
+### Gap 3 — Blocked exit does not record recoverable context
+
+`src/loop/run-claude.ts::writeBlockedAndPush` commits the blocked YAML state and
+pushes to `origin HEAD`. Because the orchestrator's management repo is on `main`,
+this pushes the blocked status to `main` — the task branch (if any) has no blocked
+state on remote. No `blocked_context` (WIP branch / SHA / timestamp) is recorded.
+The next agent has only the `blocked_reason` text to work from.
 
 ## Constraints
 
-- Must not break the normal claim flow for `ready` tasks.
-- Must not push broken code to `main` — WIP pushes go to the feature branch only.
-- The recovery re-entry must be explicit: the human sets the task back to `ready`
-  before an agent can re-claim it.
-- The `blocked_context` fields added to the task YAML must be optional (not
-  required for tasks that have never been blocked).
+1. The orchestrator runs one task per container activation. After a successful claim,
+   the management repo may be left on the task branch for the duration of that
+   container run.
+2. `task.branch` is referenced by `agent-context.ts`, `run-claude.ts`, and the
+   `start-implementation` skill. Its semantics must not change: it still names the
+   task branch on the management repo.
+3. `task.pr.url` already tracks the implementation-repo PR (set by `pr-create`).
+   The management-repo PR URL must go into a new field to avoid collision.
+4. `flushLogAndPush` uses `git push origin "${taskBranch}"`. After the orchestrator
+   switches to the task branch at claim time, this push will fast-forward correctly
+   as long as the agent subprocess has not diverged the remote branch. A diverged
+   push (agent committed+pushed after `runClaude` started) is an existing interleave
+   risk; it is out of scope for this feature.
+5. `GITHUB_TOKEN` is already available to agents via the project `.env`. The
+   orchestrator must be able to read it from `process.env` (set by bootstrap).
+6. The `blocked_reason` field on `Task` is the existing `BlockedReason` enum (string
+   literal union). `blocked_context` is a separate, optional sub-object that carries
+   the WIP branch, SHA, and timestamp. These are distinct fields — do not conflate.
 
 ## Options Considered
 
-### Option A — Push WIP commit + no PR
-Agent commits all dirty state under a `wip:` message, pushes to the feature branch,
-and exits. No PR opened. The branch exists on remote and is inspectable.
+### D1 — Where the management-repo branch is created
 
-- Pros: simple, non-intrusive, preserves all partial work.
-- Cons: dirty/incomplete code is on the remote branch, but labeled clearly as WIP.
+**Option A (chosen): `claimTask` creates the task branch and commits there**
 
-### Option B — Open draft PR
-Agent opens a draft PR in addition to pushing. Draft PRs are not reviewable for merge
-but are discoverable in the GitHub PR list.
+The orchestrator creates `feature/<featureId>-<taskId>` before committing the claim
+status. The management repo is on the task branch from the moment the claim succeeds.
+`start-implementation` detects that the branch already exists (it was just pushed by
+`claimTask`) and checks out the remote branch instead of creating a new one.
 
-- Pros: highly visible, easy to find in GitHub UI.
-- Cons: adds noise to the PR queue; draft PR lifecycle is separate from task YAML
-  lifecycle; more state to keep in sync.
+- Pros: branch lifecycle starts in the orchestrator, not inside the Claude subprocess;
+  all subsequent orchestrator git operations (log sink, blocked push) automatically
+  land on the task branch; matches the product spec (claim creates the branch).
+- Cons: `start-implementation` SKILL.md must be updated to handle the pre-existing
+  management-repo branch.
 
-### Option C — Write `blocked_context.md` artifact to workspace
-Agent writes a structured file describing what it tried and where it stopped.
+**Option B: `start-implementation` continues to create the branch**
 
-- Pros: human-readable, stored in management repo.
-- Cons: doesn't preserve the actual code; requires a separate format to maintain.
+No change to `claimTask`. The branch is still created inside the Claude subprocess.
+
+- Pros: no change to `claimTask`.
+- Cons: does not match product spec (branch is not created at claim time);
+  orchestrator log sink continues to push incorrectly; blocked push continues to
+  land on `main`; PR cannot be opened at claim time because the branch does not
+  exist yet.
+
+### D2 — Where `task.branch` comes from
+
+**Option A (chosen): `claimTask` derives and writes `task.branch`**
+
+`claimTask` computes `branch = feature/${featureId}-${taskId}` and writes it to
+the task YAML as part of the claim mutation. If `task.branch` is already set in
+the YAML (old tasks), the computed name overrides it. The TASK.template.yaml no
+longer pre-sets `branch` (set to empty string; `claimTask` fills it in).
+
+- Pros: single source of truth for the branch naming convention; no human error in
+  task authoring; consistent across all tasks.
+- Cons: existing task YAMLs with a non-standard branch name would be silently
+  overridden at claim time. (In practice, all existing tasks follow the same
+  `feature/<featureId>-<taskId>` convention so no override occurs.)
+
+**Option B: Keep pre-set `task.branch` in YAML; `claimTask` reads and uses it**
+
+- Pros: backward compatible; explicit per-task override.
+- Cons: human error possible; does not enforce the canonical naming; branch could
+  be any arbitrary string.
+
+### D3 — Contention detection on the task branch
+
+**Option A (chosen): same SHA-comparison protocol, applied to the task branch**
+
+`claimTask` creates the task branch from the latest main, commits, and pushes to
+`origin feature/<featureId>-<taskId>`. Two agents racing on the same task create the
+branch from the same main HEAD, write identical status YAMLs (both change status to
+`in_progress`), and race to push. First push wins (fast-forward). The loser gets a
+non-fast-forward rejection; it fetches origin and compares SHA. If SHA differs,
+another agent won; if SHA matches, this agent's commit landed despite the rejection.
+
+The push rejection is harder to interpret when the branch does not yet exist on
+remote: GitHub accepts the first push unconditionally. Two agents calling
+`git push origin feature/...` for the first time cannot both win — one will get a
+non-fast-forward rejection once the branch exists with the other agent's commit. The
+existing SHA-comparison logic handles this correctly.
+
+- Pros: no new contention mechanism needed; same protocol, different target branch.
+- Cons: if neither agent has yet pushed (branch does not exist), the window for
+  a simultaneous "first push" race is narrow but not zero. The pre-commit jitter
+  (50–500 ms) mitigates this to an acceptable level.
+
+### D4 — PR opening at claim time
+
+**Option A (chosen): new `openWorkspacePr` function in `src/claim/`**
+
+GitHub REST API via `curl` (not `gh` CLI, matching `pr-create` skill convention).
+Called from `main.ts` after `claimTask` returns `{ won: true }`.  Returns the PR
+URL, which is stored in `task.workspace_pr`. Checks for an existing open PR first
+to avoid duplicates (handles branch-already-exists re-claim).
+
+- Pros: clean separation between git atomicity (`claimTask`) and GitHub API
+  (`openWorkspacePr`); `claimTask` remains testable without network access.
+- Cons: an extra GitHub API round-trip per activation cycle.
+
+**Option B: fold PR opening into `claimTask`**
+
+- Pros: single function call from `main.ts`.
+- Cons: `claimTask` gains a network dependency, breaking unit-test isolation.
+
+### D5 — `blocked_context` in the task YAML
+
+**Option A (chosen): new optional sub-object on `Task`; written by orchestrator**
+
+`src/loop/run-claude.ts::writeBlockedAndPush` (already called when the task is still
+`in_progress` after claude exits) is extended to also write `blocked_context`. The
+`start-implementation` SKILL.md is updated to check this field on entry and branch
+into recovery mode when non-null.
+
+**Option B: write `blocked_context` inside the Claude subprocess (agent-side)**
+
+The agent writes it via the `start-implementation` blocking exit rule. This is the
+*only* path if the agent exits normally with `status: blocked`.
+
+- Chosen combination: agent handles the graceful-block path (already documented in
+  `start-implementation`); orchestrator handles the crash path (task still
+  `in_progress` after subprocess exit).
+
+### D6 — Blocked recovery PR inheritance
+
+**Option A (chosen): reuse open PR if it exists; open `-<attempt>` branch if not**
+
+In S5 (blocked recovery), `openWorkspacePr` checks for an existing open PR on the
+WIP branch. If found, no new PR is opened. If not found (PR was closed), a new
+branch `feature/<featureId>-<taskId>-2` (or `-3`, etc.) is created, and a new PR
+is opened. The new branch name is written to `blocked_context.wip_branch`.
+
+- Pros: minimal PR churn in the normal recovery case.
+- Cons: requires an extra GitHub API call to search for an existing PR.
 
 ## Chosen Design
 
-**Option A** — push a WIP commit, no PR.
+### New naming helper (`paths.ts`)
 
-The feature branch is already named in the task YAML (`task.branch`). Pushing
-a `wip:` commit to it makes the partial work inspectable without polluting the PR
-queue. The `blocked_context` sub-object in the task YAML records the branch and
-last WIP SHA for the recovering agent to check out.
+Add a single canonical helper:
+```typescript
+export function taskBranchName(featureId: string, taskId: string): string {
+  return `feature/${featureId}-${taskId}`;
+}
+```
+All callers that currently build the branch name inline must use this helper.
 
-Draft PR (Option B) can be added later as an optional enhancement if operators
-find the branch approach insufficiently visible.
+### Task type additions (`types/task.ts`)
 
-## Chosen Design — detail
+```typescript
+export interface BlockedContext {
+  wip_branch: string;   // branch that holds the WIP commit
+  wip_sha: string;      // SHA of the WIP commit
+  pushed_at: string;    // ISO 8601 timestamp
+}
 
-### Task YAML additions
+// Added to Task interface:
+blocked_context: BlockedContext | null;
 
-```yaml
-blocked_context:
-  wip_branch: feature/agent-runtime-hardening-T4
-  wip_sha: abc1234
-  pushed_at: 2026-04-15T14:00:00+0700
+workspace_pr: {          // management-repo PR (opened at claim time)
+  url: string;
+  status: PrStatus;
+} | null;
 ```
 
-This sub-object is written only when the agent blocks with partial work to push.
-It is cleared (set to `null`) when the task is re-activated and the recovering
-agent begins fresh work on top of the WIP commits.
+`blocked_context` is `null` when the task has never been blocked or after a
+successful recovery. `workspace_pr` is `null` until `openWorkspacePr` succeeds.
 
-### Agent blocking sequence (new)
+### `claimTask` rewrite (`src/claim/claim-task.ts`)
 
-1. Detect unresolvable blocker.
-2. `git add -A && git commit -m "wip: partial work before block — <blocked_reason summary>"` in the implementation repo.
-3. Push the feature branch to remote.
-4. Record `blocked_context.wip_sha` (the WIP commit SHA), `wip_branch`, `pushed_at` in the task YAML.
-5. Set `status: blocked`, write `blocked_reason` + `suggested_next_step`, append log entry.
-6. Push the updated task YAML to the management repo feature branch.
-7. Exit.
+New claim sequence (replaces current commit-to-main):
 
-### Human re-activation sequence
-
-1. Human reads `blocked_reason` and `suggested_next_step`.
-2. Human optionally updates `suggested_next_step` to guide the next agent.
-3. Human sets `status: ready` in the task YAML and pushes to management repo.
-4. (Optional) Human pushes a fix commit to the WIP branch to unblock the agent.
-5. Normal claim flow takes over on the next agent activation cycle.
-
-### `start-implementation` blocked re-do mode (new)
-
-Triggered when task `status` is `ready` AND `blocked_context` is non-null
-(i.e. there is a prior WIP branch to build on).
-
-Instead of:
 ```
-git checkout <base_branch>
-git reset --hard origin/<base_branch>
-git checkout -b feature/<id>
+1. git -C <workspaceRoot> fetch origin
+2. git -C <workspaceRoot> reset --hard origin/<baseBranch>
+   (orchestrator is now on clean main)
+3. Read task YAML; verify status === "ready"
+4. Determine branch = taskBranchName(featureId, taskId)
+5. Check if branch exists on remote:
+   a. NOT exists: git checkout -b <branch>
+   b. EXISTS, task.blocked_context null:
+        git checkout <branch>
+        git reset --hard origin/<branch>
+        (prior interrupted claim — inherit the branch)
+   c. EXISTS, task.blocked_context non-null:
+        return { won: false, reason: "branch_blocked_recovery" }
+        (caller handles S5 path)
+6. Pre-commit jitter (50–500 ms)
+7. Mutate task YAML: status → in_progress, branch → derived name,
+   clear blocked_context (set null if non-null), append "claimed" log entry
+8. git add <relPath> && git commit -m "chore(<taskId>): claim — status in_progress"
+9. git push origin <branch>
+   - Push rejected: compare SHA; lost → tryResetToRemote(baseBranch); return { won: false }
+   - Push won: continue
+10. Post-claim verify (re-read YAML, confirm status + actor)
+11. Return { won: true }
 ```
 
-Do:
+`ClaimResult` gains a new failure reason:
+```typescript
+| { won: false; reason: "branch_blocked_recovery" }
+```
+
+`main.ts` must check for `branch_blocked_recovery` and route to the S5 flow.
+
+### `openWorkspacePr` (new `src/claim/open-workspace-pr.ts`)
+
+```typescript
+export interface OpenWorkspacePrOpts {
+  workspaceRoot: string;
+  featureId: string;
+  taskId: string;
+  branch: string;
+  baseBranch: string;
+  githubToken: string;
+  // github.com/<owner>/<repo> resolved from workspace.yaml management_repo
+  repoOwner: string;
+  repoName: string;
+}
+
+export interface OpenWorkspacePrResult {
+  prUrl: string;
+  prNumber: number;
+  alreadyExisted: boolean;
+}
+```
+
+Steps:
+1. `GET /repos/<owner>/<repo>/pulls?head=<owner>:<branch>&state=open` — check for
+   existing open PR.
+2. If found: return `{ prUrl, prNumber, alreadyExisted: true }`.
+3. If not found: `POST /repos/<owner>/<repo>/pulls` with title, body, head, base.
+4. Write the PR URL + `status: open` to `task.workspace_pr` in the task YAML.
+5. Commit and push the YAML update to the task branch.
+
+All GitHub API calls use `curl` (not `gh` CLI). Authentication via
+`Authorization: token <githubToken>`.
+
+The `repoOwner` and `repoName` are parsed from `workspace.yaml -> repos[]` where
+`id === management_repo`. The `github` field holds the SSH URL
+(`git@github.com:<owner>/<repo>.git`); the owner/repo are extracted with a regex.
+
+### `main.ts` changes
+
+After `claimTask` returns `{ won: true }`:
+```typescript
+const taskBranch = taskBranchName(featureId, task.id);
+// Open management-repo PR
+const { repoOwner, repoName } = parseManagementRepoCoords(workspaceLocalPath);
+await openWorkspacePr({
+  workspaceRoot: workspaceLocalPath,
+  featureId, taskId: task.id, branch: taskBranch, baseBranch,
+  githubToken: process.env.GITHUB_TOKEN ?? "",
+  repoOwner, repoName,
+});
+```
+
+After `claimTask` returns `{ won: false, reason: "branch_blocked_recovery" }`:
+- Log `task_blocked_recovery_entry` event.
+- Derive blocked recovery flow: fetch WIP branch, read `blocked_context`, proceed
+  to `runClaude` with the WIP branch context.
+- Still opens a PR via `openWorkspacePr` (which will find the existing one or open
+  a new `-<attempt>` branch PR).
+
+`taskBranch` passed to `generateAgentContext` and `runClaude` is now always derived
+via `taskBranchName(featureId, taskId)` (not read from `task.branch`), although
+`task.branch` will contain the same value after `claimTask` sets it.
+
+### `run-claude.ts` changes
+
+`writeBlockedAndPush` gains a `blocked_context` write:
+```typescript
+task.blocked_context = {
+  wip_branch: taskBranch,
+  wip_sha: getHeadSha(workspaceRoot),   // execSync git rev-parse HEAD
+  pushed_at: new Date().toISOString(),
+};
+```
+This runs only on the crash path (task still `in_progress` after subprocess exit).
+The graceful-block path (agent writes `blocked_context` itself via
+`start-implementation`'s blocking exit rule) is handled inside the subprocess.
+
+### `start-implementation` SKILL.md changes
+
+**Management-repo setup (normal claim):**
+
+Replace the current "create branch on both repos" instruction with:
+
+- Implementation repo: `git fetch origin && git checkout -b feature/<featureId>-<taskId>` (unchanged)
+- Management repo: **branch already exists** (created by `claimTask`):
+  ```
+  git fetch origin
+  git checkout feature/<featureId>-<taskId>
+  git reset --hard origin/feature/<featureId>-<taskId>
+  ```
+  Hard stop if checkout fails (branch unexpectedly missing).
+
+**Blocked recovery mode (new, S5):**
+
+Triggered when task `status === "ready"` AND `task.blocked_context` is non-null.
+Instead of the normal branch setup:
 ```
 git fetch origin
-git checkout <wip_branch>
-git reset --hard origin/<wip_branch>
+git checkout <blocked_context.wip_branch>
+git reset --hard origin/<blocked_context.wip_branch>
+```
+Append a `recovery_started` log entry. Read `blocked_reason` and
+`suggested_next_step` as context before implementing.
+
+On successful PR creation: set `blocked_context: null` in the task YAML, commit,
+and push to the task branch.
+
+**Blocking exit rule (updated):**
+
+When setting `status: blocked` during graceful exit, the agent must also:
+1. `git add -A && git commit -m "wip: partial work before block — <summary>"` on the task branch (implementation repo).
+2. `git push origin <branch>` on the implementation repo.
+3. Write `blocked_context` to the task YAML:
+   ```yaml
+   blocked_context:
+     wip_branch: feature/<featureId>-<taskId>
+     wip_sha: <output of git rev-parse HEAD on impl repo>
+     pushed_at: <ISO 8601 now>
+   ```
+4. Commit the task YAML update to the management repo task branch.
+5. Push the management repo task branch.
+
+### `TASK.template.yaml` change
+
+Remove the pre-set `branch` value (set to empty string `""`). `claimTask` writes
+the correct value at claim time. Add new optional fields:
+
+```yaml
+blocked_context: null
+workspace_pr: null
 ```
 
-The agent then reads `blocked_reason` and `suggested_next_step` as additional
-context before proceeding with implementation.
+## Repository Impact
 
-After successful PR creation in the recovery run, clear `blocked_context` (set to
-`null`) in the task YAML.
+| File | Change |
+|---|---|
+| `agent-runtime/src/paths.ts` | Add `taskBranchName(featureId, taskId)` |
+| `agent-runtime/src/types/task.ts` | Add `BlockedContext`, `blocked_context`, `workspace_pr` |
+| `agent-runtime/src/claim/claim-task.ts` | Rewrite: branch creation, task-branch push, blocked-recovery detection |
+| `agent-runtime/src/claim/open-workspace-pr.ts` | New: GitHub API PR creation + dedup |
+| `agent-runtime/src/main.ts` | Call `openWorkspacePr` after claim; handle `branch_blocked_recovery`; derive `taskBranch` |
+| `agent-runtime/src/loop/run-claude.ts` | `writeBlockedAndPush`: write `blocked_context` on crash-block path |
+| `agent-runtime/src/bootstrap/agent-context.ts` | No change (task.branch semantics unchanged) |
+| `workflow_skills/start-implementation/SKILL.md` | Management-repo checkout (not create); add blocked re-do mode; update blocking exit rule |
+| `templates/feature/tasks/TASK.template.yaml` | Remove pre-set `branch`; add `blocked_context: null`, `workspace_pr: null` |
+
+No new `npm` dependencies. GitHub API calls use Node.js built-in `child_process`
+via `curl` (consistent with `pr-create` skill convention).
 
 ## Dependency Analysis
 
-- Touches `src/bootstrap/agent-context.ts` (Rules section — update blocked exit rule).
-- Touches `workflow_skills/start-implementation/SKILL.md` (new blocked re-do mode).
-- Touches task YAML schema (new optional `blocked_context` field).
-- No new external dependencies.
+```
+T1: paths.ts + types/task.ts (schema foundations)
+T2: claim-task.ts rewrite          ← depends on T1
+T3: open-workspace-pr.ts (new)     ← depends on T1
+T4: main.ts wiring                 ← depends on T2 + T3
+T5: run-claude.ts blocked_context  ← depends on T1
+T6: start-implementation SKILL.md  ← depends on T1 (schema), independent of T2–T5
+T7: TASK.template.yaml             ← independent (YAML only)
+```
+
+T7 (template update) has no code dependencies and can run any time.
 
 ## Parallelization / Blocking Analysis
 
-All tasks are sequentially dependent:
-- T1 must define the schema changes and the blocking sequence update.
-- T2 (start-implementation re-do mode) depends on T1 (schema must be settled first).
-- T3 (agent-context.ts rules update + integration test) depends on T2.
+```
+Wave 1 (independent): T1, T7
+Wave 2 (unblock after T1): T2, T3, T5, T6
+Wave 3 (unblock after T2 + T3): T4
+```
+
+Wave 2 tasks (T2, T3, T5, T6) are mutually independent and may be executed in
+parallel. T4 integrates all of them and must wait for T2 and T3 specifically
+(T5 and T6 change behavior that T4 exercises but do not change T4's call sites).
+
+Test strategy:
+- T2 (`claimTask`): extend existing unit tests for branch creation, branch-exists
+  cases, and `branch_blocked_recovery` return.
+- T3 (`openWorkspacePr`): unit test with mocked `curl` responses; test dedup path.
+- T4 (`main.ts`): integration test — full activation cycle with stub workspace.
+- T5 (`run-claude.ts`): extend existing tests for `writeBlockedAndPush` to assert
+  `blocked_context` fields are written.
+- T6 (`start-implementation`): skill-level test — verify management-repo checkout
+  branch-exists path and blocked recovery mode.
