@@ -1,7 +1,7 @@
 id: T5
 title: run-claude.ts — write blocked_context on crash-block path
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -29,3 +29,7 @@ log:
       crash-block path (task still in_progress after subprocess exit). The
       graceful-block path is handled inside the Claude subprocess via
       start-implementation's blocking exit rule (T6).
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:34:03+0700
+    note: T1 done — sole dependency satisfied.

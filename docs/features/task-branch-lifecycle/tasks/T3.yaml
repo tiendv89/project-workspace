@@ -1,7 +1,7 @@
 id: T3
 title: open-workspace-pr.ts — GitHub API PR creation and dedup for management repo
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -28,3 +28,7 @@ log:
       on task branch (GitHub REST API via curl), opens new PR on same branch
       if not found, writes workspace_pr to task YAML, commits and pushes.
       T4 (main.ts) depends on this task.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:34:03+0700
+    note: T1 done — sole dependency satisfied.

@@ -1,7 +1,7 @@
 id: T1
 title: Schema foundations — paths.ts taskBranchName + types/task.ts BlockedContext
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -14,9 +14,11 @@ execution:
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/20"
-  status: open
+  status: merged
 
-workspace_pr: null
+workspace_pr:
+  url: "https://github.com/tiendv89/project-workspace/pull/12"
+  status: open
 
 log:
   - action: created
@@ -43,3 +45,9 @@ log:
     note: >
       PR #20 opened: feat(T1): taskBranchName helper + BlockedContext schema.
       tsc --noEmit clean. 158/158 tests passed.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T16:34:03+0700
+    note: >
+      PR #20 merged into main. Management repo PR #12 opened to merge
+      feature/task-branch-lifecycle-T1 → main.
