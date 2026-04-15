@@ -22,6 +22,8 @@ Features follow this lifecycle:
 - blocked
 - cancelled
 
+![Feature Lifecycle Workflow](docs/feature-workflow.png)
+
 ## Stage review status values
 
 - draft
@@ -90,7 +92,7 @@ any → cancelled     (human only)
 - Every task state change should be recorded in the task file `log`
 - Both humans and agents append task log entries when they mutate task state
 - Marking a task `done` requires a human log entry
-- **Timestamp rule**: every log entry `at:` field must use a real UTC timestamp obtained at the time of the action via `date -u +%Y-%m-%dT%H:%M:%SZ`. Hardcoded or placeholder timestamps (e.g. `00:00:00Z`) are not acceptable.
+- **Timestamp rule**: every log entry `at:` field must use a real local timestamp with timezone offset obtained at the time of the action via `date +%Y-%m-%dT%H:%M:%S%z`. Hardcoded or placeholder timestamps (e.g. `00:00:00Z`) are not acceptable.
 
 ## Task file scope
 
@@ -152,6 +154,16 @@ Typical required values:
 - `GIT_AUTHOR_EMAIL`
 - `GITHUB_ACCOUNT`
 - `SSH_KEY_PATH`
+
+## Figma MCP usage rule
+
+When `FIGMA_PERSONAL_ACCESS_TOKEN` is present in the project `.env` and `figma-mcp` is listed under the role's `enabled_skills`, agents must use the Figma MCP to read design context before implementing any UI.
+
+- Read the target Figma frame or component via the MCP **before** writing code.
+- Extract design tokens (colors, spacing, typography) from Figma variables — do not hardcode values that exist in Figma.
+- Derive component and prop names from the Figma component name.
+- If `FIGMA_PERSONAL_ACCESS_TOKEN` is missing, stop and ask the user to add it to `.env` (see `.env.template`).
+- Never skip Figma context when the token is available — guessing at design values is not acceptable.
 
 ## Management repo
 
