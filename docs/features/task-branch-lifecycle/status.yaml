@@ -2,8 +2,8 @@ feature_id: task-branch-lifecycle
 title: Task branch lifecycle — claim, execution, and blocked recovery
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Draft technical design.
+current_stage: tasks
+next_action: Draft task breakdown.
 
 stages:
   product_spec:
@@ -29,11 +29,23 @@ stages:
           automatic. S5 PR inheritance with -<attempt> fallback. Scope confirmed:
           management repo only.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmail.com
+    reviewed_at: 2026-04-15T09:07:19Z
+    review_comment: >
+      Approved — 7 tasks across 3 waves. D1: claimTask creates management-repo
+      branch (not start-implementation). D2: task.branch derived at claim time.
+      D3: SHA-comparison contention on task branch. D4: openWorkspacePr separate
+      from claimTask. D5: blocked_context on both crash and graceful-block paths.
+      D6: same-branch always for blocked recovery — no suffix counting. Repository
+      impact table and test strategy confirmed.
+    review_history:
+      - action: approved
+        by: tiendv.52@gmail.com
+        at: 2026-04-15T09:07:19Z
+        comment: >
+          Approved — 7 tasks across 3 waves. D1–D6 decisions locked. D6 simplified
+          to same-branch always for blocked recovery. Ready for task breakdown.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -66,6 +78,13 @@ history:
       Product spec approved. 5 scenarios locked: S1 claim, S2 complete, S3 done
       (human-driven), S4 blocked exit, S5 blocked recovery. Scope: management repo
       only. Feature advanced to in_tdd / technical_design.
+  - action: technical_design_approved
+    by: tiendv.52@gmail.com
+    at: 2026-04-15T09:07:19Z
+    note: >
+      Technical design approved. D1–D6 locked. 7 tasks across 3 waves confirmed.
+      D6 simplified: blocked recovery always stays on canonical branch, no suffix
+      counting. Feature advanced to in_tdd / tasks.
 
 revalidation:
   product_spec_required: false
