@@ -1,7 +1,7 @@
 id: T3
 title: open-workspace-pr.ts — GitHub API PR creation and dedup for management repo
 repo: workflow
-status: ready
+status: done
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -9,14 +9,16 @@ branch: feature/task-branch-lifecycle-T3
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-15T10:06:24Z
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/22"
+  status: merged
 
-workspace_pr: null
+workspace_pr:
+  url: "https://github.com/tiendv89/project-workspace/pull/14"
+  status: open
 
 log:
   - action: created
@@ -32,3 +34,21 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T16:34:03+0700
     note: T1 done — sole dependency satisfied.
+  - action: started
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T09:55:58Z
+    note: >
+      Implementation started on branch feature/task-branch-lifecycle-T3.
+      Repo workflow, base branch main.
+  - action: pr_opened
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T10:06:24Z
+    note: >
+      PR #22 opened: feat(task-branch-lifecycle/T3): open-workspace-pr — GitHub
+      API PR creation + dedup. tsc --noEmit clean. 172/172 tests passed (11 new).
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:13:06+0700
+    note: >
+      PR #22 merged into main. Management repo PR opened to merge
+      feature/task-branch-lifecycle-T3 → main.

@@ -134,6 +134,17 @@ execution:
 - Tasks marked `ready` are eligible for execution
 - Execution must begin through `start-implementation`
 
+## Skill execution contract
+
+When a workflow skill declares an autonomous execution contract — any instruction such as "do not stop after X", "proceed directly", "all steps are part of a single invocation", or "without pausing for human confirmation" — the agent must honour that contract in full:
+
+- Complete every declared step in sequence without pausing or returning control to the user between steps.
+- Do not stop after setup phases (branch creation, environment resolution, log entry) and wait for a prompt.
+- Do not treat a partial completion (e.g. implementation only, branch setup only) as a finished invocation.
+- If a blocking issue arises that cannot be resolved, set `status: blocked`, write `blocked_reason`, and stop — do not silently drop remaining steps.
+
+Stopping early and waiting for the user to continue is a **contract violation** regardless of whether any individual step succeeded.
+
 ## Reset / rollback rule
 
 - Stage resets preserve artifacts

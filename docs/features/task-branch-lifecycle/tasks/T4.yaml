@@ -1,7 +1,7 @@
 id: T4
 title: main.ts wiring — openWorkspacePr after claim, blocked-recovery routing, taskBranch derivation
 repo: workflow
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -28,3 +28,7 @@ log:
       after a successful claim, handle branch_blocked_recovery result to route
       into S5 flow, derive taskBranch via taskBranchName() rather than reading
       task.branch, pass GITHUB_TOKEN from process.env.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-15T17:13:06+0700
+    note: T2 and T3 both done — all dependencies satisfied.
