@@ -1,7 +1,7 @@
 id: T1
 title: Add idle_sleep_seconds to agent config schema and interface
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/agent-runtime-polling-loop-T1
 execution:
   actor_type: agent
   last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-16T11:22:47+0700
+  last_updated_at: 2026-04-16T11:25:34+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/28
+  status: open
 
 workspace_pr: null
 
@@ -31,3 +31,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T11:22:47+0700
     note: Implementation started via start-implementation.
+  - action: moved_to_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-16T11:25:34+0700
+    note: PR opened — https://github.com/tiendv89/agent-workflow/pull/28
