@@ -1,7 +1,7 @@
 id: T2
 title: Refactor main.ts to continuous polling loop
 repo: workflow
-status: in_review
+status: done
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/agent-runtime-polling-loop-T2
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-16T11:47:28+0700
+  last_updated_at: 2026-04-16T11:51:31+0700
 
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/29
-  status: open
+  status: merged
 
 workspace_pr: null
 
@@ -35,3 +35,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-04-16T11:47:28+0700
     note: PR opened — https://github.com/tiendv89/agent-workflow/pull/29
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T11:51:31+0700
+    note: PR #29 merged. T4 depends on T2+T3 — T3 not yet done, T4 stays todo.
