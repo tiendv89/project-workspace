@@ -1,7 +1,7 @@
 id: T5
 title: Fix init-workspace Check 3 sync direction
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -35,3 +35,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T11:19:14+0700
     note: PR opened — https://github.com/tiendv89/agent-workflow/pull/27
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-16T11:20:16+0700
+    note: PR #27 merged.
