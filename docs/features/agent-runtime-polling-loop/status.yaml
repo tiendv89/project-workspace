@@ -1,0 +1,52 @@
+feature_id: agent-runtime-polling-loop
+title: Agent Runtime — Continuous Polling Loop
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Wave 1 tasks (T1, T3, T5, T6) are ready for implementation.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-16T03:49:37Z
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-16T03:49:37Z
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-16T04:15:26Z
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-16T04:15:26Z
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-16T04:15:26Z
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-16T04:15:26Z
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history: []
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
