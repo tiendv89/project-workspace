@@ -1,9 +1,9 @@
 feature_id: agent-runtime-polling-loop
 title: Agent Runtime — Continuous Polling Loop
 
-feature_status: in_handoff
+feature_status: done
 current_stage: handoff
-next_action: Review and approve the handoff document. Merge T4 PR #31 (docs update) — the only remaining open implementation PR.
+next_action: null
 
 stages:
   product_spec:
@@ -37,11 +37,15 @@ stages:
         at: 2026-04-16T04:15:26Z
         comment: null
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-16T13:14:48+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-16T13:14:48+0700
+        comment: null
 
 history: []
 
