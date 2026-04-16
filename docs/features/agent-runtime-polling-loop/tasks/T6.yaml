@@ -1,16 +1,16 @@
 id: T6
 title: Restructure log file path to per-task subdirectory
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/agent-runtime-polling-loop-T6
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-16T12:55:24+0700
 
 pr:
   url: ""
@@ -27,3 +27,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T04:15:26Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: started
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T12:55:24+0700
+    note: Implementation started via start-implementation.
