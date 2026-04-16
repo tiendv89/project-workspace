@@ -1,7 +1,7 @@
 id: T1
 title: Add idle_sleep_seconds to agent config schema and interface
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -35,3 +35,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T11:25:34+0700
     note: PR opened — https://github.com/tiendv89/agent-workflow/pull/28
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-16T11:26:27+0700
+    note: PR #28 merged.
