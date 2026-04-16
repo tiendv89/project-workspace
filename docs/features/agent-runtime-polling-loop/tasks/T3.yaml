@@ -1,20 +1,20 @@
 id: T3
 title: Replace K8s CronJob with Deployment; remove systemd orchestration
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/agent-runtime-polling-loop-T3
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-16T12:34:09+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/30
+  status: merged
 
 workspace_pr: null
 
@@ -27,3 +27,15 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T04:15:26Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: started
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T11:55:04+0700
+    note: Implementation started via start-implementation.
+  - action: moved_to_review
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T12:32:22+0700
+    note: PR opened — https://github.com/tiendv89/agent-workflow/pull/30
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T12:34:09+0700
+    note: PR #30 merged. T4 depends on T2+T3 — both done, T4 auto-advanced to ready.

@@ -1,7 +1,7 @@
 id: T4
 title: Update all documentation and support scripts
 repo: workflow
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T03:53:40Z
     note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T12:34:09+0700
+    note: T3 marked done — T2 and T3 both done, all dependencies met, task auto-advanced to ready.
