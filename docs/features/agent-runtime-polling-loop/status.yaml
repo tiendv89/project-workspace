@@ -1,9 +1,9 @@
 feature_id: agent-runtime-polling-loop
 title: Agent Runtime — Continuous Polling Loop
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Wave 1 tasks (T1, T3, T5, T6) are ready for implementation.
+feature_status: in_handoff
+current_stage: handoff
+next_action: Review and approve the handoff document. Merge T4 PR #31 (docs update) — the only remaining open implementation PR.
 
 stages:
   product_spec:
@@ -37,7 +37,7 @@ stages:
         at: 2026-04-16T04:15:26Z
         comment: null
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
