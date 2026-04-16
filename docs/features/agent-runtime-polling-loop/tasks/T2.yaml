@@ -1,7 +1,7 @@
 id: T2
 title: Refactor main.ts to continuous polling loop
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-16T03:53:40Z
     note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-16T11:26:27+0700
+    note: T1 marked done — all dependencies met, task auto-advanced to ready.
