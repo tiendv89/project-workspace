@@ -17,7 +17,7 @@ The agent runtime was refactored from a single-shot process (restarted by extern
 | T1 | Schema + AgentConfig: add `idle_sleep_seconds` | [#28](https://github.com/tiendv89/agent-workflow/pull/28) | merged |
 | T2 | Continuous polling loop refactor in `main.ts` | [#29](https://github.com/tiendv89/agent-workflow/pull/29) | merged |
 | T3 | K8s Deployment manifest + systemd removal | [#30](https://github.com/tiendv89/agent-workflow/pull/30) | merged |
-| T4 | Update all documentation and support scripts | [#31](https://github.com/tiendv89/agent-workflow/pull/31) | **pending review** |
+| T4 | Update all documentation and support scripts | [#31](https://github.com/tiendv89/agent-workflow/pull/31) | merged |
 | T5 | Fix `init-workspace` Check 3 sync direction | [#27](https://github.com/tiendv89/agent-workflow/pull/27) | merged |
 | T6 | Restructure log path to per-task subdirectory | [#32](https://github.com/tiendv89/agent-workflow/pull/32) | merged |
 
@@ -96,12 +96,6 @@ The `orchestration/systemd/` directory has been removed. The timer-driven model 
 ### Docker Compose
 
 `restart: unless-stopped` is retained for crash recovery but is no longer the loop driver. The poll cadence is controlled by `idle_sleep_seconds` in `agent.yaml`.
-
----
-
-## Outstanding item
-
-**T4 (PR #31) is still pending review.** It updates all documentation (QUICKSTART.md, OPERATOR-GUIDE.md, TROUBLESHOOTING.md, docker-compose.yml, bootstrap-agent-host.sh) to reflect the new continuous-loop lifecycle. The implementation is complete and all 204 tests pass; it is awaiting merge.
 
 ---
 
