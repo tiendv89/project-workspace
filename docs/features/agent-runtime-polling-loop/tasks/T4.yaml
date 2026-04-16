@@ -1,7 +1,7 @@
 id: T4
 title: Update all documentation and support scripts
 repo: workflow
-status: in_review
+status: done
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/agent-runtime-polling-loop-T4
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-16T12:51:13+0700
+  last_updated_at: 2026-04-16T13:11:23+0700
 
 pr:
   url: "https://github.com/tiendv89/agent-workflow/pull/31"
-  status: open
+  status: merged
 
 workspace_pr: null
 
@@ -35,3 +35,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-04-16T12:51:13+0700
     note: "PR #31 opened: https://github.com/tiendv89/agent-workflow/pull/31"
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-16T13:11:23+0700
+    note: "Implementation PR #31 merged."
