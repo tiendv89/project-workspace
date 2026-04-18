@@ -1,29 +1,30 @@
 id: T2
 title: Mock data UI prototype — both pages with hardcoded data
 repo: digital-factory-ui
-status: ready
-depends_on: [T1]
+status: in_progress
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/feature-status-dashboard-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-18T09:02:10.610Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T15:22:55+0700"
+    at: 2026-04-18T15:22:55+0700
     note: Task created from technical design for feature-status-dashboard.
   - action: ready
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T09:00:22Z"
+    at: 2026-04-18T09:00:22Z
     note: Auto-ready — T1 marked done, all dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:02:10.610Z
+    note: Claimed via git-based claim protocol.
