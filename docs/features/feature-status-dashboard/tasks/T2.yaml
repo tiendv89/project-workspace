@@ -1,40 +1,48 @@
 id: T2
 title: Mock data UI prototype — both pages with hardcoded data
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/feature-status-dashboard-T2
+
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-18T09:09:14+0000
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: "2026-04-18T09:18:45Z"
+
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/2
-  status: open
+  status: merged
+
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/27
   status: open
+
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: 2026-04-18T15:22:55+0700
+    at: "2026-04-18T15:22:55+0700"
     note: Task created from technical design for feature-status-dashboard.
   - action: ready
     by: matthew@liquid-labs.xyz
-    at: 2026-04-18T09:00:22Z
+    at: "2026-04-18T09:00:22Z"
     note: Auto-ready — T1 marked done, all dependencies met.
   - action: claimed
     by: tiendv.52@gmail.com
-    at: 2026-04-18T09:02:10.610Z
+    at: "2026-04-18T09:02:10.610Z"
     note: Claimed via git-based claim protocol.
   - action: started
     by: tiendv.52@gmail.com
-    at: 2026-04-18T09:03:38+0000
+    at: "2026-04-18T09:03:38Z"
     note: Implementation started on feature/feature-status-dashboard-T2.
   - action: pr_opened
     by: tiendv.52@gmail.com
-    at: 2026-04-18T09:09:14+0000
+    at: "2026-04-18T09:09:14Z"
     note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/2. Status set to in_review.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T09:18:45Z"
+    note: PR merged. Mock data UI prototype complete — both pages render with hardcoded data.
