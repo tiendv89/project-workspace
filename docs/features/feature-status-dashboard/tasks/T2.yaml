@@ -14,7 +14,9 @@ execution:
 pr:
   url: ""
   status: not_created
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/27
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
