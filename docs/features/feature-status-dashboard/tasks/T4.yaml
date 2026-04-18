@@ -1,7 +1,7 @@
 id: T4
 title: Features list page (/) — wire real data
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: "2026-04-18T15:22:55+0700"
     note: Task created from technical design for feature-status-dashboard.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T16:29:24+0700"
+    note: Auto-ready — T2 and T3 both marked done, all dependencies met.

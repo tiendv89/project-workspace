@@ -1,29 +1,44 @@
 id: T3
 title: Data layer — types, FeatureRepository interface, FilesystemFeatureRepository
 repo: digital-factory-ui
-status: ready
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/feature-status-dashboard-T3
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-18T09:19:31+0000
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/3
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/28
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T15:22:55+0700"
+    at: 2026-04-18T15:22:55+0700
     note: Task created from technical design for feature-status-dashboard.
   - action: ready
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T09:00:22Z"
+    at: 2026-04-18T09:00:22Z
     note: Auto-ready — T1 marked done, all dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:11:26.787Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:17:26+0000
+    note: Implementation started on branch feature/feature-status-dashboard-T3.
+  - action: pr_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:19:31+0000
+    note: "PR opened: https://github.com/tiendv89/digital-factory-ui/pull/3 — data layer types, FeatureRepository interface, FilesystemFeatureRepository, 10 unit tests."
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T16:29:24+0700"
+    note: PR merged. Data layer complete — types, FeatureRepository interface, FilesystemFeatureRepository, unit tests.
