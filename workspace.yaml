@@ -57,3 +57,10 @@ repos:
     local_path: env:WORKFLOW_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
+
+  - id: digital-factory-ui
+    github: git@github.com:tiendv89/digital-factory-ui.git
+    local_path: env:DIGITAL_FACTORY_UI_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+

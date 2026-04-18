@@ -1,0 +1,67 @@
+feature_id: feature-status-dashboard
+title: Feature & Task Status Visualization Dashboard
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks starting with T1 (ready). T2 and T3 can run in parallel after T1 is done.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-04-18T08:19:24Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-04-18T08:19:24Z"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-04-18T08:29:11Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-04-18T08:29:11Z"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-04-18T08:29:11Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-04-18T08:29:11Z"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T08:19:24Z"
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T08:29:11Z"
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T08:29:11Z"
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

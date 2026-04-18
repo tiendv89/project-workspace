@@ -1,0 +1,25 @@
+id: T4
+title: Features list page (/) — wire real data
+repo: digital-factory-ui
+status: todo
+depends_on: [T2, T3]
+blocked_reason: null
+blocked_context: null
+branch: ""
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T15:22:55+0700"
+    note: Task created from technical design for feature-status-dashboard.
