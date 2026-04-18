@@ -1,0 +1,19 @@
+id: T5
+title: Docker Compose + init-agent integration
+repo: workflow
+status: todo
+depends_on: [T2, T3]
+blocked_reason: null
+branch: feature/agent-rag-mcp-T5
+execution:
+  actor_type: agent
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-18T18:49:54Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-18T18:49:54Z
+    note: "Task created during tech-lead Phase 2 task breakdown."

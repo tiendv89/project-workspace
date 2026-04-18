@@ -1,9 +1,9 @@
 feature_id: agent-rag-mcp
 title: Agent Context — RAG + MCP Integration
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead produces technical-design.md using plan-first skill.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Resolve D1 (register rag-service repo in workspace.yaml), then unblock T1 to begin implementation.
 
 stages:
   product_spec:
@@ -17,17 +17,25 @@ stages:
         at: 2026-04-18T18:23:07Z
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-18T18:49:12Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-18T18:49:12Z
+        comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-18T18:59:11Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-18T18:59:11Z
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -40,6 +48,14 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:23:07Z
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-18T18:49:12Z
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-18T18:59:11Z
 
 revalidation:
   product_spec_required: false
