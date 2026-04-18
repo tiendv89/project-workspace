@@ -1,7 +1,7 @@
 id: T5
 title: Feature detail page (/features/[id]) — wire real data
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T4
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/feature-status-dashboard-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-18T09:44:52.439Z
+  last_updated_at: 2026-04-18T09:48:43+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/5
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/30
   status: open
@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-18T09:44:52.439Z
     note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:47:54+0000
+    note: Implementation started — wiring feature detail page to real repository data.
+  - action: pr_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:48:43+0000
+    note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/5
