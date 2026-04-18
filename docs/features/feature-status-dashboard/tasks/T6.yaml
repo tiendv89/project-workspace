@@ -1,29 +1,37 @@
 id: T6
 title: GitHub Actions deployment — static export + GitHub Pages
 repo: digital-factory-ui
-status: ready
-depends_on: [T5]
+status: done
+depends_on:
+  - T5
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/feature-status-dashboard-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-18T09:53:36.520Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/6
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/31
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T09:25:48Z"
-    note: Task added — GitHub Actions deployment via static export + GitHub Pages, depends on T5.
+    at: 2026-04-18T09:25:48Z
+    note: Task added — GitHub Actions deployment via static export + GitHub Pages,
+      depends on T5.
   - action: ready
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T16:51:49+0700"
+    at: 2026-04-18T16:51:49+0700
     note: Auto-ready — T5 marked done, all dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T09:53:36.520Z
+    note: Claimed via git-based claim protocol.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T17:27:06+0700"
+    note: PR merged. GitHub Actions workflow deployed — static export + GitHub Pages. basePath fix pushed directly to main.
