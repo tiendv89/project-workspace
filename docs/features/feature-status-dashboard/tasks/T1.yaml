@@ -1,7 +1,7 @@
 id: T1
 title: Initialize Next.js project in digital-factory-ui
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/feature-status-dashboard-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-18T08:45:32.509Z
+  last_updated_at: 2026-04-18T08:54:24+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/1
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/26
   status: open
@@ -29,3 +29,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-18T08:45:32.509Z
     note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T08:47:05+0000
+    note: Implementation started on branch feature/feature-status-dashboard-T1.
+  - action: pr_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T08:54:24+0000
+    note: "PR opened: https://github.com/tiendv89/digital-factory-ui/pull/1 — Next.js scaffold with Tailwind v4, HeroUI v3, js-yaml."
