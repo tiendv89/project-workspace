@@ -1,29 +1,29 @@
 id: T1
 title: Initialize Next.js project in digital-factory-ui
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/feature-status-dashboard-T1
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-18T08:45:32.509Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T15:22:55+0700"
+    at: 2026-04-18T15:22:55+0700
     note: Task created from technical design for feature-status-dashboard.
   - action: ready
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T08:29:11Z"
+    at: 2026-04-18T08:29:11Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-18T08:45:32.509Z
+    note: Claimed via git-based claim protocol.
