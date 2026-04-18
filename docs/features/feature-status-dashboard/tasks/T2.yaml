@@ -1,7 +1,7 @@
 id: T2
 title: Mock data UI prototype — both pages with hardcoded data
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: "2026-04-18T15:22:55+0700"
     note: Task created from technical design for feature-status-dashboard.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: "2026-04-18T09:00:22Z"
+    note: Auto-ready — T1 marked done, all dependencies met.
