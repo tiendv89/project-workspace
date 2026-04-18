@@ -18,6 +18,7 @@
 | T3 | 2 | Data layer — types, FeatureRepository interface, FilesystemFeatureRepository | T1 |
 | T4 | 3 | Features list page (`/`) — wire real data | T2, T3 |
 | T5 | 4 | Feature detail page (`/features/[id]`) — wire real data | T4 |
+| T6 | 5 | GitHub Actions deployment — static export + GitHub Pages | T5 |
 
 T2 and T3 are in Wave 2 and can run in parallel — both depend only on T1.
 
@@ -194,3 +195,37 @@ Replace the hardcoded mock data in `app/features/[id]/page.tsx` with real `Featu
 - [ ] Align component prop types with `Feature` and `Task` from T3
 - [ ] Verify feature detail page loads for a real feature ID with tasks
 - [ ] Verify `tsc --noEmit` and `next build` pass
+
+---
+
+## T6 — GitHub Actions deployment — static export + GitHub Pages
+
+### Description
+Add a GitHub Actions workflow that builds the dashboard as a static export and deploys it to GitHub Pages. This requires switching `FilesystemFeatureRepository` to a build-time data generation step — the app cannot read from the local filesystem at runtime on Pages.
+
+**Architecture change:**
+- Add `next.config.ts` flag: `output: 'export'`
+- Add `scripts/generate-data.ts` — reads `WORKSPACE_MGMT_PATH` at build time and writes `public/data/features.json` + `public/data/features/<id>/tasks.json`
+- Replace runtime `fs` reads in `FilesystemFeatureRepository` with `fetch('/data/features.json')` (or equivalent static JSON reads) so the production bundle has no Node `fs` dependency
+- Keep the runtime `FilesystemFeatureRepository` for local `next dev` use (behind an env flag or `IS_STATIC_BUILD`)
+
+**GitHub Actions workflow** (`.github/workflows/deploy.yml`):
+- Trigger: push to `main`
+- Steps: checkout → install → set `WORKSPACE_MGMT_PATH` from Actions secret → run `generate-data.ts` → `next build` → deploy `out/` to `gh-pages` branch via `peaceiris/actions-gh-pages` or equivalent
+
+**Required secrets in the repo:**
+- `WORKSPACE_MGMT_PATH` — path to a checked-out management repo on the Actions runner, or a separate checkout step that clones the workspace repo
+
+### Required skills
+- nextjs-best-practices
+- typescript-best-practices
+
+### Subtasks
+- [ ] Add `output: 'export'` to `next.config.ts`
+- [ ] Write `scripts/generate-data.ts` that reads YAML at build time and emits static JSON under `public/data/`
+- [ ] Add `StaticFeatureRepository` (reads pre-generated JSON via `fetch`) for static export context
+- [ ] Add env flag to select repository implementation: `NEXT_PUBLIC_DATA_SOURCE=static|filesystem`
+- [ ] Create `.github/workflows/deploy.yml` with checkout → generate-data → build → deploy steps
+- [ ] Document required secrets in README
+- [ ] Verify `next build` with `output: 'export'` succeeds locally
+- [ ] Verify generated `out/` contains index and feature detail HTML files
