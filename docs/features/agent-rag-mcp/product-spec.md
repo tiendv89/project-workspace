@@ -32,7 +32,7 @@ There is no mechanism for an agent to quickly answer questions like:
 - Not replacing the existing task YAML / claim protocol — RAG is additive context, not a workflow replacement
 - Not building a general-purpose RAG system — this is scoped to the agent-runtime workflow
 - Not real-time indexing — batch/incremental indexing on push is acceptable for v1
-- Not multi-tenant — single workspace per RAG instance for now
+- Not exposing multi-tenant APIs in v1 — but the internal data model **must** include `workspace_id` on every indexed document and every query so tenant isolation can be enforced later without re-indexing. (Business goal: this system is intended to become a rentable platform for companies; multi-tenancy is a first-class future requirement, not an afterthought.)
 
 ## Key open questions (to resolve in technical design)
 
@@ -45,7 +45,8 @@ There is no mechanism for an agent to quickly answer questions like:
 
 ## Success criteria
 
-- An agent claiming a task receives a context summary that reduces its cold-discovery iterations by a measurable amount
+- An agent claiming a task receives a context summary derived from indexed project knowledge, not a blank slate
 - The agent can invoke an MCP tool to retrieve relevant project context mid-task without navigating the filesystem manually
 - Task logs from prior runs are searchable and surfaced when relevant
 - Adding new indexed content (a new skill, a completed task log) requires no manual intervention
+- Every task log entry produced during an agent work phase records token usage: `input`, `output`, `total`, and `cost_usd`
