@@ -189,6 +189,11 @@ Rules:
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
 - **No direct push to main rule**: agents must never commit task state changes (status updates, log entries) directly to `main` on the management repo. All task state mutations must be committed to the task's feature branch (`feature/<feature_id>-<work_id>`). If the feature branch does not exist yet, the agent must create it before committing. Pushing directly to `main` is a rule violation even when no feature branch was previously created by `start-implementation`.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
+- **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing:
+  1. If the feature branch does not exist locally or on origin, create it from the latest `main`.
+  2. If it exists, check it out (`git checkout <branch>`).
+  3. Rebase it onto the latest `main` (`git fetch origin && git rebase origin/main`) to keep history linear and avoid merge conflicts when the branch is eventually merged.
+  This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
 
 ## Git / SSH rules
 
