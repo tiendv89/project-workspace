@@ -1,7 +1,7 @@
 id: T3
 title: Auto-rebase handler
 repo: workflow
-status: todo
+status: ready
 depends_on: [T1, T2]
 blocked_reason: null
 branch: feature/agent-pr-response-T3
@@ -17,3 +17,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-19T15:46:24Z
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-20T00:39:22+0700
+    note: Auto-ready — all dependencies (T1, T2) are now done.

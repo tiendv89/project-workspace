@@ -3,7 +3,7 @@ title: Agent PR response
 
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tasks T1 and T2 are ready. Wave 1 execution may begin.
+next_action: T1 and T2 done. Tasks T3 and T4 are ready. Wave 2 execution may begin.
 
 stages:
   product_spec:
