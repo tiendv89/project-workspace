@@ -1,7 +1,7 @@
 id: T2
 title: Indexer service
 repo: rag-service
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/agent-rag-mcp-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T10:37:50.212Z
+  last_updated_at: 2026-04-19T10:49:46+0000
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/rag-service/pull/2
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -26,6 +26,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T10:37:50.212Z
     note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-19T10:39:50+0000
+    note: Implementation started on feature/agent-rag-mcp-T2.
+  - action: pr_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-19T10:49:46+0000
+    note: "PR opened: https://github.com/tiendv89/rag-service/pull/2. Tests: 103 passed, 2 skipped (integration auto-skip without Qdrant)."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/33
   status: open
