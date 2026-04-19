@@ -1,16 +1,17 @@
 id: T3
 title: RAG MCP server
 repo: rag-service
-status: in_review
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: pr_conflict
 branch: feature/agent-rag-mcp-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T20:07:19.652Z
-  suggested_next_step: null
+  last_updated_at: 2026-04-19T20:07:33.302Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/rag-service/pull/3
   status: open
@@ -48,10 +49,15 @@ log:
     at: 2026-04-20T03:05:30+0700
     note: Reset to in_review — auto-rebase handler now supports agent-authored
       conflict resolution. Runtime will retry rebase on next cycle.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-04-19T20:07:33.302Z
+    note: "Unresolvable merge conflicts in: pyproject.toml; requirements.txt. Manual
+      resolution required."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/34
   status: open
-conflict_state: resolving
+conflict_state: resolved
 rebase_log:
   - at: 2026-04-19T19:51:41.505Z
     action: rebase_started
@@ -66,3 +72,8 @@ rebase_log:
     action: rebase_started
     by: tiendv.52@gmail.com
     note: Rebase claimed; targeting origin/main.
+  - at: 2026-04-19T20:07:33.302Z
+    action: rebase_blocked
+    by: tiendv.52@gmail.com
+    note: "Unresolvable merge conflicts in: pyproject.toml; requirements.txt. Manual
+      resolution required."
