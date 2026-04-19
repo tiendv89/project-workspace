@@ -64,3 +64,9 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
+  - id: rag-service
+    github: git@github.com:tiendv89/rag-service.git
+    local_path: env:RAG_SERVICE_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+

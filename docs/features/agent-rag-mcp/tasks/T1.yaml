@@ -1,9 +1,9 @@
 id: T1
 title: Qdrant schema + collection init
 repo: rag-service
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: "D1: rag-service repo not yet registered in workspace.yaml — repo must be created and added to workspace.yaml repos[] before this task can begin"
+blocked_reason: null
 branch: feature/agent-rag-mcp-T1
 execution:
   actor_type: agent
@@ -21,3 +21,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:49:54Z
     note: "Blocked on D1 — rag-service repo must be registered in workspace.yaml before implementation can begin."
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-19T15:44:18+0700
+    note: "D1 resolved — rag-service created at git@github.com:tiendv89/rag-service.git, cloned to ~/workspace/rag-service, registered in workspace.yaml. RAG_SERVICE_LOCAL_PATH added to .env and .env.template."
