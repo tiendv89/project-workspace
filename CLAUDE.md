@@ -129,6 +129,17 @@ execution:
 - Agents do not approve stages
 - Agents do not mark tasks `done`
 
+## Commit-before-block rule
+
+Before an agent sets a task to `status: blocked` for **any** reason, it must:
+
+1. **Commit all in-progress work** to the task's feature branch — even partial, even broken. Use a commit message that describes the state honestly (e.g. `wip(T3): partial indexer — blocked on Qdrant auth`).
+2. **Push** the commit to origin so the next agent can see it.
+3. **Set `blocked_reason`** — a clear description of what went wrong.
+4. **Set `blocked_suggestion`** — a concrete next step for the agent that picks this up (e.g. "check Qdrant credentials in .env, re-run `qdrant_init.py` manually to verify connection, then continue from `services/indexer.py:142`").
+
+This ensures the next agent inherits full context: code state on the branch, the reason for the block, and a starting point. An agent that blocks without committing its work wastes the next agent's time.
+
 ## Start rule
 
 - Tasks marked `ready` are eligible for execution
@@ -242,7 +253,7 @@ If `git pull` is rejected because the origin branch has diverged (e.g. another a
    Answer these questions before doing anything else:
    - Is the local work already present on origin (same logical change, possibly different commit)? → discard the patch and continue.
    - Is the local work still required given the new origin state (e.g. the branch was rebased but our change is not there)? → apply only the missing parts.
-   - Is the local work now obsolete or conflicting with origin (e.g. the feature was redesigned)? → discard the local patch and set the task `status: blocked` with `blocked_reason` describing what was dropped and why. Do not attempt to apply conflicting changes.
+   - Is the local work now obsolete or conflicting with origin (e.g. the feature was redesigned)? → commit the local patch as-is to the feature branch so it is not lost, then set `status: blocked` (see **Commit-before-block rule** below). Do not attempt to silently discard work.
 
    Only apply the patch when the answer to "still required and not yet present" is unambiguous.
 
