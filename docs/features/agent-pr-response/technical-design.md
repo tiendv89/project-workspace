@@ -35,6 +35,25 @@ The runtime polls open `in_review` PRs for mergeability. When a conflict is dete
 
 ## Chosen Design
 
+### Polling loop architecture
+
+`in_review` checks run in the **same loop** as `ready` task pickup, but at an independently configurable interval.
+
+Within each cycle, the order is:
+1. Pull workspaces
+2. Check `ready` tasks (existing eligibility → claim → run Claude)
+3. Check `in_review` tasks for PR status (mergeability + draft state)
+
+`ready` is checked first so task execution is not delayed by PR polling. If a `ready` task is found and claimed, the cycle still completes the `in_review` pass before returning — both checks happen every cycle.
+
+A new field `pr_poll_interval_seconds` in `agent.yaml` controls how often step 3 fires. The runtime skips the `in_review` pass if it ran within that window. Default: same as `idle_sleep_seconds` (1 min initially). Long-term target: 5 min, since PR conflicts are low-urgency compared to task pickup.
+
+```yaml
+# agent.yaml
+idle_sleep_seconds: 60
+pr_poll_interval_seconds: 60   # default; raise to 300 in production
+```
+
 ### Detection
 
 At the start of each polling cycle, for every task in `in_review`, check the implementation repo PR's mergeability via the GitHub API:

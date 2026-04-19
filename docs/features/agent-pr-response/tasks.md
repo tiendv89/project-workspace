@@ -43,21 +43,25 @@ Adds:
 ## T2 — GitHub PR status poller
 
 ### Description
-New module `poll/check-in-review-prs.ts` that, for every `in_review` task in a workspace, calls `GET /repos/{owner}/{repo}/pulls/{pull_number}` and returns the current `mergeable` and `draft` state. Pure read — no task YAML mutations. Called once per cycle in `main.ts` after pull-workspaces, before eligibility scanning. Results are passed to T3/T4 handlers.
+New module `poll/check-in-review-prs.ts` that, for every `in_review` task in a workspace, calls `GET /repos/{owner}/{repo}/pulls/{pull_number}` and returns the current `mergeable` and `draft` state. Pure read — no task YAML mutations.
 
-The workspace's impl repos are already resolved in each cycle; the module re-uses the same GitHub token and workspace config parsing pattern already in `main.ts`.
+**Cycle ordering**: `ready` task pickup happens first in each cycle; `in_review` polling runs after. If a `ready` task is claimed, the cycle still completes the `in_review` pass. Results are passed to the T3/T4 handlers.
+
+**Rate limiting**: a new `pr_poll_interval_seconds` field in `agent.yaml` (validated in `validate-agent-yaml.ts`) controls how often the `in_review` pass fires. The module skips the pass if it ran within that window. Default: same as `idle_sleep_seconds` (1 min). This field exists so operators can raise it to 5 min in production without code changes.
 
 ### Required skills
 - typescript-best-practices
 
 ### Subtasks
+- [ ] Add `pr_poll_interval_seconds?: number` to `agent.yaml` schema in `validate-agent-yaml.ts` (optional, defaults to `idle_sleep_seconds`)
 - [ ] Create `poll/check-in-review-prs.ts`
+- [ ] Track `lastPrPollAt` timestamp in the cycle; skip the pass if `now - lastPrPollAt < pr_poll_interval_seconds`
 - [ ] For each watched workspace, scan all features for `in_review` tasks with a non-null `pr.url`
 - [ ] Extract GitHub owner/repo/pull_number from `pr.url`
 - [ ] `GET /repos/{owner}/{repo}/pulls/{n}` with `Authorization: Bearer <GITHUB_TOKEN>`
 - [ ] Return `PrStatusResult[]`: `{ taskId, featureId, mergeable: boolean | null, draft: boolean }`
 - [ ] Handle API errors gracefully — emit `in_review_poll_error` event, skip that task
-- [ ] Wire call into `runOneCycle` in `main.ts` (after pull-workspaces)
+- [ ] Wire call into `runOneCycle` in `main.ts`: after `ready` task handling, before returning `"idle"` or `"ran_task"`
 - [ ] Run full typecheck — zero errors
 
 ---
