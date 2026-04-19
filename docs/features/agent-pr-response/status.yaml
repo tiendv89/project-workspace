@@ -2,8 +2,8 @@ feature_id: agent-pr-response
 title: Agent PR response
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Produce technical design for approval.
+current_stage: tasks
+next_action: Produce task breakdown for approval.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         at: 2026-04-19T21:02:18+0700
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-19T22:40:46+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-19T22:40:46+0700
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -40,6 +44,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-19T21:02:18+0700
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-19T22:40:46+0700
 
 revalidation:
   product_spec_required: false
