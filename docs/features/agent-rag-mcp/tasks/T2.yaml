@@ -1,7 +1,7 @@
 id: T2
 title: Indexer service
 repo: rag-service
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -12,7 +12,7 @@ execution:
   last_updated_at: 2026-04-19T10:49:46+0000
 pr:
   url: https://github.com/tiendv89/rag-service/pull/2
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -34,6 +34,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T10:49:46+0000
     note: "PR opened: https://github.com/tiendv89/rag-service/pull/2. Tests: 103 passed, 2 skipped (integration auto-skip without Qdrant)."
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-19T19:10:53+0700
+    note: "Implementation PR merged (https://github.com/tiendv89/rag-service/pull/2). T5 still todo — waiting on T3."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/33
   status: open
