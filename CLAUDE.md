@@ -189,11 +189,73 @@ Rules:
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
 - **No direct push to main rule**: agents must never commit task state changes (status updates, log entries) directly to `main` on the management repo. All task state mutations must be committed to the task's feature branch (`feature/<feature_id>-<work_id>`). If the feature branch does not exist yet, the agent must create it before committing. Pushing directly to `main` is a rule violation even when no feature branch was previously created by `start-implementation`.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
-- **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing:
-  1. If the feature branch does not exist locally or on origin, create it from the latest `main`.
-  2. If it exists, check it out (`git checkout <branch>`).
-  3. Rebase it onto the latest `main` (`git fetch origin && git rebase origin/main`) to keep history linear and avoid merge conflicts when the branch is eventually merged.
-  This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
+- **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing, follow the **branch checkout + sync protocol** below. This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
+
+## Branch checkout + sync protocol
+
+This protocol applies before any commit to **both the management repo and implementation repos** during task execution. Run it whenever switching to or working on a feature branch.
+
+### Step 1 — Ensure you are on the feature branch
+
+```bash
+git fetch origin
+git checkout <feature-branch>   # create from main if it doesn't exist yet
+```
+
+If the branch does not exist locally or on origin, create it from the latest `main`:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b <feature-branch>
+```
+
+### Step 2 — Pull latest from origin
+
+```bash
+git pull origin <feature-branch>
+```
+
+If the pull succeeds (fast-forward or clean merge), continue.
+
+### Step 3 — Handle a failed pull (force-push or diverged history)
+
+If `git pull` is rejected because the origin branch has diverged (e.g. another agent force-pushed or rewound the branch), follow this recovery sequence:
+
+1. **Save local changes** — capture everything this agent added on top of the base branch:
+   ```bash
+   git diff origin/main..HEAD > /tmp/<task-id>-local.patch
+   git log origin/main..HEAD --oneline > /tmp/<task-id>-local-commits.txt
+   ```
+2. **Reset to main** and delete the stale local branch:
+   ```bash
+   git checkout main
+   git branch -D <feature-branch>
+   ```
+3. **Re-checkout** the branch from origin:
+   ```bash
+   git checkout -b <feature-branch> origin/<feature-branch>
+   ```
+4. **Compare and merge** — diff the saved patch against the new branch state:
+   ```bash
+   git diff HEAD /tmp/<task-id>-local.patch
+   ```
+   - If the origin branch already contains the same work, discard the patch and continue.
+   - If the work differs, apply the patch (`git apply /tmp/<task-id>-local.patch`), resolve any conflicts, and commit.
+
+### Step 4 — Rebase onto latest main before committing
+
+```bash
+git fetch origin
+git rebase origin/main
+```
+
+This keeps history linear and prevents merge conflicts when the branch is eventually merged into `main`.
+
+### Scope
+
+This protocol applies to:
+- The **management repo** — before every task state write (claim, status update, log entry, log flush).
+- **Implementation repos** — before every implementation commit during task execution.
 
 ## Git / SSH rules
 
