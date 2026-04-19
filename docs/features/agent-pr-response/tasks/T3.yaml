@@ -1,7 +1,7 @@
 id: T3
 title: Auto-rebase handler
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T1
   - T2
@@ -9,11 +9,11 @@ blocked_reason: null
 branch: feature/agent-pr-response-T3
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T18:31:47+0000
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-20T01:51:38+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/36
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -30,8 +30,7 @@ log:
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-04-20T01:10:28+0700
-    note: Reset to ready — agent stopped mid-run due to test environment issues.
-      Branch and workspace PR preserved.
+    note: Reset to ready — agent stopped mid-run due to test environment issues. Branch and workspace PR preserved.
   - action: claimed
     by: tiendv.52@gmail.com
     at: 2026-04-19T18:15:05.919Z
@@ -44,6 +43,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T18:31:47+0000
     note: PR opened at https://github.com/tiendv89/agent-workflow/pull/36
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T01:51:38+0700
+    note: Implementation PR merged. Marking done.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/37
   status: open
