@@ -1,7 +1,7 @@
 id: T1
 title: Qdrant schema + collection init
 repo: rag-service
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-rag-mcp-T1
@@ -11,7 +11,7 @@ execution:
   last_updated_at: 2026-04-19T10:21:11+0000
 pr:
   url: https://github.com/tiendv89/rag-service/pull/1
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -51,6 +51,10 @@ log:
     at: 2026-04-19T10:21:11+0000
     note: 'PR opened: https://github.com/tiendv89/rag-service/pull/1 — 45/45 tests
       passing. Schema frozen, ready for T2 and T3.'
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-19T17:34:58+0700
+    note: "Implementation PR merged (https://github.com/tiendv89/rag-service/pull/1). Schema frozen, 45/45 tests passing. T2 and T3 auto-readied."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/32
   status: open
