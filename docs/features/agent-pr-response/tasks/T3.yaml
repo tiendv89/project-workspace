@@ -1,7 +1,7 @@
 id: T3
 title: Auto-rebase handler
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T1
   - T2
@@ -27,6 +27,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T17:43:23.018Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-20T01:10:28+0700
+    note: Reset to ready — agent stopped mid-run due to test environment issues. Branch and workspace PR preserved.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/37
   status: open
