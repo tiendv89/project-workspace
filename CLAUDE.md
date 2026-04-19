@@ -235,12 +235,16 @@ If `git pull` is rejected because the origin branch has diverged (e.g. another a
    ```bash
    git checkout -b <feature-branch> origin/<feature-branch>
    ```
-4. **Compare and merge** — diff the saved patch against the new branch state:
+4. **Analyse before touching anything** — read the saved patch and the current branch state carefully:
    ```bash
-   git diff HEAD /tmp/<task-id>-local.patch
+   git diff origin/<feature-branch> /tmp/<task-id>-local.patch
    ```
-   - If the origin branch already contains the same work, discard the patch and continue.
-   - If the work differs, apply the patch (`git apply /tmp/<task-id>-local.patch`), resolve any conflicts, and commit.
+   Answer these questions before doing anything else:
+   - Is the local work already present on origin (same logical change, possibly different commit)? → discard the patch and continue.
+   - Is the local work still required given the new origin state (e.g. the branch was rebased but our change is not there)? → apply only the missing parts.
+   - Is the local work now obsolete or conflicting with origin (e.g. the feature was redesigned)? → discard the local patch and set the task `status: blocked` with `blocked_reason` describing what was dropped and why. Do not attempt to apply conflicting changes.
+
+   Only apply the patch when the answer to "still required and not yet present" is unambiguous.
 
 ### Step 4 — Rebase onto latest main before committing
 
