@@ -129,6 +129,17 @@ execution:
 - Agents do not approve stages
 - Agents do not mark tasks `done`
 
+## Commit-before-block rule
+
+Before an agent sets a task to `status: blocked` for **any** reason, it must:
+
+1. **Commit all in-progress work** to the task's feature branch — even partial, even broken. Use a commit message that describes the state honestly (e.g. `wip(T3): partial indexer — blocked on Qdrant auth`).
+2. **Push** the commit to origin so the next agent can see it.
+3. **Set `blocked_reason`** — a clear description of what went wrong.
+4. **Set `blocked_suggestion`** — a concrete next step for the agent that picks this up (e.g. "check Qdrant credentials in .env, re-run `qdrant_init.py` manually to verify connection, then continue from `services/indexer.py:142`").
+
+This ensures the next agent inherits full context: code state on the branch, the reason for the block, and a starting point. An agent that blocks without committing its work wastes the next agent's time.
+
 ## Start rule
 
 - Tasks marked `ready` are eligible for execution
@@ -189,6 +200,77 @@ Rules:
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
 - **No direct push to main rule**: agents must never commit task state changes (status updates, log entries) directly to `main` on the management repo. All task state mutations must be committed to the task's feature branch (`feature/<feature_id>-<work_id>`). If the feature branch does not exist yet, the agent must create it before committing. Pushing directly to `main` is a rule violation even when no feature branch was previously created by `start-implementation`.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
+- **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing, follow the **branch checkout + sync protocol** below. This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
+
+## Branch checkout + sync protocol
+
+This protocol applies before any commit to **both the management repo and implementation repos** during task execution. Run it whenever switching to or working on a feature branch.
+
+### Step 1 — Ensure you are on the feature branch
+
+```bash
+git fetch origin
+git checkout <feature-branch>   # create from main if it doesn't exist yet
+```
+
+If the branch does not exist locally or on origin, create it from the latest `main`:
+
+```bash
+git checkout main && git pull origin main
+git checkout -b <feature-branch>
+```
+
+### Step 2 — Pull latest from origin
+
+```bash
+git pull origin <feature-branch>
+```
+
+If the pull succeeds (fast-forward or clean merge), continue.
+
+### Step 3 — Handle a failed pull (force-push or diverged history)
+
+If `git pull` is rejected because the origin branch has diverged (e.g. another agent force-pushed or rewound the branch), follow this recovery sequence:
+
+1. **Save local changes** — capture everything this agent added on top of the base branch:
+   ```bash
+   git diff origin/main..HEAD > /tmp/<task-id>-local.patch
+   git log origin/main..HEAD --oneline > /tmp/<task-id>-local-commits.txt
+   ```
+2. **Reset to main** and delete the stale local branch:
+   ```bash
+   git checkout main
+   git branch -D <feature-branch>
+   ```
+3. **Re-checkout** the branch from origin:
+   ```bash
+   git checkout -b <feature-branch> origin/<feature-branch>
+   ```
+4. **Analyse before touching anything** — read the saved patch and the current branch state carefully:
+   ```bash
+   git diff origin/<feature-branch> /tmp/<task-id>-local.patch
+   ```
+   Answer these questions before doing anything else:
+   - Is the local work already present on origin (same logical change, possibly different commit)? → discard the patch and continue.
+   - Is the local work still required given the new origin state (e.g. the branch was rebased but our change is not there)? → apply only the missing parts.
+   - Is the local work now obsolete or conflicting with origin (e.g. the feature was redesigned)? → commit the local patch as-is to the feature branch so it is not lost, then set `status: blocked` (see **Commit-before-block rule** below). Do not attempt to silently discard work.
+
+   Only apply the patch when the answer to "still required and not yet present" is unambiguous.
+
+### Step 4 — Rebase onto latest main before committing
+
+```bash
+git fetch origin
+git rebase origin/main
+```
+
+This keeps history linear and prevents merge conflicts when the branch is eventually merged into `main`.
+
+### Scope
+
+This protocol applies to:
+- The **management repo** — before every task state write (claim, status update, log entry, log flush).
+- **Implementation repos** — before every implementation commit during task execution.
 
 ## Git / SSH rules
 
