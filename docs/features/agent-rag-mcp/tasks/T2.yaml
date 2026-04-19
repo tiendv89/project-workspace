@@ -1,14 +1,15 @@
 id: T2
 title: Indexer service
 repo: rag-service
-status: ready
-depends_on: [T1]
+status: in_progress
+depends_on:
+  - T1
 blocked_reason: null
 branch: feature/agent-rag-mcp-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-04-18T18:49:54Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-19T10:37:50.212Z
 pr:
   url: null
   status: null
@@ -16,8 +17,12 @@ log:
   - action: created
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:49:54Z
-    note: "Task created during tech-lead Phase 2 task breakdown."
+    note: Task created during tech-lead Phase 2 task breakdown.
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-04-19T17:34:58+0700
-    note: "T1 done — dependency satisfied, auto-readied."
+    note: T1 done — dependency satisfied, auto-readied.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-19T10:37:50.212Z
+    note: Claimed via git-based claim protocol.
