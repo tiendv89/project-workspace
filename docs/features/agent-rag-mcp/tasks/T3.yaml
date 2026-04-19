@@ -1,17 +1,16 @@
 id: T3
 title: RAG MCP server
 repo: rag-service
-status: blocked
+status: in_review
 depends_on:
   - T1
-blocked_reason: pr_conflict
+blocked_reason: null
 branch: feature/agent-rag-mcp-T3
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T20:07:33.302Z
-  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
-    detail, then set status back to in_review.
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-20T03:10:36+0700
+  suggested_next_step: null
 pr:
   url: https://github.com/tiendv89/rag-service/pull/3
   status: open
@@ -54,10 +53,16 @@ log:
     at: 2026-04-19T20:07:33.302Z
     note: "Unresolvable merge conflicts in: pyproject.toml; requirements.txt. Manual
       resolution required."
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T03:10:36+0700
+    note: Manually rebased onto origin/main. Resolved pyproject.toml and requirements.txt
+      by taking T3 deps (sentence-transformers>=3.0.0, fastapi, uvicorn, mcp) over
+      T2's lower sentence-transformers version. Force-pushed impl branch.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/34
   status: open
-conflict_state: resolved
+conflict_state: none
 rebase_log:
   - at: 2026-04-19T19:51:41.505Z
     action: rebase_started
