@@ -1,7 +1,7 @@
 id: T1
 title: Qdrant schema + collection init
 repo: rag-service
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/agent-rag-mcp-T1
@@ -33,6 +33,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T08:51:05.873Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-19T17:13:42+0700
+    note: "Agent fatal_error (RAG_SERVICE_LOCAL_PATH not set mid-cycle) — claim invalidated, reset to ready for re-claim after agent-runtime fix deployed."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/32
   status: open
