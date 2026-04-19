@@ -1,7 +1,7 @@
 id: T3
 title: Auto-rebase handler
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
   - T2
@@ -10,10 +10,10 @@ branch: feature/agent-pr-response-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T18:24:03+0000
+  last_updated_at: 2026-04-19T18:31:47+0000
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/36
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -40,6 +40,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T18:24:03+0000
     note: Implementation started — auto-rebase handler (T3).
+  - action: pr_opened
+    by: tiendv.52@gmail.com
+    at: 2026-04-19T18:31:47+0000
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/36
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/37
   status: open
