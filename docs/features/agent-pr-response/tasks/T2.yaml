@@ -1,17 +1,17 @@
 id: T2
 title: GitHub PR status poller
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-pr-response-T2
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-19T17:10:38+0000
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-20T00:39:22+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/35
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -33,6 +33,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-19T17:10:38+0000
     note: PR opened — https://github.com/tiendv89/agent-workflow/pull/35
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-20T00:39:22+0700
+    note: Implementation PR #35 merged. Task complete.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/36
   status: open
