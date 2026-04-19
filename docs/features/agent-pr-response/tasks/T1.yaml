@@ -1,7 +1,7 @@
 id: T1
 title: "Task schema — conflict_state + rebase fields"
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/agent-pr-response-T1
@@ -17,3 +17,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-19T15:46:24Z
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-19T15:52:24Z
+    note: Task activated on tasks-stage approval — dependencies met.

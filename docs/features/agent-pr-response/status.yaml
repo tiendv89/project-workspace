@@ -1,9 +1,9 @@
 feature_id: agent-pr-response
 title: Agent PR response
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown for approval.
+next_action: Tasks T1 and T2 are ready. Wave 1 execution may begin.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: 2026-04-19T22:40:46+0700
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-19T22:52:24+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-19T22:52:24+0700
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -48,6 +52,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-19T22:40:46+0700
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-19T22:52:24+0700
 
 revalidation:
   product_spec_required: false
