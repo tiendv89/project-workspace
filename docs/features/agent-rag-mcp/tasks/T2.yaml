@@ -1,7 +1,7 @@
 id: T2
 title: Indexer service
 repo: rag-service
-status: todo
+status: ready
 depends_on: [T1]
 blocked_reason: null
 branch: feature/agent-rag-mcp-T2
@@ -17,3 +17,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:49:54Z
     note: "Task created during tech-lead Phase 2 task breakdown."
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-19T17:34:58+0700
+    note: "T1 done — dependency satisfied, auto-readied."
