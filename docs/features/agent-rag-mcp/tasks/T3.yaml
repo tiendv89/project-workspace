@@ -33,7 +33,7 @@ log:
   - action: pr_opened
     by: tiendv.52@gmail.com
     at: 2026-04-19T11:03:46+0000
-    note: PR opened at https://github.com/tiendv89/rag-service/pull/3. Test suite: 59 passed, 6 skipped (integration — no Qdrant in CI), 0 failed.
+    note: "PR opened at https://github.com/tiendv89/rag-service/pull/3. Test suite: 59 passed, 6 skipped (integration — no Qdrant in CI), 0 failed."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/34
   status: open
