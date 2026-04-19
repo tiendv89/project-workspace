@@ -93,6 +93,32 @@ rebase_log:
 | Conflicts in files the agent authored | Attempt resolution, commit, re-review |
 | Conflicts in files the agent did not touch | Block with `blocked_suggestion` pointing to conflicting lines |
 
+### Agent resolution protocol
+
+When a rebase produces conflicts, the runtime applies the following three-tier decision:
+
+1. **Record agent-authored files** — before executing the rebase, the runtime captures the full set of files the agent modified on this branch:
+   ```
+   git diff --name-only origin/<base>...HEAD
+   ```
+
+2. **Compare conflicted files against agent-authored files** — after the rebase exits non-zero, `git diff --name-only --diff-filter=U` lists every file with unresolved conflict markers.
+
+3. **Decision logic:**
+
+   - **All conflicts are in agent-authored files** → spawn a focused Claude invocation (via `claude -p <prompt> --max-turns 10 --output-format stream-json --dangerously-skip-permissions`) that reads each conflicted file, resolves the markers, and writes the resolved content back to disk. Then run `git add -A` and `git rebase --continue`.
+     - If `--continue` exits 0 → treat as a clean rebase: force-push the impl branch and mark `conflict_state: resolved`. Emits `rebase_resolved_by_agent` then `rebase_completed`.
+     - If Claude cannot resolve or `--continue` fails → emit `rebase_resolve_failed` and fall through to the block path.
+
+   - **Any conflicted file was NOT authored by the agent** → block immediately without attempting resolution. Human-owned files must not be auto-modified. Emits `rebase_blocked`.
+
+4. **Resolution prompt strategy:**
+   - For dependency manifests (`pyproject.toml`, `requirements.txt`, `package.json`, `go.mod`, `Cargo.toml`): take the union of both sides, keeping the higher version where versions conflict.
+   - For all other files: preserve all functionality from both sides; no code from either side may be dropped.
+   - Claude is explicitly instructed **not** to run `git add` or `git commit` — the runtime handles staging and continuation.
+
+5. **Test injection** — the `AutoRebaseOptions` interface exposes an optional `invokeClaudeForResolution` override. This allows tests to inject a synchronous stub without spawning a real `claude` process.
+
 ## Dependency Analysis
 
 - Depends on GitHub API access (`GITHUB_TOKEN`) — already required
