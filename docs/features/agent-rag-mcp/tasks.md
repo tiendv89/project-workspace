@@ -177,23 +177,30 @@ New env vars:
 ## T8 — Replace REPO_PATHS with workspace.yaml-driven path resolution
 
 ### Description
-The indexer currently reads a static `REPO_PATHS` environment variable (comma-separated container-internal paths). This hardcodes the workspace topology and prevents scaling to additional workspaces without redeployment.
+The indexer currently reads a static `REPO_PATHS` environment variable (comma-separated container-internal paths). This hardcodes the workspace topology and prevents scaling to additional workspaces without redeployment. It also breaks in cloud (k8s) environments where repos are not pre-mounted on the filesystem.
 
-Replace this with workspace.yaml-driven resolution: the indexer reads `workspace.yaml → repos[]` at startup and resolves container-internal mount paths from there. Each indexer instance is scoped to exactly one workspace (one-indexer-per-workspace model). `REPO_PATHS` is removed entirely.
+Replace with workspace.yaml-driven resolution using a **clone-or-pull** strategy:
+1. The indexer reads `workspace.yaml → repos[]` via `WORKSPACE_YAML_PATH` at startup
+2. For each repo: if `local_path` exists on the container filesystem (Docker Compose volume mount), use it directly with `git pull` each cycle
+3. If `local_path` is absent or does not exist (k8s / no volume mount), clone from `repos[].ssh_url` into `/tmp/indexer-repos/<repo_id>/` at startup and `git pull` each cycle
+4. SSH key is available via `SSH_KEY_PATH` / `SSH_PRIVATE_KEY` env vars (same pattern as agent containers)
 
-This aligns with the future direction where workspace topology is authoritative in `workspace.yaml` (and eventually a workspace DB), not in environment variables.
+`REPO_PATHS` is removed entirely. The indexer container passes only `WORKSPACE_YAML_PATH`; all repo topology comes from `workspace.yaml`.
+
+> **Note:** PR #5 (merged) introduced `WORKSPACE_YAML_PATH` and `workspace_resolver.py` but implemented local-path-only resolution. This rework adds the ssh_url clone fallback for k8s compatibility. Read the merged branch for prior art before implementing.
 
 ### Required skills
 - python-best-practices
 - python-data
 
 ### Subtasks
-- [ ] Update indexer to accept `WORKSPACE_YAML_PATH` env var pointing to the mounted `workspace.yaml`
-- [ ] Parse `repos[]` from `workspace.yaml` at startup to determine which paths to watch
-- [ ] Remove `REPO_PATHS` from indexer code, `docker-compose.yml`, `.env.template`, and `agent.yaml.example`
-- [ ] Update `docker-compose.yml` to mount `workspace.yaml` into the indexer container and set `WORKSPACE_YAML_PATH`
-- [ ] Update `init-agent/SKILL.md` to reflect the new env var
-- [ ] Update unit/integration tests that used `REPO_PATHS`
+- [ ] Implement clone-or-pull in `workspace_resolver.py`: try `local_path` first; clone from `ssh_url` if absent
+- [ ] Ensure SSH key env vars (`SSH_KEY_PATH` / `SSH_PRIVATE_KEY`) are wired into the git clone/pull commands
+- [ ] Remove any remaining `REPO_PATHS` references in indexer code
+- [ ] Update `docker-compose.yml`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH`, mount `workspace.yaml` into indexer container — no hardcoded path env vars
+- [ ] Update `.env.template` and `init-agent/SKILL.md` to remove `REPO_PATHS`, document `WORKSPACE_YAML_PATH`
+- [ ] Update/add unit tests for clone-or-pull path — both local-mount path and ssh_url fallback
+- [ ] Update integration test to verify indexer starts and indexes without `REPO_PATHS`
 
 ---
 

@@ -309,6 +309,35 @@ What is deferred is **authentication** — in v1, any agent that knows a `worksp
 - `MCP_RAG_URL` — new optional env var in agent `.env`; must be added to `.env.template` and `agent.yaml.example`
 - `QDRANT_URL` — new env var for `rag-server` and `indexer`; `http://qdrant:6333` locally, `http://<vm-ip>:6333` in production
 - `WORKSPACE_ID` — already in `workspace.yaml`; surfaced to containers via compose env
+- `WORKSPACE_YAML_PATH` — path to the mounted `workspace.yaml` inside the indexer container; replaces `REPO_PATHS`
+
+### Indexer repo resolution (T8)
+
+The indexer must work in both local Docker Compose and cloud (k8s) environments. `REPO_PATHS` is removed; the indexer reads `workspace.yaml → repos[]` instead.
+
+**Resolution algorithm (per repo entry):**
+
+```
+for each repo in workspace.yaml → repos[]:
+  local_path = repo.local_path   # container-internal path if mounted, else None
+  ssh_url    = repo.ssh_url      # always present
+
+  if local_path exists on filesystem:
+    use local_path directly (git pull each cycle)
+  else:
+    clone ssh_url into /tmp/indexer-repos/<repo_id>/ at startup
+    git pull /tmp/indexer-repos/<repo_id>/ each cycle
+```
+
+**Local (Docker Compose):** repos are mounted as named volumes → `local_path` exists → no clone needed.
+
+**Cloud (k8s):** repos are NOT mounted → `local_path` is absent or non-existent → indexer clones from `ssh_url` into an ephemeral volume (e.g. emptyDir or PVC). SSH key must be available via `SSH_KEY_PATH` or `SSH_PRIVATE_KEY` env var (already used by the agent containers).
+
+This means:
+- `REPO_PATHS` is **removed entirely** — never set in compose, `.env`, or k8s manifests
+- `WORKSPACE_YAML_PATH` is the single new env var for the indexer
+- The indexer's compose service passes no hardcoded repo paths; repos come from `workspace.yaml`
+- In k8s, the indexer pod needs an SSH key secret mounted (same pattern as agent pods)
 
 **Release dependencies:**
 - Independent of `workflow-db` — RAG reads from files/git, not the DB
