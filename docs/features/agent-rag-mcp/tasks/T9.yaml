@@ -1,18 +1,18 @@
 id: T9
 title: Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
 repo: workflow
-status: in_review
+status: ready
 depends_on:
   - T8
 blocked_reason: null
 branch: feature/agent-rag-mcp-T9
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T10:17:15+0000
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-20T17:31:57+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/43
-  status: open
+  status: closed
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -64,6 +64,17 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T17:31:57+0700
+    note: >-
+      Rejected for rework. PR #43 adds WORKSPACE_MGMT_LOCAL_PATH and
+      WORKFLOW_LOCAL_PATH to docker-compose.yml — wrong design. The indexer
+      must not use volume mounts for repo resolution; it must always clone via
+      SSH using workspace_resolver. No per-repo env vars or volume mounts
+      needed. Close PR #43 and reimplement per updated tasks.md description:
+      mount workspace.yaml file only, drop workspaces/workflow mounts from
+      indexer service, no WORKSPACE_MGMT_LOCAL_PATH or WORKFLOW_LOCAL_PATH.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/44
   status: open

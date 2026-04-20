@@ -208,27 +208,44 @@ Replace with workspace.yaml-driven resolution using a **clone-or-pull** strategy
 ## T9 — Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
 
 ### Description
-Companion task to T8. T8 removed `REPO_PATHS` from the rag-service code and introduced `workspace.yaml`-driven resolution via `workspace_resolver.py`. This task applies the matching changes to the workflow repo so that `docker-compose.yml`, `.env.example`, and `init-agent/SKILL.md` reflect the new model.
+Companion task to T8. T8 removed `REPO_PATHS` from the rag-service code and introduced `workspace.yaml`-driven resolution via `workspace_resolver.py`. This task applies the matching changes to the workflow repo.
 
-**Prior art**: the `feature/agent-rag-mcp-T8` branch on agent-workflow (commit `7cb4d61`) already contains the correct changes. The agent should check out that branch, verify the diff still applies cleanly on top of current main, and open a new PR under T9 naming conventions.
+**Design decision**: the indexer's job is to index what is on `origin/<base_branch>` — it does not need to use the agent volume mounts. The `workspace_resolver.py` already clones each repo from its `github` (ssh_url) field into `/tmp/indexer-repos/<id>/` and pulls each cycle. Therefore:
 
-Key compose changes:
-- Remove `REPO_PATHS` env var from `indexer` service
-- Add `WORKSPACE_YAML_PATH: "/repos/workspaces/${WORKSPACE_ID}/workspace.yaml"`
-- Add `WORKSPACE_MGMT_LOCAL_PATH: "/repos/workspaces/${WORKSPACE_ID}"` (so `env:WORKSPACE_MGMT_LOCAL_PATH` in workspace.yaml resolves to the container-internal mount path)
-- Add `WORKFLOW_LOCAL_PATH: "/repos/workflow"` (same pattern for workflow repo)
+- `WORKSPACE_MGMT_LOCAL_PATH` and `WORKFLOW_LOCAL_PATH` are **not needed** in compose. The indexer always clones via SSH.
+- The indexer service does **not** need the `workspaces` or `workflow` volume mounts — remove them.
+- `workspace.yaml`'s `local_path: env:...` fields are for agent containers and local dev, not for the indexer.
 
-Why `WORKSPACE_MGMT_LOCAL_PATH` and `WORKFLOW_LOCAL_PATH` are needed: `workspace.yaml` uses `local_path: env:WORKSPACE_MGMT_LOCAL_PATH` — the indexer resolves this env var to a container path and uses the volume mount directly instead of cloning. Without setting these vars, the indexer falls through to SSH clone every cycle.
+> **Note**: PR #43 on agent-workflow is **wrong** — it adds `WORKSPACE_MGMT_LOCAL_PATH` and `WORKFLOW_LOCAL_PATH` to compose. Close it. Implement from scratch using the design below.
+
+Key compose changes for the `indexer` service:
+- Remove `REPO_PATHS` env var
+- Add `WORKSPACE_YAML_PATH` — path to `workspace.yaml` mounted into the container
+- Add `SSH_PRIVATE_KEY: "${SSH_PRIVATE_KEY}"` — already set in .env; the resolver needs it to clone
+- Remove `workspaces` and `workflow` volume mounts from the indexer service (not needed)
+- Add a single read-only mount for `workspace.yaml` itself: mount the file (not the whole repo) into a fixed container path
+
+`WORKSPACE_YAML_PATH` mount pattern:
+```yaml
+volumes:
+  - ${WORKSPACE_MGMT_LOCAL_PATH}/workspace.yaml:/workspace/workspace.yaml:ro
+environment:
+  WORKSPACE_YAML_PATH: /workspace/workspace.yaml
+```
+
+`WORKSPACE_MGMT_LOCAL_PATH` is already in the operator's `.env` (it points to their local workspace clone). This is the only reference to it in compose — just for mounting the config file, not for path resolution inside the indexer.
 
 ### Required skills
 - python-best-practices
 
 ### Subtasks
-- [ ] Checkout `feature/agent-rag-mcp-T8` branch on agent-workflow and verify changes are correct
-- [ ] Rebase onto current `main` of agent-workflow if needed
+- [ ] Close PR #43 on agent-workflow (wrong design — adds WORKSPACE_MGMT_LOCAL_PATH/WORKFLOW_LOCAL_PATH)
 - [ ] Remove `REPO_PATHS` from `docker-compose.yml` indexer service env
-- [ ] Add `WORKSPACE_YAML_PATH`, `WORKSPACE_MGMT_LOCAL_PATH`, `WORKFLOW_LOCAL_PATH` to indexer service env in compose
-- [ ] Update `.env.example`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH` and per-repo path vars with examples
+- [ ] Add `WORKSPACE_YAML_PATH: /workspace/workspace.yaml` to indexer env in compose
+- [ ] Add `SSH_PRIVATE_KEY: "${SSH_PRIVATE_KEY}"` to indexer env in compose (needed for clone)
+- [ ] Remove `workspaces` and `workflow` volume mounts from indexer service
+- [ ] Add volume mount for workspace.yaml file only: `${WORKSPACE_MGMT_LOCAL_PATH}/workspace.yaml:/workspace/workspace.yaml:ro`
+- [ ] Update `.env.example`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH` comment (auto-derived from compose mount)
 - [ ] Update `init-agent/SKILL.md`: remove `REPO_PATHS` instructions, explain workspace.yaml-driven approach
 - [ ] Open PR with title `feat(agent-rag-mcp/T9): replace REPO_PATHS with WORKSPACE_YAML_PATH`
 
