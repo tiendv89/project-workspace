@@ -9,7 +9,7 @@ branch: feature/agent-rag-mcp-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T08:45:40.000Z
+  last_updated_at: 2026-04-20T08:48:31.246Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/5
   status: open
@@ -73,6 +73,10 @@ log:
       Added Dockerfile with workspace.yaml mount documentation; updated README
       to replace REPO_PATHS with WORKSPACE_YAML_PATH, including workspace.yaml
       format, docker-compose volume mount example, and local dev instructions.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:48:31.246Z
+    note: Review dispatch claimed; addressing open PR comments.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
