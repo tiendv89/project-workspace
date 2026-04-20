@@ -1,18 +1,18 @@
 id: T7
 title: Move Dockerfile.rag to rag-service repo
 repo: rag-service
-status: in_review
+status: done
 depends_on:
   - T5
 blocked_reason: null
 branch: feature/agent-rag-mcp-T7
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T08:26:47.711Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-20T15:37:50+0700
 pr:
   url: https://github.com/tiendv89/rag-service/pull/4
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -83,6 +83,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-20T08:26:47.711Z
     note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T15:37:50+0700
+    note: PR #4 merged. Task complete.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/42
   status: open

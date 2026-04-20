@@ -60,6 +60,7 @@ Features follow this lifecycle:
 - Subtasks do not have their own lifecycle status
 - Task lifecycle status exists only at the task file level
 - One task changes one repository only
+- If a logical change requires edits in two repos (e.g. move a file to repo A and update a reference in repo B), split it into two tasks — one per repo — with the second depending on the first
 - `repo` must match `workspace.yaml -> repos[].id`
 - Every task must define:
   - `status`
