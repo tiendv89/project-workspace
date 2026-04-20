@@ -7,7 +7,7 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 | Repo | Tasks | Notes |
 |---|---|---|
 | `rag-service` | T1, T2, T3, T7, T8 | New Python repo — RAG services (schema, indexer, MCP server) |
-| `workflow` | T4, T5, T6 | Existing agent runtime repo — skill updates, Compose wiring, docs |
+| `workflow` | T4, T5, T9, T6 | Existing agent runtime repo — skill updates, Compose wiring, docs |
 
 > **D1 blocker:** `rag-service` must be created and registered in `workspace.yaml -> repos[]` before T1 can begin. Human unblocks T1 after registration.
 
@@ -22,7 +22,8 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 | T5 | 3 | Docker Compose + init-agent integration | `workflow` | T2, T3 |
 | T7 | 4 | Move Dockerfile.rag to rag-service repo | `rag-service` | T5 |
 | T8 | 4 | Replace REPO_PATHS with workspace.yaml-driven path resolution | `rag-service` | T2 |
-| T6 | 5 | Documentation + operator guide | `workflow` | T4, T5, T7, T8 |
+| T9 | 4 | Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo | `workflow` | T8 |
+| T6 | 5 | Documentation + operator guide | `workflow` | T4, T5, T7, T8, T9 |
 
 ---
 
@@ -204,12 +205,41 @@ Replace with workspace.yaml-driven resolution using a **clone-or-pull** strategy
 
 ---
 
+## T9 — Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
+
+### Description
+Companion task to T8. T8 removed `REPO_PATHS` from the rag-service code and introduced `workspace.yaml`-driven resolution via `workspace_resolver.py`. This task applies the matching changes to the workflow repo so that `docker-compose.yml`, `.env.example`, and `init-agent/SKILL.md` reflect the new model.
+
+**Prior art**: the `feature/agent-rag-mcp-T8` branch on agent-workflow (commit `7cb4d61`) already contains the correct changes. The agent should check out that branch, verify the diff still applies cleanly on top of current main, and open a new PR under T9 naming conventions.
+
+Key compose changes:
+- Remove `REPO_PATHS` env var from `indexer` service
+- Add `WORKSPACE_YAML_PATH: "/repos/workspaces/${WORKSPACE_ID}/workspace.yaml"`
+- Add `WORKSPACE_MGMT_LOCAL_PATH: "/repos/workspaces/${WORKSPACE_ID}"` (so `env:WORKSPACE_MGMT_LOCAL_PATH` in workspace.yaml resolves to the container-internal mount path)
+- Add `WORKFLOW_LOCAL_PATH: "/repos/workflow"` (same pattern for workflow repo)
+
+Why `WORKSPACE_MGMT_LOCAL_PATH` and `WORKFLOW_LOCAL_PATH` are needed: `workspace.yaml` uses `local_path: env:WORKSPACE_MGMT_LOCAL_PATH` — the indexer resolves this env var to a container path and uses the volume mount directly instead of cloning. Without setting these vars, the indexer falls through to SSH clone every cycle.
+
+### Required skills
+- python-best-practices
+
+### Subtasks
+- [ ] Checkout `feature/agent-rag-mcp-T8` branch on agent-workflow and verify changes are correct
+- [ ] Rebase onto current `main` of agent-workflow if needed
+- [ ] Remove `REPO_PATHS` from `docker-compose.yml` indexer service env
+- [ ] Add `WORKSPACE_YAML_PATH`, `WORKSPACE_MGMT_LOCAL_PATH`, `WORKFLOW_LOCAL_PATH` to indexer service env in compose
+- [ ] Update `.env.example`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH` and per-repo path vars with examples
+- [ ] Update `init-agent/SKILL.md`: remove `REPO_PATHS` instructions, explain workspace.yaml-driven approach
+- [ ] Open PR with title `feat(agent-rag-mcp/T9): replace REPO_PATHS with WORKSPACE_YAML_PATH`
+
+---
+
 ## T6 — Documentation + operator guide
 
 ### Description
-Update the operator-facing documentation to cover the final RAG stack (including T7 and T8 changes). All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
+Update the operator-facing documentation to cover the final RAG stack (including T7, T8, and T9 changes). All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
 
-> **Note:** This task replaces the PR opened in an earlier attempt (agent-workflow PR #40), which was invalidated when T7 and T8 were added. The agent must close PR #40 and open a new one covering the complete final state.
+> **Note:** This task supersedes earlier documentation attempts. The agent must document the final state after T9 is merged — no `REPO_PATHS`, workspace.yaml-driven indexer, Dockerfile in rag-service repo.
 
 ### Required skills
 
@@ -222,4 +252,4 @@ Update the operator-facing documentation to cover the final RAG stack (including
 - [ ] Document `workspace_id` isolation: how collections stay separate per workspace
 - [ ] Document one-indexer-per-workspace model and how repos are resolved from workspace.yaml
 - [ ] Document migration path for existing agent workspaces (add new services to their compose file)
-- [ ] Close PR #40 (superseded) and open a new PR for the complete documentation
+- [ ] Open a new PR for the complete documentation
