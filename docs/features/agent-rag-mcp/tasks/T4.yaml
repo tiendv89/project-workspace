@@ -56,7 +56,7 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-04-20T05:10:00.000Z
-    note: "No open comments found; PR converted to ready-for-review."
+    note: No open comments found; PR converted to ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/39
   status: open
