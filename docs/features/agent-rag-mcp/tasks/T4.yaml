@@ -8,8 +8,8 @@ blocked_reason: null
 branch: feature/agent-rag-mcp-T4
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T10:39:52+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-20T03:49:11.580Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/38
   status: open
@@ -47,8 +47,12 @@ log:
   - action: in_review
     by: matthew@swellnetwork.io
     at: 2026-04-20T10:39:52+0700
-    note: Unblocked — jq added to agent runtime container image (pushed to main).
-      PR already open; resetting to in_review per unblock target rule.
+    note: Unblocked — jq added to agent runtime container image (pushed to main). PR
+      already open; resetting to in_review per unblock target rule.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T03:49:11.580Z
+    note: Review dispatch claimed; addressing open PR comments.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/39
   status: open
