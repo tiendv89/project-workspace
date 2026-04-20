@@ -78,12 +78,14 @@ in_progress → in_review  (agent or human, after work is complete)
 in_progress → blocked    (agent, when blocked)
 in_review → done    (human only)
 in_review → ready   (human, when rejecting for rework)
-blocked → ready     (human, after resolving the block)
+blocked → ready     (human, after resolving the block — only if pr.url is null)
+blocked → in_review (human, after resolving the block — when pr.url is already set)
 any → cancelled     (human only)
 ```
 
 - `todo → in_progress` is **never valid** — a task must pass through `ready` first.
 - `start-implementation` must hard-stop if the task status is not `ready`.
+- **Unblock target rule**: when a human resolves a block, the target status depends on how far the task had progressed. If `pr.url` is set, reset to `in_review` — the PR already exists and the agent should resume review work. If `pr.url` is null, reset to `ready` — the task has not yet produced a PR and must be re-claimed. Never reset a task to `ready` once a PR has been opened.
 
 ![Task Status Workflow](docs/task-workflow.png)
 
