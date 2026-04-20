@@ -1,16 +1,18 @@
 id: T5
 title: Docker Compose + init-agent integration
 repo: workflow
-status: in_review
+status: blocked
 depends_on:
   - T2
   - T3
-blocked_reason: null
+blocked_reason: pr_conflict
 branch: feature/agent-rag-mcp-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T05:07:57.647Z
+  last_updated_at: 2026-04-20T05:08:14.229Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/39
   status: open
@@ -44,12 +46,24 @@ log:
     at: 2026-04-20T05:10:00.000Z
     note: Addressed 0 inline thread(s) and 1 general comment(s); PR converted to
       ready-for-review.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T05:08:14.229Z
+    note: "Unresolvable merge conflicts in:
+      agent-runtime/orchestration/local/.env.example. Manual resolution
+      required."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/40
   status: open
-conflict_state: resolving
+conflict_state: resolved
 rebase_log:
   - at: 2026-04-20T05:07:57.647Z
     action: rebase_started
     by: tiendv.52@gmail.com
     note: Rebase claimed; targeting origin/main.
+  - at: 2026-04-20T05:08:14.229Z
+    action: rebase_blocked
+    by: tiendv.52@gmail.com
+    note: "Unresolvable merge conflicts in:
+      agent-runtime/orchestration/local/.env.example. Manual resolution
+      required."
