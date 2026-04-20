@@ -42,23 +42,26 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-04-20T08:02:01+0000
-    note: Implementing T8 — replace REPO_PATHS env var with workspace.yaml-driven path resolution
+    note: Implementing T8 — replace REPO_PATHS env var with workspace.yaml-driven
+      path resolution
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: work_phase_complete
     by: tiendv.52@gmail.com
     at: 2026-04-20T08:10:29+0000
-    note: PR opened at https://github.com/tiendv89/rag-service/pull/5. All 126 unit tests pass. REPO_PATHS removed; WORKSPACE_YAML_PATH introduced. workspace_resolver.py added with 9 tests.
+    note: PR opened at https://github.com/tiendv89/rag-service/pull/5. All 126 unit
+      tests pass. REPO_PATHS removed; WORKSPACE_YAML_PATH introduced.
+      workspace_resolver.py added with 9 tests.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
