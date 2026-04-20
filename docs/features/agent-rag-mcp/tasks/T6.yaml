@@ -1,17 +1,22 @@
 id: T6
 title: Documentation + operator guide
 repo: workflow
-status: ready
-depends_on: [T4, T5, T7, T8, T9]
+status: done
+depends_on:
+  - T4
+  - T5
+  - T7
+  - T8
+  - T9
 blocked_reason: null
 branch: feature/agent-rag-mcp-T6
 execution:
   actor_type: either
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T17:55:27+0700
+  last_updated_at: 2026-04-20T18:25:05+0700
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/45
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -24,7 +29,8 @@ log:
   - action: todo
     by: matthew@swellnetwork.io
     at: 2026-04-20T16:45:08+0700
-    note: Reset to todo — new dependency T9 added. T9 must complete (workflow
+    note: >-
+      Reset to todo — new dependency T9 added. T9 must complete (workflow
       REPO_PATHS → WORKSPACE_YAML_PATH migration) before documentation can
       reflect the final operator state. Also corrected depends_on to include
       T7 and T8 which were missing.
@@ -32,3 +38,42 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-04-20T17:55:27+0700
     note: Auto-ready — T9 done, all dependencies satisfied (T4, T5, T7, T8, T9).
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T11:12:16.996Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T11:16:43+0000
+    note: >-
+      Implementation started on feature/agent-rag-mcp-T6. Documenting final
+      state — WORKSPACE_YAML_PATH-driven indexer, Dockerfile in rag-service
+      repo, no REPO_PATHS.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: work_phase_complete
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T11:21:52+0000
+    note: >-
+      PR opened at https://github.com/tiendv89/agent-workflow/pull/45. All 248
+      tests pass. Documents final RAG architecture — WORKSPACE_YAML_PATH-driven
+      indexer, Dockerfile in rag-service repo, no REPO_PATHS.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T18:25:05+0700
+    note: >-
+      PR #45 merged. Final documentation complete — WORKSPACE_YAML_PATH-driven
+      indexer, Dockerfile in rag-service, no REPO_PATHS.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/41
+  status: open
