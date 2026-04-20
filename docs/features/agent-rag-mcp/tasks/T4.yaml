@@ -5,7 +5,8 @@ status: blocked
 depends_on:
   - T3
 blocked_reason: missing_tool
-blocked_details: "'jq' command not found (exit code 127); required by respond-to-review skill to parse GitHub API JSON responses"
+blocked_details: "'jq' command not found (exit code 127); required by
+  respond-to-review skill to parse GitHub API JSON responses"
 branch: feature/agent-rag-mcp-T4
 execution:
   actor_type: agent
@@ -42,7 +43,9 @@ log:
   - action: blocked
     by: tiendv.52@gmail.com
     at: 2026-04-20T04:00:00.000Z
-    note: "Hard stop: 'jq' command not found (exit code 127) in container environment. Cannot proceed with respond-to-review. blocked_reason: missing_tool."
+    note: "Hard stop: 'jq' command not found (exit code 127) in container
+      environment. Cannot proceed with respond-to-review. blocked_reason:
+      missing_tool."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/39
   status: open
