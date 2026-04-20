@@ -319,14 +319,17 @@ The indexer must work in both local Docker Compose and cloud (k8s) environments.
 
 ```
 for each repo in workspace.yaml → repos[]:
-  local_path = repo.local_path   # container-internal path if mounted, else None
-  ssh_url    = repo.ssh_url      # always present
+  local_path  = repo.local_path   # container-internal path if mounted, else None
+  ssh_url     = repo.ssh_url      # always present
+  base_branch = repo.base_branch  # e.g. "main"
 
   if local_path exists on filesystem:
-    use local_path directly (git pull each cycle)
+    # already cloned (volume mount) — just pull the base branch each cycle
+    git pull --ff-only origin <base_branch>  (cwd: local_path)
   else:
-    clone ssh_url into /tmp/indexer-repos/<repo_id>/ at startup
-    git pull /tmp/indexer-repos/<repo_id>/ each cycle
+    # no mount — clone once at startup, then pull each cycle
+    git clone --branch <base_branch> <ssh_url> /tmp/indexer-repos/<repo_id>/
+    git pull --ff-only origin <base_branch>  (cwd: /tmp/indexer-repos/<repo_id>/)
 ```
 
 **Local (Docker Compose):** repos are mounted as named volumes → `local_path` exists → no clone needed.

@@ -194,7 +194,7 @@ Replace with workspace.yaml-driven resolution using a **clone-or-pull** strategy
 - python-data
 
 ### Subtasks
-- [ ] Implement clone-or-pull in `workspace_resolver.py`: try `local_path` first; clone from `ssh_url` if absent
+- [ ] Implement in `workspace_resolver.py`: if `local_path` exists on filesystem, `git pull --ff-only origin <base_branch>`; otherwise `git clone --branch <base_branch> <ssh_url>` at startup then pull each cycle
 - [ ] Ensure SSH key env vars (`SSH_KEY_PATH` / `SSH_PRIVATE_KEY`) are wired into the git clone/pull commands
 - [ ] Remove any remaining `REPO_PATHS` references in indexer code
 - [ ] Update `docker-compose.yml`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH`, mount `workspace.yaml` into indexer container — no hardcoded path env vars
