@@ -96,6 +96,12 @@ any → cancelled     (human only)
 - Both humans and agents append task log entries when they mutate task state
 - Marking a task `done` requires a human log entry
 - **Timestamp rule**: every log entry `at:` field must use a real local timestamp with timezone offset obtained at the time of the action via `date +%Y-%m-%dT%H:%M:%S%z`. Hardcoded or placeholder timestamps (e.g. `00:00:00Z`) are not acceptable.
+- **Note string rule**: `note:` values must be plain single-line strings or use YAML block scalar syntax (`>-` for folded, `|-` for literal). Never write a multi-line plain scalar (unquoted continuation lines after the first) — YAML parsers reject these inconsistently. Prefer `>-` for prose notes:
+  ```yaml
+  note: >-
+    First sentence. Second sentence that would be long.
+    Continuation is safe here because >- folds lines into spaces.
+  ```
 
 ## Task file scope
 

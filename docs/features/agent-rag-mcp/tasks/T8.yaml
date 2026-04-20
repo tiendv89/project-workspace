@@ -144,10 +144,10 @@ log:
   - action: done
     by: matthew@swellnetwork.io
     at: 2026-04-20T16:45:08+0700
-    note: PR #6 merged. workspace_resolver.py implements full clone-or-pull with
+    note: >-
+      PR #6 merged. workspace_resolver.py implements full clone-or-pull with
       SSH_PRIVATE_KEY support. REPO_PATHS removed from rag-service code.
-      Companion workflow-repo changes (docker-compose.yml / .env.example /
-      init-agent skill) tracked separately as T9.
+      Companion workflow-repo changes tracked as T9.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
