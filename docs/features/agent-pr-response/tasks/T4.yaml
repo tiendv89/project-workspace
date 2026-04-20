@@ -41,4 +41,4 @@ log:
     note: "Implementation PR #37 merged. Task complete."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/38
-  status: open
+  status: merged
