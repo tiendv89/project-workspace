@@ -81,26 +81,27 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-04-20T10:39:13+0000
-    note: "Re-implementing from scratch. Closed PR #43 (wrong design). Applying correct
-      design: WORKSPACE_YAML_PATH + SSH_PRIVATE_KEY for indexer, workspace.yaml file-only
-      mount from WORKSPACE_MGMT_LOCAL_PATH, no per-repo volume mounts."
+    note: "Re-implementing from scratch. Closed PR #43 (wrong design). Applying
+      correct design: WORKSPACE_YAML_PATH + SSH_PRIVATE_KEY for indexer,
+      workspace.yaml file-only mount from WORKSPACE_MGMT_LOCAL_PATH, no per-repo
+      volume mounts."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: work_phase_complete
     by: tiendv.52@gmail.com
     at: 2026-04-20T10:41:25+0000
-    note: "Implementation complete. 3 files changed. All 248 tests pass (unit + integration).
-      Self-review: no blocking issues. Proceeding to PR creation."
+    note: "Implementation complete. 3 files changed. All 248 tests pass (unit +
+      integration). Self-review: no blocking issues. Proceeding to PR creation."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/44
   status: open
