@@ -1,0 +1,31 @@
+id: T9
+title: Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
+repo: workflow
+status: ready
+depends_on:
+  - T8
+blocked_reason: null
+branch: feature/agent-rag-mcp-T9
+execution:
+  actor_type: agent
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-04-20T16:45:08+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T16:45:08+0700
+    note: >-
+      Companion task to T8. T8 removed REPO_PATHS from the rag-service code and
+      introduced workspace.yaml-driven resolution, but the workflow repo
+      (docker-compose.yml, .env.example, init-agent skill) still references
+      REPO_PATHS. This task applies the matching workflow-side changes.
+      Prior art: agent-workflow branch feature/agent-rag-mcp-T8 (commit
+      7cb4d61) — the changes are correct and ready; a new PR under T9 is
+      needed.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T16:45:08+0700
+    note: Auto-ready — T8 done, dependency satisfied.

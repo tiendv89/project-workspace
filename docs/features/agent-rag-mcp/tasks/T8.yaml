@@ -1,7 +1,7 @@
 id: T8
 title: Replace REPO_PATHS env var with workspace.yaml-driven path resolution
 repo: rag-service
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -9,20 +9,160 @@ branch: feature/agent-rag-mcp-T8
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T14:22:00+0700
+  last_updated_at: 2026-04-20T16:45:08+0700
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/rag-service/pull/6
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-04-20T14:15:57+0700
-    note: >-
-      New task — the indexer currently reads REPO_PATHS as a static comma-separated
-      env var. This prevents scaling to multiple workspaces dynamically. The indexer
-      should read repos[] from workspace.yaml at startup instead. Each indexer
-      instance is scoped to one workspace (one-RAG-per-workspace model).
+    note: New task — the indexer currently reads REPO_PATHS as a static
+      comma-separated env var. This prevents scaling to multiple workspaces
+      dynamically. The indexer should read repos[] from workspace.yaml at
+      startup instead. Each indexer instance is scoped to one workspace
+      (one-RAG-per-workspace model).
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-04-20T14:22:00+0700
     note: Auto-ready — T2 done, dependency satisfied.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T07:32:10.471Z
+    note: Claimed via git-based claim protocol.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T14:34:56+0700
+    note: Reset to ready — previous agent run failed due to DNS resolution error in
+      container. Starting fresh.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T07:57:30.193Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:02:01+0000
+    note: Implementing T8 — replace REPO_PATHS env var with workspace.yaml-driven
+      path resolution
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: work_phase_complete
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:10:29+0000
+    note: PR opened at https://github.com/tiendv89/rag-service/pull/5. All 126 unit
+      tests pass. REPO_PATHS removed; WORKSPACE_YAML_PATH introduced.
+      workspace_resolver.py added with 9 tests.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:38:57.768Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T10:15:00+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Added Dockerfile with workspace.yaml mount documentation; updated README
+      to replace REPO_PATHS with WORKSPACE_YAML_PATH, including workspace.yaml
+      format, docker-compose volume mount example, and local dev instructions.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:48:31.246Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T11:30:00+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Added .claude/, .DS_Store, .idea, .vscode to .gitignore per review
+      request.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T08:53:31.426Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T12:00:00+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Removed all tracked .claude/skills symlinks from git index (git rm
+      --cached) so they are no longer committed to the repo.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T16:11:51+0700
+    note: "Rejected for rework. PR #5 was merged but implementation is incomplete:
+      workspace_resolver.py resolves local mount paths only — no
+      clone-from-ssh_url fallback. This breaks in k8s where repos are not
+      pre-mounted. Technical design updated to require clone-or-pull logic. New
+      PR required; agent-workflow companion PR #42 closed (was also premature —
+      contained hardcoded WORKSPACE_MGMT_LOCAL_PATH/WORKFLOW_LOCAL_PATH that
+      duplicate workspace.yaml)."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:14:08.975Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:18:41+0000
+    note: Implementing clone-or-pull fallback — workspace_resolver.py rewritten to
+      clone repos from ssh_url when local_path not mounted (k8s case).
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: work_phase_complete
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:21:18+0000
+    note: PR opened at https://github.com/tiendv89/rag-service/pull/6. All 136 unit
+      tests pass (19 new tests for clone-or-pull paths). workspace_resolver.py
+      rewritten with SSH key support; Dockerfile updated to install
+      git+openssh-client.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:25:17.519Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:35:00+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Removed SSH_KEY_PATH (file-path-based) in favour of SSH_PRIVATE_KEY env
+      var only — cleaner pattern for k8s Secret injection.
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T16:45:08+0700
+    note: PR #6 merged. workspace_resolver.py implements full clone-or-pull with
+      SSH_PRIVATE_KEY support. REPO_PATHS removed from rag-service code.
+      Companion workflow-repo changes (docker-compose.yml / .env.example /
+      init-agent skill) tracked separately as T9.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/43
+  status: open
+conflict_state: resolved
+rebase_log:
+  - at: 2026-04-20T08:44:07.833Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/main.
+  - at: 2026-04-20T08:45:35.830Z
+    action: rebase_resolved_by_agent
+    by: tiendv.52@gmail.com
+    note: "Claude resolved conflict markers in: Dockerfile, README.md; rebase
+      continued cleanly."
+  - at: 2026-04-20T08:45:40.000Z
+    action: rebase_completed
+    by: tiendv.52@gmail.com
+    note: Rebase completed cleanly; impl branch force-pushed.

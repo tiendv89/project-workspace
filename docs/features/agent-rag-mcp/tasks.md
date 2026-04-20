@@ -7,7 +7,7 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 | Repo | Tasks | Notes |
 |---|---|---|
 | `rag-service` | T1, T2, T3, T7, T8 | New Python repo — RAG services (schema, indexer, MCP server) |
-| `workflow` | T4, T5, T6 | Existing agent runtime repo — skill updates, Compose wiring, docs |
+| `workflow` | T4, T5, T9, T6 | Existing agent runtime repo — skill updates, Compose wiring, docs |
 
 > **D1 blocker:** `rag-service` must be created and registered in `workspace.yaml -> repos[]` before T1 can begin. Human unblocks T1 after registration.
 
@@ -22,7 +22,8 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 | T5 | 3 | Docker Compose + init-agent integration | `workflow` | T2, T3 |
 | T7 | 4 | Move Dockerfile.rag to rag-service repo | `rag-service` | T5 |
 | T8 | 4 | Replace REPO_PATHS with workspace.yaml-driven path resolution | `rag-service` | T2 |
-| T6 | 5 | Documentation + operator guide | `workflow` | T4, T5, T7, T8 |
+| T9 | 4 | Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo | `workflow` | T8 |
+| T6 | 5 | Documentation + operator guide | `workflow` | T4, T5, T7, T8, T9 |
 
 ---
 
@@ -177,32 +178,68 @@ New env vars:
 ## T8 — Replace REPO_PATHS with workspace.yaml-driven path resolution
 
 ### Description
-The indexer currently reads a static `REPO_PATHS` environment variable (comma-separated container-internal paths). This hardcodes the workspace topology and prevents scaling to additional workspaces without redeployment.
+The indexer currently reads a static `REPO_PATHS` environment variable (comma-separated container-internal paths). This hardcodes the workspace topology and prevents scaling to additional workspaces without redeployment. It also breaks in cloud (k8s) environments where repos are not pre-mounted on the filesystem.
 
-Replace this with workspace.yaml-driven resolution: the indexer reads `workspace.yaml → repos[]` at startup and resolves container-internal mount paths from there. Each indexer instance is scoped to exactly one workspace (one-indexer-per-workspace model). `REPO_PATHS` is removed entirely.
+Replace with workspace.yaml-driven resolution using a **clone-or-pull** strategy:
+1. The indexer reads `workspace.yaml → repos[]` via `WORKSPACE_YAML_PATH` at startup
+2. For each repo: if `local_path` exists on the container filesystem (Docker Compose volume mount), use it directly with `git pull` each cycle
+3. If `local_path` is absent or does not exist (k8s / no volume mount), clone from `repos[].ssh_url` into `/tmp/indexer-repos/<repo_id>/` at startup and `git pull` each cycle
+4. SSH key is available via `SSH_KEY_PATH` / `SSH_PRIVATE_KEY` env vars (same pattern as agent containers)
 
-This aligns with the future direction where workspace topology is authoritative in `workspace.yaml` (and eventually a workspace DB), not in environment variables.
+`REPO_PATHS` is removed entirely. The indexer container passes only `WORKSPACE_YAML_PATH`; all repo topology comes from `workspace.yaml`.
+
+> **Note:** PR #5 (merged) introduced `WORKSPACE_YAML_PATH` and `workspace_resolver.py` but implemented local-path-only resolution. This rework adds the ssh_url clone fallback for k8s compatibility. Read the merged branch for prior art before implementing.
 
 ### Required skills
 - python-best-practices
 - python-data
 
 ### Subtasks
-- [ ] Update indexer to accept `WORKSPACE_YAML_PATH` env var pointing to the mounted `workspace.yaml`
-- [ ] Parse `repos[]` from `workspace.yaml` at startup to determine which paths to watch
-- [ ] Remove `REPO_PATHS` from indexer code, `docker-compose.yml`, `.env.template`, and `agent.yaml.example`
-- [ ] Update `docker-compose.yml` to mount `workspace.yaml` into the indexer container and set `WORKSPACE_YAML_PATH`
-- [ ] Update `init-agent/SKILL.md` to reflect the new env var
-- [ ] Update unit/integration tests that used `REPO_PATHS`
+- [ ] Implement in `workspace_resolver.py`: if `local_path` exists on filesystem, `git pull --ff-only origin <base_branch>`; otherwise `git clone --branch <base_branch> <ssh_url>` at startup then pull each cycle
+- [ ] Ensure SSH key env vars (`SSH_KEY_PATH` / `SSH_PRIVATE_KEY`) are wired into the git clone/pull commands
+- [ ] Remove any remaining `REPO_PATHS` references in indexer code
+- [ ] Update `docker-compose.yml`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH`, mount `workspace.yaml` into indexer container — no hardcoded path env vars
+- [ ] Update `.env.template` and `init-agent/SKILL.md` to remove `REPO_PATHS`, document `WORKSPACE_YAML_PATH`
+- [ ] Update/add unit tests for clone-or-pull path — both local-mount path and ssh_url fallback
+- [ ] Update integration test to verify indexer starts and indexes without `REPO_PATHS`
+
+---
+
+## T9 — Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
+
+### Description
+Companion task to T8. T8 removed `REPO_PATHS` from the rag-service code and introduced `workspace.yaml`-driven resolution via `workspace_resolver.py`. This task applies the matching changes to the workflow repo so that `docker-compose.yml`, `.env.example`, and `init-agent/SKILL.md` reflect the new model.
+
+**Prior art**: the `feature/agent-rag-mcp-T8` branch on agent-workflow (commit `7cb4d61`) already contains the correct changes. The agent should check out that branch, verify the diff still applies cleanly on top of current main, and open a new PR under T9 naming conventions.
+
+Key compose changes:
+- Remove `REPO_PATHS` env var from `indexer` service
+- Add `WORKSPACE_YAML_PATH: "/repos/workspaces/${WORKSPACE_ID}/workspace.yaml"`
+- Add `WORKSPACE_MGMT_LOCAL_PATH: "/repos/workspaces/${WORKSPACE_ID}"` (so `env:WORKSPACE_MGMT_LOCAL_PATH` in workspace.yaml resolves to the container-internal mount path)
+- Add `WORKFLOW_LOCAL_PATH: "/repos/workflow"` (same pattern for workflow repo)
+
+Why `WORKSPACE_MGMT_LOCAL_PATH` and `WORKFLOW_LOCAL_PATH` are needed: `workspace.yaml` uses `local_path: env:WORKSPACE_MGMT_LOCAL_PATH` — the indexer resolves this env var to a container path and uses the volume mount directly instead of cloning. Without setting these vars, the indexer falls through to SSH clone every cycle.
+
+### Required skills
+- python-best-practices
+
+### Subtasks
+- [ ] Checkout `feature/agent-rag-mcp-T8` branch on agent-workflow and verify changes are correct
+- [ ] Rebase onto current `main` of agent-workflow if needed
+- [ ] Remove `REPO_PATHS` from `docker-compose.yml` indexer service env
+- [ ] Add `WORKSPACE_YAML_PATH`, `WORKSPACE_MGMT_LOCAL_PATH`, `WORKFLOW_LOCAL_PATH` to indexer service env in compose
+- [ ] Update `.env.example`: remove `REPO_PATHS`, add `WORKSPACE_YAML_PATH` and per-repo path vars with examples
+- [ ] Update `init-agent/SKILL.md`: remove `REPO_PATHS` instructions, explain workspace.yaml-driven approach
+- [ ] Open PR with title `feat(agent-rag-mcp/T9): replace REPO_PATHS with WORKSPACE_YAML_PATH`
 
 ---
 
 ## T6 — Documentation + operator guide
 
 ### Description
-Update the operator-facing documentation to cover the final RAG stack (including T7 and T8 changes). All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
+Update the operator-facing documentation to cover the final RAG stack (including T7, T8, and T9 changes). All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
 
-> **Note:** This task replaces the PR opened in an earlier attempt (agent-workflow PR #40), which was invalidated when T7 and T8 were added. The agent must close PR #40 and open a new one covering the complete final state.
+> **Note:** This task supersedes earlier documentation attempts. The agent must document the final state after T9 is merged — no `REPO_PATHS`, workspace.yaml-driven indexer, Dockerfile in rag-service repo.
 
 ### Required skills
 
@@ -215,4 +252,4 @@ Update the operator-facing documentation to cover the final RAG stack (including
 - [ ] Document `workspace_id` isolation: how collections stay separate per workspace
 - [ ] Document one-indexer-per-workspace model and how repos are resolved from workspace.yaml
 - [ ] Document migration path for existing agent workspaces (add new services to their compose file)
-- [ ] Close PR #40 (superseded) and open a new PR for the complete documentation
+- [ ] Open a new PR for the complete documentation
