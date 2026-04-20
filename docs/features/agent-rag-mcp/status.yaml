@@ -1,9 +1,9 @@
 feature_id: agent-rag-mcp
 title: Agent Context — RAG + MCP Integration
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Resolve D1 (register rag-service repo in workspace.yaml), then unblock T1 to begin implementation.
+feature_status: done
+current_stage: handoff
+next_action: null
 
 stages:
   product_spec:
@@ -37,11 +37,15 @@ stages:
         at: 2026-04-18T18:59:11Z
         comment: null
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-20T11:35:07Z
+    review_comment: All 9 tasks done (T1–T9). RAG stack fully implemented and documented.
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-20T11:35:07Z
+        comment: All 9 tasks done (T1–T9). RAG stack fully implemented and documented.
 
 history:
   - stage: product_spec
@@ -56,6 +60,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:59:11Z
+  - stage: handoff
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-20T11:35:07Z
 
 revalidation:
   product_spec_required: false
