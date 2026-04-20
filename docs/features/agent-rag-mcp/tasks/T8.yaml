@@ -110,26 +110,27 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-04-20T09:18:41+0000
-    note: Implementing clone-or-pull fallback — workspace_resolver.py rewritten
-      to clone repos from ssh_url when local_path not mounted (k8s case).
+    note: Implementing clone-or-pull fallback — workspace_resolver.py rewritten to
+      clone repos from ssh_url when local_path not mounted (k8s case).
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: work_phase_complete
     by: tiendv.52@gmail.com
     at: 2026-04-20T09:21:18+0000
-    note: PR opened at https://github.com/tiendv89/rag-service/pull/6. All 136
-      unit tests pass (19 new tests for clone-or-pull paths). workspace_resolver.py
-      rewritten with SSH key support; Dockerfile updated to install git+openssh-client.
+    note: PR opened at https://github.com/tiendv89/rag-service/pull/6. All 136 unit
+      tests pass (19 new tests for clone-or-pull paths). workspace_resolver.py
+      rewritten with SSH key support; Dockerfile updated to install
+      git+openssh-client.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
