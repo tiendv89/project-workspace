@@ -1,15 +1,16 @@
 id: T4
 title: Agent claim-time context injection
 repo: workflow
-status: in_review
+status: blocked
 depends_on:
   - T3
-blocked_reason: null
+blocked_reason: missing_tool
+blocked_details: "'jq' command not found (exit code 127); required by respond-to-review skill to parse GitHub API JSON responses"
 branch: feature/agent-rag-mcp-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T03:29:08.774Z
+  last_updated_at: 2026-04-20T04:00:00.000Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/38
   status: open
@@ -38,6 +39,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-20T03:29:08.774Z
     note: Review dispatch claimed; addressing open PR comments.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T04:00:00.000Z
+    note: "Hard stop: 'jq' command not found (exit code 127) in container environment. Cannot proceed with respond-to-review. blocked_reason: missing_tool."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/39
   status: open
