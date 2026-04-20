@@ -6,7 +6,7 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 
 | Repo | Tasks | Notes |
 |---|---|---|
-| `rag-service` | T1, T2, T3 | New Python repo — RAG services (schema, indexer, MCP server) |
+| `rag-service` | T1, T2, T3, T7, T8 | New Python repo — RAG services (schema, indexer, MCP server) |
 | `workflow` | T4, T5, T6 | Existing agent runtime repo — skill updates, Compose wiring, docs |
 
 > **D1 blocker:** `rag-service` must be created and registered in `workspace.yaml -> repos[]` before T1 can begin. Human unblocks T1 after registration.
@@ -20,7 +20,9 @@ Feature status: `in_tdd` — technical design approved. Machine state lives in `
 | T3 | 2 | RAG MCP server | `rag-service` | T1 |
 | T4 | 3 | Agent claim-time context injection | `workflow` | T3 |
 | T5 | 3 | Docker Compose + init-agent integration | `workflow` | T2, T3 |
-| T6 | 4 | Documentation + operator guide | `workflow` | T4, T5 |
+| T7 | 4 | Move Dockerfile.rag to rag-service repo | `rag-service` | T5 |
+| T8 | 4 | Replace REPO_PATHS with workspace.yaml-driven path resolution | `rag-service` | T2 |
+| T6 | 5 | Documentation + operator guide | `workflow` | T4, T5, T7, T8 |
 
 ---
 
@@ -156,18 +158,61 @@ New env vars:
 
 ---
 
+## T7 — Move Dockerfile.rag to rag-service repo
+
+### Description
+`Dockerfile.rag` was placed in the `workflow` repo by T5 but belongs in `rag-service` alongside the service code it builds. Move the file, update all references in `docker-compose.yml` and `init-agent` skill, and confirm the compose stack still builds.
+
+### Required skills
+- python-best-practices
+
+### Subtasks
+- [ ] Move `Dockerfile.rag` (and any related build context) from `workflow` repo into `rag-service` repo root
+- [ ] Update `docker-compose.yml` build context references to point to the `rag-service` repo path
+- [ ] Update `init-agent/SKILL.md` if it references the old Dockerfile location
+- [ ] Verify `docker compose build` succeeds with the new paths
+
+---
+
+## T8 — Replace REPO_PATHS with workspace.yaml-driven path resolution
+
+### Description
+The indexer currently reads a static `REPO_PATHS` environment variable (comma-separated container-internal paths). This hardcodes the workspace topology and prevents scaling to additional workspaces without redeployment.
+
+Replace this with workspace.yaml-driven resolution: the indexer reads `workspace.yaml → repos[]` at startup and resolves container-internal mount paths from there. Each indexer instance is scoped to exactly one workspace (one-indexer-per-workspace model). `REPO_PATHS` is removed entirely.
+
+This aligns with the future direction where workspace topology is authoritative in `workspace.yaml` (and eventually a workspace DB), not in environment variables.
+
+### Required skills
+- python-best-practices
+- python-data
+
+### Subtasks
+- [ ] Update indexer to accept `WORKSPACE_YAML_PATH` env var pointing to the mounted `workspace.yaml`
+- [ ] Parse `repos[]` from `workspace.yaml` at startup to determine which paths to watch
+- [ ] Remove `REPO_PATHS` from indexer code, `docker-compose.yml`, `.env.template`, and `agent.yaml.example`
+- [ ] Update `docker-compose.yml` to mount `workspace.yaml` into the indexer container and set `WORKSPACE_YAML_PATH`
+- [ ] Update `init-agent/SKILL.md` to reflect the new env var
+- [ ] Update unit/integration tests that used `REPO_PATHS`
+
+---
+
 ## T6 — Documentation + operator guide
 
 ### Description
-Update the operator-facing documentation to cover the new RAG stack. All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
+Update the operator-facing documentation to cover the final RAG stack (including T7 and T8 changes). All new setup steps, env vars, and service lifecycle changes must be documented before this task is complete. Documentation gaps are treated as incomplete work (per workflow rules).
+
+> **Note:** This task replaces the PR opened in an earlier attempt (agent-workflow PR #40), which was invalidated when T7 and T8 were added. The agent must close PR #40 and open a new one covering the complete final state.
 
 ### Required skills
 
 ### Subtasks
 - [ ] Update `README.md`: add RAG stack to architecture overview, list new services
 - [ ] Update operator guide / Quickstart: add setup steps for `qdrant`, `rag-server`, `indexer`
-- [ ] Document `QDRANT_URL` and `MCP_RAG_URL` env vars with examples for local and production
+- [ ] Document `QDRANT_URL`, `MCP_RAG_URL`, and `WORKSPACE_YAML_PATH` env vars with examples for local and production
 - [ ] Document production deployment: Qdrant on dedicated VM, `QDRANT_URL` override
 - [ ] Document graceful degradation: what happens when `MCP_RAG_URL` is unset
-- [ ] Document `workspace_id` isolation: how `faro` and `workspace` collections stay separate
+- [ ] Document `workspace_id` isolation: how collections stay separate per workspace
+- [ ] Document one-indexer-per-workspace model and how repos are resolved from workspace.yaml
 - [ ] Document migration path for existing agent workspaces (add new services to their compose file)
+- [ ] Close PR #40 (superseded) and open a new PR for the complete documentation
