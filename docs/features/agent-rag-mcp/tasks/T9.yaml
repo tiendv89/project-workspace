@@ -44,23 +44,26 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-04-20T10:13:52+0000
-    note: Starting implementation — applying T8 changes (REPO_PATHS → WORKSPACE_YAML_PATH) to workflow repo files.
+    note: Starting implementation — applying T8 changes (REPO_PATHS →
+      WORKSPACE_YAML_PATH) to workflow repo files.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: work_phase_complete
     by: tiendv.52@gmail.com
     at: 2026-04-20T10:17:15+0000
-    note: "PR #43 opened: https://github.com/tiendv89/agent-workflow/pull/43. All 3 files updated (docker-compose.yml, .env.example, init-agent/SKILL.md). Tests: 248/248 passed."
+    note: "PR #43 opened: https://github.com/tiendv89/agent-workflow/pull/43. All 3
+      files updated (docker-compose.yml, .env.example, init-agent/SKILL.md).
+      Tests: 248/248 passed."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/44
   status: open
