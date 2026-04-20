@@ -10,7 +10,7 @@ branch: feature/agent-rag-mcp-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T04:49:41.569Z
+  last_updated_at: 2026-04-20T05:10:00.000Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/39
   status: open
@@ -39,6 +39,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-20T04:49:41.569Z
     note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T05:10:00.000Z
+    note: "Addressed 0 inline thread(s) and 1 general comment(s); PR converted to ready-for-review."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/40
   status: open
