@@ -90,9 +90,9 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-04-20T12:00:00+0000
-    note: "Resolved 1 inline review thread(s); PR converted to ready-for-review.
-      Removed all tracked .claude/skills symlinks from git index (git rm --cached)
-      so they are no longer committed to the repo."
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Removed all tracked .claude/skills symlinks from git index (git rm
+      --cached) so they are no longer committed to the repo.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
