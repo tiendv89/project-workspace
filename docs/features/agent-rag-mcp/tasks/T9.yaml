@@ -1,15 +1,15 @@
 id: T9
 title: Replace REPO_PATHS with WORKSPACE_YAML_PATH in workflow repo
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T8
 blocked_reason: null
 branch: feature/agent-rag-mcp-T9
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T17:10:50+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-20T10:12:40.159Z
 pr:
   url: null
   status: null
@@ -34,7 +34,13 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-04-20T17:10:50+0700
-    note: Reset to ready — agent claimed but did not produce implementation. Prior art on agent-workflow branch feature/agent-rag-mcp-T8 (commit 7cb4d61) is the starting point.
+    note: Reset to ready — agent claimed but did not produce implementation. Prior
+      art on agent-workflow branch feature/agent-rag-mcp-T8 (commit 7cb4d61) is
+      the starting point.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T10:12:40.159Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/44
   status: open
