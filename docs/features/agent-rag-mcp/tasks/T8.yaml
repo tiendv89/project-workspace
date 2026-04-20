@@ -9,7 +9,7 @@ branch: feature/agent-rag-mcp-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-20T09:18:41+0000
+  last_updated_at: 2026-04-20T09:25:17.519Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/6
   status: open
@@ -131,6 +131,10 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T09:25:17.519Z
+    note: Review dispatch claimed; addressing open PR comments.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/43
   status: open
