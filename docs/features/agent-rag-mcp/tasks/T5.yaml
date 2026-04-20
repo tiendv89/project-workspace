@@ -1,14 +1,16 @@
 id: T5
 title: Docker Compose + init-agent integration
 repo: workflow
-status: ready
-depends_on: [T2, T3]
+status: in_progress
+depends_on:
+  - T2
+  - T3
 blocked_reason: null
 branch: feature/agent-rag-mcp-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T03:12:23+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-20T03:14:27.719Z
 pr:
   url: null
   status: null
@@ -16,8 +18,12 @@ log:
   - action: created
     by: matthew@liquid-labs.xyz
     at: 2026-04-18T18:49:54Z
-    note: "Task created during tech-lead Phase 2 task breakdown."
+    note: Task created during tech-lead Phase 2 task breakdown.
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-04-20T03:12:23+0700
     note: T2 and T3 done — all dependencies satisfied, auto-readied.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-20T03:14:27.719Z
+    note: Claimed via git-based claim protocol.
