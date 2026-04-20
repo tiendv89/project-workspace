@@ -73,7 +73,7 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-04-20T09:30:00.000Z
-    note: "No open comments found; PR already merged — confirmed ready-for-review."
+    note: No open comments found; PR already merged — confirmed ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/39
   status: open
