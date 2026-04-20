@@ -1,7 +1,7 @@
 id: T7
 title: Move Dockerfile.rag to rag-service repo
 repo: rag-service
-status: todo
+status: ready
 depends_on:
   - T5
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/agent-rag-mcp-T7
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T14:15:57+0700
+  last_updated_at: 2026-04-20T14:22:00+0700
 pr:
   url: null
   status: null
@@ -20,3 +20,7 @@ log:
     note: >-
       New task — Dockerfile.rag was placed in the workflow repo by T5 but belongs
       in the rag-service repo alongside the service code it builds.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T14:22:00+0700
+    note: Auto-ready — T5 done, dependency satisfied.

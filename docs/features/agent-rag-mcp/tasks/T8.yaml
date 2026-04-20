@@ -1,7 +1,7 @@
 id: T8
 title: Replace REPO_PATHS env var with workspace.yaml-driven path resolution
 repo: rag-service
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/agent-rag-mcp-T8
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-20T14:15:57+0700
+  last_updated_at: 2026-04-20T14:22:00+0700
 pr:
   url: null
   status: null
@@ -22,3 +22,7 @@ log:
       env var. This prevents scaling to multiple workspaces dynamically. The indexer
       should read repos[] from workspace.yaml at startup instead. Each indexer
       instance is scoped to one workspace (one-RAG-per-workspace model).
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-04-20T14:22:00+0700
+    note: Auto-ready — T2 done, dependency satisfied.
