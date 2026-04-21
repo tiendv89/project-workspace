@@ -1,16 +1,18 @@
 id: T3
 title: Source code indexing — AST chunking
 repo: rag-service
-status: in_review
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: pr_conflict
 blocked_context: null
 branch: feature/agent-rag-v2-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-21T12:00:30.534Z
+  last_updated_at: 2026-04-21T12:02:46.155Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/rag-service/pull/9
   status: open
@@ -51,9 +53,21 @@ log:
       output: 0
       total: 0
       cost_usd: 0
-conflict_state: resolving
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-04-21T12:02:46.155Z
+    note: "Unresolvable merge conflicts in: services/indexer/chunker.py;
+      services/indexer/source_mapper.py; tests/indexer/test_source_mapper.py.
+      Manual resolution required."
+conflict_state: resolved
 rebase_log:
   - at: 2026-04-21T12:00:30.534Z
     action: rebase_started
     by: tiendv.52@gmail.com
     note: Rebase claimed; targeting origin/main.
+  - at: 2026-04-21T12:02:46.155Z
+    action: rebase_blocked
+    by: tiendv.52@gmail.com
+    note: "Unresolvable merge conflicts in: services/indexer/chunker.py;
+      services/indexer/source_mapper.py; tests/indexer/test_source_mapper.py.
+      Manual resolution required."
