@@ -232,10 +232,9 @@ MODEL_NAME = "BAAI/bge-base-en-v1.5"  # 768-dim
 Added to `_EXCLUDE_PATTERNS` in `source_mapper.py`:
 - `__pycache__/`
 - `dist/`, `build/`, `.next/`, `out/` (build artifacts)
-- `*.test.ts`, `*.spec.ts`, `*.test.py` — optionally excluded (see note below)
 - `migrations/` (auto-generated DB migrations)
 
-**Note on test files:** Test files show usage patterns and are often the clearest documentation of how functions are called. Including them is recommended. Exclude only if indexer performance suffers on repos with very large test suites.
+**Test files are explicitly included.** `*.test.ts`, `*.spec.ts`, `*.test.py` and similar are indexed. Test files show exactly how functions are called — they are often the most accurate usage documentation in the codebase and directly answer "how do I call X?" queries.
 
 ### Claim-time context injection update
 
@@ -338,7 +337,7 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 - Model download increases from ~90 MB to ~440 MB — pre-bake `BAAI/bge-base-en-v1.5` into the Docker image to avoid slow first-start
 - Tree-sitter grammar packages add ~5–10 MB to the container image
 - Repos with very large codebases (> 100k LOC) may see longer full re-index cycles — monitor indexer logs
-- Test files are included by default; if a repo's test suite is extremely large, add `tests/` to the exclusion list in `source_mapper.py` as a tuning step
+- Test files are included — they document real usage patterns and are treated as first-class indexed content
 - Brief cold-start window between collection drop and first re-index completion — agents degrade gracefully (empty results, not errors)
 
 **Backward compatibility:**
