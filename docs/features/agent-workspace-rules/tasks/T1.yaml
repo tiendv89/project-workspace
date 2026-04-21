@@ -1,0 +1,25 @@
+id: T1
+title: Replace setupSkillSymlinks with setupGlobalSkills; add copyWorkspaceClaude
+repo: workflow
+status: todo
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/agent-workspace-rules-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:33:04+0700
+    note: >-
+      Task created from approved task breakdown. Single task — all changes
+      land in src/loop/run-claude.ts in the workflow repo.
