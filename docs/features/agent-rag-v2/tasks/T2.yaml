@@ -2,21 +2,24 @@ id: T2
 title: Docs folder indexing
 repo: rag-service
 status: done
-depends_on: [T1]
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/agent-rag-v2-T2
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-21T11:05:09+0000
 
 pr:
   url: https://github.com/tiendv89/rag-service/pull/8
   status: merged
 
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/48
+  status: merged
 
 log:
   - action: created
@@ -27,6 +30,32 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T10:53:14Z
     note: Auto-ready — T1 marked done, all dependencies satisfied.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-21T10:59:35.818Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-21T11:01:11+0000
+    note: Implementation started on feature/agent-rag-v2-T2.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: pr_created
+    by: tiendv.52@gmail.com
+    at: 2026-04-21T11:05:09+0000
+    note: >-
+      PR opened: https://github.com/tiendv89/rag-service/pull/8. 154 passed, 9
+      skipped (integration tests skip without live Qdrant).
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
   - action: done
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T11:38:26Z
