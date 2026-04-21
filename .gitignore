@@ -1,5 +1,6 @@
 .env
 .claude/*
+!.claude/skills/
 .claude/settings.json
 .claude/settings.local.json
 .idea
