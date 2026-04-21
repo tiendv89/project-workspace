@@ -35,4 +35,9 @@
    - Add tests for `copyWorkspaceClaude`: CLAUDE.md present → written to `~/.claude/CLAUDE.md`; missing → emits event, no error
    - Add tests for `setupGlobalSkills`: skills copied from all three sources; stale skills cleaned; symlinks in workspace skills dir skipped
 
+6. **Update `CLAUDE.shared.md`** — add a rule under the Management repo section:
+   - No direct push to main on the management repo for **any** reason — feature docs, task state, skill updates, or otherwise.
+   - `init-feature` and all workflow skills that write to the management repo must create a feature branch and open a PR to base branch.
+   - The only exception is the very first workspace initialisation commit (`init-workspace`).
+
 ### Required skills
