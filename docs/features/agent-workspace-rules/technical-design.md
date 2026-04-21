@@ -39,7 +39,9 @@ copyWorkspaceClaude(workspaceRoot: string): void
 
 ### Change 2 — Replace `setupSkillSymlinks` with `setupGlobalSkills`
 
-Remove `setupSkillSymlinks` and replace with a new function:
+Remove `setupSkillSymlinks` entirely — it must no longer create any files or symlinks inside `taskRepoRoot`. The implementation repo's working tree must remain untouched by the agent runtime before Claude is spawned.
+
+Replace with a new function that targets `~/.claude/skills/` instead:
 
 ```
 setupGlobalSkills(workspaceRoot: string, workflowLocalPath: string): void
