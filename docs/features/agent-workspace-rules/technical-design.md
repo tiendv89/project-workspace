@@ -6,17 +6,17 @@
 
 ## Current State
 
-### Skills — partially wired, wrong target
+### Skills — correct but pollutes the task repo working tree
 
 `run-claude.ts` already calls `setupSkillSymlinks()` (lines 117–152) before spawning Claude. It creates **symlinks** in `taskRepoRoot/.claude/skills/` from three sources:
 1. `workspaceRoot/.claude/skills/`
 2. `workflowLocalPath/workflow_skills/`
 3. `workflowLocalPath/technical_skills/`
 
-This works when Claude runs from `taskRepoRoot` as CWD — Claude Code reads `.claude/skills/` from the project root. However:
-- Symlinks point to paths inside the container that must already exist (fragile if mounts change)
-- Skill state is not cleaned between task runs — stale/removed skills persist
-- Skills are scoped to the task repo dir, not available globally
+Skills are discoverable by Claude (CWD is `taskRepoRoot`, so `.claude/skills/` is read). However, the approach has a critical flaw:
+
+- **Git pollution**: symlinks are created inside the task repo's working tree. They show up as untracked files in `git status`. An agent following commit instructions could accidentally commit `.claude/skills/` to an implementation repo — a workflow artefact leaking into product code.
+- Skill state is not cleaned between task runs — removed skills from a prior run may persist on the container filesystem.
 
 ### CLAUDE.md — not wired at all
 
