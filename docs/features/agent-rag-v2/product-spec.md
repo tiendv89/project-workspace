@@ -16,22 +16,18 @@ The core hypothesis is: **an agent that cannot retrieve from the codebase it is 
 
 ## Goals
 
-1. **Index `docs/` folder content** — all Markdown files under `docs/` in every registered repo are indexed with `source_type: doc`, making architecture docs, ADRs, guides, and reference material queryable at task claim time and mid-task
-2. **Index source code** — implementation files (`.py`, `.ts`, `.go`, `.tsx`, etc.) are chunked and indexed so agents can retrieve concrete patterns, function signatures, interfaces, and conventions without traversing the filesystem
-3. **Noise control** — source code indexing must not degrade retrieval quality for existing source types; chunk strategy and file filtering must keep signal-to-noise ratio acceptable
-4. **No re-architecture** — extend the existing v1 stack (Qdrant, indexer, rag-server, `workspace_id` isolation) rather than replacing it; v2 is additive
+1. **Index `docs/` folder content** — all Markdown files under `docs/` in every registered repo are queryable at task claim time and mid-task
+2. **Index source code** — implementation files are indexed so agents can retrieve concrete patterns, function signatures, interfaces, and conventions without traversing the filesystem
+3. **Agents stop re-discovering** — an agent claiming a task should be able to answer "how does this codebase handle X?" from the index, not from grep iterations
+4. **Best possible retrieval quality** — the technical design should choose whatever stack, architecture, and retrieval strategy produces the best agent outcomes; v1 choices are a reference point, not a constraint
 
 ## Non-goals
 
-- Not replacing grep/file reads — RAG supplements direct lookup, it does not replace it
-- Not indexing generated code, vendored dependencies (`node_modules/`, `vendor/`), or build artifacts
-- Not changing the MCP tool contract exposed to agents (`rag_query` signature stays stable) — internal stack choices are open for re-evaluation in technical design
-- Not re-indexing the entire history on every cycle — incremental indexing from v1 must continue to work
+- Not indexing generated code, vendored dependencies (`node_modules/`, `vendor/`), build artifacts, `.env` files, secrets, or binaries
 
 ## Success criteria
 
 - An agent querying "how does this codebase handle auth?" receives source code chunks, not just spec text
-- An agent querying "what is in docs/architecture/" receives indexed doc content
-- Retrieval quality for existing source types (skills, specs, task logs) is not degraded
-- The indexer handles repos with large codebases without timing out or producing memory issues
-- `.env` files, secrets, `node_modules/`, `vendor/`, and binary files are never indexed
+- An agent querying about docs content receives indexed doc content
+- Agents measurably spend fewer iterations on discovery work before producing useful output
+- The system handles large codebases without timing out or memory issues
