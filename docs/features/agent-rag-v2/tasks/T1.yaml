@@ -1,7 +1,7 @@
 id: T1
 title: Schema + model upgrade
 repo: rag-service
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -12,7 +12,7 @@ execution:
   last_updated_at: 2026-04-21T10:47:21+0000
 pr:
   url: https://github.com/tiendv89/rag-service/pull/7
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/47
   status: open
@@ -47,3 +47,7 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T10:53:14Z
+    note: PR merged. T1 complete — schema updated, model swapped to bge-base-en-v1.5, collection migration documented.
