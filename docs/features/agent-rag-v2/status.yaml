@@ -2,8 +2,8 @@ feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Run tech-lead Phase 1 to produce the technical design.
+current_stage: tasks
+next_action: Run tech-lead Phase 2 to produce task breakdown.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         at: 2026-04-21T10:13:22Z
         comment: Approved. Internal stack open for re-evaluation in TDD — only the rag_query MCP contract is fixed.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-21T10:36:37Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-21T10:36:37Z
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -44,6 +48,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T10:13:22Z
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T10:36:37Z
 
 revalidation:
   product_spec_required: false
