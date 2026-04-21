@@ -1,29 +1,302 @@
-# Technical Design
+# Technical Design: Agent RAG v2 — Source Code + Docs Indexing
 
 ## Feature
 - Feature ID: `agent-rag-v2`
-- Title: Agent RAG v2 — Source Code + Docs Indexing
+- Status: **draft** — awaiting human approval
 
-## Current State
-Describe the existing system.
+---
 
-## Constraints
-- Constraint 1
+## 1. Current State
 
-## Options Considered
-### Option A
-- Pros:
-- Cons:
+The v1 RAG stack (`agent-rag-mcp`) is fully deployed and running across the workspace. It consists of three services in the `rag-service` repo:
 
-### Option B
-- Pros:
-- Cons:
+- **qdrant** — vector database (`qdrant/qdrant` Docker image, port 6333), one collection per `workspace_id`
+- **rag-server** — FastAPI + FastMCP service; exposes `rag_query(query, workspace_id, top_k, source_types)` over HTTP/SSE
+- **indexer** — polling worker; detects changed files via `git diff`, chunks, embeds via `sentence-transformers/all-MiniLM-L6-v2` (384-dim), upserts to Qdrant
 
-## Chosen Design
-Explain the selected design and why.
+**What v1 indexes today:**
 
-## Dependency Analysis
-Document dependencies and blocking conditions.
+| Pattern | `source_type` | Chunking |
+|---|---|---|
+| `workflow/workflow_skills/*/SKILL.md` | `skill` | Whole file |
+| `workflow/technical_skills/*/SKILL.md` | `skill` | Whole file |
+| `docs/features/*/product-spec.md` | `product_spec` | 512 tok / 50 overlap |
+| `docs/features/*/technical-design.md` | `technical_design` | 512 tok / 50 overlap |
+| `agents/*/log.jsonl` | `task_log` | One chunk per JSONL entry |
+| `CLAUDE.md`, `CLAUDE.shared.md` | `claude_md` | Whole file |
+| `README.md` (top-level only) | `readme` | 512 tok / 50 overlap |
 
-## Parallelization / Blocking Analysis
-Explain what can proceed in parallel and what is blocked.
+**What v1 explicitly does NOT index:** source code, `docs/` folder content (other than the specific feature paths above), `node_modules/`, `vendor/`, binaries, `.env` files.
+
+**Current limitations:**
+- `docs/architecture/`, `docs/guides/`, `docs/adr/`, and any other `docs/` content is invisible to the index
+- All implementation files (`.py`, `.ts`, `.go`, `.tsx`, etc.) are unindexed — agents do cold discovery via grep/read on every task
+- `classify_path()` in `source_mapper.py` returns `None` for any path not matching the 7 inclusion patterns; those files are silently skipped
+
+**v1 VALID_SOURCE_TYPES** (hardcoded in `services/shared/schema.py`):
+```python
+frozenset({"skill", "task_log", "product_spec", "technical_design", "readme", "claude_md"})
+```
+
+Any new source type must be added here before the indexer can write points with that type.
+
+---
+
+## 2. Problem Framing
+
+**Must change:**
+- `VALID_SOURCE_TYPES` must include `doc` and `source_code`
+- `source_mapper.py` must match `docs/**/*.md` files (excluding the already-covered `docs/features/*/product-spec.md` and `docs/features/*/technical-design.md`) and source code files
+- `chunker.py` must handle the two new source types
+- Source code chunks must be semantically meaningful — not arbitrary 512-token windows that split a function in half
+
+**Must remain stable:**
+- `rag_query` MCP tool contract (signature, return shape) — agents already call this; breaking it would require updating every agent's tooling
+- Qdrant `workspace_id` isolation — every point carries `workspace_id`; filtering is mandatory on every query
+- The polling indexer model — no change to the trigger mechanism
+
+**Fixed assumptions:**
+- Qdrant is already running and collections already exist; re-indexing happens naturally on the next poll cycle after the indexer is updated
+- The embedding model is `all-MiniLM-L6-v2` (384-dim); any change to the model or dimension requires dropping and recreating the Qdrant collection — a migration concern
+- The `rag-service` repo owns all three services
+
+---
+
+## 3. Options Considered
+
+### 3a. Chunking strategy for source code
+
+**Option A — Sliding window (same as prose)**
+- Apply the existing `_sliding_window_chunks(512 tok, 50 overlap)` to source files
+- Pros: zero new code, immediate
+- Cons: arbitrarily splits functions mid-body; a chunk containing the middle of a function body with no signature is nearly useless for retrieval; embedding quality degrades with decontextualised fragments
+- Verdict: Fast to ship, but poor retrieval quality — agents will get chunks without function names or class context
+
+**Option B — AST-aware chunking via tree-sitter**
+- Parse each source file with `tree-sitter` and extract top-level nodes (functions, classes, methods)
+- Each function/class becomes its own chunk, optionally prefixed with its parent class name for context
+- Falls back to sliding window for languages without a tree-sitter grammar
+- Pros: chunks are semantically complete — each chunk is a named, callable unit with full signature; retrieval quality is significantly better; "how does X work" queries return the actual function
+- Cons: new dependency (`tree-sitter` + per-language grammar packages); parsing can fail on malformed code (fallback handles this)
+- Grammar packages needed for the current repos: `tree-sitter-python`, `tree-sitter-typescript` (covers `.ts` and `.tsx`), `tree-sitter-go`
+- Verdict: right choice for production use; fallback to sliding window means failure is graceful
+
+**Option C — LLM-based summarization per function (Hermes-style)**
+- Call the LLM on each function to produce a natural-language summary, index the summary instead of the raw code
+- Pros: very high retrieval quality for semantic questions; noise-free
+- Cons: enormous indexing cost (API call per function × all functions in all repos × every re-index cycle); not feasible for a polling indexer at 5-min intervals; latency makes full re-index impractical
+- Verdict: interesting for a future "summarize on first index" mode; not viable for v2 polling indexer
+
+**Chosen: Option B (AST-aware chunking, tree-sitter, fallback to sliding window).**
+
+---
+
+### 3b. Retrieval strategy
+
+**Option A — Pure dense vector search (current approach, extended to code)**
+- Keep `all-MiniLM-L6-v2`, add code to the index, search by cosine similarity
+- Pros: no change to Qdrant, no change to query layer
+- Cons: `all-MiniLM-L6-v2` is trained on prose, not code; exact identifier lookup ("find `AuthService.validate_token`") may score poorly vs. semantically unrelated prose chunks
+- Verdict: acceptable for semantic questions, weak for exact lookup
+
+**Option B — FTS5 / SQLite replacement (Hermes-style)**
+- Drop Qdrant and embeddings entirely; store chunks in SQLite with FTS5 full-text search
+- Pros: zero infra (SQLite file), exact keyword matching, BM25 scoring, no embedding latency
+- Cons: no semantic search — "how does this codebase handle retries?" fails if the code says `backoff` not `retry`; removes semantic cross-feature recall that currently works well for specs and skills; complete replacement, not an extension
+- Verdict: excellent for pure code search; loses the semantic capability that makes RAG valuable for prose documents
+
+**Option C — Hybrid search (Qdrant dense + BM25 sparse)**
+- Qdrant 1.9+ supports sparse vectors; index both a 384-dim dense vector and a BM25 sparse vector per chunk
+- At query time, combine scores via Reciprocal Rank Fusion (RRF)
+- Pros: semantic + exact in one query, one backend, best retrieval quality for mixed content
+- Cons: Qdrant sparse vector support requires `qdrant-client >= 1.9` (already at `>= 1.9.0` in requirements) and configuring a sparse vector field on the collection — a schema-level change that requires dropping and recreating the collection; also requires a BM25 tokenizer at index time
+
+**Option D — Upgrade embedding model**
+- Replace `all-MiniLM-L6-v2` (384-dim) with `nomic-embed-text-v1.5` (768-dim) or `all-mpnet-base-v2` (768-dim)
+- Both handle code + prose significantly better
+- Cons: dimension change from 384 → 768 requires dropping and recreating the Qdrant collection; ~2x memory/compute for embeddings; ~2x model download size
+
+**Chosen: Option A for v2 (extend current approach), with Option C documented as the natural v3 upgrade.**
+
+Rationale: v2's primary gap is coverage (docs and source code are simply not indexed). Dense-only search with tree-sitter chunks is a significant improvement over the current blank state. Option C (hybrid) is the right long-term answer — it should be planned as v3 once the indexing coverage is confirmed working and we have real query data to measure retrieval quality against.
+
+---
+
+### 3c. Docs folder scope
+
+**Option A — All `docs/**/*.md` files**
+- Index every Markdown file under `docs/` in every repo
+- Avoids per-feature `product-spec.md` and `technical-design.md` (already covered as `product_spec` / `technical_design`)
+- New `source_type: doc`
+
+**Option B — Curated exclusion list**
+- Same as A, but exclude known-noisy paths (e.g. `docs/features/*/tasks.md`)
+- `tasks.md` is machine-generated planning; its content is covered by individual task YAMLs already indexed as `task_log`
+
+**Chosen: Option B.** Index all `docs/**/*.md` except `docs/features/*/product-spec.md`, `docs/features/*/technical-design.md`, and `docs/features/*/tasks.md` (those are already covered or redundant).
+
+---
+
+## 4. Chosen Design
+
+### Summary
+
+Extend the `rag-service` indexer with two new source types and update the `start-implementation` skill in the `workflow` repo to query them at claim time. No changes to Qdrant schema (same 384-dim collection), no changes to the `rag_query` tool contract.
+
+### New source types and patterns
+
+| Pattern | `source_type` | Chunking |
+|---|---|---|
+| `docs/**/*.md` (excl. product-spec, technical-design, tasks.md) | `doc` | 512 tok / 50 overlap |
+| `**/*.py`, `**/*.ts`, `**/*.tsx`, `**/*.go`, `**/*.js` (excl. vendor, node_modules, build, dist, .env) | `source_code` | AST-aware (tree-sitter), fallback to 512/50 sliding window |
+
+### Schema change
+
+Add to `VALID_SOURCE_TYPES` in `services/shared/schema.py`:
+```python
+frozenset({
+    "skill", "task_log", "product_spec", "technical_design",
+    "readme", "claude_md",
+    "doc",          # new
+    "source_code",  # new
+})
+```
+
+No Qdrant collection schema change required — `source_type` is a payload field, not a vector dimension. Existing points are unaffected.
+
+### AST-aware code chunking
+
+`services/indexer/chunker.py` gets a new strategy for `source_code`:
+
+1. Attempt to parse the file with tree-sitter using the appropriate grammar (inferred from file extension)
+2. Walk top-level nodes: `function_definition`, `class_definition`, `method_definition`, `function_declaration`
+3. For each node, emit a chunk:
+   - Prefix with `# <file_path>` and `# class: <ClassName>` if applicable, then the raw node text
+   - This context prefix ensures the embedding captures the file location and class membership, not just the isolated body
+4. If tree-sitter fails (parse error, unsupported language) or yields zero nodes: fall back to `_sliding_window_chunks(512, 50)`
+5. Very large functions (> 1500 tokens ≈ 6000 chars) are split with a sliding window within the function body, each sub-chunk prefixed with the function signature line
+
+**New dependency:**
+```
+tree-sitter>=0.23.0
+tree-sitter-python>=0.23.0
+tree-sitter-typescript>=0.23.0
+tree-sitter-go>=0.23.0
+```
+
+### Source code exclusion filters
+
+Added to `_EXCLUDE_PATTERNS` in `source_mapper.py`:
+- `__pycache__/`
+- `dist/`, `build/`, `.next/`, `out/` (build artifacts)
+- `*.test.ts`, `*.spec.ts`, `*.test.py` — optionally excluded (see note below)
+- `migrations/` (auto-generated DB migrations)
+
+**Note on test files:** Test files show usage patterns and are often the clearest documentation of how functions are called. Including them is recommended. Exclude only if indexer performance suffers on repos with very large test suites.
+
+### Claim-time context injection update
+
+`workflow_skills/start-implementation/SKILL.md` currently calls `rag_query` without a `source_types` filter (returns all types). No change is required for correctness — the new types will naturally appear in results once indexed.
+
+Optional improvement (T3): add a `source_types` hint at claim time to weight results toward `source_code` and `doc` when the task is implementation-focused.
+
+### What does NOT change
+
+- `rag_query` tool signature — identical
+- Qdrant collection name, vector dimension, distance metric — identical
+- `workspace_id` isolation — unchanged
+- Polling interval, `git diff`-based change detection — unchanged
+- Docker Compose structure, env vars — unchanged (no new services, no new env vars)
+
+---
+
+## 5. Dependency Analysis
+
+**Internal dependencies:**
+- `VALID_SOURCE_TYPES` in `schema.py` must be updated before the indexer can write points with `doc` or `source_code` types (raises `ValueError` on upsert otherwise) — T1 must precede T2 and T3
+- Tree-sitter grammars must be pinned to the same minor version as `tree-sitter` core — version mismatch causes runtime import errors
+
+**External dependencies:**
+- `tree-sitter >= 0.23.0` — Python bindings for the tree-sitter parsing library; MIT licence; well-maintained
+- `tree-sitter-python`, `tree-sitter-typescript`, `tree-sitter-go` — grammar packages; each is a thin Python wrapper around a C grammar; Apache 2.0 / MIT
+- Docker image rebuild required to install new packages — indexer container must be rebuilt and redeployed; existing Qdrant data is unaffected
+
+**Blocking decisions — resolved:**
+- Chunking strategy for code: AST-aware with tree-sitter (chosen above)
+- Retrieval strategy: dense-only for v2, hybrid planned for v3 (chosen above)
+- Docs scope: all `docs/**/*.md` excluding already-covered and redundant files (chosen above)
+
+**Configuration dependencies:**
+- No new env vars required
+- No Qdrant schema migration (same 384-dim, COSINE collection)
+- Indexer container rebuild and restart is the only operational change
+
+**Release dependencies:**
+- Independent of all other in-flight features
+- `agent-rag-mcp` (v1) must be deployed and stable before v2 is applied — v2 is a backwards-compatible extension of the same service
+
+---
+
+## 6. Parallelization / Blocking Analysis
+
+```
+T1: Schema extension — add `doc` + `source_code` to VALID_SOURCE_TYPES (rag-service)
+  └── Can begin now — no blockers
+
+  T2: Docs folder indexing — source_mapper + chunker (rag-service)
+  T3: Source code indexing — tree-sitter AST chunking (rag-service)
+      └── T2 and T3 run in parallel
+      └── BLOCKED on T1 (schema.py must recognise the new types before indexer can write them)
+      │
+      T4: Claim-time query update — start-implementation skill (workflow)
+            └── BLOCKED on T2 + T3 (new source types must exist in the index before the
+                skill can usefully reference or filter them)
+```
+
+T2 and T3 are the bulk of the work and can be executed by two agents concurrently once T1 is merged.
+
+---
+
+## 7. Repository Impact
+
+| Repo | Files changed | Reason |
+|---|---|---|
+| `rag-service` | `services/shared/schema.py` | Add `doc`, `source_code` to `VALID_SOURCE_TYPES` |
+| `rag-service` | `services/indexer/source_mapper.py` | Add docs + code inclusion patterns; extend exclusion list |
+| `rag-service` | `services/indexer/chunker.py` | Add `doc` strategy (sliding window) and `source_code` strategy (tree-sitter AST, fallback) |
+| `rag-service` | `requirements.txt` | Add `tree-sitter>=0.23.0` and grammar packages |
+| `rag-service` | `tests/indexer/test_source_mapper.py` | Tests for new path patterns |
+| `rag-service` | `tests/indexer/test_chunker.py` | Tests for new chunking strategies |
+| `rag-service` | `tests/shared/test_schema.py` | Tests for updated source type validation |
+| `workflow` | `workflow_skills/start-implementation/SKILL.md` | Optional: add source_types hint to claim-time RAG query |
+
+---
+
+## 8. Validation and Release Impact
+
+**Testing expectations:**
+- Unit: `classify_path("docs/architecture/overview.md")` → `("doc", None)`; `classify_path("services/auth.py")` → `("source_code", None)`; `classify_path("node_modules/foo.js")` → `None`
+- Unit: `chunk_document("source_code", <python_file>)` produces chunks whose content starts with the function signature, not a mid-body fragment
+- Unit: `chunk_document("source_code", <malformed_file>)` falls back to sliding window without raising
+- Integration: index a Python file → query `rag_query("authentication function", workspace_id="workspace", source_types=["source_code"])` → top result contains the auth function body
+- Integration: index a `docs/architecture/overview.md` → query returns it
+- Regression: existing source types (skill, product_spec, etc.) still return correct results after schema update
+
+**Migration / config impact:**
+- No Qdrant collection migration needed — `source_type` is a payload field
+- Indexer container must be rebuilt after `requirements.txt` changes
+- First indexer run after deployment triggers a full scan (no prior `_last_commit` for new file types) — this is the expected cold-start behaviour, not a bug
+- Existing agents with `MCP_RAG_URL` set will automatically benefit once the indexer runs; no agent config changes required
+
+**Rollout concerns:**
+- Tree-sitter grammar packages add ~5–10 MB to the container image; model download is unchanged
+- Repos with very large codebases (> 100k LOC) may see longer first-index cycles — monitor indexer logs for timeout warnings
+- Test files are included by default; if a repo's test suite is extremely large, add `tests/` to the exclusion list in `source_mapper.py` as an operational tuning step
+
+**Backward compatibility:**
+- Fully additive — existing agents, existing queries, existing Qdrant data are unaffected
+- `rag_query` contract is unchanged
+- The `start-implementation` skill change (T4) is optional and non-breaking
+
+**v3 upgrade path (not in scope for v2):**
+- Hybrid search (Qdrant dense + sparse BM25) — switch to `nomic-embed-text-v1.5` or `all-mpnet-base-v2`, enable sparse vectors, query with RRF fusion; requires collection recreation and full re-index
