@@ -1,9 +1,9 @@
 feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Run tech-lead Phase 2 to produce task breakdown.
+next_action: T1 is ready for implementation. Run start-implementation on T1.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: 2026-04-21T10:36:37Z
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-21T10:39:44Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-21T10:39:44Z
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -52,6 +56,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T10:36:37Z
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T10:39:44Z
 
 revalidation:
   product_spec_required: false
