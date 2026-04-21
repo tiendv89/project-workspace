@@ -99,26 +99,41 @@ Any new source type must be added here before the indexer can write points with 
 - Cons: `all-MiniLM-L6-v2` is trained on prose, not code; exact identifier lookup ("find `AuthService.validate_token`") may score poorly vs. semantically unrelated prose chunks
 - Verdict: acceptable for semantic questions, weak for exact lookup
 
-**Option B — FTS5 / SQLite replacement (Hermes-style)**
-- Drop Qdrant and embeddings entirely; store chunks in SQLite with FTS5 full-text search
-- Pros: zero infra (SQLite file), exact keyword matching, BM25 scoring, no embedding latency
-- Cons: no semantic search — "how does this codebase handle retries?" fails if the code says `backoff` not `retry`; removes semantic cross-feature recall that currently works well for specs and skills; complete replacement, not an extension
-- Verdict: excellent for pure code search; loses the semantic capability that makes RAG valuable for prose documents
+**Option B — Hermes Agent (NousResearch) as the agent runtime + memory layer**
+- [Hermes Agent](https://github.com/NousResearch/hermes-agent) is a self-improving AI agent platform with a built-in learning loop: agents create skills from experience, skills self-improve during use, and cross-session recall is provided via FTS5 (SQLite full-text search) + LLM summarization
+- Its memory architecture is the direct prior art for what this system is building: task logs become searchable, skills are refined automatically, and agents accumulate a model of the codebase across sessions
+- Two ways this could apply:
+  1. **Replace the agent runtime** — run agents on Hermes instead of Claude Code + the current workflow skills; Hermes' built-in memory/skill loop handles RAG natively
+  2. **Adopt only the FTS5 retrieval approach** — drop Qdrant; store chunks in SQLite with FTS5 BM25 scoring; use Hermes' proven retrieval logic as a reference implementation
+- Pros (runtime replacement): no RAG infra to build or maintain; Hermes' learning loop is production-proven (107k stars); skill self-improvement is richer than static `SKILL.md` files
+- Cons (runtime replacement): Hermes is a full agent platform — adopting it means replacing Claude Code, the claim/task YAML protocol, `start-implementation`, all workflow skills, and human governance gates. This is not a retrieval upgrade; it is a complete workflow rewrite. Not feasible for v2.
+- Pros (FTS5 approach only): zero infra (SQLite file), exact keyword matching, BM25 scoring, no embedding model latency, no Qdrant dependency
+- Cons (FTS5 approach only): no semantic search — "how does this codebase handle retries?" fails if the code says `backoff` not `retry`; prose documents (specs, skills, task logs) benefit from semantic similarity which FTS5 cannot provide; complete infrastructure replacement for the existing working stack
+- Verdict: Hermes is the clearest external validation that agent memory + skill learning produces better agents. Its FTS5 approach is the right answer for pure code identifier search; it is the wrong answer for semantic recall across prose docs. The current system needs both. **Hermes' architecture is the target end-state for v3+; FTS5 as a code-only backend is worth revisiting once hybrid search is in place (see Option D).**
 
-**Option C — Hybrid search (Qdrant dense + BM25 sparse)**
+**Option C — FTS5 / SQLite for source code only (split backend)**
+- Keep Qdrant for prose (skills, specs, task logs, docs) — semantic search is valuable here
+- Add a separate SQLite FTS5 index for source code only — exact identifier + BM25 search
+- Expose a second MCP tool `code_search(query, workspace_id, top_k)` alongside `rag_query`
+- Pros: best-of-both — semantic recall for prose, exact recall for code; zero new infra (SQLite is embedded)
+- Cons: two backends to maintain; two MCP tools agents must learn to use; agents may not know which tool to call
+- Verdict: architecturally sound but adds agent-facing complexity; better addressed via hybrid search in one tool (Option D)
+
+**Option D — Hybrid search (Qdrant dense + BM25 sparse)**
 - Qdrant 1.9+ supports sparse vectors; index both a 384-dim dense vector and a BM25 sparse vector per chunk
-- At query time, combine scores via Reciprocal Rank Fusion (RRF)
-- Pros: semantic + exact in one query, one backend, best retrieval quality for mixed content
-- Cons: Qdrant sparse vector support requires `qdrant-client >= 1.9` (already at `>= 1.9.0` in requirements) and configuring a sparse vector field on the collection — a schema-level change that requires dropping and recreating the collection; also requires a BM25 tokenizer at index time
+- At query time, combine scores via Reciprocal Rank Fusion (RRF) — one tool, two signals
+- Pros: semantic + exact in one query, one backend, one tool; the Hermes FTS5 benefit absorbed without splitting the system
+- Cons: requires dropping and recreating the Qdrant collection (schema change for sparse vector field); requires a BM25 tokenizer at index time; `qdrant-client >= 1.9` already satisfied
+- Verdict: this is the right long-term architecture — it merges the Hermes FTS5 insight with the current semantic stack
 
-**Option D — Upgrade embedding model**
+**Option E — Upgrade embedding model**
 - Replace `all-MiniLM-L6-v2` (384-dim) with `nomic-embed-text-v1.5` (768-dim) or `all-mpnet-base-v2` (768-dim)
 - Both handle code + prose significantly better
-- Cons: dimension change from 384 → 768 requires dropping and recreating the Qdrant collection; ~2x memory/compute for embeddings; ~2x model download size
+- Cons: dimension change from 384 → 768 requires dropping and recreating the Qdrant collection; ~2x memory/compute for embeddings
 
-**Chosen: Option A for v2 (extend current approach), with Option C documented as the natural v3 upgrade.**
+**Chosen: Option A for v2 (extend current approach), with Option D as the documented v3 upgrade.**
 
-Rationale: v2's primary gap is coverage (docs and source code are simply not indexed). Dense-only search with tree-sitter chunks is a significant improvement over the current blank state. Option C (hybrid) is the right long-term answer — it should be planned as v3 once the indexing coverage is confirmed working and we have real query data to measure retrieval quality against.
+Rationale: v2's primary gap is coverage — docs and source code are simply not in the index at all. Dense-only search with tree-sitter chunks is a large improvement over nothing. Option D (hybrid, absorbing the Hermes FTS5 insight into a single tool) is the right long-term answer and should be planned as v3 once we have real query data showing where dense-only falls short.
 
 ---
 
