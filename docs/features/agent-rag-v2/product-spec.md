@@ -25,7 +25,7 @@ The core hypothesis is: **an agent that cannot retrieve from the codebase it is 
 
 - Not replacing grep/file reads — RAG supplements direct lookup, it does not replace it
 - Not indexing generated code, vendored dependencies (`node_modules/`, `vendor/`), or build artifacts
-- Not changing the Qdrant schema, MCP tool contract, or claim-time injection flow from v1
+- Not changing the MCP tool contract exposed to agents (`rag_query` signature stays stable) — internal stack choices are open for re-evaluation in technical design
 - Not re-indexing the entire history on every cycle — incremental indexing from v1 must continue to work
 
 ## Success criteria
