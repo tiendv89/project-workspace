@@ -19,9 +19,9 @@ Claude Code reads its global config from `~/.claude/CLAUDE.md` inside the contai
 
 ...are unknown to the agent. It may produce commits with the wrong author, GPG-signed with the wrong key, or attempt to use `gh pr create` instead of the workspace's `pr-create` skill.
 
-### Gap 2 — Skills not loaded
+### Gap 2 — Skills pollute the task repo working tree
 
-Skills live in `<workspace>/.claude/skills/` (symlinked from `workflow/`). When Claude is spawned against an **implementation repo** as its working directory, that repo has no `.claude/skills/` directory — so all workflow and technical skills are invisible to the agent. The `### Required skills` section in `tasks.md` is never honoured.
+The agent runtime already creates skill symlinks inside `taskRepoRoot/.claude/skills/` before spawning Claude, so skills are technically discoverable. However, this approach has a critical flaw: the symlinks are created **inside the implementation repo's working tree**. They appear as untracked files in `git status`, and an agent following commit instructions could accidentally commit `.claude/skills/` to a product repo — leaking workflow infrastructure into implementation code.
 
 ## Why not write CLAUDE.md into each implementation repo?
 
@@ -41,19 +41,17 @@ Each time the agent runtime **claims a task**, before invoking Claude:
 
 Rules are always correct for the workspace being worked on, regardless of how many workspaces the container watches.
 
-### Skills — global skill directory
+### Skills — move to global skill directory
 
 Each time the agent runtime claims a task (implementation start or review start), before invoking Claude:
-1. Clean `~/.claude/skills/`.
+1. Clean `~/.claude/skills/` — removes any stale skills from a prior task or workspace.
 2. Copy `$WORKSPACE_ROOT/workflow/technical_skills/*` → `~/.claude/skills/`.
 3. Copy `$WORKSPACE_ROOT/workflow/workflow_skills/*` → `~/.claude/skills/`.
-4. Copy any **non-symlink** directories from `<workspace>/.claude/skills/` → `~/.claude/skills/` (these are workspace-local skills not present in the workflow dirs).
+4. Copy any **non-symlink** directories from `<workspace>/.claude/skills/` → `~/.claude/skills/` (workspace-local skills not present in the workflow dirs; these take precedence).
 
-Symlinked entries in `<workspace>/.claude/skills/` are skipped — they are already covered by the workflow dirs copied in steps 2–3.
+Symlinked entries in `<workspace>/.claude/skills/` are skipped — already covered by steps 2–3.
 
-Clean + re-copy on every task start and review start to ensure a consistent, up-to-date state.
-
-Claude Code discovers skills natively from `~/.claude/skills/` — no parsing of `tasks.md`, no content injection into `CLAUDE.md` required.
+This replaces the current approach of symlinking into `taskRepoRoot/.claude/skills/`. Skills remain discoverable by Claude (via `~/.claude/skills/` global lookup) while the implementation repo's working tree stays clean.
 
 ## Non-goals
 
