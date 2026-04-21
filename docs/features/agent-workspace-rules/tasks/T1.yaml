@@ -1,7 +1,7 @@
 id: T1
 title: Replace setupSkillSymlinks with setupGlobalSkills; add copyWorkspaceClaude
 repo: workflow
-status: todo
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,12 +9,12 @@ branch: feature/agent-workspace-rules-T1
 
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-04-21T14:52:06+0700
 
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/46
+  status: merged
 
 log:
   - action: created
@@ -23,3 +23,19 @@ log:
     note: >-
       Task created from approved task breakdown. Single task — all changes
       land in src/loop/run-claude.ts in the workflow repo.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:33:04+0700
+    note: Task activated — no dependencies.
+  - action: claimed
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:40:00+0700
+    note: Implementation started on feature/agent-workspace-rules-T1.
+  - action: moved_to_review
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:45:00+0700
+    note: PR opened — https://github.com/tiendv89/agent-workflow/pull/46
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:52:06+0700
+    note: PR #46 merged into main.
