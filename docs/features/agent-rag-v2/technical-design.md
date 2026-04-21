@@ -127,13 +127,18 @@ Any new source type must be added here before the indexer can write points with 
 - Verdict: this is the right long-term architecture — it merges the Hermes FTS5 insight with the current semantic stack
 
 **Option E — Upgrade embedding model**
-- Replace `all-MiniLM-L6-v2` (384-dim) with `nomic-embed-text-v1.5` (768-dim) or `all-mpnet-base-v2` (768-dim)
-- Both handle code + prose significantly better
-- Cons: dimension change from 384 → 768 requires dropping and recreating the Qdrant collection; ~2x memory/compute for embeddings
+- Replace `all-MiniLM-L6-v2` (384-dim) with a model that handles both code and prose well
+- Best candidates:
+  - `BAAI/bge-base-en-v1.5` — 768-dim, strong general + code retrieval, no special flags required, well-supported in sentence-transformers
+  - `nomic-embed-text-v1.5` — 768-dim, excellent mixed code+prose, supports matryoshka (can truncate to 512/256 if needed); requires `trust_remote_code=True`
+  - `all-mpnet-base-v2` — 768-dim, better than MiniLM for prose, weaker on code than the above two
+- Migration cost: dropping and recreating the Qdrant collection is a one-time operational step — stop indexer, drop collection, restart, wait one poll cycle for full re-index. Not a real blocker.
+- Pros: significantly better retrieval quality for both code and prose with a single model swap; no architecture change; Option D (hybrid) still available as a v3 upgrade on top of the better model
+- Cons: ~2x memory and compute for embeddings; ~300–400 MB model download vs ~90 MB for MiniLM; first re-index after migration takes one full cycle
 
-**Chosen: Option A for v2 (extend current approach), with Option D as the documented v3 upgrade.**
+**Chosen: Option E (upgrade to `BAAI/bge-base-en-v1.5`, 768-dim) combined with dense search, with Option D as the documented v3 upgrade.**
 
-Rationale: v2's primary gap is coverage — docs and source code are simply not in the index at all. Dense-only search with tree-sitter chunks is a large improvement over nothing. Option D (hybrid, absorbing the Hermes FTS5 insight into a single tool) is the right long-term answer and should be planned as v3 once we have real query data showing where dense-only falls short.
+Rationale: going into v2 with a 384-dim prose-trained model while deliberately adding source code is a quality risk that would undermine the feature's core goal. `all-MiniLM-L6-v2` was chosen for v1 when no code was indexed; that constraint no longer holds. `BAAI/bge-base-en-v1.5` is the pragmatic upgrade — strong on both code and prose, no unusual loading flags, same sentence-transformers interface. The migration is a one-time collection recreation. Option D (hybrid dense + sparse BM25) remains the v3 path for near-perfect recall.
 
 ---
 
@@ -156,7 +161,7 @@ Rationale: v2's primary gap is coverage — docs and source code are simply not 
 
 ### Summary
 
-Extend the `rag-service` indexer with two new source types and update the `start-implementation` skill in the `workflow` repo to query them at claim time. No changes to Qdrant schema (same 384-dim collection), no changes to the `rag_query` tool contract.
+Extend the `rag-service` indexer with two new source types, upgrade the embedding model from `all-MiniLM-L6-v2` (384-dim) to `BAAI/bge-base-en-v1.5` (768-dim), and update the `start-implementation` skill in the `workflow` repo to query the new source types at claim time. The Qdrant collection is recreated once for the dimension change; the `rag_query` tool contract is unchanged.
 
 ### New source types and patterns
 
@@ -177,7 +182,16 @@ frozenset({
 })
 ```
 
-No Qdrant collection schema change required — `source_type` is a payload field, not a vector dimension. Existing points are unaffected.
+Update `VECTOR_DIM` in `services/shared/qdrant_init.py`:
+```python
+VECTOR_DIM = 768  # upgraded from 384 (BAAI/bge-base-en-v1.5)
+```
+
+**Collection migration:** The dimension change requires dropping and recreating the Qdrant collection. The indexer's first run after deployment performs a full re-index (no prior `_last_commit`), so existing content is restored automatically within one poll cycle. Procedure:
+1. Stop indexer
+2. Drop collection: `DELETE /collections/{workspace_id}` on the Qdrant REST API
+3. Deploy new indexer image
+4. Indexer recreates collection at 768-dim and re-indexes all content on startup
 
 ### AST-aware code chunking
 
@@ -191,13 +205,27 @@ No Qdrant collection schema change required — `source_type` is a payload field
 4. If tree-sitter fails (parse error, unsupported language) or yields zero nodes: fall back to `_sliding_window_chunks(512, 50)`
 5. Very large functions (> 1500 tokens ≈ 6000 chars) are split with a sliding window within the function body, each sub-chunk prefixed with the function signature line
 
-**New dependency:**
+**New dependencies:**
 ```
 tree-sitter>=0.23.0
 tree-sitter-python>=0.23.0
 tree-sitter-typescript>=0.23.0
 tree-sitter-go>=0.23.0
 ```
+
+### Embedding model upgrade
+
+Replace `sentence-transformers/all-MiniLM-L6-v2` with `BAAI/bge-base-en-v1.5` in both `services/indexer/embedder.py` and `services/rag_server/embedder.py`:
+
+```python
+# before
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"  # 384-dim
+
+# after
+MODEL_NAME = "BAAI/bge-base-en-v1.5"  # 768-dim
+```
+
+`bge-base-en-v1.5` uses the standard `SentenceTransformer` interface with no special flags. Model download is ~440 MB (vs ~90 MB for MiniLM) — consider pre-baking into the Docker image to avoid slow first-start. The `sentence-transformers` package version constraint is unchanged (`>=3.0.0`).
 
 ### Source code exclusion filters
 
@@ -218,7 +246,7 @@ Optional improvement (T3): add a `source_types` hint at claim time to weight res
 ### What does NOT change
 
 - `rag_query` tool signature — identical
-- Qdrant collection name, vector dimension, distance metric — identical
+- Qdrant collection name and distance metric (COSINE) — identical; only the vector dimension changes
 - `workspace_id` isolation — unchanged
 - Polling interval, `git diff`-based change detection — unchanged
 - Docker Compose structure, env vars — unchanged (no new services, no new env vars)
@@ -255,20 +283,21 @@ Optional improvement (T3): add a `source_types` hint at claim time to weight res
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Schema extension — add `doc` + `source_code` to VALID_SOURCE_TYPES (rag-service)
+T1: Schema + model upgrade — VALID_SOURCE_TYPES, VECTOR_DIM, embedder swap, collection migration (rag-service)
   └── Can begin now — no blockers
 
   T2: Docs folder indexing — source_mapper + chunker (rag-service)
   T3: Source code indexing — tree-sitter AST chunking (rag-service)
       └── T2 and T3 run in parallel
-      └── BLOCKED on T1 (schema.py must recognise the new types before indexer can write them)
+      └── BLOCKED on T1 (schema.py must recognise the new types; VECTOR_DIM must match the
+          deployed model before any new points are written)
       │
       T4: Claim-time query update — start-implementation skill (workflow)
             └── BLOCKED on T2 + T3 (new source types must exist in the index before the
                 skill can usefully reference or filter them)
 ```
 
-T2 and T3 are the bulk of the work and can be executed by two agents concurrently once T1 is merged.
+T2 and T3 are the bulk of the work and can be executed by two agents concurrently once T1 is merged. T1 is the critical-path task — it owns the one-time collection migration and the model swap.
 
 ---
 
@@ -276,13 +305,15 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 
 | Repo | Files changed | Reason |
 |---|---|---|
-| `rag-service` | `services/shared/schema.py` | Add `doc`, `source_code` to `VALID_SOURCE_TYPES` |
+| `rag-service` | `services/shared/schema.py` | Add `doc`, `source_code` to `VALID_SOURCE_TYPES`; update `VECTOR_DIM` to 768 |
+| `rag-service` | `services/indexer/embedder.py` | Swap model to `BAAI/bge-base-en-v1.5` |
+| `rag-service` | `services/rag_server/embedder.py` | Swap model to `BAAI/bge-base-en-v1.5` |
 | `rag-service` | `services/indexer/source_mapper.py` | Add docs + code inclusion patterns; extend exclusion list |
 | `rag-service` | `services/indexer/chunker.py` | Add `doc` strategy (sliding window) and `source_code` strategy (tree-sitter AST, fallback) |
 | `rag-service` | `requirements.txt` | Add `tree-sitter>=0.23.0` and grammar packages |
 | `rag-service` | `tests/indexer/test_source_mapper.py` | Tests for new path patterns |
 | `rag-service` | `tests/indexer/test_chunker.py` | Tests for new chunking strategies |
-| `rag-service` | `tests/shared/test_schema.py` | Tests for updated source type validation |
+| `rag-service` | `tests/shared/test_schema.py` | Tests for updated source type validation and vector dimension |
 | `workflow` | `workflow_skills/start-implementation/SKILL.md` | Optional: add source_types hint to claim-time RAG query |
 
 ---
@@ -298,19 +329,21 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 - Regression: existing source types (skill, product_spec, etc.) still return correct results after schema update
 
 **Migration / config impact:**
-- No Qdrant collection migration needed — `source_type` is a payload field
-- Indexer container must be rebuilt after `requirements.txt` changes
-- First indexer run after deployment triggers a full scan (no prior `_last_commit` for new file types) — this is the expected cold-start behaviour, not a bug
-- Existing agents with `MCP_RAG_URL` set will automatically benefit once the indexer runs; no agent config changes required
+- **Qdrant collection recreation required** — `VECTOR_DIM` changes from 384 to 768; existing collection must be dropped and recreated. Procedure: stop indexer → `DELETE /collections/{workspace_id}` → deploy new image → indexer recreates collection and re-indexes on first run
+- Indexer and rag-server containers must both be rebuilt (both embedder files change)
+- First indexer run after deployment performs a full re-index (cold start) — all content restored within one poll cycle
+- Existing agents with `MCP_RAG_URL` set automatically benefit once the indexer run completes; no agent config changes required
 
 **Rollout concerns:**
-- Tree-sitter grammar packages add ~5–10 MB to the container image; model download is unchanged
-- Repos with very large codebases (> 100k LOC) may see longer first-index cycles — monitor indexer logs for timeout warnings
-- Test files are included by default; if a repo's test suite is extremely large, add `tests/` to the exclusion list in `source_mapper.py` as an operational tuning step
+- Model download increases from ~90 MB to ~440 MB — pre-bake `BAAI/bge-base-en-v1.5` into the Docker image to avoid slow first-start
+- Tree-sitter grammar packages add ~5–10 MB to the container image
+- Repos with very large codebases (> 100k LOC) may see longer full re-index cycles — monitor indexer logs
+- Test files are included by default; if a repo's test suite is extremely large, add `tests/` to the exclusion list in `source_mapper.py` as a tuning step
+- Brief cold-start window between collection drop and first re-index completion — agents degrade gracefully (empty results, not errors)
 
 **Backward compatibility:**
-- Fully additive — existing agents, existing queries, existing Qdrant data are unaffected
-- `rag_query` contract is unchanged
+- `rag_query` tool contract is unchanged
+- The collection recreation is a one-time migration with a brief cold-start window; not a rolling upgrade
 - The `start-implementation` skill change (T4) is optional and non-breaking
 
 **v3 upgrade path (not in scope for v2):**
