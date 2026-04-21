@@ -268,7 +268,7 @@ Added to `_EXCLUDE_PATTERNS` in `source_mapper.py`:
 
 **Configuration dependencies:**
 - No new env vars required
-- No Qdrant schema migration (same 384-dim, COSINE collection)
+- Qdrant collection recreation required — `VECTOR_DIM` changes from 384 to 768 (see section 4, Schema change)
 - Indexer container rebuild and restart is the only operational change
 
 **Release dependencies:**
