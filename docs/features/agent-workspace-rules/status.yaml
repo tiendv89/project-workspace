@@ -1,9 +1,9 @@
 feature_id: agent-workspace-rules
 title: Inject workspace rules and skills into agent containers at task-claim time
 
-feature_status: in_tdd
-current_stage: tasks
-next_action: Draft task breakdown for implementation, then submit for approval.
+feature_status: in_handoff
+current_stage: handoff
+next_action: Review and approve handoff to mark feature done.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: 2026-04-21T14:33:04+0700
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-21T14:33:04+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-21T14:33:04+0700
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -48,6 +52,14 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T14:33:04+0700
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:33:04+0700
+  - stage: tasks
+    action: T1_done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:52:06+0700
 
 revalidation:
   product_spec_required: false
