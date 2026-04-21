@@ -238,9 +238,7 @@ Added to `_EXCLUDE_PATTERNS` in `source_mapper.py`:
 
 ### Claim-time context injection update
 
-`workflow_skills/start-implementation/SKILL.md` currently calls `rag_query` without a `source_types` filter (returns all types). No change is required for correctness — the new types will naturally appear in results once indexed.
-
-Optional improvement (T3): add a `source_types` hint at claim time to weight results toward `source_code` and `doc` when the task is implementation-focused.
+`workflow_skills/start-implementation/SKILL.md` calls `rag_query` without a `source_types` filter and that stays as-is. Agents are always implementing, so returning all source types on every query is the correct default — no filter needed.
 
 ### What does NOT change
 
@@ -290,13 +288,9 @@ T1: Schema + model upgrade — VALID_SOURCE_TYPES, VECTOR_DIM, embedder swap, co
       └── T2 and T3 run in parallel
       └── BLOCKED on T1 (schema.py must recognise the new types; VECTOR_DIM must match the
           deployed model before any new points are written)
-      │
-      T4: Claim-time query update — start-implementation skill (workflow)
-            └── BLOCKED on T2 + T3 (new source types must exist in the index before the
-                skill can usefully reference or filter them)
 ```
 
-T2 and T3 are the bulk of the work and can be executed by two agents concurrently once T1 is merged. T1 is the critical-path task — it owns the one-time collection migration and the model swap.
+T2 and T3 are the bulk of the work and can be executed by two agents concurrently once T1 is merged. T1 is the critical-path task — it owns the one-time collection migration and the model swap. No workflow repo changes are required.
 
 ---
 
@@ -313,7 +307,6 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 | `rag-service` | `tests/indexer/test_source_mapper.py` | Tests for new path patterns |
 | `rag-service` | `tests/indexer/test_chunker.py` | Tests for new chunking strategies |
 | `rag-service` | `tests/shared/test_schema.py` | Tests for updated source type validation and vector dimension |
-| `workflow` | `workflow_skills/start-implementation/SKILL.md` | Optional: add source_types hint to claim-time RAG query |
 
 ---
 
@@ -343,7 +336,7 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 **Backward compatibility:**
 - `rag_query` tool contract is unchanged
 - The collection recreation is a one-time migration with a brief cold-start window; not a rolling upgrade
-- The `start-implementation` skill change (T4) is optional and non-breaking
+- No workflow repo changes — `start-implementation` skill is unchanged
 
 **v3 upgrade path (not in scope for v2):**
 - Hybrid search (Qdrant dense + sparse BM25) — switch to `nomic-embed-text-v1.5` or `all-mpnet-base-v2`, enable sparse vectors, query with RRF fusion; requires collection recreation and full re-index
