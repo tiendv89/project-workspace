@@ -29,13 +29,13 @@ Both are wrong.
 
 ## Goals
 
-1. Each time the agent runtime **claims a task**, it identifies the workspace the task belongs to and copies `<workspace>/agent-rules.md` → `~/.claude/CLAUDE.md` inside the container before invoking Claude.
-2. `agent-rules.md` is owned by the workspace — each workspace declares its own cross-cutting agent rules.
-3. Rules are always correct for the workspace being worked on, regardless of how many workspaces the container watches.
+1. Each time the agent runtime **claims a task**, it identifies the workspace the task belongs to and copies `<workspace>/CLAUDE.md` → `~/.claude/CLAUDE.md` inside the container before invoking Claude.
+2. Rules are always correct for the workspace being worked on, regardless of how many workspaces the container watches.
+3. No separate rules file to maintain — `CLAUDE.md` is already the authoritative source of workspace rules.
 4. No changes required to implementation repos.
 
 ## Non-goals
 
 - Hot-swapping rules mid-task — the copy happens once per claim, before Claude is invoked.
-- Merging rules from multiple workspaces — one task, one workspace, one rules file.
+- Merging rules from multiple workspaces — one task, one workspace, one `CLAUDE.md`.
 - Replacing per-repo `CLAUDE.md` entirely — per-repo files remain valid for repo-specific rules; this feature covers workspace-level cross-cutting rules only.
