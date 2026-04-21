@@ -1,17 +1,21 @@
 feature_id: agent-workspace-rules
-title: Inject workspace rules into agent containers at task-claim time
+title: Inject workspace rules and skills into agent containers at task-claim time
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec, then move to technical design.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft technical design for CLAUDE.md copy and skill directory population at task-claim time.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-04-21T14:20:44+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-21T14:20:44+0700
+        comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +35,11 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - stage: product_spec
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T14:20:44+0700
 
 revalidation:
   product_spec_required: false
