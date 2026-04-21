@@ -1,21 +1,19 @@
 id: T3
 title: Source code indexing — AST chunking
 repo: rag-service
-status: blocked
+status: done
 depends_on:
   - T1
-blocked_reason: pr_conflict
+blocked_reason: null
 blocked_context: null
 branch: feature/agent-rag-v2-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
   last_updated_at: 2026-04-21T12:02:46.155Z
-  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
-    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/rag-service/pull/9
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/49
   status: open
@@ -45,29 +43,18 @@ log:
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-04-21T11:17:10+0000
-    note: "PR opened: https://github.com/tiendv89/rag-service/pull/9. 175 unit tests
-      passed, 9 integration tests skipped (require live Qdrant)."
+    note: >-
+      PR opened: https://github.com/tiendv89/rag-service/pull/9. 175 unit tests
+      passed, 9 integration tests skipped (require live Qdrant).
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
       cost_usd: 0
-  - action: blocked
-    by: tiendv.52@gmail.com
-    at: 2026-04-21T12:02:46.155Z
-    note: "Unresolvable merge conflicts in: services/indexer/chunker.py;
-      services/indexer/source_mapper.py; tests/indexer/test_source_mapper.py.
-      Manual resolution required."
-conflict_state: resolved
-rebase_log:
-  - at: 2026-04-21T12:00:30.534Z
-    action: rebase_started
-    by: tiendv.52@gmail.com
-    note: Rebase claimed; targeting origin/main.
-  - at: 2026-04-21T12:02:46.155Z
-    action: rebase_blocked
-    by: tiendv.52@gmail.com
-    note: "Unresolvable merge conflicts in: services/indexer/chunker.py;
-      services/indexer/source_mapper.py; tests/indexer/test_source_mapper.py.
-      Manual resolution required."
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-21T23:33:28+0700
+    note: >-
+      PR merged. T3 complete — source code indexing live, AST chunking via
+      tree-sitter, doc+source_code exclusions all in place.
