@@ -1,18 +1,20 @@
 # Task Breakdown: Agent RAG v2 — Source Code + Docs Indexing
 
-Feature status: `in_tdd` — technical design approved. Machine state lives in `tasks/T<n>.yaml`.
+Feature status: `in_tdd` — technical design amended 2026-04-22 (Fix 2 addendum). Machine state lives in `tasks/T<n>.yaml`.
 
 ## Repo split
 
-All tasks target the `rag-service` repo. No workflow repo changes are required.
+T1–T3 target `rag-service`. T4 targets `rag-service`. T5 targets `workflow`.
 
 ## Task index
 
-| ID | Wave | Title | Depends on |
-|---|---|---|---|
-| T1 | 1 | Schema + model upgrade | — |
-| T2 | 2 | Docs folder indexing | T1 |
-| T3 | 2 | Source code indexing — AST chunking | T1 |
+| ID | Wave | Title | Repo | Depends on | Status |
+|---|---|---|---|---|---|
+| T1 | 1 | Schema + model upgrade | rag-service | — | done |
+| T2 | 2 | Docs folder indexing | rag-service | T1 | done |
+| T3 | 2 | Source code indexing — AST chunking | rag-service | T1 | done |
+| T4 | 3 | REST query endpoint on rag-server | rag-service | — | todo |
+| T5 | 3 | Runtime pre-injection in main.ts | workflow | T4 | todo |
 
 ---
 
@@ -112,3 +114,90 @@ tree-sitter-go>=0.23.0
 - [ ] Unit test: `node_modules/foo.ts` → `classify_path` returns `None`
 - [ ] Unit test: `services/auth.test.ts` → `classify_path` returns `("source_code", None)` (test files included)
 - [ ] Integration test: index a `.py` file → `rag_query("function that handles authentication")` returns the auth function chunk
+
+---
+
+## T4 — REST query endpoint on rag-server
+
+### Description
+
+Add a `POST /query` REST endpoint to the FastAPI app in `services/rag_server/server.py`. This endpoint exposes the same retrieval logic as the existing `rag_query` MCP tool over plain HTTP/JSON so the agent runtime can call it programmatically before spawning Claude.
+
+**Request body:**
+```json
+{
+  "query":        "string (required)",
+  "workspace_id": "string (required)",
+  "top_k":        5,
+  "source_types": ["skill", "source_code"]   // optional array, omit = all types
+}
+```
+
+**Response (200):**
+```json
+{
+  "results": [
+    {
+      "content":  "string",
+      "score":    0.87,
+      "metadata": { "source_type": "skill", "repo": "workflow", "file_path": "...", "feature_id": null }
+    }
+  ]
+}
+```
+
+**Error responses:** 422 from FastAPI default validation; 500 with `{"error": "..."}` for Qdrant failures.
+
+**Implementation note:** the route handler must reuse the existing internal retrieval function already called by the MCP tool — do not duplicate retrieval logic. The endpoint is a thin HTTP wrapper only.
+
+### Required skills
+- python-best-practices
+
+### Subtasks
+- [ ] Define `QueryRequest` and `QueryResult` Pydantic models in `services/rag_server/server.py` (or a new `models.py`)
+- [ ] Add `POST /query` route that calls the existing internal `_rag_query` function and returns a `QueryResponse`
+- [ ] Return 500 with `{"error": str(e)}` if Qdrant raises; never let internal exceptions leak as unstructured 500s
+- [ ] Unit test: `POST /query` with valid payload → 200, results list returned
+- [ ] Unit test: `POST /query` with missing `query` field → 422
+- [ ] Unit test: `POST /query` with unknown `workspace_id` → 200, empty results (not an error)
+- [ ] Integration test: index a doc, `POST /query` with matching query → result appears in response
+
+---
+
+## T5 — Runtime pre-injection in main.ts
+
+### Description
+
+In `agent-runtime/src/main.ts`, fetch RAG context via the `POST /query` endpoint (T4) before calling `runClaude()`, and append it to `agentContext`. The enriched context is passed to Claude as part of the agent briefing — injection is completely independent of model tool-calling behaviour.
+
+**New file:** `agent-runtime/src/bootstrap/fetch-rag-context.ts`
+- Export `fetchRagContext(ragBaseUrl, query, workspaceId, topK?)` → `Promise<string>`
+- POSTs to `${ragBaseUrl}/query`
+- On 2xx with results: returns a formatted `## RAG Context\n\n<chunk>\n---\n...` block
+- On any failure (network, non-2xx, timeout ≥ 3 s): logs a warning and returns `""` — never throws
+
+**Injection in `main.ts`** (between `generateAgentContext` and `runClaude`):
+- Read `MCP_RAG_URL` from `process.env` (already used for MCP registration)
+- Read `workspace_id` from the already-parsed `workspace.yaml` (`workspaceYaml.workspace_id`)
+- Call `fetchRagContext(mcpRagUrl, `${task.title} ${featureId}`, workspaceId)`
+- Append returned block to `agentContext` before passing to `runClaude`
+- If `MCP_RAG_URL` is unset, skip entirely — no behaviour change
+
+**No new env vars.** `MCP_RAG_URL` is the only switch.
+
+### Required skills
+- typescript-best-practices
+
+### Subtasks
+- [ ] Create `agent-runtime/src/bootstrap/fetch-rag-context.ts` with `fetchRagContext` function
+- [ ] Add `AbortSignal.timeout(3000)` to the fetch call to prevent hanging
+- [ ] On 2xx: format results as `## RAG Context\n\n{content}\n---\n` blocks, one per result
+- [ ] On any error: `console.warn("RAG pre-injection failed:", err)` and return `""`
+- [ ] Read `workspaceId` from `workspaceYaml.workspace_id` in `main.ts` (already in scope)
+- [ ] Inject between `generateAgentContext()` call and `runClaude()` call in `main.ts`
+- [ ] Unit test: mock fetch returns valid response → `fetchRagContext` returns formatted block
+- [ ] Unit test: mock fetch throws network error → returns `""`, no throw
+- [ ] Unit test: mock fetch returns non-2xx → returns `""`, no throw
+- [ ] Unit test: mock fetch times out → returns `""`, no throw
+- [ ] Unit test: empty results array → returns `""`
+- [ ] Integration test: with `MCP_RAG_URL` unset → `agentContext` is unchanged from `generateAgentContext` output

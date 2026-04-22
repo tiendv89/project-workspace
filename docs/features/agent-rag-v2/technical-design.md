@@ -340,3 +340,139 @@ T2 and T3 are the bulk of the work and can be executed by two agents concurrentl
 
 **v3 upgrade path (not in scope for v2):**
 - Hybrid search (Qdrant dense + sparse BM25) — switch to `nomic-embed-text-v1.5` or `all-mpnet-base-v2`, enable sparse vectors, query with RRF fusion; requires collection recreation and full re-index
+
+---
+
+## 9. Addendum — Fix 2: Runtime Pre-injection via REST Query Endpoint (2026-04-22)
+
+### Problem
+
+After full deployment of T1–T3, telemetry shows 0 actual calls to `mcp__rag-server__rag_query` across all agent sessions. Infrastructure is working (2,918 points indexed, MCP connection confirmed, tool visible in tool list), but the model consistently skips the call. The `start-implementation` skill instructs the model to call the tool, but graceful-degradation language ("skip if unavailable") provides sufficient cover for the model to elide the step under implementation pressure.
+
+The fix must be independent of model behaviour: inject RAG context before Claude is ever invoked, not as a tool the model is asked to call.
+
+### Solution
+
+Two-part change:
+
+1. **`rag-service`** — expose a plain HTTP `POST /query` endpoint alongside the existing MCP/SSE interface. Same retrieval logic, plain JSON in/out, no SSE.
+2. **`workflow`** — in `agent-runtime/src/main.ts`, after `generateAgentContext()` and before `runClaude()`, call `POST ${MCP_RAG_URL}/query`, receive chunks, and append a `## RAG Context` section to `agentContext`. The enriched string is passed unchanged into `runClaude()` as the agent's briefing.
+
+### REST endpoint design (`rag-service`)
+
+**Route:** `POST /query` on the existing FastAPI app that backs the FastMCP server.
+
+**Request body:**
+```json
+{
+  "query":        "string",
+  "workspace_id": "string",
+  "top_k":        5,
+  "source_types": ["skill", "source_code", "doc"]   // optional, omit = all types
+}
+```
+
+**Response (200):**
+```json
+{
+  "results": [
+    {
+      "content":  "string",
+      "score":    0.87,
+      "metadata": {
+        "source_type": "skill",
+        "repo":        "workflow",
+        "file_path":   "workflow_skills/start-implementation/SKILL.md",
+        "feature_id":  null
+      }
+    }
+  ]
+}
+```
+
+**Error responses:** 422 for malformed input (FastAPI default); 500 with `{"error": "..."}` for Qdrant failures. The caller treats any non-2xx as a graceful-degradation trigger.
+
+**Implementation:** the route handler calls the same internal `_rag_query(query, workspace_id, top_k, source_types)` function already used by the MCP tool. No new retrieval logic; this is a thin HTTP wrapper.
+
+**No auth.** The endpoint is on the Docker-internal network; the same trust model as the existing SSE endpoint.
+
+### Runtime injection design (`workflow`)
+
+**New function:** `agent-runtime/src/bootstrap/fetch-rag-context.ts`
+
+```typescript
+export async function fetchRagContext(
+  ragBaseUrl: string,
+  query: string,
+  workspaceId: string,
+  topK = 5,
+): Promise<string>
+```
+
+- POSTs to `${ragBaseUrl}/query`
+- On 2xx: formats results as a `## RAG Context\n\n<chunk>\n---\n...` block and returns it
+- On any error (network failure, non-2xx, timeout): logs a warning and returns `""` — never throws
+
+**Injection in `main.ts`** (between `generateAgentContext` and `runClaude`):
+
+```typescript
+const baseAgentContext = generateAgentContext({ ... });
+
+const ragBaseUrl = process.env.MCP_RAG_URL;
+const ragBlock = ragBaseUrl
+  ? await fetchRagContext(ragBaseUrl, `${task.title} ${featureId}`, workspaceId)
+  : "";
+
+const agentContext = ragBlock ? `${baseAgentContext}\n\n${ragBlock}` : baseAgentContext;
+```
+
+`workspaceId` is read from `workspace.yaml` (the `workspace_id` field), which `main.ts` already parses.
+
+**No new env var required.** `MCP_RAG_URL` already controls whether RAG is active; if it is set, pre-injection is active. If it is not set, behaviour is identical to the current state.
+
+### Graceful degradation
+
+| Failure mode | Behaviour |
+|---|---|
+| `MCP_RAG_URL` unset | Skip injection entirely — no change from current behaviour |
+| Network unreachable | `fetchRagContext` catches, logs, returns `""` — agent runs without pre-injected context |
+| Non-2xx response | Same as above |
+| Timeout (>3 s) | Same as above — inject a 3 s `AbortSignal` on the fetch call |
+| Empty results (0 chunks) | No block appended — agent runs without pre-injected context |
+
+The MCP tool registration in `run-claude.ts` is unchanged — agents can still call `rag_query` for follow-up queries during task execution.
+
+### What does NOT change
+
+- MCP tool registration and SSE endpoint — unchanged
+- `generateAgentContext` signature — unchanged (still synchronous pure function)
+- `runClaude` signature — `agentContext` parameter type is `string`, unchanged
+- `start-implementation` skill — no changes required (pre-injection makes the tool call optional)
+- Docker Compose, env vars, Qdrant schema — no changes
+
+---
+
+## 10. Updated Dependency Analysis (post-addendum)
+
+```
+T1, T2, T3 — DONE (merged)
+
+T4: REST query endpoint (rag-service)
+  └── No blockers — can begin immediately
+
+  T5: Runtime pre-injection (workflow)
+      └── BLOCKED on T4 (endpoint shape must be confirmed before the fetch client is written)
+```
+
+T4 and T5 are the only remaining tasks. T4 is unblocked. T5 depends on T4.
+
+## 11. Updated Repository Impact
+
+| Repo | Files changed | Reason |
+|---|---|---|
+| `rag-service` | `services/rag_server/server.py` | Add `POST /query` route |
+| `rag-service` | `tests/rag_server/test_query_endpoint.py` | Unit + integration tests for new route |
+| `workflow` | `agent-runtime/src/bootstrap/fetch-rag-context.ts` | New fetch helper |
+| `workflow` | `agent-runtime/src/main.ts` | Call `fetchRagContext`, append block to `agentContext` |
+| `workflow` | `agent-runtime/src/bootstrap/agent-context.ts` | No change (stays pure/sync) |
+| `workflow` | `agent-runtime/tests/bootstrap/fetch-rag-context.test.ts` | Unit tests for helper |

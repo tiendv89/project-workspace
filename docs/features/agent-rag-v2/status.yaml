@@ -1,9 +1,9 @@
 feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
-feature_status: in_handoff
-current_stage: handoff
-next_action: All tasks done. Prepare handoff document and request approval to close the feature.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: T4 is ready. Owning team may begin execution. T5 blocked on T4.
 
 stages:
   product_spec:
@@ -19,23 +19,35 @@ stages:
   technical_design:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-04-21T10:36:37Z
-    review_comment: null
+    reviewed_at: 2026-04-22T08:57:52Z
+    review_comment: Approved with Fix 2 addendum — REST query endpoint + runtime pre-injection.
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
         at: 2026-04-21T10:36:37Z
         comment: null
+      - status: draft
+        by: matthew@swellnetwork.io
+        at: 2026-04-22T15:50:48+0700
+        comment: Reset — RAG injection gap discovered in handoff. Adding Fix 2 to design.
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-22T08:57:52Z
+        comment: Approved with Fix 2 addendum — REST query endpoint + runtime pre-injection.
   tasks:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-04-21T10:39:44Z
-    review_comment: null
+    reviewed_at: 2026-04-22T08:57:52Z
+    review_comment: T4 and T5 approved — T4 activated, T5 pending T4 completion.
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
         at: 2026-04-21T10:39:44Z
         comment: null
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-04-22T08:57:52Z
+        comment: T4 and T5 approved — T4 activated, T5 pending T4 completion.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -64,6 +76,21 @@ history:
     action: entered
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T23:33:28+0700
+  - stage: technical_design
+    action: reset
+    by: matthew@swellnetwork.io
+    at: 2026-04-22T15:50:48+0700
+    note: >-
+      RAG injection gap found in handoff — agent never calls rag_query tool.
+      Reopening to add Fix 2: REST query endpoint on rag-server + runtime pre-injection in main.ts.
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-22T08:57:52Z
+  - stage: tasks
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-22T08:57:52Z
 
 revalidation:
   product_spec_required: false
