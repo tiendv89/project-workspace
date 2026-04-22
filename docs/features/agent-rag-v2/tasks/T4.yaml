@@ -1,7 +1,7 @@
 id: T4
 title: REST query endpoint on rag-server
 repo: rag-service
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/agent-rag-v2-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-22T09:02:11.725Z
+  last_updated_at: 2026-04-22T09:25:31+0000
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/rag-service/pull/10
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/50
   status: open
@@ -34,6 +34,18 @@ log:
     at: 2026-04-22T09:03:54+0000
     note: Implementation started on feature/agent-rag-v2-T4.
     rag_context_injected: true
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-04-22T09:25:31+0000
+    note: >-
+      PR opened: https://github.com/tiendv89/rag-service/pull/10.
+      198 passed, 13 skipped (integration tests require Qdrant).
+    rag_context_injected: false
     tokens:
       input: 0
       output: 0
