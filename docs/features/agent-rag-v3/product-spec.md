@@ -18,11 +18,24 @@ This is the gap Hermes Agent's FTS5 approach addresses: keyword-exact and BM25-r
 4. **Measurable improvement** — validate that retrieval precision for exact code lookups improves over the v2 dense-only baseline before declaring v3 complete
 5. **Event-driven indexer trigger** — instead of the indexer polling on a fixed interval, the agent runtime signals the indexer immediately after a task branch is pushed; agents starting shortly after a completed task get fresh RAG context rather than stale index up to 5 minutes old
 
+## Memory gap context
+
+The current indexer already captures design-time knowledge well: product specs, technical designs, task logs, CLAUDE.md, and source code are all indexed. What is missing is **delivery-time and conversational knowledge**:
+
+- Agent sessions end with no summary of key decisions made — `log.jsonl` records actions but not reasoning ("chose X over Y because Z", "worked around bug W by doing V")
+- Human conversations that drive architectural decisions (like the ones that shaped this spec) are never indexed — the only way they survive is if someone manually writes the outcome into a committed file
+- Each agent starts completely cold; two agents working on related features back-to-back share no learned context
+
+The v2 indexer does **not** have this gap because it never claimed to cover it — v2 was about source content types. This is a new category: **episodic/decision memory**.
+
+Addressing this fully (automatic session summarization, conversation capture) is out of scope for v3. However, the groundwork laid here — event-driven indexing and fresher context — makes a v4 episodic memory layer more tractable. The near-term mitigation is discipline: key decisions should be written into `technical-design.md` or a `decisions.md` file per feature so the indexer picks them up.
+
 ## Non-goals
 
 - Not adding a second MCP tool or splitting the backend
 - Not changing the `workspace_id` isolation model
 - Not indexing new content types (that was v2)
+- Not implementing automatic session summarization or conversation capture (deferred to v4)
 
 ## Dependency
 
