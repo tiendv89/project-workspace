@@ -38,16 +38,15 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-04-22T09:25:31+0000
-    note: >-
-      PR opened: https://github.com/tiendv89/rag-service/pull/10.
-      198 passed, 13 skipped (integration tests require Qdrant).
+    note: "PR opened: https://github.com/tiendv89/rag-service/pull/10. 198 passed,
+      13 skipped (integration tests require Qdrant)."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
