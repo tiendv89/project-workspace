@@ -1,9 +1,9 @@
 feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: T4 is ready. Owning team may begin execution. T5 blocked on T4.
+feature_status: in_handoff
+current_stage: handoff
+next_action: Review and approve the handoff document at handoffs/agent-rag-v2.md to close the feature.
 
 stages:
   product_spec:
@@ -49,11 +49,15 @@ stages:
         at: 2026-04-22T08:57:52Z
         comment: T4 and T5 approved — T4 activated, T5 pending T4 completion.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
-    review_history: []
+    review_history:
+      - status: awaiting_approval
+        by: matthew@swellnetwork.io
+        at: 2026-04-22T10:39:59Z
+        comment: Handoff document written — all 5 tasks done, T1–T5 PRs merged.
 
 history:
   - stage: product_spec
@@ -91,6 +95,11 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-22T08:57:52Z
+  - stage: handoff
+    action: submitted
+    by: matthew@swellnetwork.io
+    at: 2026-04-22T10:39:59Z
+    note: Handoff document written at handoffs/agent-rag-v2.md. All 5 tasks done.
 
 revalidation:
   product_spec_required: false
