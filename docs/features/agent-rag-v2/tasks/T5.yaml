@@ -1,7 +1,7 @@
 id: T5
 title: Runtime pre-injection in main.ts
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T4
 blocked_reason: null
@@ -28,3 +28,7 @@ log:
     note: >-
       Task created — Fix 2 addendum. Depends on T4 (endpoint shape must be
       confirmed before the fetch client is written).
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-22T09:32:08Z
+    note: Auto-ready — T4 marked done, all dependencies satisfied.

@@ -1,7 +1,7 @@
 id: T4
 title: REST query endpoint on rag-server
 repo: rag-service
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -12,10 +12,10 @@ execution:
   last_updated_at: 2026-04-22T09:25:31+0000
 pr:
   url: https://github.com/tiendv89/rag-service/pull/10
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/50
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -50,3 +50,7 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-22T09:32:08Z
+    note: PR merged. T4 complete — POST /query REST endpoint live on rag-server.
