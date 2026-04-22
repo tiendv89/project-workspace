@@ -16,6 +16,7 @@ This is the gap Hermes Agent's FTS5 approach addresses: keyword-exact and BM25-r
 2. **No agent-facing changes** — the `rag_query` MCP tool contract is unchanged; agents get better results without knowing anything changed
 3. **Exact identifier recall** — an agent querying a specific function name, class, or variable gets it back in the top results even if the semantic similarity score would have buried it
 4. **Measurable improvement** — validate that retrieval precision for exact code lookups improves over the v2 dense-only baseline before declaring v3 complete
+5. **Event-driven indexer trigger** — instead of the indexer polling on a fixed interval, the agent runtime signals the indexer immediately after a task branch is pushed; agents starting shortly after a completed task get fresh RAG context rather than stale index up to 5 minutes old
 
 ## Non-goals
 
