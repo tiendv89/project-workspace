@@ -1,7 +1,7 @@
 id: T5
 title: Runtime pre-injection in main.ts
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -13,10 +13,10 @@ execution:
   last_updated_at: 2026-04-22T09:33:50.686Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/49
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/51
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -38,3 +38,7 @@ log:
       PR opened: https://github.com/tiendv89/agent-workflow/pull/49. Agent
       completed implementation — 13/13 fetch-rag-context tests pass, TypeScript
       clean. PR created manually after agent stalled on pr-create skill.
+  - action: done
+    by: matthew@liquid-labs.xyz
+    at: 2026-04-22T10:39:59Z
+    note: PR merged. T5 complete — runtime pre-injection live in main.ts via fetchRagContext.
