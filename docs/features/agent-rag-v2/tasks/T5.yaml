@@ -1,34 +1,33 @@
 id: T5
 title: Runtime pre-injection in main.ts
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/agent-rag-v2-T5
-
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-04-22T15:55:21+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-22T09:33:50.686Z
 pr:
   url: null
   status: null
-
 workspace_pr:
   url: null
   status: null
-
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-04-22T15:55:21+0700
-    note: >-
-      Task created — Fix 2 addendum. Depends on T4 (endpoint shape must be
+    note: Task created — Fix 2 addendum. Depends on T4 (endpoint shape must be
       confirmed before the fetch client is written).
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-04-22T09:32:08Z
     note: Auto-ready — T4 marked done, all dependencies satisfied.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-22T09:33:50.686Z
+    note: Claimed via git-based claim protocol.
