@@ -1,17 +1,21 @@
 feature_id: workspace-interface
 title: Workspace Interface
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead to write technical-design.md.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-23T15:32:40+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-23T15:32:40+0700"
+        comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +35,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - action: approved
+    stage: product_spec
+    by: pentative@gmail.com
+    at: "2026-04-23T15:32:40+0700"
+    note: Product spec approved. Feature advances to in_tdd.
 
 revalidation:
   product_spec_required: false
