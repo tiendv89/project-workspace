@@ -16,9 +16,11 @@ The agent workflow system is entirely file-driven. Humans and tech leads manage 
 
 This creates friction for non-technical stakeholders reviewing work, and makes it hard to get a quick situational overview of what is in progress, blocked, or awaiting approval across features.
 
+Additionally, the system manages **multiple workspaces** (each with its own `workspace.yaml`, repos, and `docs/features/` tree). There is currently no way to switch between workspaces without manually changing directories or config files.
+
 ## Goals
 
-1. **Workspace selection** — Read the list of available workspaces from the `agent-runtime/orchestration/` directory and allow the user to select one. The selected workspace determines which `workspace.yaml` and `docs/features/` tree is loaded.
+1. **Workspace picker** — On first load (and via a switcher in the sidebar), show a list of all known workspaces. Each workspace entry is discovered by scanning a configured root directory for `workspace.yaml` files. Selecting a workspace loads its `workspace.yaml`, resolves the `docs/features/` path, and scopes every subsequent view (Dashboard, Features, Task Board) to that workspace. The active workspace name and ID are shown persistently in the sidebar header and can be switched at any time without a full page reload.
 
 2. **Dashboard** — Show an at-a-glance summary of the selected workspace: total features by lifecycle status, tasks by task status, recently updated items, and blocked items requiring attention.
 
@@ -40,11 +42,20 @@ This creates friction for non-technical stakeholders reviewing work, and makes i
 
 ## Screens
 
+### 0. Workspace Picker (`/` on first load, or via sidebar switcher)
+- Shown when no workspace is selected (first visit) or when the user clicks the workspace name in the sidebar.
+- Displays a list of discovered workspaces: each card shows workspace name, workspace ID, repo path, and a brief status summary (e.g. "5 features · 2 in progress").
+- Workspaces are discovered by scanning a user-configurable root directory (set in app settings or `.env`) for `workspace.yaml` files.
+- Selecting a card sets the active workspace and redirects to the Dashboard.
+- A **Search** field filters the list by workspace name or ID.
+- The sidebar switcher: the "Workspace / Tracker" label at the top of the sidebar is a clickable element that opens the picker (as a dropdown or a modal overlay).
+
 ### 1. Dashboard (`/`)
-- Sidebar: "Workspace / Tracker" branding with gradient icon, nav links (Dashboard active, Features, Task Board), Settings link, user avatar + name + role at bottom.
+- Sidebar: "Workspace / Tracker" branding — the workspace name and "Tracker" subtitle are a **clickable workspace switcher** that opens the Workspace Picker. Gradient icon, nav links (Dashboard active, Features, Task Board), Settings link, user avatar + name + role at bottom.
 - Header bar: page title "Dashboard", subtitle, global search input with ⌘K shortcut, notification bell.
 - Summary stat cards: Active Features, In Progress Tasks, Awaiting Approval, Blocked Tasks.
 - Recent activity table or feed.
+- All data is scoped to the currently selected workspace.
 
 ### 2. Features (`/features`)
 - Same sidebar + header (header shows "Features / Browse and manage all features").
@@ -128,11 +139,12 @@ Design file: **Agent Workspace design** — `qYFglR3hJRmB8VuAPt5Rjs`
 
 | Screen | Source |
 |---|---|
-| Workspace list | `agent-runtime/orchestration/` — enumerate sub-directories (local, kubernetes, github-actions); resolve workspace from `workspace.yaml` |
-| Feature list | `docs/features/*/status.yaml` |
-| Feature detail — stages | `docs/features/<id>/status.yaml` |
-| Feature detail — tasks | `docs/features/<id>/tasks/*.yaml` |
-| Task board | All `docs/features/*/tasks/*.yaml` merged |
+| Workspace picker | Scan a user-configured root directory for `workspace.yaml` files; each file defines one workspace |
+| Active workspace config | `<workspace-root>/workspace.yaml` — name, workspace_id, repos, roles |
+| Feature list | `<workspace-root>/docs/features/*/status.yaml` |
+| Feature detail — stages | `<workspace-root>/docs/features/<id>/status.yaml` |
+| Feature detail — tasks | `<workspace-root>/docs/features/<id>/tasks/*.yaml` |
+| Task board | All `<workspace-root>/docs/features/*/tasks/*.yaml` merged |
 
 ## Success criteria
 
