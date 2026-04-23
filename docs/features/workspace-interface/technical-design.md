@@ -28,7 +28,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - Multi-workspace management requires manual directory switching
 - Non-technical stakeholders cannot participate in review without CLI access
 
-**Relevant repo boundary:** The new UI app will live in `workspace-interface`. The management repo (this repo) remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
+**Relevant repo boundary:** The new UI app will live in the `workflow` repo (agent-workflow) under the subdirectory `workspace-interface/`. The management repo (this repo) remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
 
 ---
 
@@ -111,7 +111,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - React Server Components mental model has a learning curve (server vs client component boundary)
 - Long-running git operations (commit, push) inside Server Actions need explicit timeout handling
 
-**Implementation impact:** Single repo (`workspace-interface`), single `npm run dev`; env vars configure workspace root
+**Implementation impact:** Subdirectory `workspace-interface/` within the `workflow` repo (agent-workflow); single `npm run dev`; env vars configure workspace root
 **Dependency impact:** Next.js 16, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
 
 ---
@@ -141,9 +141,12 @@ There is no visual layer. There is no way to browse features, understand cross-f
 
 ### Architecture
 
+The app is a subdirectory within the `workflow` repo (agent-workflow):
+
 ```
-workspace-interface/
-├── app/
+agent-workflow/
+└── workspace-interface/     # Next.js app root
+    ├── app/
 │   ├── layout.tsx               # Root layout: sidebar + header shell
 │   ├── page.tsx                 # Dashboard (/), workspace picker on first load
 │   ├── features/
@@ -199,7 +202,7 @@ The active workspace is stored in `localStorage` (client-side key: `active_works
 ### Configuration
 
 ```env
-# .env.local in workspace-interface
+# agent-workflow/workspace-interface/.env.local
 WORKSPACE_SCAN_ROOT=/Users/pye/code/kitelabs
 GIT_AUTHOR_NAME=pye
 GIT_AUTHOR_EMAIL=pentative@gmail.com
@@ -216,7 +219,7 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 
 | Dependency | Type | Status |
 |---|---|---|
-| `workspace-interface` repo exists at `env:DIGITAL_FACTORY_UI_LOCAL_PATH` | Repo existence | Must be confirmed before T1 |
+| `workflow` repo exists at `env:WORKFLOW_LOCAL_PATH` and `workspace-interface/` subdir can be created | Repo existence | Must be confirmed before T1 |
 | `status.yaml` schema is stable | File format contract | Stable — product spec confirmed |
 | `tasks/T<n>.yaml` schema is stable | File format contract | Stable — workflow rules confirmed |
 | YAML field names for Approve/Reject/Reset | Write contract | Confirmed from workflow rules |
@@ -237,8 +240,8 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 
 | Decision | Status | Required before |
 |---|---|---|
-| Does `workspace-interface` have an existing codebase to integrate with or is T1 a fresh scaffold? | **Unresolved** — must confirm with workspace owner | T1 |
-| Is `pnpm` or `npm` the preferred package manager for `workspace-interface`? | **Unresolved** | T1 |
+| Does `agent-workflow/workspace-interface/` already exist, or is T1 a fresh scaffold? | **Unresolved** — check `WORKFLOW_LOCAL_PATH` | T1 |
+| Is `pnpm` or `npm` the preferred package manager for the workspace-interface app? | **Unresolved** | T1 |
 | Should the app be deployed as a Docker container or run as a raw `npm run dev`? | Assumed `npm run dev` (local tool) — **confirm** | T1 |
 
 ### Configuration dependencies
@@ -253,8 +256,8 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Confirm whether workspace-interface has an existing codebase (fresh scaffold vs. integration)
-  └── Unblock before T1. Check local path from .env and inspect repo contents.
+D1: Confirm whether agent-workflow/workspace-interface/ exists (fresh scaffold vs. integration)
+  └── Unblock before T1. Check WORKFLOW_LOCAL_PATH from .env and inspect subdirectory.
 
 T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts
   └── Can begin now once D1 is resolved — no other blockers
@@ -290,10 +293,10 @@ T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design toke
 
 | Repo | Impact | Reason |
 |---|---|---|
-| `workspace-interface` | Primary — all 9 tasks write here | The web app lives here |
+| `workflow` | Primary — all 9 tasks write here | The web app lives at `agent-workflow/workspace-interface/` |
 | `management-repo` | Read-only at runtime; written by Server Actions via `simple-git` | The app reads and writes `status.yaml`, `tasks/T<n>.yaml`, scaffolds feature dirs |
 
-No changes are required to `workflow`, `rag-service`, or any other repo.
+No changes are required to `rag-service` or any other repo.
 
 The `management-repo` is mutated only via `simple-git` running inside Next.js Server Actions — not via direct file writes without git tracking. This ensures all state changes remain committed artifacts.
 
@@ -307,7 +310,7 @@ The `management-repo` is mutated only via `simple-git` running inside Next.js Se
 
 ### Migration / config impact
 - No migration required — the app reads existing YAML files without schema changes.
-- `.env.local` must be added to `workspace-interface` with `WORKSPACE_SCAN_ROOT` and git config.
+- `.env.local` must be added to `agent-workflow/workspace-interface/` with `WORKSPACE_SCAN_ROOT` and git config.
 
 ### Rollout
 - Delivered as a local Next.js dev server. No deployment infrastructure needed.
