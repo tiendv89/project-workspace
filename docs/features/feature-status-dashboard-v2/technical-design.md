@@ -1,14 +1,16 @@
 # Technical Design
 
 ## Feature
-- Feature ID: `workspace-interface`
-- Title: `Workspace Interface — Web UI for Workspace Management`
+- Feature ID: `feature-status-dashboard-v2`
+- Title: `Feature Status Dashboard v2 — Web UI for Workspace Management`
 
 ---
 
 ## 1. Current State
 
-The agent workflow system is entirely file-driven. The management repo stores:
+### File-driven workflow system
+
+The agent workflow system is file-driven. The management repo stores:
 
 - `workspace.yaml` — workspace config, repos, roles
 - `docs/features/<id>/status.yaml` — per-feature lifecycle and stage review state
@@ -20,33 +22,40 @@ Humans interact with this system by:
 - Editing YAML files directly with a text editor
 - Running `git` commands to commit and push state changes
 
-There is no visual layer. There is no way to browse features, understand cross-feature task status, or approve stage reviews without knowing the file layout and having a terminal open.
+### v1 — existing `digital-factory-ui` app
 
-**Current limitations:**
-- No at-a-glance status view — requires manual `cat` or IDE file browsing
-- Stage approvals are manual YAML edits — error-prone and non-discoverable
-- Multi-workspace management requires manual directory switching
-- Non-technical stakeholders cannot participate in review without CLI access
+A first-generation dashboard (v1) already exists in the `digital-factory-ui` repo. It provides a basic visual surface but falls short of the full requirements:
 
-**Relevant repo boundary:** The new UI app will live in its own standalone repo: `workspace-interface` (GitHub: `tiendv89/workspace-interface`). The management repo (this repo) remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
+- **Incomplete screen coverage** — not all five screens (Workspace Picker, Dashboard, Features, Feature Detail, Task Board) are fully implemented or consistent with the current Figma design.
+- **Outdated stack** — v1 predates the Next.js 16 / HeroUI v3 / Tailwind CSS v4 decisions; upgrading in-place would be as expensive as a clean rewrite.
+- **No write-back** — v1 is read-only; it does not implement Approve/Reject/Reset Server Actions or the New Feature scaffold.
+- **No multi-workspace support** — v1 is hard-coded to a single workspace path.
+- **No docker-compose integration** — v1 has no Dockerfile or service entry.
+
+**v2 is a complete replacement of v1.** The `digital-factory-ui` repo will be rewritten from scratch on a new branch; the v1 codebase is archived before T1 begins.
+
+**Relevant repo boundary:** The app lives in the standalone `digital-factory-ui` repo (GitHub: `tiendv89/digital-factory-ui`). The management repo remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
 
 ---
 
 ## 2. Problem Framing
 
-**What must change:**
-- A web application must provide all five screens (Workspace Picker, Dashboard, Features list, Feature Detail, Task Board) described in the product spec.
+**What must change (replacing v1):**
+- The v1 codebase is archived to a `v1-archive` branch before T1 begins. The `main` branch of `digital-factory-ui` receives a clean v2 scaffold.
+- v2 must provide all five screens (Workspace Picker, Dashboard, Features list, Feature Detail, Task Board) from the Figma design — fully, not partially.
 - The app must read live data from workspace YAML files (no caching layer, no database).
-- Approve/Reject/Reset actions on stage review cards must write back to `status.yaml` and commit to the feature's branch.
+- Approve/Reject/Reset Server Actions must write back to `status.yaml` and commit to the feature's branch — v1 had no write-back; v2 must have it.
 - The New Feature modal must scaffold the `docs/features/<id>/` directory structure on disk.
+- Multi-workspace support via `WORKSPACE_SCAN_ROOT` — v1 lacked this.
+- A `Dockerfile` and docker-compose service entry — v1 had neither.
 
 **What must remain stable:**
-- YAML file schemas — the app must not change the shape of `status.yaml` or `tasks/T<n>.yaml`.
+- YAML file schemas — v2 must not change the shape of `status.yaml` or `tasks/T<n>.yaml`.
 - Workflow rule enforcement — the UI surfaces actions permitted by the rules; it does not bypass them (e.g. it does not mark tasks `done`).
 - Git as the system of record — all writes go to the correct feature branch via git commit.
 
 **Fixed assumptions:**
-- Single-user, local tool only. No authentication or multi-user support in v1.
+- Single-user, local tool only. No authentication or multi-user support.
 - Desktop-first at 1440px width. No mobile/responsive breakpoints.
 - The app runs as a local Next.js dev server (`npm run dev`) against the host filesystem.
 - A `WORKSPACE_SCAN_ROOT` environment variable points to the directory containing workspace subdirectories.
@@ -111,7 +120,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - React Server Components mental model has a learning curve (server vs client component boundary)
 - Long-running git operations (commit, push) inside Server Actions need explicit timeout handling
 
-**Implementation impact:** Standalone repo `workspace-interface` (`tiendv89/workspace-interface`); single `npm run dev`; env vars configure workspace root; added to local `docker-compose.yml` for optional containerised startup
+**Implementation impact:** Standalone repo `digital-factory-ui` (`tiendv89/digital-factory-ui`); single `npm run dev`; env vars configure workspace root; added to local `docker-compose.yml` for optional containerised startup
 **Dependency impact:** Next.js 16, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
 
 ---
@@ -141,10 +150,10 @@ There is no visual layer. There is no way to browse features, understand cross-f
 
 ### Architecture
 
-The app is a standalone repo (`workspace-interface`):
+The app is a standalone repo (`digital-factory-ui`):
 
 ```
-workspace-interface/         # repo root
+digital-factory-ui/          # repo root
 ├── app/
 │   ├── layout.tsx               # Root layout: sidebar + header shell
 │   ├── page.tsx                 # Dashboard (/), workspace picker on first load
@@ -203,7 +212,7 @@ The active workspace is stored in `localStorage` (client-side key: `active_works
 ### Configuration
 
 ```env
-# workspace-interface/.env.local
+# digital-factory-ui/.env.local
 WORKSPACE_SCAN_ROOT=/Users/pye/code/kitelabs
 GIT_AUTHOR_NAME=pye
 GIT_AUTHOR_EMAIL=pentative@gmail.com
@@ -222,7 +231,7 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 
 | Dependency | Type | Status |
 |---|---|---|
-| `workflow` repo exists at `env:WORKFLOW_LOCAL_PATH` and `workspace-interface/` subdir can be created | Repo existence | Must be confirmed before T1 |
+| `digital-factory-ui` repo exists at `env:DIGITAL_FACTORY_UI_LOCAL_PATH` | Repo existence | Must be confirmed before T1 |
 | `status.yaml` schema is stable | File format contract | Stable — product spec confirmed |
 | `tasks/T<n>.yaml` schema is stable | File format contract | Stable — workflow rules confirmed |
 | YAML field names for Approve/Reject/Reset | Write contract | Confirmed from workflow rules |
@@ -243,8 +252,8 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 
 | Decision | Status | Required before |
 |---|---|---|
-| Does `tiendv89/workspace-interface` repo already exist with scaffold, or is T1 a fresh init? | **Unresolved** — check `WORKSPACE_INTERFACE_LOCAL_PATH` | T1 |
-| Is `pnpm` or `npm` the preferred package manager for the workspace-interface app? | **Unresolved** | T1 |
+| v1 archive: T1 must tag or branch v1 before wiping — confirm branch name (`v1-archive`) | **Assumed `v1-archive`** — confirm | T1 |
+| Is `pnpm` or `npm` the preferred package manager for the v2 app? | **Unresolved** | T1 |
 | Which `docker-compose.yml` file does T10 add the service to? (`workflow` repo root, or a shared root) | **Unresolved** | T10 |
 
 ### Configuration dependencies
@@ -259,10 +268,10 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Confirm whether workspace-interface repo exists (fresh scaffold vs. existing)
-  └── Unblock before T1. Check WORKSPACE_INTERFACE_LOCAL_PATH from .env.
+D1: Confirm v1-archive branch name and whether v1 has any commits to preserve before wipe
+  └── Unblock before T1. Check DIGITAL_FACTORY_UI_LOCAL_PATH from .env; inspect main branch.
 
-T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts, Dockerfile
+T1: v1 archive + v2 scaffold — tag v1 → wipe → Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts, Dockerfile
   └── Can begin now once D1 is resolved — no other blockers
   │
   T2: Server data layer — workspace discovery, YAML readers, Server Actions for status writes + git
@@ -280,7 +289,7 @@ T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design toke
           └── BLOCKED on T2 (data layer and server actions must be available)
           └── BLOCKED on T3 (sidebar + header layout shell must exist for consistent page structure)
 
-T10: docker-compose — add workspace-interface service to docker-compose.yml in workflow repo
+T10: docker-compose — add digital-factory-ui service to docker-compose.yml in workflow repo
      └── BLOCKED on T1 (Dockerfile must exist before docker-compose service can be defined)
      └── Runs in parallel with T2/T3 and T4-T9 once T1 is done
 ```
@@ -300,7 +309,7 @@ T10: docker-compose — add workspace-interface service to docker-compose.yml in
 
 | Repo | Impact | Reason |
 |---|---|---|
-| `workspace-interface` | Primary — T1–T9 write here | The web app is this standalone repo |
+| `digital-factory-ui` | Primary — T1–T9 write here | The web app is this standalone repo |
 | `workflow` | T10 only — adds docker-compose service entry | docker-compose.yml lives in the workflow repo |
 | `management-repo` | Read-only at runtime; written by Server Actions via `simple-git` | The app reads and writes `status.yaml`, `tasks/T<n>.yaml`, scaffolds feature dirs |
 
@@ -312,24 +321,35 @@ The `management-repo` is mutated only via `simple-git` running inside Next.js Se
 
 ## 8. Validation and Release Impact
 
+### v1 replacement strategy
+
+v2 is a full rewrite. The replacement sequence for T1 is:
+
+1. **Archive v1** — create a `v1-archive` branch from the current `main` of `digital-factory-ui` and push it. This preserves v1 history without blocking v2.
+2. **Wipe main** — reset `main` to an empty state (remove all v1 files).
+3. **Scaffold v2** — initialise a fresh Next.js 16 app at the repo root, add all dependencies, Dockerfile, and `.env.local.example`.
+4. **Commit v2 scaffold** — commit with message `feat: v2 scaffold — Next.js 16 App Router`.
+
+v1 will not be runnable from `main` after T1. Teams relying on v1 must switch to the `v1-archive` branch if a rollback is needed.
+
 ### Testing expectations
-- No automated test suite is required for v1 (local dev tool, single user).
+- No automated test suite is required for this release (local dev tool, single user).
 - Manual acceptance testing: verify each screen renders live data, approve/reject/reset writes correct fields to `status.yaml` and commits, New Feature modal produces the correct directory scaffold.
 
 ### Migration / config impact
-- No migration required — the app reads existing YAML files without schema changes.
-- `.env.local` must be added to `agent-workflow/workspace-interface/` with `WORKSPACE_SCAN_ROOT` and git config.
+- No YAML schema changes — v2 reads the same `status.yaml` and `tasks/T<n>.yaml` files as v1.
+- `.env.local` must be created in the `digital-factory-ui` repo root with `WORKSPACE_SCAN_ROOT` and git config (see §4 Configuration).
 
 ### Rollout
-- Delivered as a local Next.js dev server. No deployment infrastructure needed.
-- The workspace owner runs `npm run dev` (or equivalent) to start the UI.
+- Delivered as a local Next.js dev server (`npm run dev`) or via docker-compose (`docker compose up digital-factory-ui`).
+- v2 replaces v1 on `main`. v1 remains accessible on `v1-archive` for rollback.
 
 ### Backward compatibility
-- YAML file schemas are not changed. Existing CLI-based workflow continues to function in parallel.
-- The UI is additive: it can be adopted incrementally without disrupting the file-driven workflow.
+- YAML file schemas are not changed. Existing CLI-based workflow continues to function in parallel with the UI.
+- The UI is a replacement for v1, not an additive layer — teams must migrate from v1 to v2.
 
 ### Deployment / handoff implications
-- T1 sets up the standalone repo and Dockerfile; subsequent tasks run in parallel once T1 is done.
+- T1 archives v1 and scaffolds v2; subsequent tasks run in parallel once T1 is done.
 - T10 wires the app into docker-compose so the full stack can be started with a single `docker compose up`.
 - Each screen is a self-contained Next.js route — agents can implement and test screens independently before integration.
 
