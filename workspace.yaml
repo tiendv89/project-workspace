@@ -58,9 +58,9 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
-  - id: digital-factory-ui
-    github: git@github.com:tiendv89/digital-factory-ui.git
-    local_path: env:DIGITAL_FACTORY_UI_LOCAL_PATH
+  - id: workspace-interface
+    github: git@github.com:tiendv89/workspace-interface.git
+    local_path: env:WORKSPACE_INTERFACE_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
 
