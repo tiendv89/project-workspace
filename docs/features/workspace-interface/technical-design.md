@@ -95,9 +95,9 @@ There is no visual layer. There is no way to browse features, understand cross-f
 
 ---
 
-### Option C: Next.js 15 App Router (chosen)
+### Option C: Next.js 16 App Router (chosen)
 
-**What it is:** A single Next.js 15 (App Router) project where Server Components read YAML files on the server, Server Actions handle all writes (status.yaml updates, git commits, directory scaffolding), and the client manages UI state.
+**What it is:** A single Next.js 16 (App Router) project where Server Components read YAML files on the server, Server Actions handle all writes (status.yaml updates, git commits, directory scaffolding), and the client manages UI state.
 
 **Pros:**
 - Single process, single dev command (`npm run dev`)
@@ -112,13 +112,13 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - Long-running git operations (commit, push) inside Server Actions need explicit timeout handling
 
 **Implementation impact:** Single repo (`digital-factory-ui`), single `npm run dev`; env vars configure workspace root
-**Dependency impact:** Next.js 15, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
+**Dependency impact:** Next.js 16, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
 
 ---
 
 ## 4. Chosen Design
 
-**Selected approach: Option C — Next.js 15 App Router**
+**Selected approach: Option C — Next.js 16 App Router**
 
 **Why:**
 - A single process running on localhost is the simplest possible deployment for a local dev tool.
@@ -130,7 +130,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 15 (App Router) |
+| Framework | Next.js 16 (App Router) |
 | Language | TypeScript (strict) |
 | Styling | Tailwind CSS v4 |
 | Component library | HeroUI v3 |
@@ -226,7 +226,7 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 
 | Dependency | Type | Notes |
 |---|---|---|
-| Node.js 20+ on developer machine | Runtime | Required for Next.js 15 |
+| Node.js 20+ on developer machine | Runtime | Required for Next.js 16 |
 | npm/pnpm | Package manager | Standard |
 | `simple-git` package | npm package | Mature, no auth complexity for local repos |
 | `js-yaml` package | npm package | Standard YAML parser |
@@ -256,7 +256,7 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 D1: Confirm whether digital-factory-ui has an existing codebase (fresh scaffold vs. integration)
   └── Unblock before T1. Check local path from .env and inspect repo contents.
 
-T1: App scaffold — Next.js 15, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts
+T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts
   └── Can begin now once D1 is resolved — no other blockers
   │
   T2: Server data layer — workspace discovery, YAML readers, Server Actions for status writes + git
