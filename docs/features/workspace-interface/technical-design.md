@@ -28,7 +28,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - Multi-workspace management requires manual directory switching
 - Non-technical stakeholders cannot participate in review without CLI access
 
-**Relevant repo boundary:** The new UI app will live in the `workflow` repo (agent-workflow) under the subdirectory `workspace-interface/`. The management repo (this repo) remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
+**Relevant repo boundary:** The new UI app will live in its own standalone repo: `workspace-interface` (GitHub: `tiendv89/workspace-interface`). The management repo (this repo) remains the file-system source of truth — the UI reads and writes its YAML files on the local filesystem.
 
 ---
 
@@ -111,7 +111,7 @@ There is no visual layer. There is no way to browse features, understand cross-f
 - React Server Components mental model has a learning curve (server vs client component boundary)
 - Long-running git operations (commit, push) inside Server Actions need explicit timeout handling
 
-**Implementation impact:** Subdirectory `workspace-interface/` within the `workflow` repo (agent-workflow); single `npm run dev`; env vars configure workspace root
+**Implementation impact:** Standalone repo `workspace-interface` (`tiendv89/workspace-interface`); single `npm run dev`; env vars configure workspace root; added to local `docker-compose.yml` for optional containerised startup
 **Dependency impact:** Next.js 16, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
 
 ---
@@ -141,12 +141,11 @@ There is no visual layer. There is no way to browse features, understand cross-f
 
 ### Architecture
 
-The app is a subdirectory within the `workflow` repo (agent-workflow):
+The app is a standalone repo (`workspace-interface`):
 
 ```
-agent-workflow/
-└── workspace-interface/     # Next.js app root
-    ├── app/
+workspace-interface/         # repo root
+├── app/
 │   ├── layout.tsx               # Root layout: sidebar + header shell
 │   ├── page.tsx                 # Dashboard (/), workspace picker on first load
 │   ├── features/
@@ -170,10 +169,12 @@ agent-workflow/
 ├── actions/
 │   ├── approve.ts               # Server Action: approve/reject/reset status.yaml
 │   └── init-feature.ts          # Server Action: scaffold new feature directory
-└── types/
-    ├── workspace.ts             # WorkspaceConfig, WorkspaceSummary
-    ├── feature.ts               # FeatureStatus, StageReview
-    └── task.ts                  # TaskYaml, TaskStatus
+├── types/
+│   ├── workspace.ts             # WorkspaceConfig, WorkspaceSummary
+│   ├── feature.ts               # FeatureStatus, StageReview
+│   └── task.ts                  # TaskYaml, TaskStatus
+├── Dockerfile                   # Production image (node:20-alpine, npm run start)
+└── .env.local.example           # Template for WORKSPACE_SCAN_ROOT, git config
 ```
 
 ### Active workspace state
@@ -202,7 +203,7 @@ The active workspace is stored in `localStorage` (client-side key: `active_works
 ### Configuration
 
 ```env
-# agent-workflow/workspace-interface/.env.local
+# workspace-interface/.env.local
 WORKSPACE_SCAN_ROOT=/Users/pye/code/kitelabs
 GIT_AUTHOR_NAME=pye
 GIT_AUTHOR_EMAIL=pentative@gmail.com
@@ -210,6 +211,8 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 ```
 
 `WORKSPACE_SCAN_ROOT` is scanned recursively (one level deep) for `workspace.yaml` files.
+
+When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the container (e.g. `/workspaces`) and `SSH_KEY_PATH` is bind-mounted from the host's SSH agent socket or key file.
 
 ---
 
@@ -240,9 +243,9 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 
 | Decision | Status | Required before |
 |---|---|---|
-| Does `agent-workflow/workspace-interface/` already exist, or is T1 a fresh scaffold? | **Unresolved** — check `WORKFLOW_LOCAL_PATH` | T1 |
+| Does `tiendv89/workspace-interface` repo already exist with scaffold, or is T1 a fresh init? | **Unresolved** — check `WORKSPACE_INTERFACE_LOCAL_PATH` | T1 |
 | Is `pnpm` or `npm` the preferred package manager for the workspace-interface app? | **Unresolved** | T1 |
-| Should the app be deployed as a Docker container or run as a raw `npm run dev`? | Assumed `npm run dev` (local tool) — **confirm** | T1 |
+| Which `docker-compose.yml` file does T10 add the service to? (`workflow` repo root, or a shared root) | **Unresolved** | T10 |
 
 ### Configuration dependencies
 
@@ -256,10 +259,10 @@ SSH_KEY_PATH=~/.ssh/id_ed25519
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Confirm whether agent-workflow/workspace-interface/ exists (fresh scaffold vs. integration)
-  └── Unblock before T1. Check WORKFLOW_LOCAL_PATH from .env and inspect subdirectory.
+D1: Confirm whether workspace-interface repo exists (fresh scaffold vs. existing)
+  └── Unblock before T1. Check WORKSPACE_INTERFACE_LOCAL_PATH from .env.
 
-T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts
+T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design tokens, fonts, Dockerfile
   └── Can begin now once D1 is resolved — no other blockers
   │
   T2: Server data layer — workspace discovery, YAML readers, Server Actions for status writes + git
@@ -276,6 +279,10 @@ T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design toke
           └── T4, T5, T6, T7, T8, T9 run in parallel with each other
           └── BLOCKED on T2 (data layer and server actions must be available)
           └── BLOCKED on T3 (sidebar + header layout shell must exist for consistent page structure)
+
+T10: docker-compose — add workspace-interface service to docker-compose.yml in workflow repo
+     └── BLOCKED on T1 (Dockerfile must exist before docker-compose service can be defined)
+     └── Runs in parallel with T2/T3 and T4-T9 once T1 is done
 ```
 
 **Wave summary:**
@@ -284,7 +291,7 @@ T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design toke
 |---|---|---|
 | Wave 0 | D1 (unblock decision) | Immediate |
 | Wave 1 | T1 | Single task |
-| Wave 2 | T2, T3 | Fully parallel |
+| Wave 2 | T2, T3, T10 | Fully parallel |
 | Wave 3 | T4, T5, T6, T7, T8, T9 | Fully parallel |
 
 ---
@@ -293,10 +300,11 @@ T1: App scaffold — Next.js 16, TypeScript, Tailwind v4, HeroUI v3, design toke
 
 | Repo | Impact | Reason |
 |---|---|---|
-| `workflow` | Primary — all 9 tasks write here | The web app lives at `agent-workflow/workspace-interface/` |
+| `workspace-interface` | Primary — T1–T9 write here | The web app is this standalone repo |
+| `workflow` | T10 only — adds docker-compose service entry | docker-compose.yml lives in the workflow repo |
 | `management-repo` | Read-only at runtime; written by Server Actions via `simple-git` | The app reads and writes `status.yaml`, `tasks/T<n>.yaml`, scaffolds feature dirs |
 
-No changes are required to `rag-service` or any other repo.
+No changes are required to `rag-service`.
 
 The `management-repo` is mutated only via `simple-git` running inside Next.js Server Actions — not via direct file writes without git tracking. This ensures all state changes remain committed artifacts.
 
@@ -321,7 +329,8 @@ The `management-repo` is mutated only via `simple-git` running inside Next.js Se
 - The UI is additive: it can be adopted incrementally without disrupting the file-driven workflow.
 
 ### Deployment / handoff implications
-- T1 sets up the project; subsequent tasks can be executed by independent agents in parallel after T2 and T3 are done.
+- T1 sets up the standalone repo and Dockerfile; subsequent tasks run in parallel once T1 is done.
+- T10 wires the app into docker-compose so the full stack can be started with a single `docker compose up`.
 - Each screen is a self-contained Next.js route — agents can implement and test screens independently before integration.
 
 ---
