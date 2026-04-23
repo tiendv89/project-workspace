@@ -57,7 +57,7 @@ A first-generation dashboard (v1) already exists in the `digital-factory-ui` rep
 **Fixed assumptions:**
 - Single-user, local tool only. No authentication or multi-user support.
 - Desktop-first at 1440px width. No mobile/responsive breakpoints.
-- The app runs as a local Next.js dev server (`npm run dev`) against the host filesystem.
+- The app runs as a local Next.js dev server (`pnpm dev`) against the host filesystem.
 - A `WORKSPACE_SCAN_ROOT` environment variable points to the directory containing workspace subdirectories.
 
 ---
@@ -109,7 +109,7 @@ A first-generation dashboard (v1) already exists in the `digital-factory-ui` rep
 **What it is:** A single Next.js 16 (App Router) project where Server Components read YAML files on the server, Server Actions handle all writes (status.yaml updates, git commits, directory scaffolding), and the client manages UI state.
 
 **Pros:**
-- Single process, single dev command (`npm run dev`)
+- Single process, single dev command (`pnpm dev`)
 - Server Components access `fs` directly — no API glue
 - Server Actions eliminate the need for explicit API routes for most writes
 - Strong TypeScript integration, colocated layouts, suspense boundaries
@@ -120,7 +120,7 @@ A first-generation dashboard (v1) already exists in the `digital-factory-ui` rep
 - React Server Components mental model has a learning curve (server vs client component boundary)
 - Long-running git operations (commit, push) inside Server Actions need explicit timeout handling
 
-**Implementation impact:** Standalone repo `digital-factory-ui` (`tiendv89/digital-factory-ui`); single `npm run dev`; env vars configure workspace root; added to local `docker-compose.yml` for optional containerised startup
+**Implementation impact:** Standalone repo `digital-factory-ui` (`tiendv89/digital-factory-ui`); single `pnpm dev`; env vars configure workspace root; added to local `docker-compose.yml` for optional containerised startup
 **Dependency impact:** Next.js 16, React 19, Tailwind CSS v4, HeroUI v3, js-yaml, simple-git
 
 ---
@@ -182,7 +182,7 @@ digital-factory-ui/          # repo root
 │   ├── workspace.ts             # WorkspaceConfig, WorkspaceSummary
 │   ├── feature.ts               # FeatureStatus, StageReview
 │   └── task.ts                  # TaskYaml, TaskStatus
-├── Dockerfile                   # Production image (node:20-alpine, npm run start)
+├── Dockerfile                   # Production image (node:20-alpine, pnpm start)
 └── .env.local.example           # Template for WORKSPACE_SCAN_ROOT, git config
 ```
 
@@ -242,7 +242,7 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 | Dependency | Type | Notes |
 |---|---|---|
 | Node.js 20+ on developer machine | Runtime | Required for Next.js 16 |
-| npm/pnpm | Package manager | Standard |
+| pnpm | Package manager | Confirmed |
 | `simple-git` package | npm package | Mature, no auth complexity for local repos |
 | `js-yaml` package | npm package | Standard YAML parser |
 | HeroUI v3 | npm package | Requires Tailwind CSS v4; confirmed available |
@@ -253,7 +253,7 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 | Decision | Status | Required before |
 |---|---|---|
 | v1 archive: T1 must tag or branch v1 before wiping — confirm branch name (`v1-archive`) | **Assumed `v1-archive`** — confirm | T1 |
-| Is `pnpm` or `npm` the preferred package manager for the v2 app? | **Unresolved** | T1 |
+| Package manager | **pnpm** — resolved | T1 |
 | Which `docker-compose.yml` file does T10 add the service to? (`workflow` repo root, or a shared root) | **Unresolved** | T10 |
 
 ### Configuration dependencies
@@ -341,7 +341,7 @@ v1 will not be runnable from `main` after T1. Teams relying on v1 must switch to
 - `.env.local` must be created in the `digital-factory-ui` repo root with `WORKSPACE_SCAN_ROOT` and git config (see §4 Configuration).
 
 ### Rollout
-- Delivered as a local Next.js dev server (`npm run dev`) or via docker-compose (`docker compose up digital-factory-ui`).
+- Delivered as a local Next.js dev server (`pnpm dev`) or via docker-compose (`docker compose up digital-factory-ui`).
 - v2 replaces v1 on `main`. v1 remains accessible on `v1-archive` for rollback.
 
 ### Backward compatibility
