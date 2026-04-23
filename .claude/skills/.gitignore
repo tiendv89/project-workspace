@@ -1,5 +1,5 @@
 # Shared skill symlinks are managed by workflow/scripts/install.sh — do not commit them.
-# Symlinks are git blobs, caught by /*. Real local skill directories are trees, preserved by !*/.
-/*
+# Symlinks are git blobs, caught by *. Real local skill directories are trees, preserved by !*/.
+*
 !*/
 !.gitignore

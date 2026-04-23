@@ -1,5 +1,5 @@
-feature_id: workspace-interface
-title: Workspace Interface
+feature_id: feature-status-dashboard-v2
+title: Feature Status Dashboard v2
 
 feature_status: in_tdd
 current_stage: technical_design

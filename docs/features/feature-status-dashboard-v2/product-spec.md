@@ -1,8 +1,8 @@
 # Product Specification
 
 ## Feature
-- Feature ID: `workspace-interface`
-- Title: `Workspace Interface — Web UI for Workspace Management`
+- Feature ID: `feature-status-dashboard-v2`
+- Title: `Feature Status Dashboard v2 — Web UI for Workspace Management`
 
 ## Problem
 

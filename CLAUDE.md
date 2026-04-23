@@ -186,6 +186,18 @@ Typical required values:
 - `GITHUB_ACCOUNT`
 - `SSH_KEY_PATH`
 
+## Figma link propagation rule
+
+A Figma link in a product spec is a design contract. It must be carried forward through every downstream artifact that touches UI.
+
+**Product spec → technical design:**
+- If `product-spec.md` contains one or more Figma URLs, the tech lead must include a `## Figma` section in `technical-design.md` that lists every Figma URL and maps each one to the screens or components it covers.
+- The technical design may not be marked `approved` if the product spec has Figma links and the technical design has no `## Figma` section.
+
+**Technical design → tasks:**
+- If `technical-design.md` has a `## Figma` section, every task in `tasks.md` that implements UI for a `frontend_engineer` repo must include a `### Figma` subsection listing the Figma URL(s) and frame names relevant to that task.
+- A frontend task with no `### Figma` subsection when the technical design has Figma links is incomplete and must be corrected before the task is marked `ready`.
+
 ## Figma MCP usage rule
 
 When `FIGMA_PERSONAL_ACCESS_TOKEN` is present in the project `.env` and `figma-mcp` is listed under the role's `enabled_skills`, agents must use the Figma MCP to read design context before implementing any UI.
@@ -195,6 +207,16 @@ When `FIGMA_PERSONAL_ACCESS_TOKEN` is present in the project `.env` and `figma-m
 - Derive component and prop names from the Figma component name.
 - If `FIGMA_PERSONAL_ACCESS_TOKEN` is missing, stop and ask the user to add it to `.env` (see `.env.template`).
 - Never skip Figma context when the token is available — guessing at design values is not acceptable.
+
+## Frontend engineer Figma implementation rule
+
+When a task spec includes a `### Figma` subsection, the Figma design is the source of truth for visual output — not the text description.
+
+- **Read first**: use the Figma MCP (`get_design_context` or `get_screenshot`) on every frame listed in `### Figma` before writing any UI code. Do not implement from the text description alone.
+- **Token is available**: if `FIGMA_PERSONAL_ACCESS_TOKEN` is set, reading Figma context is mandatory. Skipping it is a rule violation.
+- **Token is missing**: if the task has a `### Figma` subsection but `FIGMA_PERSONAL_ACCESS_TOKEN` is absent, set status to `blocked`, `blocked_reason: skill_missing`, and record in `blocked_details`: `"FIGMA_PERSONAL_ACCESS_TOKEN not set — cannot read Figma design"`. Do not implement from guesswork.
+- **Fidelity**: the implemented UI must match the Figma frames for layout, spacing, color tokens, typography, and all interactive states (default, hover, focus, disabled, error, loading). Deviations require an explicit note in the PR description.
+- **No orphan values**: every color, spacing, or typography value used in the implementation must map to a Figma variable or a codebase design token. Hardcoded hex or pixel values that exist in Figma are not acceptable.
 
 ## Management repo
 
@@ -207,7 +229,7 @@ Rules:
 - The management repo commit is the canonical record of task ownership. Without it, the claim is not valid and the agent must not proceed with implementation.
 - Agents may only modify their own task file (`T_x.yaml`) in the management repo. See "Task file scope" rule.
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
-- **No direct push to main rule**: agents must never commit task state changes (status updates, log entries) directly to `main` on the management repo. All task state mutations must be committed to the task's feature branch (`feature/<feature_id>-<work_id>`). If the feature branch does not exist yet, the agent must create it before committing. Pushing directly to `main` is a rule violation even when no feature branch was previously created by `start-implementation`.
+- **No direct push to main rule**: nothing may be committed directly to `main` on the management repo — not task state, not feature docs, not skill updates, not workspace initialisation, not any other change. Every write to the management repo must land on a feature branch and be merged via PR. This applies to agents, workflow skills (`init-feature`, `approve-feature`, `init-workspace`, etc.), and humans alike. No exceptions.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
 - **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing, follow the **branch checkout + sync protocol** below. This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
 
@@ -426,6 +448,17 @@ The assistant must still ask before running commands that:
 - push to remote
 - create or merge branches
 - deploy infrastructure or applications
+
+## Agent-runtime detection rule
+
+Before implementing any code autonomously, check whether you are running inside the agent runtime:
+
+```bash
+printenv CLAUDE_AGENT_RUNTIME
+```
+
+- If the output is `1` — you are inside the agent runtime. Proceed with autonomous implementation as instructed by the task.
+- If the output is empty or the variable is absent — you are in an interactive session. **Do not implement code unless the human has explicitly asked you to in this conversation.** Read, plan, and discuss freely; write or modify files only on explicit instruction.
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
