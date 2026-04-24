@@ -37,7 +37,7 @@ After marking the task `done`, the handler applies the **auto-ready rule**: it s
 - [ ] Add `merged` field to `PR_STATUS_QUERY` GraphQL string
 - [ ] Parse `pr.merged` and populate `PrStatusResult.merged`
 - [ ] Create `src/poll/handle-merged-prs.ts` with `HandleMergedPrsOptions` interface and `handleMergedPrs` function
-- [ ] Implement idempotency guards (skip if already `done` or `pr.status: "merged"`)
+- [ ] Implement idempotency guard: skip if `task.status !== "in_review"` (covers done, cancelled, etc.) — `pr.status` is not read, it is write-only
 - [ ] Implement branch checkout + sync (fetch, checkout, pull)
 - [ ] Implement task YAML update: `status: done`, `pr.status: "merged"`, log entry
 - [ ] Implement auto-ready rule: scan sibling task YAMLs, transition `todo → ready` for any whose `depends_on` is fully satisfied, append `ready` log entry to each

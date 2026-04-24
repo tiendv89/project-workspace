@@ -204,9 +204,8 @@ export async function handleMergedPrs(opts: HandleMergedPrsOptions): Promise<voi
 
 **Per-task logic** (for each `result` where `result.merged === true`):
 
-1. **Read live task state from feature branch** using `tryReadTaskFromBranch`. If the task is already `done` or `cancelled`, skip (idempotent guard).
-2. **Check `pr.status`** — if already `"merged"`, skip (duplicate guard).
-3. **Checkout and sync feature branch** (branch checkout + sync protocol):
+1. **Read live task state from feature branch** using `tryReadTaskFromBranch`. If `task.status !== "in_review"`, skip — the task was already closed out by a previous cycle (idempotent guard). `task.pr.status` is not checked; it is a write-only audit field and is never read by the runtime.
+2. **Checkout and sync feature branch** (branch checkout + sync protocol):
    ```bash
    git -C <workspaceRoot> fetch origin
    git -C <workspaceRoot> checkout <taskBranch>
