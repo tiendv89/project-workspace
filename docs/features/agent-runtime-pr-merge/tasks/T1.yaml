@@ -13,7 +13,9 @@ execution:
 pr:
   url: ""
   status: not_created
-workspace_pr: https://github.com/tiendv89/project-workspace/pull/54
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/55
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
