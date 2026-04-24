@@ -1,9 +1,9 @@
 feature_id: agent-runtime-pr-merge
 title: Agent Runtime PR Merge
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tech lead produces tasks.md and tasks/T<n>.yaml for review.
+next_action: Wave 1 tasks are ready. Agents may begin execution via start-implementation.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: "2026-04-24T15:32:15+0700"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-24T09:49:21Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-24T09:49:21Z"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -49,6 +53,11 @@ history:
     action: approved
     by: pentative@gmail.com
     at: "2026-04-24T15:32:15+0700"
+    comment: null
+  - stage: tasks
+    action: approved
+    by: pentative@gmail.com
+    at: "2026-04-24T09:49:21Z"
     comment: null
 
 revalidation:

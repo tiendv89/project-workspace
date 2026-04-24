@@ -1,7 +1,7 @@
 id: T1
 title: Extend PR poller + implement merge-completion handler
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -16,10 +16,18 @@ pr:
   url: ""
   status: not_created
 
-workspace_pr: null
+workspace_pr: https://github.com/tiendv89/project-workspace/pull/54
 
 log:
   - action: created
     by: pentative@gmail.com
     at: "2026-04-24T15:44:14+0700"
     note: Task created from approved task breakdown.
+  - action: ready
+    by: pentative@gmail.com
+    at: "2026-04-24T09:49:21Z"
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: pr_opened
+    by: pentative@gmail.com
+    at: "2026-04-24T09:53:21Z"
+    note: Workspace PR opened — tiendv89/project-workspace#54
