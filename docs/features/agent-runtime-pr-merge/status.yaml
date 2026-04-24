@@ -1,0 +1,58 @@
+feature_id: agent-runtime-pr-merge
+title: Agent Runtime PR Merge
+
+feature_status: in_tdd
+current_stage: tasks
+next_action: Tech lead produces tasks.md and tasks/T<n>.yaml for review.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-24T15:17:29+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-24T15:17:29+0700"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-24T15:32:15+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-24T15:32:15+0700"
+        comment: null
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    by: pentative@gmail.com
+    at: "2026-04-24T15:17:29+0700"
+    comment: null
+  - stage: technical_design
+    action: approved
+    by: pentative@gmail.com
+    at: "2026-04-24T15:32:15+0700"
+    comment: null
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
