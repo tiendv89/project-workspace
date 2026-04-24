@@ -13,12 +13,54 @@ The agent runtime (`agent-workflow/agent-runtime/`) runs a polling loop in `main
 1. Pulls all watched workspaces.
 2. Scans for `ready` tasks → claims → runs claude.
 3. **In-review pass**: calls `checkInReviewPrs` (GraphQL) for every `in_review` task, then:
-   - If `mergeable: false` → `handleMergeConflicts` (auto-rebase).
+   - If `mergeable: false` → `handleMergeConflicts` (auto-rebase via Claude).
    - If `hasOpenComments: true` → `handleDraftReviews` (dispatch review agent).
 
 `checkInReviewPrs` (`src/poll/check-in-review-prs.ts`) issues a GraphQL query that fetches `isDraft`, `mergeable`, and `reviewThreads` for each task's implementation PR. It does **not** fetch `merged`. The `PrStatusResult` type has no `merged` field.
 
 There is no handler for the case where the implementation PR is merged. The management-repo PR (`workspace_pr`) and the task YAML status (`in_review`) both remain unchanged after a human merges the implementation PR.
+
+### Existing conflict resolution (already implemented)
+
+When a task's implementation PR reports `mergeable: false`, `handleMergeConflicts` (`src/pr-response/auto-rebase.ts`) runs the following logic:
+
+1. Claims the rebase work via a first-push-wins commit on the management-repo branch.
+2. Runs `git rebase origin/<base_branch>` in the implementation repo.
+3. **Clean rebase** → force-with-lease push, `conflict_state: resolved`, continue.
+4. **Conflicted rebase, all files agent-authored** → spawns `claude` CLI to read each conflicted file, resolve markers, and write resolved content back to disk; then `git rebase --continue`. On success: same as clean path. On failure: falls through to block path.
+5. **Conflicted rebase, any file not authored by agent** → blocks immediately (human-authored files are not auto-modified).
+6. **Block path** → stages marker files, commits WIP, pushes, sets `status: blocked`, `blocked_reason: pr_conflict`.
+
+This means the runtime already resolves merge conflicts autonomously when possible. The missing piece is what happens **after** the human merges the now-unblocked PR.
+
+### Full in-review lifecycle (current gaps highlighted)
+
+```
+PR opened (claim) → task status: in_review
+        │
+        ▼
+  [poll cycle — checkInReviewPrs]
+        │
+        ├─ mergeable: false ──→ handleMergeConflicts
+        │                              │
+        │                  ┌───────────┴────────────┐
+        │                  │                        │
+        │            agent-resolvable        non-agent files
+        │           (Claude resolves)        → status: blocked
+        │                  │
+        │           rebase success
+        │           → PR now mergeable
+        │           → human can merge
+        │
+        ├─ hasOpenComments ──→ handleDraftReviews (agent responds)
+        │
+        └─ merged: true ──→ ⚠️ NO HANDLER (gap this feature fills)
+                                  │
+                                  ▼
+                        mark done + merge workspace PR
+```
+
+After conflict resolution or review response, the human merges the implementation PR on GitHub. At that point the runtime has no mechanism to detect the merge and close out the task — the gap this feature fills.
 
 ### Existing types and modules relevant to this feature
 
@@ -54,10 +96,25 @@ There is no handler for the case where the implementation PR is merged. The mana
 ### What must remain stable
 
 - The GraphQL query change is additive — existing callers are unaffected.
-- `handleMergeConflicts` and `handleDraftReviews` are not touched.
+- `handleMergeConflicts` and `handleDraftReviews` are not touched. The conflict resolution path (agent rebase) remains exactly as implemented. This feature only adds the terminal step: detecting that the PR was merged after resolution and closing the task.
 - Task YAML schema is unchanged — `pr.status: "merged"` is already a valid `PrStatus` value.
 - The `workspace_pr` field already exists on the task YAML — the handler reads the PR number from it.
 - The polling interval mechanism is unchanged — the merged handler piggybacks on `pr_poll_interval_seconds`.
+
+### Complete conflict → resolution → merge → close pipeline
+
+This feature completes the pipeline that `handleMergeConflicts` starts:
+
+```
+conflict detected
+  → agent rebases (handleMergeConflicts — existing)
+    → PR becomes mergeable
+      → human merges
+        → merged: true detected (handleMergedPrs — this feature)
+          → task marked done + workspace PR merged
+```
+
+Tasks that were previously blocked on `pr_conflict` and then unblocked (rebase resolved, human re-reviews and merges) will be caught by the same `merged: true` detection — no special case needed.
 
 ### Rule conflict: `done` requires a human log entry
 
