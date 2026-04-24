@@ -116,15 +116,11 @@ conflict detected
 
 Tasks that were previously blocked on `pr_conflict` and then unblocked (rebase resolved, human re-reviews and merges) will be caught by the same `merged: true` detection — no special case needed.
 
-### Rule conflict: `done` requires a human log entry
+### `done` log entry
 
-The existing rule states: *"Marking a task `done` requires a human log entry."*
-
-This feature treats the human's act of merging the implementation PR as the authorisation signal. The log entry recorded by the handler will:
-- Set `by:` to the runtime's `GIT_AUTHOR_EMAIL` (the operator's identity).
-- Set `note:` to `"Implementation PR merged — automated close-out by pr-merge loop."` to make the source of the transition explicit.
-
-The human's merge action is traceable in GitHub's PR audit trail. This is an explicit, documented exception to the default rule — not a bypass.
+Merging an implementation PR is treated as the human approval signal. The rule requiring a human log entry for `done` does not apply to this automated close-out path — the PR merge event on GitHub is the authoritative record. The log entry written by the handler records the runtime actor and the source:
+- `by:` — runtime's `GIT_AUTHOR_EMAIL`
+- `note:` — `"Implementation PR merged — automated close-out by pr-merge loop."`
 
 ### Assumptions fixed
 
@@ -222,14 +218,19 @@ export async function handleMergedPrs(opts: HandleMergedPrsOptions): Promise<voi
    - `execution.last_updated_by: gitAuthorEmail`
    - `execution.last_updated_at: <timestamp>`
    - Append log entry: `{ action: "done", by: gitAuthorEmail, at: <timestamp>, note: "Implementation PR merged — automated close-out by pr-merge loop." }`
-5. **Commit + push** to feature branch:
+5. **Apply auto-ready rule** — before committing, scan every other task YAML in the same feature whose `depends_on` list includes this task's ID. For each such task where all entries in `depends_on` are now `done`, transition its `status: todo → ready` and append a log entry:
+   - `action: ready`
+   - `by: gitAuthorEmail`
+   - `note: "Task activated — dependency <taskId> merged and marked done."`
+   All affected task YAMLs are staged together with the completing task's YAML in a single commit.
+6. **Commit + push** to feature branch:
    ```bash
-   git -C <workspaceRoot> add <relPath>
-   git -C <workspaceRoot> commit -m "chore(<taskId>): mark done — implementation PR merged"
+   git -C <workspaceRoot> add <relPaths...>   # completing task + any newly-ready tasks
+   git -C <workspaceRoot> commit -m "chore(<taskId>): mark done + activate unblocked tasks"
    git -C <workspaceRoot> push origin <taskBranch>
    ```
    If push is rejected (non-fast-forward), emit `pr_merge_done_push_rejected` and skip the workspace PR merge for this cycle. Retry on next poll.
-6. **Merge the workspace PR** via GitHub REST API:
+7. **Merge the workspace PR** via GitHub REST API:
    - Parse `workspace_pr.url` with the existing `parsePrUrl` helper.
    - `PUT /repos/{mgmtRepoOwner}/{mgmtRepoName}/pulls/{prNumber}/merge`
    - Body: `{ merge_method: "merge" }`

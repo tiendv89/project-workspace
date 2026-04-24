@@ -23,7 +23,9 @@ This task closes the gap identified in the technical design: when a human merges
 
 3. **`src/main.ts`** — Wire the new handler into `runOneCycle` after the existing `handleDraftReviews` block. Uses the already-present `parseManagementRepoCoords` helper to supply `mgmtRepoOwner` / `mgmtRepoName`.
 
-The `done` log entry sets `by:` to `GIT_AUTHOR_EMAIL` and `note:` to `"Implementation PR merged — automated close-out by pr-merge loop."` — this is the documented exception to the human-log-entry rule (the human's PR merge is the approval signal).
+The `done` log entry sets `by:` to `GIT_AUTHOR_EMAIL` and `note:` to `"Implementation PR merged — automated close-out by pr-merge loop."`. Merging the implementation PR is the human approval signal; no separate human log entry is required for this path.
+
+After marking the task `done`, the handler applies the **auto-ready rule**: it scans all other task YAMLs in the same feature, finds any whose `depends_on` list is now fully satisfied, transitions them `todo → ready`, and appends a `ready` log entry to each. All YAML changes (completing task + newly-ready tasks) land in a single commit.
 
 ### Required skills
 
@@ -38,6 +40,8 @@ The `done` log entry sets `by:` to `GIT_AUTHOR_EMAIL` and `note:` to `"Implement
 - [ ] Implement idempotency guards (skip if already `done` or `pr.status: "merged"`)
 - [ ] Implement branch checkout + sync (fetch, checkout, pull)
 - [ ] Implement task YAML update: `status: done`, `pr.status: "merged"`, log entry
+- [ ] Implement auto-ready rule: scan sibling task YAMLs, transition `todo → ready` for any whose `depends_on` is fully satisfied, append `ready` log entry to each
+- [ ] Stage completing task YAML + any newly-ready task YAMLs in a single commit
 - [ ] Implement commit + push with non-fast-forward rejection guard
 - [ ] Implement workspace PR merge via `PUT .../pulls/{n}/merge` REST call
 - [ ] Handle `workspace_pr: null` case — emit warning, skip merge step, still mark done
