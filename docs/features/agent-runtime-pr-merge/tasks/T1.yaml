@@ -1,7 +1,7 @@
 id: T1
 title: Extend PR poller + implement merge-completion handler
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: pentative@gmail.com
     at: "2026-04-24T15:44:14+0700"
     note: Task created from approved task breakdown.
+  - action: ready
+    by: pentative@gmail.com
+    at: "2026-04-24T09:49:21Z"
+    note: Task activated on tasks-stage approval — dependencies met.
