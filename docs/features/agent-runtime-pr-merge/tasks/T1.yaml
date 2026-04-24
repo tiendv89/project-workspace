@@ -42,12 +42,11 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-04-24T10:12:13+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/agent-workflow/pull/51.
-      All subtasks complete — merged field added to poller, handle-merged-prs.ts
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/51. All
+      subtasks complete — merged field added to poller, handle-merged-prs.ts
       created with full rebase-recovery and auto-ready rule, wired in main.ts,
       20 unit tests added.
