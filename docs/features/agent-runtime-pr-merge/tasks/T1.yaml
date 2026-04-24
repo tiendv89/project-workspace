@@ -1,33 +1,33 @@
 id: T1
 title: Extend PR poller + implement merge-completion handler
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/agent-runtime-pr-merge-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-24T09:56:39.147Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: https://github.com/tiendv89/project-workspace/pull/54
-
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-04-24T15:44:14+0700"
+    at: 2026-04-24T15:44:14+0700
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-04-24T09:49:21Z"
+    at: 2026-04-24T09:49:21Z
     note: Task activated on tasks-stage approval — dependencies met.
   - action: pr_opened
     by: pentative@gmail.com
-    at: "2026-04-24T09:53:21Z"
+    at: 2026-04-24T09:53:21Z
     note: Workspace PR opened — tiendv89/project-workspace#54
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-24T09:56:39.147Z
+    note: Claimed via git-based claim protocol.
