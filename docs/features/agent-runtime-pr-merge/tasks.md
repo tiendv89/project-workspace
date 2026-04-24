@@ -42,7 +42,7 @@ After marking the task `done`, the handler applies the **auto-ready rule**: it s
 - [ ] Implement task YAML update: `status: done`, `pr.status: "merged"`, log entry
 - [ ] Implement auto-ready rule: scan sibling task YAMLs, transition `todo → ready` for any whose `depends_on` is fully satisfied, append `ready` log entry to each
 - [ ] Stage completing task YAML + any newly-ready task YAMLs in a single commit
-- [ ] Implement commit + push with non-fast-forward rejection guard
+- [ ] Implement commit + push with rebase-and-resolve on rejection: fetch + rebase; if clean retry push; if conflicted spawn Claude to resolve YAML conflict markers (keep local `done`/`ready` status, merge log arrays); if resolve fails emit `pr_merge_done_blocked` and stop
 - [ ] Implement workspace PR merge via `PUT .../pulls/{n}/merge` REST call
 - [ ] Handle `workspace_pr: null` case — emit warning, skip merge step, still mark done
 - [ ] Wire `handleMergedPrs` call in `main.ts` after `handleDraftReviews` block

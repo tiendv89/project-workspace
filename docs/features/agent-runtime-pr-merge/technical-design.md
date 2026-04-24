@@ -223,13 +223,18 @@ export async function handleMergedPrs(opts: HandleMergedPrsOptions): Promise<voi
    - `by: gitAuthorEmail`
    - `note: "Task activated — dependency <taskId> merged and marked done."`
    All affected task YAMLs are staged together with the completing task's YAML in a single commit.
-6. **Commit + push** to feature branch:
+6. **Commit + push** to feature branch, with rebase-and-resolve on rejection:
    ```bash
    git -C <workspaceRoot> add <relPaths...>   # completing task + any newly-ready tasks
    git -C <workspaceRoot> commit -m "chore(<taskId>): mark done + activate unblocked tasks"
    git -C <workspaceRoot> push origin <taskBranch>
    ```
-   If push is rejected (non-fast-forward), emit `pr_merge_done_push_rejected` and skip the workspace PR merge for this cycle. Retry on next poll.
+   If push is rejected (non-fast-forward), attempt recovery before giving up:
+   - **Fetch + rebase**: `git fetch origin` then `git rebase origin/<taskBranch>`.
+   - **Clean rebase** → retry push. If push succeeds, continue to step 7.
+   - **Conflicted rebase** → spawn `claude` CLI to resolve conflict markers in each affected YAML file (same pattern as `auto-rebase.ts`). YAML conflicts are always machine-generated structured data — a targeted prompt instructs Claude to keep the local `done`/`ready` status and merge the log arrays from both sides.
+     - Resolve succeeds → `git rebase --continue` → retry push → continue to step 7.
+     - Resolve fails or push still rejected → emit `pr_merge_done_blocked`, stop for this task. The workspace PR merge is skipped. The handler will not retry automatically — operator intervention required.
 7. **Merge the workspace PR** via GitHub REST API:
    - Parse `workspace_pr.url` with the existing `parsePrUrl` helper.
    - `PUT /repos/{mgmtRepoOwner}/{mgmtRepoName}/pulls/{prNumber}/merge`
