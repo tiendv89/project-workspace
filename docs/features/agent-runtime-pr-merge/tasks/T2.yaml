@@ -1,7 +1,7 @@
 id: T2
 title: Documentation update
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/agent-runtime-pr-merge-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-27T03:58:25.099Z
+  last_updated_at: 2026-04-27T04:11:06+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/52
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/56
   status: open
@@ -34,6 +34,20 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-27T04:01:02+0000
     note: Implementation started on feature/agent-runtime-pr-merge-T2.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T04:11:06+0000
+    note: >-
+      PR opened at https://github.com/tiendv89/agent-workflow/pull/52.
+      Added section 12 to OPERATOR-GUIDE.md covering automated PR merge close-out,
+      updated agent.yaml reference with pr_poll_interval_seconds, and annotated
+      GITHUB_TOKEN in DOCKER.md.
     rag_context_injected: false
     tokens:
       input: 0
