@@ -39,13 +39,12 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-04-27T04:11:06+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/agent-workflow/pull/52.
-      Added section 12 to OPERATOR-GUIDE.md covering automated PR merge close-out,
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/52. Added
+      section 12 to OPERATOR-GUIDE.md covering automated PR merge close-out,
       updated agent.yaml reference with pr_poll_interval_seconds, and annotated
       GITHUB_TOKEN in DOCKER.md.
     rag_context_injected: false
@@ -53,4 +52,4 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
