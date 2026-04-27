@@ -1,7 +1,7 @@
 id: T1
 title: Extend PR poller + implement merge-completion handler
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/agent-runtime-pr-merge-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-04-24T11:44:40+0000
+  last_updated_at: 2026-04-27T03:55:13.576Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/51
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/55
   status: open
@@ -58,3 +58,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-24T11:44:40+0000
     note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T03:55:13.576Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
