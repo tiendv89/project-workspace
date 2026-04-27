@@ -1,7 +1,7 @@
 id: T2
 title: Documentation update
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,12 +9,14 @@ blocked_context: null
 branch: feature/agent-runtime-pr-merge-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-04-27T04:13:35.377Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/52
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/56
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
@@ -24,3 +26,34 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-04-27T03:55:13.608Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T03:58:25.099Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T04:01:02+0000
+    note: Implementation started on feature/agent-runtime-pr-merge-T2.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T04:11:06+0000
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/52. Added
+      section 12 to OPERATOR-GUIDE.md covering automated PR merge close-out,
+      updated agent.yaml reference with pr_poll_interval_seconds, and annotated
+      GITHUB_TOKEN in DOCKER.md.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-04-27T04:13:35.377Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
