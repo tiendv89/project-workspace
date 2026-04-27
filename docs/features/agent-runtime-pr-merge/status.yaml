@@ -1,9 +1,9 @@
 feature_id: agent-runtime-pr-merge
 title: Agent Runtime PR Merge
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Wave 1 tasks are ready. Agents may begin execution via start-implementation.
+feature_status: done
+current_stage: handoff
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -37,11 +37,15 @@ stages:
         at: "2026-04-24T09:49:21Z"
         comment: null
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: "2026-04-27T11:31:21+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: "2026-04-27T11:31:21+0700"
+        comment: null
 
 history:
   - stage: product_spec
@@ -58,6 +62,16 @@ history:
     action: approved
     by: pentative@gmail.com
     at: "2026-04-24T09:49:21Z"
+    comment: null
+  - stage: handoff
+    action: submitted
+    by: matthew@swellnetwork.io
+    at: "2026-04-27T11:18:23+0700"
+    comment: All tasks done and workspace PRs merged. Handoff document written.
+  - stage: handoff
+    action: approved
+    by: matthew@swellnetwork.io
+    at: "2026-04-27T11:31:21+0700"
     comment: null
 
 revalidation:

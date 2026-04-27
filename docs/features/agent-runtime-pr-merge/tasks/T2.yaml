@@ -16,7 +16,7 @@ pr:
   status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/56
-  status: open
+  status: merged
 log:
   - action: created
     by: pentative@gmail.com
