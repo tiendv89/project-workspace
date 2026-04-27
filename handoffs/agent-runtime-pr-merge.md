@@ -37,9 +37,3 @@ This feature closed the loop in the agent runtime when an implementation PR is m
 ## Known limitations / follow-ons
 
 None identified. The feature is complete as scoped.
-
----
-
-## Approval required
-
-A human must review this handoff and approve it to advance the feature to `done`.
