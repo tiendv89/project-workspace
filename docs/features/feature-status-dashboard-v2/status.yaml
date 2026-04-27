@@ -2,8 +2,8 @@ feature_id: feature-status-dashboard-v2
 title: Feature Status Dashboard v2
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead to write technical-design.md.
+current_stage: tasks
+next_action: Tech lead to produce task breakdown under docs/features/feature-status-dashboard-v2/tasks/.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         at: "2026-04-23T15:32:40+0700"
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-27T15:33:42+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-27T15:33:42+0700"
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -41,6 +45,11 @@ history:
     by: pentative@gmail.com
     at: "2026-04-23T15:32:40+0700"
     note: Product spec approved. Feature advances to in_tdd.
+  - action: approved
+    stage: technical_design
+    by: pentative@gmail.com
+    at: "2026-04-27T15:33:42+0700"
+    note: Technical design approved. Tech lead to produce task breakdown.
 
 revalidation:
   product_spec_required: false

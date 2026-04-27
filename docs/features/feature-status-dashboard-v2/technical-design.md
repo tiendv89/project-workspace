@@ -254,7 +254,7 @@ When running via docker-compose, `WORKSPACE_SCAN_ROOT` is bind-mounted into the 
 |---|---|---|
 | v1 archive: T1 must tag or branch v1 before wiping — confirm branch name (`v1-archive`) | **Assumed `v1-archive`** — confirm | T1 |
 | Package manager | **pnpm** — resolved | T1 |
-| Which `docker-compose.yml` file does T10 add the service to? (`workflow` repo root, or a shared root) | **Unresolved** | T10 |
+| Which `docker-compose.yml` file does T10 add the service to? (`workflow` repo root, or a shared root) | **`workflow` repo root** — resolved (see §7 Repository Impact) | T10 |
 
 ### Configuration dependencies
 
