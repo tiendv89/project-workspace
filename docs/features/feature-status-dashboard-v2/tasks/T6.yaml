@@ -34,25 +34,23 @@ log:
   - action: started
     by: pentative@gmail.com
     at: 2026-04-28T08:36:54+0000
-    note: >-
-      Resumed from prior agent run — implementation already on branch.
-      Fixed CSS variable syntax in SearchInput.tsx to use named Tailwind
-      tokens per AGENTS.md rules.
+    note: Resumed from prior agent run — implementation already on branch. Fixed CSS
+      variable syntax in SearchInput.tsx to use named Tailwind tokens per
+      AGENTS.md rules.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T08:38:16+0000
-    note: >-
-      PR #17 opened at https://github.com/tiendv89/digital-factory-ui/pull/17.
-      Build and lint pass. CSS variable syntax fixed in SearchInput.tsx.
+    note: "PR #17 opened at https://github.com/tiendv89/digital-factory-ui/pull/17.
+      Build and lint pass. CSS variable syntax fixed in SearchInput.tsx."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
