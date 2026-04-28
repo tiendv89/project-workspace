@@ -1,17 +1,19 @@
 id: T5
 title: Dashboard screen
 repo: digital-factory-ui
-status: in_review
+status: blocked
 depends_on:
   - T2
   - T3
-blocked_reason: null
+blocked_reason: pr_conflict
 blocked_context: null
 branch: feature/feature-status-dashboard-v2-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T08:23:37.595Z
+  last_updated_at: 2026-04-28T08:23:47.467Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/16
   status: open
@@ -43,9 +45,23 @@ log:
       output: 0
       total: 0
       cost_usd: 0
-conflict_state: resolving
+  - action: blocked
+    by: pentative@gmail.com
+    at: 2026-04-28T08:23:47.467Z
+    note: "Unresolvable merge conflicts in: src/app/page.tsx;
+      src/components/dashboard/RecentActivity.tsx;
+      src/components/dashboard/StatCard.tsx; src/lib/activity.ts. Manual
+      resolution required."
+conflict_state: resolved
 rebase_log:
   - at: 2026-04-28T08:23:37.595Z
     action: rebase_started
     by: pentative@gmail.com
     note: Rebase claimed; targeting origin/main.
+  - at: 2026-04-28T08:23:47.467Z
+    action: rebase_blocked
+    by: pentative@gmail.com
+    note: "Unresolvable merge conflicts in: src/app/page.tsx;
+      src/components/dashboard/RecentActivity.tsx;
+      src/components/dashboard/StatCard.tsx; src/lib/activity.ts. Manual
+      resolution required."
