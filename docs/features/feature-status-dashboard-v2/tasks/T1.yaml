@@ -32,24 +32,24 @@ log:
   - action: started
     by: pentative@gmail.com
     at: 2026-04-28T03:44:47+0000
-    note: Implementation started — creating v1-archive branch, wiping v1, scaffolding Next.js 16 App Router.
+    note: Implementation started — creating v1-archive branch, wiping v1,
+      scaffolding Next.js 16 App Router.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T03:51:06+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/digital-factory-ui/pull/7.
-      v1-archive branch pushed, v1 files wiped, Next.js 16.2.4 App Router scaffolded
-      with HeroUI v3, Tailwind CSS v4, Inter+Cousine fonts, Dockerfile, .env.local.example.
-      Build and lint pass clean.
+    note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/7.
+      v1-archive branch pushed, v1 files wiped, Next.js 16.2.4 App Router
+      scaffolded with HeroUI v3, Tailwind CSS v4, Inter+Cousine fonts,
+      Dockerfile, .env.local.example. Build and lint pass clean.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
