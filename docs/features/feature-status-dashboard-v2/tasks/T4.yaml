@@ -11,7 +11,7 @@ branch: feature/feature-status-dashboard-v2-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T06:55:43.064Z
+  last_updated_at: 2026-04-28T06:58:21+0000
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/10
   status: open
@@ -68,3 +68,12 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T06:55:43.064Z
     note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-04-28T06:58:21+0000
+    note: >-
+      Resolved 1 inline review thread: replaced CSS variable arbitrary value
+      syntax (text-(--color-*), bg-(--color-*), border-(--color-*)) with
+      Tailwind token utilities (text-text-primary, bg-surface, border-border,
+      etc.) across workspace-picker.tsx, workspace-card.tsx, and
+      home-content.tsx. PR converted to ready-for-review.
