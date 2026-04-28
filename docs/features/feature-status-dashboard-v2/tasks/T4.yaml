@@ -60,7 +60,7 @@ log:
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-04-28T06:40:00+0000
-    note: >-
-      Resolved 1 inline review thread: renamed WorkspacePicker.tsx, WorkspaceCard.tsx,
-      and HomeContent.tsx to kebab-case (workspace-picker.tsx, workspace-card.tsx,
-      home-content.tsx) and updated all imports. PR converted to ready-for-review.
+    note: "Resolved 1 inline review thread: renamed WorkspacePicker.tsx,
+      WorkspaceCard.tsx, and HomeContent.tsx to kebab-case
+      (workspace-picker.tsx, workspace-card.tsx, home-content.tsx) and updated
+      all imports. PR converted to ready-for-review."
