@@ -1,7 +1,7 @@
 id: T1
 title: v1 archive + v2 scaffold
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/feature-status-dashboard-v2-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: "2026-04-27T08:40:27Z"
+  last_updated_at: 2026-04-28T03:42:58.227Z
 pr:
   url: null
   status: null
@@ -19,9 +19,13 @@ workspace_pr:
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-04-27T15:35:41+0700"
+    at: 2026-04-27T15:35:41+0700
     note: Task created from approved technical design.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-04-27T08:40:27Z"
+    at: 2026-04-27T08:40:27Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-04-28T03:42:58.227Z
+    note: Claimed via git-based claim protocol.
