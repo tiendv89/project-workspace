@@ -1,7 +1,7 @@
 id: T8
 title: New Feature modal
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/feature-status-dashboard-v2-T8
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-27T15:35:41+0700
+  last_updated_at: 2026-04-28T07:13:07.760Z
 pr:
   url: null
   status: null
@@ -27,3 +27,7 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T04:56:48.376Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-04-28T07:13:07.760Z
+    note: Claimed via git-based claim protocol.
