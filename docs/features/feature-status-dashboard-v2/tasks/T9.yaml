@@ -40,18 +40,17 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T07:40:08+0000
-    note: >-
-      Implementation complete. PR opened at
-      https://github.com/tiendv89/digital-factory-ui/pull/15.
-      All 7 Kanban columns implemented with filter row (features, repos, actor).
-      Build and lint pass.
+    note: Implementation complete. PR opened at
+      https://github.com/tiendv89/digital-factory-ui/pull/15. All 7 Kanban
+      columns implemented with filter row (features, repos, actor). Build and
+      lint pass.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
