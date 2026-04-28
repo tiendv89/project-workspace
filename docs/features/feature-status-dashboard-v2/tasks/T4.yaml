@@ -1,7 +1,7 @@
 id: T4
 title: Workspace Picker screen
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/feature-status-dashboard-v2-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T06:58:21+0000
+  last_updated_at: 2026-04-28T07:11:28.885Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/10
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/63
   status: open
@@ -76,3 +76,7 @@ log:
       Tailwind token utilities (text-text-primary, bg-surface, border-border,
       etc.) across workspace-picker.tsx, workspace-card.tsx, and
       home-content.tsx. PR converted to ready-for-review."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T07:11:28.885Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
