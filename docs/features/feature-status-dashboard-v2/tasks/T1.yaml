@@ -1,7 +1,7 @@
 id: T1
 title: v1 archive + v2 scaffold
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/feature-status-dashboard-v2-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T03:51:06+0000
+  last_updated_at: 2026-04-28T03:53:23.915Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/7
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/58
   status: open
@@ -53,3 +53,7 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T03:53:23.915Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
