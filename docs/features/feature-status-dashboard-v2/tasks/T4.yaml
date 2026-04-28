@@ -40,17 +40,16 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T06:24:32+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/digital-factory-ui/pull/10.
-      Implements WorkspaceCard, WorkspacePicker, HomeContent, and conditional page.tsx.
-      Build, TypeScript, and lint checks all pass.
+    note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/10.
+      Implements WorkspaceCard, WorkspacePicker, HomeContent, and conditional
+      page.tsx. Build, TypeScript, and lint checks all pass.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
