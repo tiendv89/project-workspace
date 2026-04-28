@@ -1,0 +1,67 @@
+feature_id: feature-status-dashboard-v2
+title: Feature Status Dashboard v2
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Teams execute tasks in their implementation repos. T1 is ready to claim.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-23T15:32:40+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-23T15:32:40+0700"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-27T15:33:42+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-27T15:33:42+0700"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-04-27T15:40:27+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-04-27T15:40:27+0700"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - action: approved
+    stage: product_spec
+    by: pentative@gmail.com
+    at: "2026-04-23T15:32:40+0700"
+    note: Product spec approved. Feature advances to in_tdd.
+  - action: approved
+    stage: technical_design
+    by: pentative@gmail.com
+    at: "2026-04-27T15:33:42+0700"
+    note: Technical design approved. Tech lead to produce task breakdown.
+  - action: approved
+    stage: tasks
+    by: pentative@gmail.com
+    at: "2026-04-27T15:40:27+0700"
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
