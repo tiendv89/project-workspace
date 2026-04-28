@@ -1,7 +1,7 @@
 id: T5
 title: Dashboard screen
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on:
   - T2
   - T3
@@ -45,6 +45,10 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: unblocked
+    by: pye@swellnetwork.io
+    at: 2026-04-28T16:01:04+0700
+    note: Human confirmed conflicts resolved — transitioning to in_review. PR #16 remains open.
   - action: blocked
     by: pentative@gmail.com
     at: 2026-04-28T08:23:47.467Z
