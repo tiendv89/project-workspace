@@ -31,3 +31,13 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T07:26:51.425Z
     note: Claimed via git-based claim protocol.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-04-28T07:29:06+0000
+    note: Implementation started — Task Board screen (T9).
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
