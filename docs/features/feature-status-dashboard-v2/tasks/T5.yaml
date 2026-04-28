@@ -11,7 +11,7 @@ branch: feature/feature-status-dashboard-v2-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T08:22:28+0000
+  last_updated_at: 2026-04-28T08:23:37.595Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/16
   status: open
@@ -43,3 +43,9 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+conflict_state: resolving
+rebase_log:
+  - at: 2026-04-28T08:23:37.595Z
+    action: rebase_started
+    by: pentative@gmail.com
+    note: Rebase claimed; targeting origin/main.
