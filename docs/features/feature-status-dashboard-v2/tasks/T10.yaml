@@ -1,7 +1,7 @@
 id: T10
 title: docker-compose service entry
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/feature-status-dashboard-v2-T10
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-27T15:35:41+0700
+  last_updated_at: 2026-04-28T04:14:34.698Z
 pr:
   url: null
   status: null
@@ -26,3 +26,7 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T03:53:23.924Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-04-28T04:14:34.698Z
+    note: Claimed via git-based claim protocol.
