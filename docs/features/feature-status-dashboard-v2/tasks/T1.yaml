@@ -1,7 +1,7 @@
 id: T1
 title: v1 archive + v2 scaffold
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,19 +9,51 @@ branch: feature/feature-status-dashboard-v2-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: "2026-04-27T08:40:27Z"
+  last_updated_at: 2026-04-28T03:53:23.915Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/7
+  status: merged
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/58
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-04-27T15:35:41+0700"
+    at: 2026-04-27T15:35:41+0700
     note: Task created from approved technical design.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-04-27T08:40:27Z"
+    at: 2026-04-27T08:40:27Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-04-28T03:42:58.227Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-04-28T03:44:47+0000
+    note: Implementation started — creating v1-archive branch, wiping v1,
+      scaffolding Next.js 16 App Router.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: pentative@gmail.com
+    at: 2026-04-28T03:51:06+0000
+    note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/7.
+      v1-archive branch pushed, v1 files wiped, Next.js 16.2.4 App Router
+      scaffolded with HeroUI v3, Tailwind CSS v4, Inter+Cousine fonts,
+      Dockerfile, .env.local.example. Build and lint pass clean.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T03:53:23.915Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
