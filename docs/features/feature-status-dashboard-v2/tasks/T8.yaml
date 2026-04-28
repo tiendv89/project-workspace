@@ -1,7 +1,7 @@
 id: T8
 title: New Feature modal
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/feature-status-dashboard-v2-T8
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T08:30:34.937Z
+  last_updated_at: 2026-04-28T09:35:34.896Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/14
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/67
   status: open
@@ -53,6 +53,10 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T09:35:34.896Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-04-28T08:29:08.216Z
