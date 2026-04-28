@@ -16,8 +16,8 @@ pr:
   url: null
   status: null
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/68
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
