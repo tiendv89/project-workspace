@@ -1,7 +1,7 @@
 id: T4
 title: Workspace Picker screen
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T2
   - T3
@@ -11,13 +11,13 @@ branch: feature/feature-status-dashboard-v2-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-27T15:35:41+0700
+  last_updated_at: 2026-04-28T07:11:28.885Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/10
+  status: merged
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/63
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
@@ -27,3 +27,56 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T04:56:48.373Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-04-28T04:58:25.763Z
+    note: Claimed via git-based claim protocol.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-04-28T05:00:25+0000
+    note: Beginning implementation of WorkspacePicker screen components.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: pentative@gmail.com
+    at: 2026-04-28T06:24:32+0000
+    note: PR opened at https://github.com/tiendv89/digital-factory-ui/pull/10.
+      Implements WorkspaceCard, WorkspacePicker, HomeContent, and conditional
+      page.tsx. Build, TypeScript, and lint checks all pass.
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-04-28T06:37:02.959Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-04-28T06:40:00+0000
+    note: "Resolved 1 inline review thread: renamed WorkspacePicker.tsx,
+      WorkspaceCard.tsx, and HomeContent.tsx to kebab-case
+      (workspace-picker.tsx, workspace-card.tsx, home-content.tsx) and updated
+      all imports. PR converted to ready-for-review."
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-04-28T06:55:43.064Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-04-28T06:58:21+0000
+    note: "Resolved 1 inline review thread: replaced CSS variable arbitrary value
+      syntax (text-(--color-*), bg-(--color-*), border-(--color-*)) with
+      Tailwind token utilities (text-text-primary, bg-surface, border-border,
+      etc.) across workspace-picker.tsx, workspace-card.tsx, and
+      home-content.tsx. PR converted to ready-for-review."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T07:11:28.885Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
