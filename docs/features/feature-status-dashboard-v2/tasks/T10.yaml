@@ -33,20 +33,20 @@ log:
   - action: started
     by: pentative@gmail.com
     at: 2026-04-28T04:16:34+0000
-    note: Implementation started — adding digital-factory-ui service to docker-compose.yml.
+    note: Implementation started — adding digital-factory-ui service to
+      docker-compose.yml.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T04:21:02+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/agent-workflow/pull/55.
-      Added digital-factory-ui service to docker-compose.yml with build context,
-      port 3000:3000, env vars, and bind-mounts for WORKSPACE_SCAN_ROOT and SSH key.
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/55. Added
+      digital-factory-ui service to docker-compose.yml with build context, port
+      3000:3000, env vars, and bind-mounts for WORKSPACE_SCAN_ROOT and SSH key.
       Also fixed pre-existing bootstrap.ts bug (management repo env var leak).
       All 296 tests pass.
     rag_context_injected: false
@@ -54,4 +54,4 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
