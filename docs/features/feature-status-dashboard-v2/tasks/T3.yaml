@@ -33,26 +33,24 @@ log:
   - action: started
     by: pentative@gmail.com
     at: 2026-04-28T04:55:18+0000
-    note: >-
-      Resumed task — implementation already complete on branch. PR #9 was
-      previously created and merged into main. Verified build and lint pass.
+    note: "Resumed task — implementation already complete on branch. PR #9 was
+      previously created and merged into main. Verified build and lint pass."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T04:55:18+0000
-    note: >-
-      Implementation verified complete — all T3 subtasks implemented:
-      WorkspaceContext, Sidebar, Header, WorkspaceSwitcher, root layout.
-      PR https://github.com/tiendv89/digital-factory-ui/pull/9 already merged.
-      Build and lint pass.
+    note: "Implementation verified complete — all T3 subtasks implemented:
+      WorkspaceContext, Sidebar, Header, WorkspaceSwitcher, root layout. PR
+      https://github.com/tiendv89/digital-factory-ui/pull/9 already merged.
+      Build and lint pass."
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
