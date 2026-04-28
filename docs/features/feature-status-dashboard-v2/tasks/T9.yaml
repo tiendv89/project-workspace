@@ -1,7 +1,7 @@
 id: T9
 title: Task Board screen
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/feature-status-dashboard-v2-T9
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T07:26:51.425Z
+  last_updated_at: 2026-04-28T07:40:08+0000
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/15
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/68
   status: open
@@ -35,6 +35,20 @@ log:
     by: pentative@gmail.com
     at: 2026-04-28T07:29:06+0000
     note: Implementation started — Task Board screen (T9).
+    rag_context_injected: false
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: pentative@gmail.com
+    at: 2026-04-28T07:40:08+0000
+    note: >-
+      Implementation complete. PR opened at
+      https://github.com/tiendv89/digital-factory-ui/pull/15.
+      All 7 Kanban columns implemented with filter row (features, repos, actor).
+      Build and lint pass.
     rag_context_injected: false
     tokens:
       input: 0
