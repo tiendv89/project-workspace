@@ -34,14 +34,13 @@ log:
   - action: in_review
     by: pentative@gmail.com
     at: 2026-04-28T07:10:23+0000
-    note: >-
-      Implementation complete. PR opened at
-      https://github.com/tiendv89/digital-factory-ui/pull/13.
-      StageStepper, ReviewCard, TaskTable, FeatureDetailWorkspaceBridge
-      implemented. Build and TypeScript checks pass.
+    note: Implementation complete. PR opened at
+      https://github.com/tiendv89/digital-factory-ui/pull/13. StageStepper,
+      ReviewCard, TaskTable, FeatureDetailWorkspaceBridge implemented. Build and
+      TypeScript checks pass.
     rag_context_injected: false
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
