@@ -62,7 +62,6 @@ log:
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-04-28T10:33:48+0000
-    note: >-
-      Resolved 2 inline review thread(s): changed default host port to 5493
-      and renamed WORKSPACE_SCAN_ROOT to WORKSPACE_LIST; PR converted to
-      ready-for-review.
+    note: "Resolved 2 inline review thread(s): changed default host port to 5493 and
+      renamed WORKSPACE_SCAN_ROOT to WORKSPACE_LIST; PR converted to
+      ready-for-review."
