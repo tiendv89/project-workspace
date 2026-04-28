@@ -1,7 +1,7 @@
 id: T6
 title: Features list screen
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T2
   - T3
@@ -11,12 +11,12 @@ branch: feature/feature-status-dashboard-v2-T6
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-04-28T08:43:00.623Z
+  last_updated_at: 2026-04-28T09:06:26.925Z
   suggested_next_step: Manually resolve the conflicts listed in blocked_reason
     detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/17
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/70
   status: open
@@ -59,13 +59,17 @@ log:
   - action: unblocked
     by: pye@swellnetwork.io
     at: 2026-04-28T16:04:20+0700
-    note: Human confirmed conflicts resolved — transitioning to in_review. PR #17 remains open.
+    note: Human confirmed conflicts resolved — transitioning to in_review. PR
   - action: blocked
     by: pentative@gmail.com
     at: 2026-04-28T08:43:00.623Z
     note: "Unresolvable merge conflicts in: src/app/features/page.tsx;
       src/components/features/FeaturesTable.tsx;
       src/components/features/FilterPills.tsx. Manual resolution required."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-04-28T09:06:26.925Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-04-28T08:39:06.763Z
