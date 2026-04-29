@@ -1,0 +1,68 @@
+feature_id: check-status-across-all-branches
+title: Check status across all branches
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Teams execute tasks in their implementation repos. T1 is ready to claim.
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-04-29T11:31:31+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-04-29T11:31:31+0700
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-04-29T11:35:35+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-04-29T11:35:35+0700
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-04-29T11:44:47+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-04-29T11:44:47+0700
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+history:
+  - action: approved
+    stage: product_spec
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:31:31+0700
+    note: Product spec approved. Feature advances to in_tdd.
+  - action: approved
+    stage: technical_design
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:35:35+0700
+    note: Technical design approved. Feature advances to task planning.
+  - action: tasks_drafted
+    stage: tasks
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:39:50+0700
+    note: Task breakdown drafted. Awaiting human tasks-stage approval.
+  - action: approved
+    stage: tasks
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:44:47+0700
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 is ready to claim.
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
