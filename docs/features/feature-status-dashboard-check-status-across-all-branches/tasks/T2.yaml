@@ -1,15 +1,16 @@
-id: T1
-title: Branch sync service
+id: T2
+title: Feature list and detail APIs
 repo: digital-factory-ui
-status: ready
-depends_on: []
+status: todo
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
-branch: feature/check-status-across-all-branches-T1
+branch: feature/feature-status-dashboard-check-status-across-all-branches-T2
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-04-29T04:42:49Z
+  last_updated_at: 2026-04-29T18:27:06+0700
 pr:
   url: null
   status: null
@@ -21,7 +22,9 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-04-29T11:39:50+0700
     note: Task created from approved technical design.
-  - action: ready
+  - action: replanned
     by: minhkienn203@gmail.com
-    at: 2026-04-29T04:42:49Z
-    note: Task activated on tasks-stage approval — dependencies met.
+    at: 2026-04-29T18:27:06+0700
+    note: >-
+      Task repurposed for GitHub-backed feature list and feature detail API
+      routes.

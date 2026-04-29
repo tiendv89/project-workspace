@@ -1,0 +1,33 @@
+id: T4
+title: GitHub webhook verification and task file detection
+repo: digital-factory-ui
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/feature-status-dashboard-check-status-across-all-branches-T4
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-04-29T11:30:44Z
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:39:50+0700
+    note: Task created from approved technical design.
+  - action: replanned
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T18:27:06+0700
+    note: >-
+      Task repurposed for Next.js webhook signature verification and PR task
+      file detection.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:30:44Z
+    note: Task activated on tasks-stage approval — dependencies met.

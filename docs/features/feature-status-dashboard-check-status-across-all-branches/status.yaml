@@ -1,8 +1,8 @@
-feature_id: check-status-across-all-branches
+feature_id: feature-status-dashboard-check-status-across-all-branches
 title: Check status across all branches
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Teams execute tasks in their implementation repos. T1 is ready to claim.
+next_action: Teams execute tasks in their implementation repos. T1 and T4 are ready to claim.
 stages:
   product_spec:
     review_status: approved
@@ -27,12 +27,16 @@ stages:
   tasks:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-04-29T11:44:47+0700
+    reviewed_at: 2026-04-29T11:30:44Z
     review_comment: null
     review_history:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-04-29T11:44:47+0700
+        comment: null
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-04-29T11:30:44Z
         comment: null
   handoff:
     review_status: draft
@@ -61,6 +65,16 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-04-29T11:44:47+0700
     note: Tasks approved. Feature advances to ready_for_implementation. T1 is ready to claim.
+  - action: tasks_redrafted
+    stage: tasks
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T18:27:06+0700
+    note: Revised task breakdown for GitHub codeload API plus Next.js webhook/SSE design. Tasks now await human approval.
+  - action: approved
+    stage: tasks
+    by: minhkienn203@gmail.com
+    at: 2026-04-29T11:30:44Z
+    note: Revised tasks approved. Feature advances to ready_for_implementation. T1 and T4 are ready to claim.
 revalidation:
   product_spec_required: false
   technical_design_required: false
