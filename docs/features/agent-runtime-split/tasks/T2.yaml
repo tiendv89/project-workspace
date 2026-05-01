@@ -41,3 +41,12 @@ log:
     rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
       agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:59:33+0000
+    note: Starting T2 implementation — big-bang split.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
