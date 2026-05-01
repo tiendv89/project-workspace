@@ -3,7 +3,7 @@ title: Agent Runtime Selector — Claude Code vs Hermes
 
 feature_status: in_design
 current_stage: product_spec
-next_action: Review and approve the product spec.
+next_action: Wait for `agent-runtime-split` to land before resuming. When resumed, rewrite goals against the split decisions D1–D10 (see Implementation context section in product-spec.md). Do not approve this spec in its current form — it pre-dates the runtime split decisions.
 
 stages:
   product_spec:
@@ -36,6 +36,17 @@ history:
     action: created
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T10:46:12Z
+  - stage: product_spec
+    action: implementation_context_added
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-01T22:23:54+0700
+    note: >-
+      Added Implementation context section capturing how decisions D1–D10 of
+      `agent-runtime-split` (drafted 2026-05-01) change the assumptions of
+      this feature. Original Goals 3 and 4 (skill-level dispatch branching
+      and SKILL.md translation layer) are obsolete after the split; Hermes
+      integration becomes "build an executor image conforming to the ABI."
+      Goals should be rewritten when the feature is resumed.
 
 revalidation:
   product_spec_required: false

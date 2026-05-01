@@ -1,0 +1,88 @@
+feature_id: agent-runtime-split
+title: Split agent runtime into orchestration and execution layers
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead runs `tech-lead` (Phase 1) to produce technical-design.md based on the approved product spec and decisions D1–D10.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-01T22:33:32+0700
+    review_comment: >-
+      Approved. All eight open questions resolved as decisions D1–D10:
+      logical split first with same-pod default; container ABI as the
+      contract; workflow protocol owned entirely by orchestration;
+      orchestrator is pure deterministic code with no embedded LLM;
+      runtime parity (one ABI for every executor); explicit failure and
+      budget semantics; single-cutover migration justified by alpha
+      stage; promoted to top-level workflow/runtime/ tree.
+    review_history:
+      - at: 2026-05-01T22:33:32+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Product spec approved after iterative discussion that resolved
+          Q1–Q8 into D1–D10. Selector dependency line removed; relevant
+          context propagated to agent-runtime-selector for when that
+          feature is resumed.
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-01T18:57:22+0700
+    by: matthew@liquid-labs.xyz
+    action: feature_created
+    note: >-
+      Feature initialized via /init-feature. Goal is to split the monolithic
+      agent runtime into an orchestration layer (workspace polling, claim,
+      PR handoff, state mutations) and an execution layer (Claude / Hermes /
+      future executors). Product spec is in draft and ready for discussion.
+  - at: 2026-05-01T18:57:22+0700
+    by: matthew@liquid-labs.xyz
+    action: spec_discussion
+    note: >-
+      Resolved Q1–Q6 with architecture decisions D1–D8. Key decisions:
+      logical split first with same-pod default deployment; container ABI
+      contract (env vars + result.json); workflow protocol owned entirely by
+      orchestrator (runtimes are workflow-unaware); orchestrator is
+      deterministic code with no embedded LLM; runtime parity (one ABI for
+      all executors). Q7 (migration) and Q8 (repo placement) remain open.
+  - at: 2026-05-01T22:23:54+0700
+    by: matthew@liquid-labs.xyz
+    action: spec_discussion
+    note: >-
+      Resolved Q7 as D9 (single-cutover migration; alpha stage means no flag
+      / no dual-run) and Q8 as D10 (top-level workflow/runtime/ tree with
+      orchestrator/, executors/claude/, abi/ subdirectories). Spec is
+      complete and ready to submit for approval.
+  - at: 2026-05-01T22:33:32+0700
+    by: matthew@liquid-labs.xyz
+    action: product_spec_approved
+    note: >-
+      Product spec approved. Feature advances from in_design to in_tdd;
+      current_stage moves from product_spec to technical_design. Tech lead
+      can now produce technical-design.md.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
