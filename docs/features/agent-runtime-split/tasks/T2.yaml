@@ -104,19 +104,17 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-05-01T18:07:37+0000
-    note: >-
-      Recovery run — implementation commit 324a1e4 already on branch.
-      Fixing stale run-claude test imports, populating T5 refactor checklist,
-      then opening PR.
+    note: Recovery run — implementation commit 324a1e4 already on branch. Fixing
+      stale run-claude test imports, populating T5 refactor checklist, then
+      opening PR.
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-05-01T18:10:52+0000
-    note: >-
-      PR opened at https://github.com/tiendv89/agent-workflow/pull/59.
-      All 21 test files pass (296 passing, 1 skipped). Self-review passed —
-      no blocking issues. T5 refactor checklist populated.
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/59. All 21
+      test files pass (296 passing, 1 skipped). Self-review passed — no blocking
+      issues. T5 refactor checklist populated.
