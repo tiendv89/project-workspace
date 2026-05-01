@@ -10,7 +10,7 @@ branch: feature/agent-runtime-split-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T18:40:15.188Z
+  last_updated_at: 2026-05-01T18:44:09+0000
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/59
   status: open
@@ -133,3 +133,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T18:40:15.188Z
     note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:44:09+0000
+    note: >-
+      Resolved 1 inline review thread (multi-project .projects/ setup question).
+      Added start.sh, .projects/.env.example, .projects/agent.yaml.example,
+      .gitignore to runtime/orchestrator/templates/; updated QUICKSTART.md to
+      document both single-project and multi-project setups. PR converted to
+      ready-for-review.
