@@ -1,19 +1,19 @@
 id: T2
 title: Big-bang split — extract orchestrator + Claude executor, cutover
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: runtime_error
 blocked_context:
   wip_branch: feature/agent-runtime-split-T2
-  wip_sha: c4c7d6467bebaf82104af56b0622f4a3047cd5b3
-  pushed_at: 2026-05-01T17:28:48.454Z
+  wip_sha: cbf1271cf0cbb0b044528dc72b207f4ec52f7831
+  pushed_at: 2026-05-01T17:51:46.267Z
 branch: feature/agent-runtime-split-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T17:38:51.878Z
+  last_updated_at: 2026-05-01T17:51:46.267Z
 pr:
   url: ""
   status: not_created
@@ -78,3 +78,7 @@ log:
     rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
       agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:51:46.267Z
+    note: task still in_progress after claude exit (code 1)
