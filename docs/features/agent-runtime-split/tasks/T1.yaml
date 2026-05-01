@@ -69,6 +69,5 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-01T16:51:49+0000
-    note: >-
-      Resolved 1 inline review thread (materialization protocol — re-clone on
+    note: Resolved 1 inline review thread (materialization protocol — re-clone on
       origin mismatch instead of failing); PR converted to ready-for-review.
