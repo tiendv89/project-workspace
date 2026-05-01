@@ -13,7 +13,7 @@ branch: feature/agent-runtime-split-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T17:54:52.852Z
+  last_updated_at: 2026-05-01T18:07:37+0000
 pr:
   url: ""
   status: not_created
@@ -104,3 +104,15 @@ log:
     rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
       agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:07:37+0000
+    note: >-
+      Recovery run — implementation commit 324a1e4 already on branch.
+      Fixing stale run-claude test imports, populating T5 refactor checklist,
+      then opening PR.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
