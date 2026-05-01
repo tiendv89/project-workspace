@@ -304,12 +304,14 @@ land. T5 follows as improvement-on-top.
 
 ### Subtasks
 
-> Seed candidates below. **T2's final subtask replaces this list with
-> the concrete checklist enumerated against the migrated code.**
+> Concrete checklist enumerated by T2's final-subtask fresh-eyes pass over the migrated code.
 
-- [ ] (Seed) `main.ts` — split polling, dispatch, PR-merge handling, and conflict handling into separate modules now that they are no longer tied together
-- [ ] (Seed) `bootstrap/` — separate env resolution from workspace-pull logic; they are different lifecycle moments
-- [ ] (Seed) `poll/` — collapse near-duplicate "fetch GitHub PR state" paths
-- [ ] (Seed) Token-budget audit — consolidate into a single module now that orchestrator-side enforcement is unified
+- [ ] Extract `resolveRepoLocalPath`, `resolveRepoBaseBranch`, `resolveRepoGitUrl`, `loadWorkspaceModelPolicy`, `parseManagementRepoCoords` from `src/main.ts` into `src/config/workspace-config.ts` — five helpers repeated across main, dispatch-draft-review, handle-merged-prs, auto-rebase
+- [ ] De-duplicate `curlJson()` helper defined identically in `src/claim/open-workspace-pr.ts` and `src/side-effects/open-pr.ts` — extract to `src/utils/curl-json.ts`
+- [ ] Extract `readTask` / `writeTask` YAML I/O pattern from `src/pr-response/dispatch-draft-review.ts` into `src/utils/task-yaml-io.ts` — same pattern exists in mutate-task-yaml and append-log
+- [ ] Remove `src/adapter/adapter.ts` re-export barrel — call sites in main.ts and dispatch-draft-review.ts should import `ExecutorInput`/`ExecutorResult` directly from `@workflow/runtime-abi`
+- [ ] Extract briefing-write step from `src/main.ts` (lines ~358–381: dir creation, markdown write, RAG block concat) into `src/briefing/write-briefing.ts` — reduces main.ts size and makes review-cycle briefing (dispatch-draft-review) composable from the same helper
+- [ ] Consolidate duplicate briefing template structure shared by `src/briefing/agent-context.ts` and `src/pr-response/dispatch-draft-review.ts` into `src/briefing/briefing-template.ts` with reusable section builders
+- [ ] Wrap the task-resolution block in `src/main.ts` dispatch loop (`resolveRepoLocalPath`, `resolveRepoGitUrl`, `resolveRepoBaseBranch`, `parseModelOverrides`, `resolveModel` — ~10 intermediate variables) into a single `resolveTaskContext()` function
 - [ ] All scoped refactors verified against existing test suite (no test logic changes)
 - [ ] No changes outside `runtime/orchestrator/`
