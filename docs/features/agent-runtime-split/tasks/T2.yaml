@@ -1,7 +1,7 @@
 id: T2
 title: Big-bang split — extract orchestrator + Claude executor, cutover
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -12,8 +12,8 @@ blocked_context:
 branch: feature/agent-runtime-split-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-02T00:36:40+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-01T17:38:51.878Z
 pr:
   url: ""
   status: not_created
@@ -60,6 +60,10 @@ log:
   - action: unblocked
     by: matthew@swellnetwork.io
     at: 2026-05-02T00:36:40+0700
-    note: >-
-      Unblocked by human — blocked due to max-turns runtime exit (code 1), not a
-      logic error. Resume from wip_sha c4c7d64 on feature/agent-runtime-split-T2.
+    note: Unblocked by human — blocked due to max-turns runtime exit (code 1), not a
+      logic error. Resume from wip_sha c4c7d64 on
+      feature/agent-runtime-split-T2.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:38:51.878Z
+    note: Claimed via git-based claim protocol.
