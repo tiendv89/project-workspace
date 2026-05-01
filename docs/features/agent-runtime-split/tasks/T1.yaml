@@ -1,7 +1,7 @@
 id: T1
 title: Define runtime ABI — types, schema, fake-executor fixture
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/agent-runtime-split-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T16:09:42.463Z
+  last_updated_at: 2026-05-01T16:18:15+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/58
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/74
   status: open
@@ -44,6 +44,18 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T16:11:25+0000
     note: Implementation started — creating runtime/abi package with types, schema, fake-executor, and docs skeleton.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:18:15+0000
+    note: >-
+      Implementation complete. PR opened at https://github.com/tiendv89/agent-workflow/pull/58.
+      runtime/abi package: types, schema, fake-executor, abi-spec.md skeleton.
+      11/11 unit tests pass; 306/306 full suite passes. Package orphaned as required.
     tokens:
       input: 0
       output: 0
