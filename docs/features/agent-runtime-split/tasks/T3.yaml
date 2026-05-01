@@ -1,7 +1,7 @@
 id: T3
 title: Test migration + seam tests against fake executor
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/agent-runtime-split-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T19:15:35.775Z
+  last_updated_at: 2026-05-01T19:35:21+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/60
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/76
   status: open
@@ -45,6 +45,18 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T19:23:31+0000
     note: Implementation started on feature/agent-runtime-split-T3.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:35:21+0000
+    note: >-
+      PR #60 opened: feat(agent-runtime-split/T3): seam tests + side-effect
+      unit tests against FakeAdapter.
+      https://github.com/tiendv89/agent-workflow/pull/60
     tokens:
       input: 0
       output: 0
