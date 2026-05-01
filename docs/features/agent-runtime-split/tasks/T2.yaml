@@ -1,7 +1,7 @@
 id: T2
 title: Big-bang split — extract orchestrator + Claude executor, cutover
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,12 +9,14 @@ blocked_context: null
 branch: feature/agent-runtime-split-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-01T19:13:44.892Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/59
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/75
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -24,3 +26,132 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T16:55:39.386Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:57:31.752Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:57:45.561Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-selector/product-spec.md,
+      docs/features/agent-runtime-split/product-spec.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
+      agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:59:33+0000
+    note: Starting T2 implementation — big-bang split.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:28:48.454Z
+    note: task still in_progress after claude exit (code 1)
+  - action: unblocked
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T00:36:40+0700
+    note: Unblocked by human — blocked due to max-turns runtime exit (code 1), not a
+      logic error. Resume from wip_sha c4c7d64 on
+      feature/agent-runtime-split-T2.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:38:51.878Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:38:58.777Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-selector/product-spec.md,
+      docs/features/agent-runtime-split/product-spec.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
+      agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:51:46.267Z
+    note: task still in_progress after claude exit (code 1)
+  - action: unblocked
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T00:53:22+0700
+    note: "Unblocked by human — second max-turns exit. IMPORTANT for next agent:
+      before doing anything else, run `git status` and commit any uncommitted
+      changes on feature/agent-runtime-split-T2 with a wip commit, then push.
+      Only then continue implementation from wip_sha cbf1271."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:54:52.852Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T17:54:59.616Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-selector/product-spec.md,
+      docs/features/agent-runtime-split/product-spec.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Big-bang split — extract orchestrator + Claude executor, cutover
+      agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:07:37+0000
+    note: Recovery run — implementation commit 324a1e4 already on branch. Fixing
+      stale run-claude test imports, populating T5 refactor checklist, then
+      opening PR.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:10:52+0000
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/59. All 21
+      test files pass (296 passing, 1 skipped). Self-review passed — no blocking
+      issues. T5 refactor checklist populated.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:28:43.444Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:33:45+0000
+    note: Resolved 1 inline review thread (start.sh removal / README gap). Added
+      runtime/orchestrator/templates/QUICKSTART.md, .env.example,
+      agent.yaml.example; updated README.md agent runtime section to reference
+      new path. PR converted to ready-for-review.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:40:15.188Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:44:09+0000
+    note: Resolved 1 inline review thread (multi-project .projects/ setup question).
+      Added start.sh, .projects/.env.example, .projects/agent.yaml.example,
+      .gitignore to runtime/orchestrator/templates/; updated QUICKSTART.md to
+      document both single-project and multi-project setups. PR converted to
+      ready-for-review.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:48:06.963Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T18:50:20+0000
+    note: Resolved 1 inline review thread (redundant single-project setup in
+      QUICKSTART.md). Simplified QUICKSTART.md to unify around .projects/
+      pattern for all setups. PR converted to ready-for-review.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:13:44.892Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
