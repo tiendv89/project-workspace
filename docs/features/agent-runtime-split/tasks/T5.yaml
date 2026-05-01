@@ -1,0 +1,29 @@
+id: T5
+title: Orchestrator code quality pass
+repo: workflow
+status: todo
+depends_on: [T2]
+blocked_reason: null
+blocked_context: null
+branch: feature/agent-runtime-split-T5
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-01T23:02:08+0700
+    note: >-
+      Task created from approved task breakdown. Concrete refactor
+      checklist will be populated by T2's final subtask after the
+      split lands and the migrated orchestrator package boundary is
+      visible.

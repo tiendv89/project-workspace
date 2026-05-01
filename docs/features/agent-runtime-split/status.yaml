@@ -1,9 +1,9 @@
 feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead runs `tech-lead` (Phase 1) to produce technical-design.md based on the approved product spec and decisions D1–D10.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Wave 1 task T1 is `ready`. An agent (or the human) can run `start-implementation` against T1 to begin the runtime ABI work. T2 advances to ready when T1 is `done`; T3/T4/T5 advance when T2 is `done`.
 
 stages:
   product_spec:
@@ -28,17 +28,50 @@ stages:
           context propagated to agent-runtime-selector for when that
           feature is resumed.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-01T23:01:07+0700
+    review_comment: >-
+      Approved. Design commits to TD-A2 (sub-process within same
+      container) for process boundary and TD-B1 (big-bang restructure
+      in one PR) for migration shape, with five planned tasks: T1 ABI,
+      T2 split + cutover (with final subtask seeding T5 scope), T3
+      tests, T4 docs, T5 orchestrator code quality pass. K8s and GH
+      Actions templates are deleted in T2 to avoid orphaning. Future
+      composition with agent-runtime-selector documented in §4.4.
+    review_history:
+      - at: 2026-05-01T23:01:07+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Technical design approved after iterative refinement: option
+          B selection switched from B3 (incremental) to B1 (big-bang)
+          to align with alpha-stage cleanliness preference and avoid
+          throwaway glue code; K8s/GH Actions templates moved from
+          "leave as legacy" to "delete during cutover"; orchestrator
+          quality refactor added as T5 with scope seeded by T2's final
+          subtask; future composition with selector feature documented
+          inline in §4.4. All open design questions resolved.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-01T23:06:34+0700
+    review_comment: >-
+      Approved. Five tasks (T1–T5) cover ABI definition, big-bang
+      split + cutover (with T2's final subtask seeding T5), test
+      migration + seam tests, documentation + handoff, and the
+      orchestrator code quality pass. All tasks scoped to the
+      `workflow` repo. T1 activated to `ready` on this approval; T2
+      activates when T1 is `done`; T3/T4/T5 activate when T2 is
+      `done`.
+    review_history:
+      - at: 2026-05-01T23:06:34+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Tasks stage approved. Auto-ready rule applied: T1 has empty
+          depends_on and transitions todo → ready. T2/T3/T4/T5 remain
+          todo until their upstream dependencies complete.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -80,6 +113,24 @@ history:
       Product spec approved. Feature advances from in_design to in_tdd;
       current_stage moves from product_spec to technical_design. Tech lead
       can now produce technical-design.md.
+  - at: 2026-05-01T23:01:07+0700
+    by: matthew@liquid-labs.xyz
+    action: technical_design_approved
+    note: >-
+      Technical design approved. Design commits to TD-A2 (sub-process,
+      same container) and TD-B1 (big-bang restructure) with five tasks:
+      T1 ABI, T2 split, T3 tests, T4 docs, T5 orchestrator code
+      quality pass. current_stage moves from technical_design to tasks.
+      Tech lead can now run Phase 2 to produce tasks.md and per-task
+      YAMLs.
+  - at: 2026-05-01T23:06:34+0700
+    by: matthew@liquid-labs.xyz
+    action: tasks_approved
+    note: >-
+      Tasks stage approved. Feature advances from in_tdd to
+      ready_for_implementation. Auto-ready rule activated T1 (empty
+      depends_on); T2/T3/T4/T5 remain todo pending dependencies.
+      An agent can now run start-implementation against T1.
 
 revalidation:
   product_spec_required: false

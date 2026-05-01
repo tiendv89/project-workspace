@@ -1,0 +1,29 @@
+id: T1
+title: Define runtime ABI — types, schema, fake-executor fixture
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/agent-runtime-split-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-05-01T23:06:34+0700
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-01T23:02:08+0700
+    note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-01T16:06:34Z
+    note: Task activated on tasks-stage approval — dependencies met.
