@@ -1,7 +1,7 @@
 id: T5
 title: Orchestrator code quality pass
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/agent-runtime-split-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T20:00:39+0000
+  last_updated_at: 2026-05-01T20:01:49+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/62
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/78
   status: open
@@ -49,6 +49,15 @@ log:
       Implementation complete. Extracted workspace-config helpers, curlJson,
       readTask/writeTask, briefing-template, write-briefing, resolved
       adapter.ts barrel, wrapped resolveTaskContext. 345 tests pass.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T20:01:49+0000
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/62
     tokens:
       input: 0
       output: 0
