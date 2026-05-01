@@ -29,3 +29,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T16:09:42.463Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:09:58.019Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-hardening/technical-design.md,
+      agent-runtime/tests/auto-rebase.test.ts,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Define runtime ABI — types, schema, fake-executor fixture
+      agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
