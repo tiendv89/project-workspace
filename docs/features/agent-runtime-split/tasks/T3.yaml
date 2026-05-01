@@ -41,3 +41,12 @@ log:
       docs/features/agent-runtime-split/technical-design.md"
     rag_query: Test migration + seam tests against fake executor agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:23:31+0000
+    note: Implementation started on feature/agent-runtime-split-T3.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
