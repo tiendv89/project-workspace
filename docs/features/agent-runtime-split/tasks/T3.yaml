@@ -31,3 +31,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T19:15:35.775Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:15:49.886Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/agent-runtime-split/product-spec.md,
+      docs/features/agent-runtime-split/technical-design.md"
+    rag_query: Test migration + seam tests against fake executor agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
