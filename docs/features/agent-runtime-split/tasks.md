@@ -29,9 +29,13 @@ Three artifacts ship in this task:
 1. **`runtime/abi/src/types.ts`** — TypeScript surfaces:
    - `ExecutorInput` — the structured input the orchestrator passes to
      an executor. Fields per technical-design §4.2: `taskId`,
-     `featureId`, `workspaceId`, `taskRepoPath`, `mgmtRepoPath`,
-     `briefingPath`, `resultPath`, `budgetTokens?`, `sshKeyPath`,
-     `githubToken`.
+     `featureId`, `workspaceId`, `taskRepoUrl`, `taskRepoBranch`,
+     `taskRepoPath`, `briefingPath`, `resultPath`, `budgetTokens?`,
+     `sshKeyPath`, `githubToken`. Note: no `mgmtRepoPath` — the
+     executor never reads or writes the management repo (per D5).
+     The executor is responsible for materializing the repo at
+     `taskRepoPath` from `taskRepoUrl` on `taskRepoBranch` (clone if
+     absent, fetch + checkout + pull if present and origin matches).
    - `ExecutorResult` — the structured output the executor produces
      via `result.json`. Fields: `terminal_status`
      (`"in_review" | "blocked" | "failed"`), `token_usage?`,

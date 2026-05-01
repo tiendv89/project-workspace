@@ -295,8 +295,7 @@ The legacy `workflow/agent-runtime/` directory is deleted as part of T2
 
 ### 4.2 The ABI in concrete terms
 
-**Inputs the orchestrator passes** (env vars + files on a shared
-filesystem):
+**Inputs the orchestrator passes** (env vars + small mounted files):
 
 ```ts
 // runtime/abi/src/types.ts
@@ -304,10 +303,13 @@ export interface ExecutorInput {
   taskId: string;
   featureId: string;
   workspaceId: string;
-  taskRepoPath: string;       // pre-cloned, on feature branch
-  mgmtRepoPath: string;       // pre-cloned, on feature branch
+  taskRepoUrl: string;        // git URL of the implementation repo (SSH or HTTPS)
+  taskRepoBranch: string;     // feature branch to check out and push to
+  taskRepoPath: string;       // working-directory path; executor materializes
+                              //   the repo here (clone if absent, fetch + checkout
+                              //   + pull if present and origin matches)
   briefingPath: string;       // markdown file with task description, quality bar
-  resultPath: string;         // path the executor must write to
+  resultPath: string;         // path the executor must write result.json to
   budgetTokens?: number;      // optional; absent for non-LLM executors
   sshKeyPath: string;
   githubToken: string;
@@ -315,10 +317,53 @@ export interface ExecutorInput {
 ```
 
 The sub-process spawner serializes these into env vars
-(`TASK_ID`, `FEATURE_ID`, `WORKSPACE_ID`, `TASK_REPO_PATH`,
-`MGMT_REPO_PATH`, `BRIEFING_PATH`, `RESULT_PATH`, `BUDGET_TOKENS`,
-`SSH_KEY_PATH`, `GITHUB_TOKEN`); the executor's entrypoint reads them
-back via `process.env`.
+(`TASK_ID`, `FEATURE_ID`, `WORKSPACE_ID`, `TASK_REPO_URL`,
+`TASK_REPO_BRANCH`, `TASK_REPO_PATH`, `BRIEFING_PATH`, `RESULT_PATH`,
+`BUDGET_TOKENS`, `SSH_KEY_PATH`, `GITHUB_TOKEN`); the executor's
+entrypoint reads them back via `process.env`.
+
+**Why URL + branch + path, not just a path.** The orchestrator and
+the executor may run in different filesystems (separate K8s pods, a
+remote worker pool, a queued job). A path passed by the orchestrator
+has no meaning across that boundary. Passing `TASK_REPO_URL` +
+`TASK_REPO_BRANCH` makes the ABI topology-agnostic — the executor
+materializes the repo wherever it runs. `TASK_REPO_PATH` remains in
+the ABI as the orchestrator-dictated working-directory location, but
+the **executor**, not the orchestrator, is the authoritative actor
+responsible for ensuring the working tree is in the correct state.
+
+**Why no `MGMT_REPO_*`.** Per D5, the executor never reads or writes
+the management repo (task YAML mutations, PR open, log entries, and
+dependency unblock are all orchestrator responsibilities). The ABI
+omits any management-repo input intentionally — passing it would
+imply responsibilities the executor must not have.
+
+**Materialization protocol on the executor side.** The executor's
+entrypoint runs the following sequence at startup, before any task
+work:
+
+```
+if TASK_REPO_PATH exists and is a git repo:
+    git -C TASK_REPO_PATH remote get-url origin
+    if origin does not match TASK_REPO_URL:
+        exit non-zero with result.json {
+          terminal_status: "failed",
+          blocked_reason: "task_repo_origin_mismatch"
+        }
+    git -C TASK_REPO_PATH fetch origin
+    git -C TASK_REPO_PATH checkout TASK_REPO_BRANCH
+    git -C TASK_REPO_PATH pull --ff-only origin TASK_REPO_BRANCH
+else:
+    git clone TASK_REPO_URL TASK_REPO_PATH
+    git -C TASK_REPO_PATH checkout TASK_REPO_BRANCH
+```
+
+In shared-filesystem topologies the orchestrator may pre-populate
+`TASK_REPO_PATH` (warming the cache), in which case the executor's
+materialization collapses to a fast `git fetch + checkout + pull`.
+In separated topologies the orchestrator does nothing to the path
+and the executor performs a full clone. The contract is identical
+in both cases.
 
 **Outputs the executor must produce:**
 
@@ -340,16 +385,18 @@ blocked_reason: "result_schema_invalid"`.
 
 **Side effects the executor performs:**
 
+- Materialize `taskRepoPath` from `taskRepoUrl` on `taskRepoBranch`
+  per the protocol above.
 - Make code changes inside `taskRepoPath`.
-- `git commit && git push origin <feature-branch>` from `taskRepoPath`.
+- `git commit && git push origin <taskRepoBranch>` from `taskRepoPath`.
 - Write `result.json` at `resultPath`.
-- Exit 0 on completion; non-zero on crash.
+- Exit 0 on completion; non-zero on crash or materialization failure.
 
 **Side effects the executor never performs:**
 
-- Writing task YAML files (in either repo).
+- Reading or writing the management repo (no `MGMT_REPO_*` in the ABI).
+- Writing task YAML files.
 - Opening pull requests.
-- Pushing to the management repo.
 - Applying dependency unblock.
 - Anything in `CLAUDE.md` related to workflow protocol.
 
@@ -364,8 +411,15 @@ blocked_reason: "result_schema_invalid"`.
        <tmp>/<task_id>/briefing.md
 5. orchestrator/adapter: call ExecutorAdapter.run(input)
        default impl spawns child:
-         env: ABI variables
+         env: ABI variables (TASK_REPO_URL, TASK_REPO_BRANCH,
+              TASK_REPO_PATH, BRIEFING_PATH, RESULT_PATH, ...)
          cwd: <tmp>/<task_id>
+       executor's first action: materialize TASK_REPO_PATH from
+         TASK_REPO_URL on TASK_REPO_BRANCH (clone or fetch+checkout+pull
+         per §4.2 materialization protocol). The orchestrator may
+         pre-populate the path as an optimization in shared-filesystem
+         topologies; the executor's materialization step is correct in
+         either case.
    wait for child exit
 6. orchestrator/side-effects:
        read result.json
