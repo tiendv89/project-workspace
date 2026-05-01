@@ -125,8 +125,7 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-01T18:33:45+0000
-    note: >-
-      Resolved 1 inline review thread (start.sh removal / README gap). Added
+    note: Resolved 1 inline review thread (start.sh removal / README gap). Added
       runtime/orchestrator/templates/QUICKSTART.md, .env.example,
       agent.yaml.example; updated README.md agent runtime section to reference
       new path. PR converted to ready-for-review.
