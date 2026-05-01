@@ -1,7 +1,7 @@
 id: T1
 title: Define runtime ABI — types, schema, fake-executor fixture
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/agent-runtime-split-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-01T16:51:49+0000
+  last_updated_at: 2026-05-01T16:55:39.369Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/58
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/74
   status: open
@@ -71,3 +71,7 @@ log:
     at: 2026-05-01T16:51:49+0000
     note: Resolved 1 inline review thread (materialization protocol — re-clone on
       origin mismatch instead of failing); PR converted to ready-for-review.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:55:39.369Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
