@@ -149,12 +149,32 @@ mounted files):
 | Variable | Description |
 |---|---|
 | `TASK_ID`, `FEATURE_ID`, `WORKSPACE_ID` | Task identity. |
-| `TASK_REPO_PATH` | Pre-cloned implementation repo, already on the task's feature branch. |
-| `MGMT_REPO_PATH` | Pre-cloned management repo, already on the feature branch. |
-| `BRIEFING_PATH` | Markdown file: task description, quality bar, anything task-specific the executor needs. |
+| `TASK_REPO_URL` | Git URL of the implementation repo (SSH or HTTPS). |
+| `TASK_REPO_BRANCH` | Feature branch the executor must be on when it makes commits. |
+| `TASK_REPO_PATH` | Working-directory path. The **executor** materializes the repo here: if the path already exists with `origin` matching `TASK_REPO_URL`, fetch + checkout + pull; otherwise clone fresh from `TASK_REPO_URL`. The orchestrator may pre-populate this path as an optimization in shared-filesystem topologies, but it is not required to. |
+| `BRIEFING_PATH` | Markdown file: task description, quality bar, anything task-specific the executor needs. Orchestrator-written. |
 | `RESULT_PATH` | File path the executor writes its structured outcome to. |
 | `BUDGET_TOKENS` | Optional; may be unset for non-LLM executors. |
-| `SSH_KEY_PATH`, `GITHUB_TOKEN` | Credentials to push code commits and (later) call GitHub if needed. |
+| `SSH_KEY_PATH`, `GITHUB_TOKEN` | Credentials to clone, fetch, push, and (later) call GitHub if needed. |
+
+**Why URL + branch + path, not just a path:** the orchestrator and the
+executor may run in different filesystems (e.g. separate K8s pods, a
+queued worker pool, a remote VM). A path passed by the orchestrator
+has no meaning across that boundary. Passing `TASK_REPO_URL` +
+`TASK_REPO_BRANCH` makes the contract topology-agnostic — the
+executor materializes the repo wherever it runs. `TASK_REPO_PATH`
+is still part of the ABI because the orchestrator dictates the
+working-directory location (so it knows where to find code commits
+afterwards if needed for verification, and so the briefing can refer
+to a stable path) — but the executor, not the orchestrator, is the
+authoritative actor that ensures the working tree is in the right
+state.
+
+**Why no `MGMT_REPO_PATH`:** per D5, the executor never reads or
+writes the management repo — orchestrator owns all workflow-state
+mutations (task YAML, PR open, log entries, dependency unblock).
+Passing the management repo to the executor would imply
+responsibilities the executor must not have. Removed from the ABI.
 
 **Outputs the executor must produce:**
 
@@ -190,9 +210,11 @@ markdown carries.
 
 A custom runtime built by someone else does not have to learn or honour
 any of the workflow rules. It only has to:
+- Materialize the task repo at `TASK_REPO_PATH` from `TASK_REPO_URL`
+  on `TASK_REPO_BRANCH` (clone or fetch + checkout).
 - Read its briefing.
-- Modify code in `TASK_REPO_PATH`.
-- Commit and push the code changes.
+- Modify code in the working tree.
+- Commit and push the code changes to `TASK_REPO_BRANCH`.
 - Write `result.json`.
 
 ### D4. Orchestrator is pure deterministic code; no LLM lives in it

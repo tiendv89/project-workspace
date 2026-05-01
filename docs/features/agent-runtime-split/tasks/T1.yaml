@@ -1,23 +1,21 @@
 id: T1
 title: Define runtime ABI — types, schema, fake-executor fixture
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/agent-runtime-split-T1
-
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-01T23:06:34+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-01T16:55:39.369Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/58
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/74
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -27,3 +25,53 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-01T16:06:34Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:09:42.463Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:09:58.019Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-hardening/technical-design.md,
+      agent-runtime/tests/auto-rebase.test.ts,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Define runtime ABI — types, schema, fake-executor fixture
+      agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:11:25+0000
+    note: Implementation started — creating runtime/abi package with types, schema,
+      fake-executor, and docs skeleton.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:18:15+0000
+    note: "Implementation complete. PR opened at
+      https://github.com/tiendv89/agent-workflow/pull/58. runtime/abi package:
+      types, schema, fake-executor, abi-spec.md skeleton. 11/11 unit tests pass;
+      306/306 full suite passes. Package orphaned as required."
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:50:10.384Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:51:49+0000
+    note: Resolved 1 inline review thread (materialization protocol — re-clone on
+      origin mismatch instead of failing); PR converted to ready-for-review.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:55:39.369Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
