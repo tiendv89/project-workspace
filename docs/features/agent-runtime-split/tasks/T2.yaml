@@ -148,7 +148,6 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-01T18:50:20+0000
-    note: >-
-      Resolved 1 inline review thread (redundant single-project setup in QUICKSTART.md).
-      Simplified QUICKSTART.md to unify around .projects/ pattern for all setups.
-      PR converted to ready-for-review.
+    note: Resolved 1 inline review thread (redundant single-project setup in
+      QUICKSTART.md). Simplified QUICKSTART.md to unify around .projects/
+      pattern for all setups. PR converted to ready-for-review.
