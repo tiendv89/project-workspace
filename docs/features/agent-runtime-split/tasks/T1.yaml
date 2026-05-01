@@ -40,3 +40,12 @@ log:
     rag_query: Define runtime ABI — types, schema, fake-executor fixture
       agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T16:11:25+0000
+    note: Implementation started — creating runtime/abi package with types, schema, fake-executor, and docs skeleton.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
