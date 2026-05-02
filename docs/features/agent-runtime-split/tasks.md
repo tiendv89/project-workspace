@@ -12,6 +12,7 @@ Feature status: `in_tdd` | Tasks stage: `draft` | Machine state lives in `tasks/
 | T4 | 3 | Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff | T1, T2 |
 | T5 | 3 | Orchestrator code quality pass | T2 |
 | T6 | 4 | PR ownership split (revised D5) + termination safety — executor owns impl PR; post-hoc recovery on abnormal exit | T2 |
+| T7 | 5 | Skill/briefing reconciliation — restore /start-implementation in executor briefing; CLAUDE_AGENT_RUNTIME guards | T6 |
 
 ---
 
@@ -490,3 +491,94 @@ Out of scope (unchanged):
 - [ ] Drive one real task end-to-end through the new shape on a non-production workspace to verify: executor opens PR with rich body, orchestrator records `pr_url` from `result.json` for both passing and failing test scenarios, no duplicate impl PR is opened, no orchestrator-side test inspection.
 - [ ] Drive a max-turns scenario (set `MAX_TURNS=1` and run a non-trivial task): verify the recovery routine fires, a wip commit is pushed, a draft PR is opened, `handover.md` is written, and `result.json.handover_path` points at it.
 - [ ] Drive a re-claim scenario: with the previous run's handover.md present, claim the same task again and verify the new agent's briefing has the handover.md content prepended under `## Continuing previous run`.
+
+---
+
+## T7 — Skill/briefing reconciliation — restore /start-implementation in executor briefing; CLAUDE_AGENT_RUNTIME guards
+
+### Description
+
+T6's briefing rewrite replaced the `/start-implementation` skill invocation with
+inline steps, silently dropping three things the skill provided:
+
+1. **Write unit tests** — the skill's Step 1 (implement) implies tests; the inline
+   briefing said only "implement all required changes".
+2. **Test-plan execution from `tasks.md`** — the skill's Step 3 reads the test plan
+   from `tasks.md` and executes each item; the inline briefing said only "run the
+   project's test suite".
+3. **Post test-plan results as PR comment** — the skill's Step 4 posts results after
+   PR creation; the inline briefing omitted this entirely (partially restored via a
+   separate commit, but incorrectly placed inline).
+
+The skills ARE still loaded by `setupGlobalSkills` in the executor before Claude
+spawns — the hook was not removed. The problem is that the briefing no longer tells
+Claude to invoke `/start-implementation`, so the skill goes unused.
+
+**Root cause:** T6 treated the skill as a human-only artifact and duplicated its
+logic inline. The correct fix is to restore the skill invocation and make the
+skill aware of the agent-runtime context so it behaves correctly in both settings.
+
+**Design — `CLAUDE_AGENT_RUNTIME` guard pattern:**
+
+When `printenv CLAUDE_AGENT_RUNTIME` returns `1`, the executor is running inside
+the agent runtime. Two skills need guards:
+
+- **`start-implementation`**: management-repo side effects (writing task YAML status,
+  log entries) are skipped — the orchestrator owns those from `result.json`. The
+  skill still: implements, writes tests, runs the test plan, creates the impl PR,
+  posts the test-plan comment, and writes `result.json` to `$RESULT_PATH`.
+- **`pr-create`**: task YAML updates (PR metadata, log entry, status → in_review)
+  are skipped — the orchestrator handles these. The skill still: pushes the branch
+  and creates the GitHub PR. Returns the PR URL.
+
+**Changes required:**
+
+`workflow/workflow_skills/start-implementation/SKILL.md`:
+- Add a `CLAUDE_AGENT_RUNTIME` detection block near the top: check
+  `printenv CLAUDE_AGENT_RUNTIME`. If `1`, apply the agent-runtime variant of each
+  step (described below). If empty, existing behaviour is unchanged.
+- **Agent-runtime Step 3 (test plan)**: when tests fail and cannot be fixed after
+  3 attempts, do NOT hard-stop before opening a PR. Instead: continue to Step 4,
+  open the PR as a draft, then write `result.json` with
+  `terminal_status: "blocked"`, `blocked_reason: "tests_failed"`, and `pr_url`.
+  (Per revised D5: the PR documents the failed attempt.)
+- **Agent-runtime Step 4 (create PR)**: invoke `/pr-create` as normal to open the
+  impl PR and post the test-plan comment. Skip the task YAML status update (do not
+  set `status: in_review` in the management repo — the orchestrator does this).
+- **Agent-runtime Step 5 (new — write result.json)**: after posting the PR comment,
+  write `result.json` to `$RESULT_PATH`:
+  - On success: `{"terminal_status": "in_review", "pr_url": "<PR URL>"}`
+  - On test failure: `{"terminal_status": "blocked", "blocked_reason": "tests_failed", "blocked_suggestion": "<fix summary>", "pr_url": "<PR URL>"}`
+  - If no PR was opened (no commits): `{"terminal_status": "blocked", "blocked_reason": "<reason>", "blocked_suggestion": "<next step>"}`
+- **Agent-runtime blocking exit sequence**: instead of setting `status: blocked` in
+  the management repo task YAML directly, write `result.json` to `$RESULT_PATH`
+  with `terminal_status: "blocked"` + reason + suggestion. The orchestrator reads
+  this and performs the status transition.
+
+`workflow/workflow_skills/pr-create/SKILL.md`:
+- Add a `CLAUDE_AGENT_RUNTIME` detection block: if `1`, skip all management-repo
+  mutations (task YAML PR metadata update, log entry append, status → in_review).
+  Only push the branch and create the GitHub PR. Return the PR URL to the caller.
+
+`workflow/runtime/orchestrator/src/briefing/agent-context.ts`:
+- Replace the inline `## What you must do` steps (read docs, implement, tests,
+  self-review, run suite, commit, open PR, post comment, write result.json) with a
+  single invocation: `Run /start-implementation ${taskId}`.
+- Keep: the `## Checkpoint discipline` section (Layer 2 — not in the skill).
+- Keep: the `## Rules` section with the result.json fallback note and the
+  "do not modify task YAML" rule.
+- Remove: the inline steps that were partially restored in recent commits
+  (post-test-plan-results step and the write-tests step).
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] `workflow/workflow_skills/start-implementation/SKILL.md`: add `CLAUDE_AGENT_RUNTIME=1` detection block with agent-runtime variants for Steps 3, 4, and the blocking exit sequence; add new Step 5 to write `result.json` to `$RESULT_PATH` when `CLAUDE_AGENT_RUNTIME=1`.
+- [ ] `workflow/workflow_skills/pr-create/SKILL.md`: add `CLAUDE_AGENT_RUNTIME=1` guard — skip task YAML mutations (PR metadata, log entry, status update) when running inside the agent runtime; still push branch and create GitHub PR.
+- [ ] `workflow/runtime/orchestrator/src/briefing/agent-context.ts`: replace the inline `## What you must do` steps with `Run /start-implementation ${taskId}`; keep checkpoint discipline and Rules sections; remove the inline post-test-plan-results step added in commit `3afc2b9`.
+- [ ] Verify the executor smoke tests still pass after the briefing change.
+- [ ] Verify full orchestrator test suite passes.
+- [ ] Manual smoke: run one task end-to-end and confirm: (a) `/start-implementation` is invoked, (b) tests are written, (c) test-plan items from `tasks.md` are executed, (d) test results are posted as PR comment, (e) `result.json` is written with correct `terminal_status` and `pr_url`.
