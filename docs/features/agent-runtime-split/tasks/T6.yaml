@@ -2,7 +2,7 @@ id: T6
 title: PR ownership split (revised D5) + termination safety — executor owns impl
   PR; post-hoc recovery on abnormal exit
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/agent-runtime-split-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T11:59:06+0000
+  last_updated_at: 2026-05-02T15:15:35.059Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/64
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/81
   status: open
@@ -110,3 +110,7 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T15:15:35.059Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
