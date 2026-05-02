@@ -1,8 +1,8 @@
 id: T6
-title: PR ownership split (revised D5) + termination safety — executor owns
-  impl PR; post-hoc recovery on abnormal exit
+title: PR ownership split (revised D5) + termination safety — executor owns impl
+  PR; post-hoc recovery on abnormal exit
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/agent-runtime-split-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T09:23:43.279Z
+  last_updated_at: 2026-05-02T11:36:31.434Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/64
   status: open
@@ -70,20 +70,20 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-02T18:34:25+0700
-    note: >-
-      Reset to ready for rework. Termination safety scope (Layers 1/2/3)
-      added via PR #81 review comments — agent to implement from existing
-      branch state on feature/agent-runtime-split-T6.
+    note: "Reset to ready for rework. Termination safety scope (Layers 1/2/3) added
+      via PR #81 review comments — agent to implement from existing branch state
+      on feature/agent-runtime-split-T6."
   - action: scope_expanded
     by: matthew@liquid-labs.xyz
     at: 2026-05-02T09:56:28Z
-    note: >-
-      Scope expanded to add termination safety (Layer 1 executor-side
-      post-hoc recovery + Layer 2 briefing-encoded checkpoint
-      discipline + Layer 3 orchestrator handover surfacing). See
-      tasks.md T6 § "Scope (termination safety)" and
-      technical-design.md §4.6.2 for the full spec. Status remains
-      in_review — additional work to be addressed via PR review
-      comments on PR #64 (impl) and #81 (workspace) rather than a
-      reset to ready, so the agent can continue from the existing
-      branch state.
+    note: 'Scope expanded to add termination safety (Layer 1 executor-side post-hoc
+      recovery + Layer 2 briefing-encoded checkpoint discipline + Layer 3
+      orchestrator handover surfacing). See tasks.md T6 § "Scope (termination
+      safety)" and technical-design.md §4.6.2 for the full spec. Status remains
+      in_review — additional work to be addressed via PR review comments on PR
+      #64 (impl) and #81 (workspace) rather than a reset to ready, so the agent
+      can continue from the existing branch state.'
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T11:36:31.434Z
+    note: Claimed via git-based claim protocol.
