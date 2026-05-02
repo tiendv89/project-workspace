@@ -56,15 +56,14 @@ log:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-05-02T09:41:47+0000
-    note: >-
-      Implementation complete. PR opened:
-      https://github.com/tiendv89/agent-workflow/pull/64
+    note: "Implementation complete. PR opened:
+      https://github.com/tiendv89/agent-workflow/pull/64"
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
