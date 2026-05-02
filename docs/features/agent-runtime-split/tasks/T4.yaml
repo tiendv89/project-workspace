@@ -1,7 +1,7 @@
 id: T4
 title: Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T1
   - T2
@@ -11,12 +11,12 @@ branch: feature/agent-runtime-split-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T04:27:42.036Z
+  last_updated_at: 2026-05-02T06:38:07.500Z
   suggested_next_step: Manually resolve the conflicts listed in blocked_reason
     detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/63
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/79
   status: open
@@ -72,9 +72,12 @@ log:
   - action: in_review
     by: matthew@swellnetwork.io
     at: 2026-05-02T13:34:20+0700
-    note: >-
-      Conflict resolved manually. Status reset to in_review — PR #79 (workspace)
-      and PR #63 (implementation) remain open.
+    note: "Conflict resolved manually. Status reset to in_review — PR #79
+      (workspace) and PR #63 (implementation) remain open."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T06:38:07.500Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-02T04:25:27.746Z
