@@ -11,6 +11,7 @@ Feature status: `in_tdd` | Tasks stage: `draft` | Machine state lives in `tasks/
 | T3 | 3 | Test migration + seam tests against fake executor | T1, T2 |
 | T4 | 3 | Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff | T1, T2 |
 | T5 | 3 | Orchestrator code quality pass | T2 |
+| T6 | 4 | PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url | T2 |
 
 ---
 
@@ -315,3 +316,96 @@ land. T5 follows as improvement-on-top.
 - [ ] Wrap the task-resolution block in `src/main.ts` dispatch loop (`resolveRepoLocalPath`, `resolveRepoGitUrl`, `resolveRepoBaseBranch`, `parseModelOverrides`, `resolveModel` — ~10 intermediate variables) into a single `resolveTaskContext()` function
 - [ ] All scoped refactors verified against existing test suite (no test logic changes)
 - [ ] No changes outside `runtime/orchestrator/`
+
+---
+
+## T6 — PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
+
+### Description
+
+Added 2026-05-02 after T4's handoff drafting revealed that the original
+D5 ("orchestrator opens the PR; runtimes never call `pr-create`") was
+silently violated by the implementation: the Claude executor opens the
+impl PR via the `pr-create` skill (with rich PR body and test plan),
+and the orchestrator's `openImplPr` is reduced to an idempotent no-op
+that finds and reuses the existing PR. This task formalizes the
+revised D5 — executor owns the implementation PR, orchestrator owns
+the management/workspace PR — and adds `pr_url` to the ABI so the
+orchestrator can record the executor-opened PR in the task YAML.
+
+The orchestrator does **not** gate on test outcomes, and PR opening
+itself is **not** gated on implementation outcome. Per D4, the
+orchestrator is pure workflow-state code; the executor's internal
+quality gate (tests, lint, etc.) is private to the executor. The impl
+PR is part of the task lifecycle (same model as the workspace PR
+opened at claim time) — opened whenever there are commits to PR,
+regardless of whether tests passed. Test failure means
+`terminal_status: "blocked"` with `blocked_reason: "tests_failed"`
+**and** the PR is still opened (as draft, or with a failure-summary
+comment) so the failed attempt is documented. `pr_url` is reported
+across all terminal_status values whenever a PR exists.
+
+The revised D5 is documented in `product-spec.md` D5 (revised
+2026-05-02) and `technical-design.md` §4.6.1.
+
+Scope:
+- Add `pr_url` (string) field to the `result.json` schema
+  (`runtime/abi/src/types.ts` and `schema.ts`). Reported whenever the
+  executor opened an impl PR — independent of `terminal_status`.
+- Update the Claude executor (`runtime/executors/claude/src/index.ts`)
+  to:
+  - Always invoke the impl-PR-open path whenever there are commits on
+    the feature branch — regardless of whether tests passed. The PR
+    is part of the task lifecycle, not an artifact of test outcome.
+  - Extract the PR URL from Claude's stdout (the `pr-create` skill
+    reports the PR URL it opens) and populate `result.json.pr_url`
+    whenever a PR was opened.
+  - When Claude's test plan reports failures, write
+    `terminal_status: "blocked"` with `blocked_reason: "tests_failed"`
+    AND `pr_url` (the PR documents the failed attempt — possibly as
+    draft or with a failure-summary comment).
+- Update orchestrator dispatch (`runtime/orchestrator/src/side-effects/dispatch.ts`):
+  - Remove the call to `openImplPr`.
+  - Whenever `result.pr_url` is present, pass it to `mutateTaskYaml`
+    to record in the task YAML's `pr.url` field — regardless of
+    `terminal_status`. A blocked task with a draft PR still records
+    its `pr_url`.
+  - No new gating logic — `terminal_status` translation paths
+    (in_review / blocked / failed) are unchanged.
+- Delete `runtime/orchestrator/src/side-effects/open-pr.ts` and remove
+  its imports.
+- Update `runtime/abi/docs/abi-spec.md` to document the revised D5,
+  the new `pr_url` field, and the executor's PR-open responsibility.
+- Update `runtime/executors/claude/src/CLAUDE.md` (or equivalent
+  briefing template) to make the impl-PR-open step an explicit
+  executor responsibility, applied regardless of test outcome.
+
+Out of scope:
+- Removing `pr-create` skill from Claude's loaded skills — it is the
+  executor's PR-opener and remains in scope.
+- Changing the workspace-PR opening logic (`open-workspace-pr.ts`) —
+  it stays orchestrator-owned, unchanged.
+- Adding any test-outcome inspection to the orchestrator — orchestrator
+  is workflow-state-only and does not know about tests.
+- Migrating existing impl PRs (#58, #59, #60, #62, #63) — they remain
+  as merged history.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] `runtime/abi/src/types.ts`: add `pr_url?: string` field to `ExecutorResult`. Document semantics in JSDoc — populated whenever the executor opened a PR, regardless of terminal_status.
+- [ ] `runtime/abi/src/schema.ts`: extend the JSON Schema to validate `pr_url`. Optional across all terminal_status values (a task may legitimately produce no PR if no commits were made).
+- [ ] `runtime/abi/src/types.test.ts` and `schema.test.ts`: extend tests to cover `pr_url` across multiple terminal_status values (in_review with pr_url, blocked with pr_url, failed without pr_url).
+- [ ] `runtime/executors/claude/src/index.ts`: extract PR URL from Claude stdout (look for `https://github.com/.../pull/<n>` emitted by `pr-create` skill). Always populate `pr_url` when a PR was opened, regardless of test outcome. On test failure, write `terminal_status: "blocked"` with `blocked_reason: "tests_failed"` AND `pr_url` (the PR documents the failed attempt).
+- [ ] `runtime/executors/claude/src/index.test.ts`: add unit tests for the PR URL extraction helper. Use the existing `extractTokenUsage` test pattern.
+- [ ] `runtime/orchestrator/src/side-effects/dispatch.ts`: remove the `openImplPr` call. Read `pr_url` from `result.json` whenever it is present and pass it to `mutateTaskYaml` — on any terminal_status. No conditional gating.
+- [ ] `runtime/orchestrator/src/side-effects/dispatch.test.ts`: update tests — `pr_url` from result.json is recorded in task YAML across multiple terminal_status values. Verify no impl PR is opened by the orchestrator.
+- [ ] Delete `runtime/orchestrator/src/side-effects/open-pr.ts` and any tests targeting it.
+- [ ] Remove the import of `openImplPr` from `dispatch.ts`.
+- [ ] Update `runtime/abi/docs/abi-spec.md` to document revised D5 — new `pr_url` field, executor's PR-open responsibility, the lifecycle-not-outcome framing for both PRs.
+- [ ] Update `runtime/executors/claude/src/CLAUDE.md` (or executor briefing template) to make impl-PR-open an explicit executor step applied regardless of test outcome.
+- [ ] Run full test suite — all ABI, orchestrator, and executor tests must pass.
+- [ ] Drive one real task end-to-end through the new shape on a non-production workspace to verify: executor opens PR with rich body, orchestrator records `pr_url` from `result.json` for both passing and failing test scenarios, no duplicate impl PR is opened, no orchestrator-side test inspection.

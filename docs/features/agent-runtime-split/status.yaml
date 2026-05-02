@@ -1,15 +1,20 @@
 feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
-feature_status: ready_for_implementation
+feature_status: in_implementation
 current_stage: tasks
-next_action: Wave 1 task T1 is `ready`. An agent (or the human) can run `start-implementation` against T1 to begin the runtime ABI work. T2 advances to ready when T1 is `done`; T3/T4/T5 advance when T2 is `done`.
+next_action: >-
+  All three upstream stages re-approved. T6 auto-readied
+  (depends_on T2 is done). An agent can now run
+  start-implementation against T6. Once T6's PR merges, feature
+  advances to in_handoff and the handoff document is rewritten to
+  reflect the revised D5 model.
 
 stages:
   product_spec:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-05-01T22:33:32+0700
+    reviewed_at: 2026-05-02T16:01:20+0700
     review_comment: >-
       Approved. All eight open questions resolved as decisions D1–D10:
       logical split first with same-pod default; container ABI as the
@@ -27,10 +32,38 @@ stages:
           Q1–Q8 into D1–D10. Selector dependency line removed; relevant
           context propagated to agent-runtime-selector for when that
           feature is resumed.
+      - at: 2026-05-02T13:57:52+0700
+        by: matthew@swellnetwork.io
+        action: revision_submitted
+        note: >-
+          D5 revised to split PR ownership — executor opens impl PR
+          (with rich body and test plan); orchestrator owns workspace
+          PR + workflow state. Both PRs are part of the task lifecycle
+          — opened independently of implementation outcome (workspace
+          PR has always been opened at claim time; impl PR follows the
+          same model going forward). Original D5 ("orchestrator opens
+          the PR; runtimes never call pr-create") was silently violated
+          by the implementation, which routed impl PR open through the
+          /pr-create skill. result.json gains pr_url (workflow state),
+          reported across all terminal_status values whenever a PR
+          exists. No tests_passed field — orchestrator is pure
+          workflow state (D4); executor's quality gate is private and
+          reflected via terminal_status only. Awaiting re-approval
+          before T6 can be implemented.
+      - at: 2026-05-02T16:01:20+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Revised D5 approved. Both PRs (workspace and impl) are task-
+          lifecycle infrastructure, opened independently of
+          implementation outcome. result.json schema gains pr_url
+          only — no tests_passed (orchestrator stays pure workflow
+          state per D4). current_stage advances from product_spec to
+          technical_design for re-approval of the operationalization.
   technical_design:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-05-01T23:01:07+0700
+    reviewed_at: 2026-05-02T16:03:15+0700
     review_comment: >-
       Approved. Design commits to TD-A2 (sub-process within same
       container) for process boundary and TD-B1 (big-bang restructure
@@ -52,10 +85,35 @@ stages:
           quality refactor added as T5 with scope seeded by T2's final
           subtask; future composition with selector feature documented
           inline in §4.4. All open design questions resolved.
+      - at: 2026-05-02T13:57:52+0700
+        by: matthew@swellnetwork.io
+        action: revision_submitted
+        note: >-
+          §4.6.1 added to operationalize revised D5 — PR ownership
+          split table (executor owns impl PR; orchestrator owns
+          workspace PR), result.json schema addition (pr_url only —
+          no tests_passed, since orchestrator does not gate on test
+          outcomes per D4), code-level deltas (delete open-pr.ts,
+          update dispatch.ts to read pr_url from result.json). §4.5
+          "what lives where" table updated to reflect that pr-create
+          stays with the executor. §6 updated with T6 in wave 4.
+          Awaiting re-approval.
+      - at: 2026-05-02T16:03:15+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Revised technical design approved. §4.3 lifecycle flow
+          updated to record pr_url whenever present and never open
+          impl PR from orchestrator. §4.6.1 PR ownership split table
+          and code-level implications match revised D5 (impl PR is
+          task-lifecycle infrastructure, opened independently of test
+          outcome). §6 dependency analysis adds T6 in wave 4.
+          current_stage advances from technical_design to tasks for
+          re-approval of the T6 addition.
   tasks:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-05-01T23:06:34+0700
+    reviewed_at: 2026-05-02T16:04:27+0700
     review_comment: >-
       Approved. Five tasks (T1–T5) cover ABI definition, big-bang
       split + cutover (with T2's final subtask seeding T5), test
@@ -72,6 +130,21 @@ stages:
           Tasks stage approved. Auto-ready rule applied: T1 has empty
           depends_on and transitions todo → ready. T2/T3/T4/T5 remain
           todo until their upstream dependencies complete.
+      - at: 2026-05-02T13:57:52+0700
+        by: matthew@swellnetwork.io
+        action: revision_submitted
+        note: >-
+          T6 added (wave 4, depends on T2). Tasks index updated.
+          Awaiting re-approval. Auto-ready of T6 will fire on
+          re-approval since T2 is already done.
+      - at: 2026-05-02T16:04:27+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Revised tasks stage approved with T6 in wave 4. Auto-ready
+          rule applied: T6.depends_on is [T2] and T2 is done, so T6
+          transitions todo → ready. T1–T5 remain done. An agent can
+          now run start-implementation against T6.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -131,6 +204,54 @@ history:
       ready_for_implementation. Auto-ready rule activated T1 (empty
       depends_on); T2/T3/T4/T5 remain todo pending dependencies.
       An agent can now run start-implementation against T1.
+  - at: 2026-05-02T13:57:52+0700
+    by: matthew@swellnetwork.io
+    action: rolled_back_for_d5_revision
+    note: >-
+      Feature rolled back from in_handoff to in_implementation after
+      handoff drafting revealed a silent design violation. Original
+      D5 ("orchestrator opens the PR; runtimes never call pr-create")
+      was contradicted in practice by the Claude executor opening
+      impl PRs via the /pr-create skill. Verified on merged code:
+      orchestrator's openImplPr is reduced to an idempotent no-op
+      that finds the executor's already-opened PR. D5 revised to
+      split PR ownership — executor owns impl PR (with rich body +
+      test plan); orchestrator owns workspace PR + workflow state.
+      Both PRs are part of the task lifecycle — opened independently
+      of implementation outcome. result.json schema gains pr_url
+      (workflow state), reported across all terminal_status values
+      whenever a PR exists. No tests_passed field — orchestrator is
+      pure workflow state (D4); executor's quality gate is private
+      and reflected only via terminal_status. Tasks gain T6 to
+      formalize this. All three upstream stages
+      (product_spec, technical_design, tasks) marked
+      awaiting_approval. handoffs/handoff.md from the abandoned
+      handoff branch is preserved on that branch but not merged;
+      it will be rewritten after T6 lands.
+  - at: 2026-05-02T16:01:20+0700
+    by: matthew@liquid-labs.xyz
+    action: product_spec_reapproved
+    note: >-
+      Revised product spec approved (D5 PR ownership split, both PRs
+      as task-lifecycle infrastructure, pr_url-only addition to
+      result.json). current_stage advances from product_spec to
+      technical_design. revalidation.product_spec_required cleared.
+  - at: 2026-05-02T16:03:15+0700
+    by: matthew@liquid-labs.xyz
+    action: technical_design_reapproved
+    note: >-
+      Revised technical design approved (operationalizes revised D5;
+      §4.6.1 PR ownership split table; lifecycle flow records pr_url
+      across all terminal_status values; T6 added to §6 wave 4).
+      current_stage advances from technical_design to tasks.
+      revalidation.technical_design_required cleared.
+  - at: 2026-05-02T16:04:27+0700
+    by: matthew@liquid-labs.xyz
+    action: tasks_reapproved
+    note: >-
+      Revised tasks stage approved. T6 auto-readied (depends_on T2
+      is done). All three upstream stages now re-approved; T6 is the
+      only outstanding task. revalidation.tasks_required cleared.
 
 revalidation:
   product_spec_required: false
