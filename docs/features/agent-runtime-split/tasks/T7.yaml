@@ -40,3 +40,15 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-02T19:34:06.577Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T19:34:19.089Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-selector/product-spec.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Skill/briefing reconciliation — restore /start-implementation in
+      executor briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation
+      and pr-create agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
