@@ -1,7 +1,7 @@
 id: T5
 title: Orchestrator code quality pass
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -9,12 +9,14 @@ blocked_context: null
 branch: feature/agent-runtime-split-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-02T05:47:50.677Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/62
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/78
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -26,3 +28,53 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-01T19:13:44.938Z
     note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:50:19.608Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T19:50:33.083Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-split/product-spec.md,
+      docs/features/agent-runtime-split/product-spec.md,
+      runtime/orchestrator/tests/match.test.ts"
+    rag_query: Orchestrator code quality pass agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T20:00:39+0000
+    note: Implementation complete. Extracted workspace-config helpers, curlJson,
+      readTask/writeTask, briefing-template, write-briefing, resolved adapter.ts
+      barrel, wrapped resolveTaskContext. 345 tests pass.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-01T20:01:49+0000
+    note: PR opened at https://github.com/tiendv89/agent-workflow/pull/62
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T04:27:46.812Z
+    note: Review dispatch claimed; addressing open PR comments.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T04:30:05+0000
+    note: "Resolved 2 inline review thread(s); PR converted to ready-for-review.
+      agent-context.ts: expanded step 1 to read product-spec, technical-design,
+      and tasks.md in order. dispatch-draft-review.ts: expanded review briefing
+      to include reading product-spec, technical-design, task description, and
+      RAG context query step (required but not blocking)."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T05:47:50.677Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
