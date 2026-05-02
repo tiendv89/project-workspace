@@ -12,7 +12,7 @@ branch: feature/agent-runtime-split-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T19:42:39.336Z
+  last_updated_at: 2026-05-02T19:42:48.055Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/65
   status: open
@@ -52,3 +52,7 @@ log:
       executor briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation
       and pr-create agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: executor_crashed
+    at: 2026-05-02T19:42:48.055Z
