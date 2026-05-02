@@ -3,19 +3,19 @@ title: Skill/briefing reconciliation — restore /start-implementation in execut
   briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation and
   pr-create
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T6
-blocked_reason: null
+blocked_reason: executor_crashed
 blocked_context: null
 branch: feature/agent-runtime-split-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T19:34:06.577Z
+  last_updated_at: 2026-05-02T19:42:39.336Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/65
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/83
   status: open
