@@ -1,7 +1,7 @@
 id: T6
 title: PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -28,3 +28,7 @@ log:
       and impl) are part of the task lifecycle — opened independently
       of implementation outcome. pr_url reported across all
       terminal_status values whenever a PR exists.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-02T09:04:27Z
+    note: Task activated on tasks-stage approval — dependencies met.
