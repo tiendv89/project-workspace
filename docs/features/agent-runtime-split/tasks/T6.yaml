@@ -1,7 +1,8 @@
 id: T6
-title: PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
+title: PR ownership split (revised D5) — executor opens impl PR; orchestrator
+  records pr_url
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -9,8 +10,8 @@ blocked_context: null
 branch: feature/agent-runtime-split-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-02T09:23:43.279Z
 pr:
   url: ""
   status: not_created
@@ -19,16 +20,18 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-02T13:57:52+0700
-    note: >-
-      Task added during feature handoff drafting. Formalizes revised D5
-      (executor opens impl PR; orchestrator owns workspace PR + workflow
-      state). Adds pr_url to ABI result.json schema. Orchestrator
-      remains workflow-state-only — no test-outcome gating; executor's
-      internal quality gate decides terminal_status. Both PRs (workspace
-      and impl) are part of the task lifecycle — opened independently
-      of implementation outcome. pr_url reported across all
-      terminal_status values whenever a PR exists.
+    note: Task added during feature handoff drafting. Formalizes revised D5
+      (executor opens impl PR; orchestrator owns workspace PR + workflow state).
+      Adds pr_url to ABI result.json schema. Orchestrator remains
+      workflow-state-only — no test-outcome gating; executor's internal quality
+      gate decides terminal_status. Both PRs (workspace and impl) are part of
+      the task lifecycle — opened independently of implementation outcome.
+      pr_url reported across all terminal_status values whenever a PR exists.
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-05-02T09:04:27Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:23:43.279Z
+    note: Claimed via git-based claim protocol.
