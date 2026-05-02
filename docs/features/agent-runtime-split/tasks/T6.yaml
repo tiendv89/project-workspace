@@ -37,3 +37,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-02T09:23:43.279Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:23:57.744Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      runtime/orchestrator/src/side-effects/open-pr.ts,
+      docs/features/agent-runtime-split/technical-design.md,
+      runtime/orchestrator/tests/handle-merged-prs.test.ts"
+    rag_query: PR ownership split (revised D5) — executor opens impl PR;
+      orchestrator records pr_url agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
