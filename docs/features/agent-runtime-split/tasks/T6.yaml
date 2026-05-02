@@ -48,3 +48,12 @@ log:
     rag_query: PR ownership split (revised D5) — executor opens impl PR;
       orchestrator records pr_url agent-runtime-split
     note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:39:54+0000
+    note: Implementation started on feature/agent-runtime-split-T6.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
