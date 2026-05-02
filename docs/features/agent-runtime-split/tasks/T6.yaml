@@ -2,7 +2,7 @@ id: T6
 title: PR ownership split (revised D5) + termination safety — executor owns
   impl PR; post-hoc recovery on abnormal exit
 repo: workflow
-status: in_review
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -67,6 +67,13 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T18:34:25+0700
+    note: >-
+      Reset to ready for rework. Termination safety scope (Layers 1/2/3)
+      added via PR #81 review comments — agent to implement from existing
+      branch state on feature/agent-runtime-split-T6.
   - action: scope_expanded
     by: matthew@liquid-labs.xyz
     at: 2026-05-02T09:56:28Z
