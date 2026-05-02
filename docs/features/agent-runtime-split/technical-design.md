@@ -396,9 +396,11 @@ blocked_reason: "result_schema_invalid"`.
 
 - Reading or writing the management repo (no `MGMT_REPO_*` in the ABI).
 - Writing task YAML files.
-- Opening pull requests.
+- Opening the workspace/management PR (the orchestrator opens that at claim time).
 - Applying dependency unblock.
 - Anything in `CLAUDE.md` related to workflow protocol.
+
+Note: the executor **does** open the implementation PR (see §4.6.1 revised D5). "Opening pull requests" above refers to the management/workspace PR only.
 
 ### 4.3 Lifecycle flow (one tick of the polling loop)
 
@@ -534,15 +536,22 @@ After the split, it splits into:
   the executor.
 - **Briefing template** — produced by `orchestrator/src/briefing/` and
   written to `briefingPath`. Contains: task description (from
-  `tasks.md`), quality bar, model policy, RAG-injected project context.
-  Does **not** contain workflow rules.
+  `tasks.md`), quality bar, model policy, RAG-injected project context,
+  and an instruction to invoke `/start-implementation`. Workflow
+  execution rules live inside the skill's `CLAUDE_AGENT_RUNTIME` variant
+  paths, not inline in the briefing.
 
-The Claude executor's package effectively becomes "given this briefing,
-modify code, commit, push, run tests, open the impl PR, write
-result.json." Any workflow knowledge inside Claude is removed; the
-`pr-create` skill remains in Claude's loaded skills (it is the impl-PR
-opener) but skills that mutate task YAML or open the workspace PR are
-not loaded into Claude's context.
+The Claude executor's briefing instructs Claude to invoke
+`/start-implementation`, which handles the full execution contract:
+implement → self-review → test plan → open impl PR → post PR comment →
+write `result.json`. The `start-implementation` and `pr-create` skills
+are loaded into Claude's context and guarded with `CLAUDE_AGENT_RUNTIME=1`:
+when that var is set, both skills skip management-repo mutations (task
+YAML updates, log entries, status transitions) — the orchestrator
+performs those from `result.json` after the executor exits. The briefing
+itself carries only task context (product spec path, technical design
+path, tasks.md path, result path); workflow protocol lives in the
+skills' `CLAUDE_AGENT_RUNTIME` variant paths. (T7)
 
 Migration of the existing `CLAUDE.md` content is part of T4 (docs).
 

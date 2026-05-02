@@ -1,8 +1,9 @@
 id: T7
 title: Skill/briefing reconciliation — restore /start-implementation in executor
-  briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation and pr-create
+  briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation and
+  pr-create
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T6
 blocked_reason: null
@@ -10,20 +11,19 @@ blocked_context: null
 branch: feature/agent-runtime-split-T7
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-03T02:27:38+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-02T20:08:47.042Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/65
+  status: merged
 workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/82
+  url: https://github.com/tiendv89/project-workspace/pull/83
   status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-03T02:27:38+0700
-    note: >-
-      T6's briefing rewrite replaced the /start-implementation skill invocation
+    note: "T6's briefing rewrite replaced the /start-implementation skill invocation
       with inline steps, silently dropping: (1) the instruction to write unit
       tests, (2) the test-plan execution step from tasks.md, (3) the PR comment
       with test results. Skills are still loaded by setupGlobalSkills in the
@@ -31,8 +31,40 @@ log:
       task restores the skill invocation and adds CLAUDE_AGENT_RUNTIME=1 guards
       to start-implementation and pr-create so their management-repo side
       effects are skipped when running inside the agent runtime (the
-      orchestrator owns those transitions from result.json).
+      orchestrator owns those transitions from result.json)."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-03T02:27:38+0700
     note: T6 done — T7 unblocked.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T19:34:06.577Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T19:34:19.089Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-selector/product-spec.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Skill/briefing reconciliation — restore /start-implementation in
+      executor briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation
+      and pr-create agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: executor_crashed
+    at: 2026-05-02T19:42:48.055Z
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-03T03:05:55+0700
+    note: "Unblocked — executor_crashed was a skill/binary version mismatch (baked
+      briefing invoked /start-implementation but main-branch skill had no Step 5
+      to write result.json). Fixed in PR #65 with result synthesis on clean exit
+      + dynamic base branch in recovery. PR #65 implementation is complete;
+      resetting to in_review for merge."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T20:08:47.042Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
