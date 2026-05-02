@@ -3,7 +3,7 @@ title: Skill/briefing reconciliation — restore /start-implementation in execut
   briefing; add CLAUDE_AGENT_RUNTIME guards to start-implementation and
   pr-create
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T6
 blocked_reason: null
@@ -11,11 +11,11 @@ blocked_context: null
 branch: feature/agent-runtime-split-T7
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-03T03:05:55+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-02T20:08:47.042Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/65
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/83
   status: open
@@ -59,9 +59,12 @@ log:
   - action: in_review
     by: matthew@swellnetwork.io
     at: 2026-05-03T03:05:55+0700
-    note: >-
-      Unblocked — executor_crashed was a skill/binary version mismatch (baked
+    note: "Unblocked — executor_crashed was a skill/binary version mismatch (baked
       briefing invoked /start-implementation but main-branch skill had no Step 5
       to write result.json). Fixed in PR #65 with result synthesis on clean exit
       + dynamic base branch in recovery. PR #65 implementation is complete;
-      resetting to in_review for merge.
+      resetting to in_review for merge."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T20:08:47.042Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
