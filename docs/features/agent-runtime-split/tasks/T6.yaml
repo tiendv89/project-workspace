@@ -1,0 +1,26 @@
+id: T6
+title: PR ownership split (revised D5) — executor opens impl PR, orchestrator gates on tests_passed
+repo: workflow
+status: todo
+depends_on:
+  - T2
+blocked_reason: null
+blocked_context: null
+branch: feature/agent-runtime-split-T6
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T13:57:52+0700
+    note: >-
+      Task added during feature handoff drafting. Formalizes revised D5
+      (executor opens impl PR; orchestrator owns workspace PR + workflow
+      state). Adds tests_passed and pr_url to ABI result.json schema and
+      gates in_review transition on tests_passed.

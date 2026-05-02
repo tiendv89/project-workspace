@@ -179,18 +179,30 @@ responsibilities the executor must not have. Removed from the ABI.
 **Outputs the executor must produce:**
 
 - An exit code (0 = ran to completion, non-zero = crashed or otherwise failed).
+- Code commits pushed to the feature branch on the impl repo.
+- An open pull request on the impl repo from the feature branch (the
+  executor uses `GITHUB_TOKEN` to open it; see D5 for ownership rationale).
 - A `result.json` at `RESULT_PATH`:
   ```json
   {
     "terminal_status": "in_review" | "blocked" | "failed",
+    "tests_passed": true,
+    "pr_url": "https://github.com/owner/repo/pull/123",
     "token_usage": { "input": 0, "output": 0 },
     "blocked_reason": "...",
     "blocked_suggestion": "..."
   }
   ```
-- Code commits pushed to the feature branch. The executor pushes code
-  changes only — it does not push workflow-state commits, it does not open
-  PRs, it does not mutate task YAML.
+  - `tests_passed` is required when `terminal_status: "in_review"`. The
+    orchestrator gates the workflow-state transition on this field —
+    if `tests_passed: false`, the task is moved to `blocked` with
+    reason `tests_failed` instead of `in_review`.
+  - `pr_url` is required when `terminal_status: "in_review"`. The
+    orchestrator records it in the task YAML's `pr` field.
+
+The executor does **not** push workflow-state commits, mutate task
+YAML, or open the management/workspace PR — those are orchestrator
+responsibilities (see D5).
 
 The orchestrator calls the executor through a thin TypeScript seam
 (`ExecutorAdapter.run(input) → result`) which wraps the ABI. In-process
@@ -215,7 +227,11 @@ any of the workflow rules. It only has to:
 - Read its briefing.
 - Modify code in the working tree.
 - Commit and push the code changes to `TASK_REPO_BRANCH`.
-- Write `result.json`.
+- Run the project's test suite and capture pass/fail.
+- Open an implementation PR on the impl repo (`TASK_REPO_URL`) using
+  `GITHUB_TOKEN` provided in the ABI. PR title + body conventions are
+  defined in the ABI spec.
+- Write `result.json` (including `pr_url` and `tests_passed`).
 
 ### D4. Orchestrator is pure deterministic code; no LLM lives in it
 
@@ -233,21 +249,54 @@ Operational consequence: the orchestrator image is tiny (Node.js + git +
 GitHub token). All language toolchains and agent frameworks live with the
 executor images that need them.
 
-### D5. Workflow side effects are owned by orchestration
+### D5. Workflow side effects are owned by orchestration (revised)
 
-- **Task YAML mutations** (`in_progress` → `in_review` / `blocked`, log
-  entries, branch field, pr field): orchestrator writes them, derived
-  from `result.json`.
-- **PR open**: orchestrator opens the PR with the title and body
-  conventions. Runtimes never call `pr-create`.
-- **Dependency unblock**: orchestrator applies the auto-ready rule when a
+> **Revision note (2026-05-02):** the original D5 stated "orchestrator opens
+> the PR. Runtimes never call `pr-create`." During implementation it became
+> clear this conflated two different PRs — the **implementation PR** (code
+> in the impl repo) and the **management/workspace PR** (task YAML state
+> change in the management repo). The executor has rich context for the
+> impl PR (diff, test results, change rationale); the orchestrator has the
+> workflow-state context for the workspace PR. Forcing both onto a single
+> owner discards context. D5 is revised below to split the two.
+
+**Implementation PR (impl repo, e.g. `agent-workflow`):**
+
+- **Opened by the executor.** The executor has the full diff and test
+  context, so it owns the PR title, body, test plan, and change summary.
+- The executor pushes code commits and opens the PR before writing
+  `result.json`. The PR URL is reported back via `result.json.pr_url`.
+- The executor must run the project's full test suite before opening the
+  PR and report the outcome via `result.json.tests_passed: boolean`.
+
+**Management / workspace PR (management repo):**
+
+- **Opened by the orchestrator.** This PR contains task YAML state
+  changes (`in_progress` → `in_review` / `blocked`, log entries, branch
+  field, `pr` field, `workspace_pr` field). It is opened at claim time
+  and updated as the task progresses.
+- The orchestrator owns its title, body, and lifecycle.
+
+**Workflow-state mutations (always orchestrator-owned):**
+
+- Task YAML mutations (status transitions, log entries, branch field,
+  pr field, workspace_pr field) — derived from `result.json`.
+- Dependency unblock — orchestrator applies the auto-ready rule when a
   task is marked `done`.
-- **Test-before-PR gating**: enforced by orchestrator (either by running
-  tests itself or by requiring the executor to report a `tests_passed`
-  boolean in `result.json` — to be settled in technical design).
-- **Code commits**: pushed by the executor on the feature branch. The
-  executor's commit messages are freeform; the canonical record is the
-  orchestrator-authored PR title.
+- **Test-before-PR gating:** orchestrator gates the `in_review`
+  state transition on `result.json.tests_passed: true`. If the
+  executor reports `tests_passed: false`, the orchestrator marks the
+  task `blocked` with reason `tests_failed` instead of advancing to
+  `in_review`. The orchestrator does not run tests itself.
+
+**Code commits:** pushed by the executor on the feature branch. Commit
+messages are freeform; the canonical record is the executor-authored
+PR title.
+
+**Practical note:** custom runtimes (e.g. a future Hermes executor) must
+implement PR creation against the implementation repo using the
+`GITHUB_TOKEN` already provided by the ABI. This is part of the executor
+contract, not optional. A runtime that cannot open PRs is not ABI-conformant.
 
 ### D6. Runtime parity
 

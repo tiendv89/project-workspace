@@ -11,6 +11,7 @@ Feature status: `in_tdd` | Tasks stage: `draft` | Machine state lives in `tasks/
 | T3 | 3 | Test migration + seam tests against fake executor | T1, T2 |
 | T4 | 3 | Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff | T1, T2 |
 | T5 | 3 | Orchestrator code quality pass | T2 |
+| T6 | 4 | PR ownership split (revised D5) — executor opens impl PR, orchestrator gates on tests_passed | T2 |
 
 ---
 
@@ -315,3 +316,76 @@ land. T5 follows as improvement-on-top.
 - [ ] Wrap the task-resolution block in `src/main.ts` dispatch loop (`resolveRepoLocalPath`, `resolveRepoGitUrl`, `resolveRepoBaseBranch`, `parseModelOverrides`, `resolveModel` — ~10 intermediate variables) into a single `resolveTaskContext()` function
 - [ ] All scoped refactors verified against existing test suite (no test logic changes)
 - [ ] No changes outside `runtime/orchestrator/`
+
+---
+
+## T6 — PR ownership split (revised D5) — executor opens impl PR, orchestrator gates on tests_passed
+
+### Description
+
+Added 2026-05-02 after T4's handoff drafting revealed that the original
+D5 ("orchestrator opens the PR; runtimes never call `pr-create`") was
+silently violated by the implementation: the Claude executor opens the
+impl PR via the `pr-create` skill (with rich PR body and test plan),
+and the orchestrator's `openImplPr` is reduced to an idempotent no-op
+that finds and reuses the existing PR. This task formalizes the
+revised D5 — executor owns the implementation PR, orchestrator owns
+the management/workspace PR — and adds the `tests_passed` signal to
+the ABI so the orchestrator can gate the `in_review` transition on it.
+
+The revised D5 is documented in `product-spec.md` D5 (revised
+2026-05-02) and `technical-design.md` §4.6.1.
+
+Scope:
+- Add `pr_url` (string) and `tests_passed` (boolean) fields to the
+  `result.json` schema (`runtime/abi/src/types.ts` and `schema.ts`)
+- Update the Claude executor (`runtime/executors/claude/src/index.ts`)
+  to populate both fields before writing `result.json`. PR URL extracted
+  from Claude's stdout (the `pr-create` skill reports it); test outcome
+  extracted from Claude's stdout or a known artifact path.
+- Update orchestrator dispatch (`runtime/orchestrator/src/side-effects/dispatch.ts`):
+  - On `terminal_status: "in_review"` with `tests_passed: false`,
+    write task YAML status: `blocked`, `blocked_reason: "tests_failed"`,
+    and append a log entry. Do NOT advance to `in_review`.
+  - On `terminal_status: "in_review"` with `tests_passed: true`,
+    write `result.pr_url` to the task YAML's `pr.url` field, advance
+    status to `in_review`, append log entry.
+  - Remove the call to `openImplPr` (the function becomes dead code).
+- Delete `runtime/orchestrator/src/side-effects/open-pr.ts` and remove
+  its imports.
+- Update `runtime/abi/docs/abi-spec.md` to document the revised D5,
+  the new `result.json` fields, and the executor's PR-open responsibility.
+- Update `runtime/executors/claude/src/CLAUDE.md` (or equivalent
+  briefing template) to make the impl-PR-open and test-run steps
+  explicit executor responsibilities, not workflow rules injected from
+  the management repo.
+
+Out of scope:
+- Removing `pr-create` skill from Claude's loaded skills — it is the
+  executor's PR-opener and remains in scope.
+- Changing the workspace-PR opening logic (`open-workspace-pr.ts`) —
+  it stays orchestrator-owned, unchanged.
+- Adding test-runner integration to the orchestrator — orchestrator
+  trusts the executor's reported `tests_passed` boolean.
+- Migrating existing impl PRs (#58, #59, #60, #62, #63) — they remain
+  as merged history.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] `runtime/abi/src/types.ts`: add `pr_url?: string` and `tests_passed?: boolean` fields to `ExecutorResult`. Document semantics in JSDoc.
+- [ ] `runtime/abi/src/schema.ts`: extend the JSON Schema to validate the new fields. `pr_url` is required when `terminal_status === "in_review"`. `tests_passed` is required when `terminal_status === "in_review"`.
+- [ ] `runtime/abi/src/types.test.ts` and `schema.test.ts`: extend tests to cover the new fields (valid/invalid combinations).
+- [ ] `runtime/executors/claude/src/index.ts`: extract PR URL from Claude stdout (look for `https://github.com/.../pull/<n>` emitted by `pr-create` skill). Extract test outcome (parse the test plan section of Claude output or a known result artifact). Populate `result.json` accordingly.
+- [ ] `runtime/executors/claude/src/index.test.ts`: add unit tests for the new extraction helpers. Use the existing `extractTokenUsage` test pattern.
+- [ ] `runtime/orchestrator/src/side-effects/dispatch.ts`: implement the `tests_passed` gate. Remove the `openImplPr` call. Read `pr_url` from `result.json` and pass it to `mutateTaskYaml`.
+- [ ] `runtime/orchestrator/src/side-effects/dispatch.test.ts`: add tests for the new branches — `in_review + tests_passed: false` → `blocked`; `in_review + tests_passed: true` → `in_review` with `pr_url` recorded.
+- [ ] Delete `runtime/orchestrator/src/side-effects/open-pr.ts` and any tests targeting it.
+- [ ] Remove the import of `openImplPr` from `dispatch.ts`.
+- [ ] Update `runtime/abi/docs/abi-spec.md` to document revised D5 — new fields, executor's PR-open responsibility, orchestrator's gating behavior.
+- [ ] Update `runtime/executors/claude/src/CLAUDE.md` (or executor briefing template) to make impl-PR-open + test-run explicit executor steps.
+- [ ] Run full test suite — all ABI, orchestrator, and executor tests must pass.
+- [ ] Drive one real task end-to-end through the new shape on a non-production workspace to verify: executor opens PR with rich body, orchestrator gates on `tests_passed`, no duplicate impl PR is opened.

@@ -424,8 +424,13 @@ blocked_reason: "result_schema_invalid"`.
 6. orchestrator/side-effects:
        read result.json
        if terminal_status === "in_review":
-         open PR (orchestrator owns title format)
-         write task YAML status: in_review, append log entry
+         if result.tests_passed === false:
+           write task YAML status: blocked,
+             blocked_reason: "tests_failed",
+             append log entry
+         else:
+           record result.pr_url in task YAML pr field
+           write task YAML status: in_review, append log entry
        if terminal_status === "blocked":
          write task YAML status: blocked,
            blocked_reason / blocked_suggestion,
@@ -434,6 +439,11 @@ blocked_reason: "result_schema_invalid"`.
          write task YAML status: blocked,
            blocked_reason: "executor_failed:<reason>",
            append log entry
+
+   NOTE: orchestrator does NOT open the implementation PR — the
+   executor opens it before writing result.json (see revised D5).
+   Orchestrator only opens the management/workspace PR (at claim time,
+   step 3 above).
 7. orchestrator/poll: continue checking PR-merge state for
    previously-in_review tasks (this part is unchanged from today)
 ```
@@ -507,7 +517,7 @@ real consumer.
 | `agent-runtime/src/claim/claim-task.ts` | `runtime/orchestrator/src/claim/claim-task.ts` |
 | `agent-runtime/src/poll/*` | `runtime/orchestrator/src/poll/*` |
 | `agent-runtime/src/loop/run-claude.ts` | `runtime/executors/claude/src/index.ts` (entrypoint) + `token-usage.ts` |
-| Inline-in-Claude: `pr-create` skill, task YAML mutations, dep unblock | `runtime/orchestrator/src/side-effects/` |
+| Inline-in-Claude: task YAML mutations, dep unblock | `runtime/orchestrator/src/side-effects/` (NOT `pr-create`; impl PR open stays with executor per revised D5) |
 | `agent-runtime/Dockerfile` (everything bundled) | Two Dockerfiles: orchestrator (lean) + claude (toolchains) |
 | `agent-runtime/templates/docker-compose.*` | `runtime/orchestrator/templates/docker-compose.*` (point at the orchestrator image, which spawns the executor binary inside the same container). K8s and GH Actions templates from `agent-runtime/templates/` are **deleted** as part of the cutover — leaving stale templates pointing at the removed `agent-runtime/` paths is anti-clean. Fresh templates targeting `runtime/` are added in a follow-on feature when K8s or CI deployment is actually needed. |
 
@@ -528,10 +538,53 @@ After the split, it splits into:
   Does **not** contain workflow rules.
 
 The Claude executor's package effectively becomes "given this briefing,
-modify code, commit, push, write result.json." Any workflow knowledge
-inside Claude is removed.
+modify code, commit, push, run tests, open the impl PR, write
+result.json." Any workflow knowledge inside Claude is removed; the
+`pr-create` skill remains in Claude's loaded skills (it is the impl-PR
+opener) but skills that mutate task YAML or open the workspace PR are
+not loaded into Claude's context.
 
 Migration of the existing `CLAUDE.md` content is part of T4 (docs).
+
+### 4.6.1 PR ownership split (revised D5)
+
+Per the revised D5 in `product-spec.md`, "PR open" is split across two
+PRs with different owners:
+
+| PR | Repo | Owner | When opened | Title format |
+|---|---|---|---|---|
+| Implementation PR | impl repo (e.g. `agent-workflow`) | **Executor** | After tests run, before `result.json` is written | `feat(<featureId>/<taskId>): <task description>` |
+| Workspace PR | management repo | **Orchestrator** | At claim time | `feat(<featureId>/<taskId>): <task title>` |
+
+**Why this split.** The executor has the diff, the test output, and the
+implementation context to write a meaningful PR body. The orchestrator
+has the workflow-state context (task YAML state, log entries, dependency
+graph) to manage the workspace PR. Forcing both onto a single owner
+loses the context one of them has.
+
+**ABI implications.** `result.json` schema gains two fields:
+
+| Field | Required when | Meaning |
+|---|---|---|
+| `pr_url` | `terminal_status: "in_review"` | URL of the impl PR the executor opened. Orchestrator records it in `task.pr.url`. |
+| `tests_passed` | `terminal_status: "in_review"` | Boolean from the executor's test run. Orchestrator gates the `in_review` transition on this — if `false`, task is marked `blocked` with reason `tests_failed`. |
+
+**Code-level implications.**
+
+- `runtime/orchestrator/src/side-effects/open-pr.ts` (the orchestrator's
+  `openImplPr`) is **deleted**. Its idempotency-saved no-op state is
+  removed; the executor is the sole impl-PR opener.
+- `runtime/orchestrator/src/side-effects/dispatch.ts` no longer calls
+  `openImplPr`. It reads `result.pr_url` directly and writes it to the
+  task YAML.
+- The Claude executor's `runtime/executors/claude/src/index.ts` is
+  responsible for ensuring Claude opens the impl PR (via the `pr-create`
+  skill) before writing `result.json`. The executor extracts the PR URL
+  from Claude's output (or from a known location after `pr-create`
+  runs) and writes it to `result.json.pr_url`.
+- Test extraction: the Claude executor reads test outcome from Claude's
+  output (the `pr-create` skill already runs the project's test suite as
+  part of its own contract) and propagates it to `result.json.tests_passed`.
 
 ### 4.7 Operational implications
 
@@ -660,6 +713,19 @@ T1: Define ABI — types, JSON schema, fake-executor fixture, abi-spec.md
                 final subtask must have populated T5's concrete
                 checklist before T5 can begin)
             └── T3, T4, and T5 run in parallel after T2
+      │
+      T6: PR ownership split (revised D5) — formalize the executor as
+          impl-PR opener, orchestrator as workspace-PR + workflow-state
+          owner. Add `tests_passed` and `pr_url` to `result.json` schema;
+          remove `runtime/orchestrator/src/side-effects/open-pr.ts`;
+          update `dispatch.ts` to gate `in_review` transition on
+          `tests_passed: true`; update Claude executor entrypoint to
+          extract test outcome and PR URL from Claude's output; update
+          `runtime/abi/docs/abi-spec.md`. Added 2026-05-02 after the
+          original five-task plan revealed that orchestrator-opened
+          impl PRs lose context the executor already has.
+            └── BLOCKED on T2 (side-effects/open-pr.ts must exist to
+                be removed; dispatch.ts must exist to be updated)
 ```
 
 Read-out of waves:
@@ -668,6 +734,9 @@ Read-out of waves:
 - **Wave 2 (after T1 lands):** T2 alone — the cutover PR. T2's last
   subtask seeds T5's scope.
 - **Wave 3 (after T2 lands):** T3, T4, T5 in parallel.
+- **Wave 4 (after T2 lands; added 2026-05-02):** T6 — revised D5
+  formalization. Independent of T3/T4/T5 but added after them in
+  practice because it was identified during T4's handoff drafting.
 
 No tasks block on external decisions or on other features. The work is
 self-contained within the `workflow` repo.
