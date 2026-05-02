@@ -2,13 +2,13 @@ feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
 feature_status: in_implementation
-current_stage: technical_design
+current_stage: tasks
 next_action: >-
-  Product spec re-approved with revised D5 (PR ownership split; both
-  PRs are task-lifecycle infrastructure). Technical design now needs
-  re-approval (operationalizes revised D5). After that, tasks stage
-  needs re-approval (T6 added). Once T6 lands and merges, feature
-  can re-enter handoff.
+  Product spec and technical design re-approved with revised D5.
+  Tasks stage now needs re-approval (T6 added in wave 4). Once tasks
+  stage is approved, T6 will auto-ready (T2 is already done) and an
+  agent can run start-implementation against T6. After T6 lands and
+  merges, feature re-enters handoff.
 
 stages:
   product_spec:
@@ -61,9 +61,9 @@ stages:
           state per D4). current_stage advances from product_spec to
           technical_design for re-approval of the operationalization.
   technical_design:
-    review_status: awaiting_approval
+    review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-05-01T23:01:07+0700
+    reviewed_at: 2026-05-02T16:03:15+0700
     review_comment: >-
       Approved. Design commits to TD-A2 (sub-process within same
       container) for process boundary and TD-B1 (big-bang restructure
@@ -98,6 +98,18 @@ stages:
           "what lives where" table updated to reflect that pr-create
           stays with the executor. §6 updated with T6 in wave 4.
           Awaiting re-approval.
+      - at: 2026-05-02T16:03:15+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Revised technical design approved. §4.3 lifecycle flow
+          updated to record pr_url whenever present and never open
+          impl PR from orchestrator. §4.6.1 PR ownership split table
+          and code-level implications match revised D5 (impl PR is
+          task-lifecycle infrastructure, opened independently of test
+          outcome). §6 dependency analysis adds T6 in wave 4.
+          current_stage advances from technical_design to tasks for
+          re-approval of the T6 addition.
   tasks:
     review_status: awaiting_approval
     reviewed_by: matthew@liquid-labs.xyz
@@ -216,9 +228,18 @@ history:
       as task-lifecycle infrastructure, pr_url-only addition to
       result.json). current_stage advances from product_spec to
       technical_design. revalidation.product_spec_required cleared.
+  - at: 2026-05-02T16:03:15+0700
+    by: matthew@liquid-labs.xyz
+    action: technical_design_reapproved
+    note: >-
+      Revised technical design approved (operationalizes revised D5;
+      §4.6.1 PR ownership split table; lifecycle flow records pr_url
+      across all terminal_status values; T6 added to §6 wave 4).
+      current_stage advances from technical_design to tasks.
+      revalidation.technical_design_required cleared.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: true
+  technical_design_required: false
   tasks_required: true
   deployment_checklist_required: false
