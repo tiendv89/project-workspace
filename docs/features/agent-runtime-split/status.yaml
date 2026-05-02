@@ -2,19 +2,19 @@ feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
 feature_status: in_implementation
-current_stage: product_spec
+current_stage: technical_design
 next_action: >-
-  Revised D5 (PR ownership split) requires re-approval of product-spec.md
-  before T6 can be implemented. After product spec is re-approved,
-  technical-design.md needs re-approval (operationalizes revised D5),
-  then tasks stage needs re-approval (T6 added). Once T6 lands and
-  merges, feature can re-enter handoff.
+  Product spec re-approved with revised D5 (PR ownership split; both
+  PRs are task-lifecycle infrastructure). Technical design now needs
+  re-approval (operationalizes revised D5). After that, tasks stage
+  needs re-approval (T6 added). Once T6 lands and merges, feature
+  can re-enter handoff.
 
 stages:
   product_spec:
-    review_status: awaiting_approval
+    review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: 2026-05-01T22:33:32+0700
+    reviewed_at: 2026-05-02T16:01:20+0700
     review_comment: >-
       Approved. All eight open questions resolved as decisions D1–D10:
       logical split first with same-pod default; container ABI as the
@@ -50,6 +50,16 @@ stages:
           workflow state (D4); executor's quality gate is private and
           reflected via terminal_status only. Awaiting re-approval
           before T6 can be implemented.
+      - at: 2026-05-02T16:01:20+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Revised D5 approved. Both PRs (workspace and impl) are task-
+          lifecycle infrastructure, opened independently of
+          implementation outcome. result.json schema gains pr_url
+          only — no tests_passed (orchestrator stays pure workflow
+          state per D4). current_stage advances from product_spec to
+          technical_design for re-approval of the operationalization.
   technical_design:
     review_status: awaiting_approval
     reviewed_by: matthew@liquid-labs.xyz
@@ -198,9 +208,17 @@ history:
       awaiting_approval. handoffs/handoff.md from the abandoned
       handoff branch is preserved on that branch but not merged;
       it will be rewritten after T6 lands.
+  - at: 2026-05-02T16:01:20+0700
+    by: matthew@liquid-labs.xyz
+    action: product_spec_reapproved
+    note: >-
+      Revised product spec approved (D5 PR ownership split, both PRs
+      as task-lifecycle infrastructure, pr_url-only addition to
+      result.json). current_stage advances from product_spec to
+      technical_design. revalidation.product_spec_required cleared.
 
 revalidation:
-  product_spec_required: true
+  product_spec_required: false
   technical_design_required: true
   tasks_required: true
   deployment_checklist_required: false
