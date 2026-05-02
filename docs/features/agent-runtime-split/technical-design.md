@@ -603,6 +603,175 @@ attempt is documented and can be picked up later. In both cases
   `pr_url`; only `terminal_status` flips to `"blocked"` with
   `blocked_reason: "tests_failed"`.
 
+### 4.6.2 Termination safety + handover protocol
+
+**Problem.** Claude's `--max-turns` flag (default 200 in the executor)
+imposes a hard cap on agent turns. When Claude hits the cap mid-task,
+it stops without committing in-progress work or opening a PR — the
+next agent has no record of what was attempted, no draft PR to pick
+up, and no statement of what's left. The same loss-of-progress
+pattern applies to any abnormal exit (signal, segfault, wall-clock
+timeout, OOM kill).
+
+This is incompatible with the revised D5 framing — that the impl PR
+is task-lifecycle infrastructure, opened independently of outcome.
+If a max-turns exit produces no PR, the lifecycle invariant is
+violated.
+
+**Two-layer mechanism.** Termination safety is layered: a
+deterministic post-hoc recovery in the executor (always-on,
+unconditional) plus a best-effort self-pacing rule in the briefing
+(runs when Claude has the discipline to follow it).
+
+#### Layer 1 — Executor-side post-hoc recovery (always-on)
+
+Wrap the entire `claude` spawn in `runtime/executors/claude/src/index.ts`
+in a `try/finally`. The `finally` block runs the recovery routine
+regardless of how the spawn ended (clean exit, max-turns, signal,
+crash). Order of operations:
+
+1. Run `git status --porcelain` in `taskRepoPath`. If the working
+   tree is dirty, commit everything as
+   `wip(<taskId>): incomplete — agent terminated unexpectedly`.
+2. Push the feature branch to origin (best-effort; if push fails,
+   log and continue — branch state is still preserved locally for
+   the next agent).
+3. Check for an existing impl PR on the feature branch (via
+   `pr-create` skill or direct GitHub API call). If none exists,
+   open the PR as a **draft** with title prefix `[WIP]` and a body
+   containing: task ID, branch, last commit SHA, "agent terminated
+   before completion — see handover.md". If a PR already exists,
+   leave it as-is; the recovery does not retitle or re-draft a PR
+   that the agent already opened cleanly.
+4. Write `handover.md` next to `result.json`. Format:
+   ```markdown
+   # Handover — <taskId>
+
+   **Terminal reason:** max_turns_exceeded | executor_crashed | timeout | ...
+   **Branch:** feature/<feature_id>-<task_id>
+   **Last commit:** <sha> <commit message>
+   **PR:** <pr_url> (draft)
+
+   ## Files modified in this run
+   <git diff --name-status against the branch's merge-base with main>
+
+   ## Next agent — read this first
+   This handover was written by the post-hoc recovery routine.
+   The agent that produced these commits did not have a chance to
+   write a structured handover. Re-claim the task, read the diff,
+   continue where the last commit left off. If a checkpoint
+   handover.md was written by the agent itself it will appear
+   above this stub — read it first.
+   ```
+5. Write `result.json` with:
+   - `terminal_status: "blocked"`
+   - `blocked_reason: "max_turns_exceeded"` (or appropriate reason)
+   - `pr_url: <url of the draft PR>`
+   - `handover_path: <path to handover.md>`
+   - `token_usage` (if available)
+
+**Important constraints:**
+
+- The recovery routine itself must not throw — it has to run in the
+  `finally` block and produce a `result.json` even if individual
+  steps fail. Each step is wrapped in its own try/catch with an
+  emit() log on failure.
+- The recovery is idempotent. If the agent already committed and
+  opened a PR cleanly, the recovery sees a clean working tree and
+  an existing PR, and only writes the handover stub + `result.json`
+  with the appropriate `terminal_status`.
+- The recovery only runs if Claude did NOT write a valid
+  `result.json` itself with `terminal_status: "in_review"`. If
+  Claude's own `result.json` is valid and `in_review`, that wins —
+  the recovery routine validates and exits.
+
+#### Layer 2 — Briefing-encoded self-pacing (best-effort)
+
+The briefing template in `runtime/orchestrator/src/briefing/`
+includes a "checkpoint discipline" section read by Claude:
+
+```markdown
+## Checkpoint discipline
+
+After each substantial action (file write, test run, multi-file
+edit), commit + push your work-in-progress to the feature branch
+with a `wip(<task_id>): <what you just did>` message. Do NOT batch
+many actions into a single commit. This protects against unexpected
+termination.
+
+If you sense you've done many back-and-forth turns and are not yet
+ready to declare the work complete, perform a graceful checkpoint:
+1. Commit and push any uncommitted work.
+2. Open the impl PR as draft via `pr-create` if not already open.
+3. Write `handover.md` next to result.json describing: what is
+   done, what is left, where to resume. This is a richer handover
+   than the post-hoc stub — write it as if you are briefing the
+   next engineer.
+4. Write `result.json` with `terminal_status: "blocked"`,
+   `blocked_reason: "handover_for_continuation"`, `pr_url`,
+   `handover_path`.
+5. Exit cleanly.
+```
+
+Layer 2 produces *good* handovers when Claude is paying attention;
+Layer 1 produces *adequate* handovers when Claude isn't (or crashes
+outright). The two are not redundant — Layer 2's handover is richer,
+but only Layer 1 guarantees a handover exists.
+
+#### Layer 3 — Orchestrator surfaces handover on re-claim
+
+When an agent claims a task that was previously `blocked` and now
+has `pr.url` set (the unblock target rule transitions it back to
+`in_review` for continuation, but the same applies to a `ready`
+re-claim if a draft PR exists), the orchestrator's briefing
+generator reads `handover.md` from the impl repo branch (or from a
+known artifact path written by Layer 1) and embeds it at the top of
+the new agent's briefing. This is an addition to
+`runtime/orchestrator/src/briefing/agent-context.ts`:
+
+```ts
+// Pseudocode — read handover.md if present and prepend to briefing
+const handoverPath = join(taskRepoPath, "handover.md");
+if (existsSync(handoverPath)) {
+  briefing = `## Continuing previous run\n\n${readFileSync(handoverPath, "utf-8")}\n\n---\n\n${briefing}`;
+}
+```
+
+The new agent reads the handover before doing anything else and
+continues from where the last agent stopped.
+
+#### ABI implications
+
+`result.json` schema gains one optional field:
+
+| Field | Meaning |
+|---|---|
+| `handover_path` | Path (relative to result.json's directory, or absolute) to a `handover.md` file written by the executor or recovery routine. Optional — present only when a handover exists. Orchestrator may read it to embed in the next agent's briefing. |
+
+`pr_url` becomes effectively required for **all** non-`failed`
+terminal statuses, not just `in_review` — Layer 1 guarantees a PR
+exists for any `blocked` outcome where there were commits to PR.
+The schema keeps it as optional (because a task could legitimately
+hit a hard error before any commits — e.g. repo materialization
+failure) but the executor populates it whenever possible.
+
+#### Code-level implications
+
+- `runtime/executors/claude/src/index.ts` — wrap the existing
+  `main()` body in try/finally; the finally invokes a new
+  `runRecovery()` helper. Existing `isMaxTurnsExit` detection logic
+  is folded into recovery as one of the terminal-reason classifiers.
+- `runtime/executors/claude/src/recovery.ts` (new) — the recovery
+  routine. Self-contained; takes the spawn result + paths and
+  produces `result.json` + `handover.md` + draft PR side effects.
+- `runtime/orchestrator/src/briefing/agent-context.ts` — read
+  `handover.md` from the task working directory if present and
+  prepend it to the briefing.
+- `runtime/abi/src/types.ts` and `schema.ts` — add
+  `handover_path?: string` to `ExecutorResult`.
+- `runtime/abi/docs/abi-spec.md` — document Layers 1 and 2, the new
+  `handover_path` field, and the post-hoc recovery contract.
+
 ### 4.7 Operational implications
 
 - Two Docker images replace one. The orchestrator image is small

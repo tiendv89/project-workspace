@@ -1,6 +1,6 @@
 id: T6
-title: PR ownership split (revised D5) — executor opens impl PR; orchestrator
-  records pr_url
+title: PR ownership split (revised D5) + termination safety — executor owns
+  impl PR; post-hoc recovery on abnormal exit
 repo: workflow
 status: in_review
 depends_on:
@@ -67,3 +67,16 @@ log:
       output: 0
       total: 0
       cost_usd: 0
+  - action: scope_expanded
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-02T09:56:28Z
+    note: >-
+      Scope expanded to add termination safety (Layer 1 executor-side
+      post-hoc recovery + Layer 2 briefing-encoded checkpoint
+      discipline + Layer 3 orchestrator handover surfacing). See
+      tasks.md T6 § "Scope (termination safety)" and
+      technical-design.md §4.6.2 for the full spec. Status remains
+      in_review — additional work to be addressed via PR review
+      comments on PR #64 (impl) and #81 (workspace) rather than a
+      reset to ready, so the agent can continue from the existing
+      branch state.
