@@ -180,9 +180,10 @@ responsibilities the executor must not have. Removed from the ABI.
 
 - An exit code (0 = ran to completion, non-zero = crashed or otherwise failed).
 - Code commits pushed to the feature branch on the impl repo.
-- An open pull request on the impl repo from the feature branch (only
-  when the executor's internal quality gate — tests, lint, whatever the
-  executor decides — passes; the executor uses `GITHUB_TOKEN` to open it).
+- An open pull request on the impl repo from the feature branch
+  whenever the executor has commits to PR. Opening is **not** gated on
+  the executor's internal quality gate — see D5. The executor uses
+  `GITHUB_TOKEN` to open it.
 - A `result.json` at `RESULT_PATH`:
   ```json
   {
@@ -193,15 +194,17 @@ responsibilities the executor must not have. Removed from the ABI.
     "blocked_suggestion": "..."
   }
   ```
-  - `pr_url` is required when `terminal_status: "in_review"`. The
-    orchestrator records it in the task YAML's `pr.url` field. No other
-    `terminal_status` value carries `pr_url`.
-  - The executor's internal quality gate (e.g. tests) is the executor's
-    own responsibility. If it fails, the executor reports
-    `terminal_status: "blocked"` with `blocked_reason: "tests_failed"`
-    (or whatever applies) and does NOT open a PR. The orchestrator does
-    not see "tests passed" as a separate signal — it only sees the
-    `terminal_status` translation.
+  - `pr_url` is reported whenever the executor opened an impl PR —
+    independent of `terminal_status`. A blocked task with a draft PR
+    documenting the failed attempt still carries `pr_url`. The
+    orchestrator records it in the task YAML's `pr.url` field.
+  - The executor's internal quality gate (e.g. tests) is the
+    executor's own responsibility and is reflected only via
+    `terminal_status`. Gate failure → `terminal_status: "blocked"`
+    with `blocked_reason: "tests_failed"` (or whatever applies); the
+    PR still exists and `pr_url` is still reported. The orchestrator
+    never inspects the gate; it only sees `terminal_status` and
+    `pr_url`.
 
 The executor does **not** push workflow-state commits, mutate task
 YAML, or open the management/workspace PR — those are orchestrator
@@ -232,12 +235,16 @@ any of the workflow rules. It only has to:
 - Commit and push the code changes to `TASK_REPO_BRANCH`.
 - Apply whatever internal quality gate it considers required (tests,
   lint, type-check, manual checks — entirely up to the runtime).
-- If the gate passes: open an implementation PR on the impl repo
-  (`TASK_REPO_URL`) using `GITHUB_TOKEN` provided in the ABI, then
-  write `result.json` with `terminal_status: "in_review"` and `pr_url`.
-- If the gate fails: write `result.json` with
-  `terminal_status: "blocked"` and an appropriate `blocked_reason`.
-  Do not open a PR.
+- Open an implementation PR on the impl repo (`TASK_REPO_URL`) using
+  `GITHUB_TOKEN` provided in the ABI, whenever there are commits to
+  PR — regardless of whether the quality gate passed. The PR is part
+  of the task lifecycle, not an artifact of "did the work succeed".
+- Write `result.json` with the appropriate `terminal_status` and
+  `pr_url` (always populated when a PR was opened):
+  - Gate passed: `terminal_status: "in_review"`, `pr_url: "..."`.
+  - Gate failed: `terminal_status: "blocked"`,
+    `blocked_reason: "tests_failed"` (or equivalent), `pr_url: "..."`
+    (the PR documents the failed attempt, possibly as draft).
 
 ### D4. Orchestrator is pure deterministic code; no LLM lives in it
 
@@ -270,14 +277,20 @@ executor images that need them.
 
 - **Opened by the executor.** The executor has the full diff and test
   context, so it owns the PR title, body, test plan, and change summary.
-- The executor applies its own internal quality gate (e.g. running the
-  project's test suite) before deciding whether to open the PR. If the
-  gate passes, it opens the PR and reports
-  `terminal_status: "in_review"` with `pr_url`. If the gate fails, it
-  reports `terminal_status: "blocked"` (e.g. `blocked_reason: "tests_failed"`)
-  and does not open a PR.
-- The orchestrator does not see the gate's internal signal — it only
-  sees `terminal_status` and translates it into task YAML state.
+- **Opening is not gated on implementation outcome.** As soon as the
+  executor has commits to PR, it opens the impl PR — whether the work
+  succeeded, failed tests, or got stuck. The PR existing is part of
+  the task lifecycle (same as the workspace PR opened at claim time);
+  it is not an artifact of "did the work succeed". A blocked task with
+  a draft PR documenting the failed attempt is more useful than no PR
+  at all.
+- `terminal_status` reflects the **work** status (`in_review` = work
+  is ready for review; `blocked` = work hit a gate it couldn't pass),
+  not the PR's existence. `pr_url` is reported in `result.json`
+  whenever the executor opened a PR — regardless of `terminal_status`.
+- The orchestrator records `pr_url` whenever it's present and
+  translates `terminal_status` into task YAML state. It does not
+  inspect the executor's internal quality gate.
 
 **Management / workspace PR (management repo):**
 
@@ -300,8 +313,10 @@ executor images that need them.
   entirely by the executor. The executor reports the resulting
   `terminal_status` and the orchestrator translates it into task YAML
   state. If tests fail inside the executor, the executor reports
-  `blocked` with an appropriate `blocked_reason` and does not open a
-  PR; the orchestrator simply applies that state.
+  `blocked` with an appropriate `blocked_reason`; the impl PR is
+  still opened (as draft, or with a failure-summary comment) so the
+  failed attempt is documented, and the orchestrator simply applies
+  the `blocked` state.
 
 **Code commits:** pushed by the executor on the feature branch. Commit
 messages are freeform; the canonical record is the executor-authored

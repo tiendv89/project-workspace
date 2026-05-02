@@ -24,4 +24,7 @@ log:
       (executor opens impl PR; orchestrator owns workspace PR + workflow
       state). Adds pr_url to ABI result.json schema. Orchestrator
       remains workflow-state-only — no test-outcome gating; executor's
-      internal quality gate decides terminal_status.
+      internal quality gate decides terminal_status. Both PRs (workspace
+      and impl) are part of the task lifecycle — opened independently
+      of implementation outcome. pr_url reported across all
+      terminal_status values whenever a PR exists.

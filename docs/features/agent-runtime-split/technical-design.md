@@ -423,8 +423,9 @@ blocked_reason: "result_schema_invalid"`.
    wait for child exit
 6. orchestrator/side-effects:
        read result.json
-       if terminal_status === "in_review":
+       if result.pr_url is present:
          record result.pr_url in task YAML pr field
+       if terminal_status === "in_review":
          write task YAML status: in_review, append log entry
        if terminal_status === "blocked":
          write task YAML status: blocked,
@@ -436,12 +437,13 @@ blocked_reason: "result_schema_invalid"`.
            append log entry
 
    NOTE: orchestrator does NOT open the implementation PR — the
-   executor opens it before writing result.json (see revised D5).
-   Orchestrator only opens the management/workspace PR (at claim time,
-   step 3 above). Orchestrator does NOT inspect test outcomes — the
-   executor's internal quality gate is private; if it fails, the
-   executor reports blocked and the orchestrator simply applies that
-   state.
+   executor opens it before writing result.json, regardless of
+   terminal_status (see revised D5). Orchestrator only opens the
+   management/workspace PR (at claim time, step 3 above). Both PRs
+   exist independently of implementation outcome — neither is gated
+   on the executor's quality gate. pr_url is recorded whenever it is
+   present in result.json; terminal_status is translated to task YAML
+   state as a separate concern.
 7. orchestrator/poll: continue checking PR-merge state for
    previously-in_review tasks (this part is unchanged from today)
 ```
@@ -564,35 +566,42 @@ loses the context one of them has.
 
 | Field | Required when | Meaning |
 |---|---|---|
-| `pr_url` | `terminal_status: "in_review"` | URL of the impl PR the executor opened. Orchestrator records it in `task.pr.url`. |
+| `pr_url` | An impl PR was opened | URL of the impl PR the executor opened. Reported regardless of `terminal_status` (a `blocked` task with a draft PR still carries `pr_url`). Orchestrator records it in `task.pr.url`. |
 
 **No `tests_passed` field is added.** Per D4, the orchestrator is pure
 workflow-state code — it does not gate on implementation-level signals
 like test outcomes. The executor's internal quality gate (tests, lint,
-type-check) is the executor's private concern. If the gate fails, the
+type-check) is the executor's private concern. Gate failure means the
 executor reports `terminal_status: "blocked"` with an appropriate
-`blocked_reason` (e.g. `tests_failed`) and does not open a PR. The
-orchestrator only sees the `terminal_status` and translates it into
-task YAML state — it never inspects what the gate did.
+`blocked_reason` (e.g. `tests_failed`); the orchestrator only sees the
+translation and never inspects what the gate did.
+
+**PR opening is not gated on quality.** Both the workspace PR (opened
+by the orchestrator at claim time) and the impl PR (opened by the
+executor) are part of the task lifecycle, not artifacts of "did the
+work succeed". The impl PR is opened whenever there are commits to PR
+— if the work passed the executor's gate, the PR is opened ready for
+review; if the work was blocked, the PR is opened as a draft (or
+left open with a comment summarising the failure) so the failed
+attempt is documented and can be picked up later. In both cases
+`pr_url` is reported.
 
 **Code-level implications.**
 
 - `runtime/orchestrator/src/side-effects/open-pr.ts` (the orchestrator's
-  `openImplPr`) is **deleted**. Its idempotency-saved no-op state is
-  removed; the executor is the sole impl-PR opener.
+  `openImplPr`) is **deleted**. The executor is the sole impl-PR opener.
 - `runtime/orchestrator/src/side-effects/dispatch.ts` no longer calls
-  `openImplPr`. It reads `result.pr_url` directly and writes it to the
-  task YAML's `pr.url` field. No new gating logic is added — the
-  existing `terminal_status` translation already handles "tests
-  failed → blocked" correctly because the executor reports `blocked`
-  in that case.
+  `openImplPr`. It reads `result.pr_url` whenever it is present (any
+  terminal_status) and writes it to the task YAML's `pr.url` field.
+  No new gating logic — `terminal_status` translation is unchanged.
 - The Claude executor's `runtime/executors/claude/src/index.ts` is
-  responsible for ensuring Claude opens the impl PR (via the `pr-create`
-  skill) before writing `result.json`. The executor extracts the PR URL
-  from Claude's output and writes it to `result.json.pr_url` when
-  `terminal_status === "in_review"`. If Claude's test plan reports
-  failures, the executor writes `terminal_status: "blocked"` with
-  `blocked_reason: "tests_failed"` and omits `pr_url`.
+  responsible for ensuring Claude opens the impl PR (via the
+  `pr-create` skill) before writing `result.json`, regardless of test
+  outcome. The executor extracts the PR URL from Claude's output and
+  writes it to `result.json.pr_url` whenever a PR was opened. If
+  Claude's test plan reports failures, the executor still records
+  `pr_url`; only `terminal_status` flips to `"blocked"` with
+  `blocked_reason: "tests_failed"`.
 
 ### 4.7 Operational implications
 

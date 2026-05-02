@@ -38,14 +38,18 @@ stages:
         note: >-
           D5 revised to split PR ownership — executor opens impl PR
           (with rich body and test plan); orchestrator owns workspace
-          PR + workflow state. Original D5 ("orchestrator opens the
-          PR; runtimes never call pr-create") was silently violated by
-          the implementation, which routed impl PR open through the
-          /pr-create skill. result.json gains pr_url (workflow state).
-          No tests_passed field — orchestrator is pure workflow state
-          (D4); executor's quality gate is private and reflected via
-          terminal_status only. Awaiting re-approval before T6 can be
-          implemented.
+          PR + workflow state. Both PRs are part of the task lifecycle
+          — opened independently of implementation outcome (workspace
+          PR has always been opened at claim time; impl PR follows the
+          same model going forward). Original D5 ("orchestrator opens
+          the PR; runtimes never call pr-create") was silently violated
+          by the implementation, which routed impl PR open through the
+          /pr-create skill. result.json gains pr_url (workflow state),
+          reported across all terminal_status values whenever a PR
+          exists. No tests_passed field — orchestrator is pure
+          workflow state (D4); executor's quality gate is private and
+          reflected via terminal_status only. Awaiting re-approval
+          before T6 can be implemented.
   technical_design:
     review_status: awaiting_approval
     reviewed_by: matthew@liquid-labs.xyz
@@ -183,10 +187,13 @@ history:
       that finds the executor's already-opened PR. D5 revised to
       split PR ownership — executor owns impl PR (with rich body +
       test plan); orchestrator owns workspace PR + workflow state.
-      result.json schema gains pr_url (workflow state). No tests_passed
-      field — orchestrator is pure workflow state (D4); executor's
-      quality gate is private and reflected only via terminal_status.
-      Tasks gain T6 to formalize this. All three upstream stages
+      Both PRs are part of the task lifecycle — opened independently
+      of implementation outcome. result.json schema gains pr_url
+      (workflow state), reported across all terminal_status values
+      whenever a PR exists. No tests_passed field — orchestrator is
+      pure workflow state (D4); executor's quality gate is private
+      and reflected only via terminal_status. Tasks gain T6 to
+      formalize this. All three upstream stages
       (product_spec, technical_design, tasks) marked
       awaiting_approval. handoffs/handoff.md from the abandoned
       handoff branch is preserved on that branch but not merged;
