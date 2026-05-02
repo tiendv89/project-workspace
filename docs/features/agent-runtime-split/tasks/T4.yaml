@@ -1,11 +1,11 @@
 id: T4
 title: Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff
 repo: workflow
-status: blocked
+status: in_review
 depends_on:
   - T1
   - T2
-blocked_reason: pr_conflict
+blocked_reason: null
 blocked_context: null
 branch: feature/agent-runtime-split-T4
 execution:
@@ -69,6 +69,12 @@ log:
     at: 2026-05-02T04:27:42.036Z
     note: "Unresolvable merge conflicts in: runtime/abi/docs/abi-spec.md. Manual
       resolution required."
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T13:34:20+0700
+    note: >-
+      Conflict resolved manually. Status reset to in_review — PR #79 (workspace)
+      and PR #63 (implementation) remain open.
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-02T04:25:27.746Z
