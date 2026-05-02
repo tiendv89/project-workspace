@@ -101,13 +101,12 @@ log:
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-05-02T11:59:06+0000
-    note: >-
-      Termination safety implemented: Layer 1 post-hoc recovery (recovery.ts),
-      Layer 2 briefing checkpoint discipline, Layer 3 handover prepend.
-      Revised D5 formalized. 395 tests passing. PR:
-      https://github.com/tiendv89/agent-workflow/pull/64
+    note: "Termination safety implemented: Layer 1 post-hoc recovery (recovery.ts),
+      Layer 2 briefing checkpoint discipline, Layer 3 handover prepend. Revised
+      D5 formalized. 395 tests passing. PR:
+      https://github.com/tiendv89/agent-workflow/pull/64"
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
