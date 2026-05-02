@@ -1,7 +1,7 @@
 id: T4
 title: Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/agent-runtime-split-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-02T04:19:58+0000
+  last_updated_at: 2026-05-02T04:24:24+0000
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/63
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/79
   status: open
@@ -48,6 +48,17 @@ log:
     note: >-
       Implementation started. T4 branch has documentation work from prior run
       (PR #61 merged to main). Verifying artifacts and completing PR lifecycle.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T04:24:24+0000
+    note: >-
+      PR #63 opened. Handoff updated to reference merged PR #61 for T4 documentation.
+      All tests pass (abi: 11, orchestrator: 345/346).
     tokens:
       input: 0
       output: 0
