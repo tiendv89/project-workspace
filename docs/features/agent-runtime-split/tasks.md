@@ -11,7 +11,7 @@ Feature status: `in_tdd` | Tasks stage: `draft` | Machine state lives in `tasks/
 | T3 | 3 | Test migration + seam tests against fake executor | T1, T2 |
 | T4 | 3 | Documentation update — flesh out abi-spec.md, split CLAUDE.md, handoff | T1, T2 |
 | T5 | 3 | Orchestrator code quality pass | T2 |
-| T6 | 4 | PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url | T2 |
+| T6 | 4 | PR ownership split (revised D5) + termination safety — executor owns impl PR; post-hoc recovery on abnormal exit | T2 |
 
 ---
 
@@ -319,7 +319,7 @@ land. T5 follows as improvement-on-top.
 
 ---
 
-## T6 — PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
+## T6 — PR ownership split (revised D5) + termination safety — executor owns impl PR; post-hoc recovery on abnormal exit
 
 ### Description
 
@@ -348,7 +348,32 @@ across all terminal_status values whenever a PR exists.
 The revised D5 is documented in `product-spec.md` D5 (revised
 2026-05-02) and `technical-design.md` §4.6.1.
 
-Scope:
+**Scope expanded 2026-05-02 to include termination safety.** Claude's
+`--max-turns` cap (and any other abnormal exit — signal, crash,
+timeout) currently leaves no record: no committed work, no draft PR,
+no handover. This violates the lifecycle invariant from revised D5
+(impl PR exists for any task with commits). T6 now also implements
+the two-layer termination safety mechanism documented in
+`technical-design.md` §4.6.2:
+
+- **Layer 1** (always-on, deterministic): an executor-side post-hoc
+  recovery routine runs in `try/finally` around the Claude spawn.
+  Commits any uncommitted work as `wip(<task_id>): incomplete`,
+  pushes, opens a draft impl PR if none exists, writes a stub
+  `handover.md`, and produces a valid `result.json` regardless of
+  how the spawn ended.
+- **Layer 2** (best-effort, briefing-encoded): the briefing template
+  instructs Claude to commit/push after each substantial action and
+  to perform a graceful checkpoint (open draft PR, write rich
+  handover.md, exit cleanly with `terminal_status: "blocked"`,
+  `blocked_reason: "handover_for_continuation"`) when it senses the
+  budget is running out.
+- **Layer 3** (orchestrator surface): when an agent re-claims a task
+  with an existing draft PR, the briefing generator reads
+  `handover.md` from the impl repo branch and prepends it to the
+  new agent's briefing.
+
+Scope (revised D5):
 - Add `pr_url` (string) field to the `result.json` schema
   (`runtime/abi/src/types.ts` and `schema.ts`). Reported whenever the
   executor opened an impl PR — independent of `terminal_status`.
@@ -380,21 +405,58 @@ Scope:
   briefing template) to make the impl-PR-open step an explicit
   executor responsibility, applied regardless of test outcome.
 
-Out of scope:
+Scope (termination safety — added 2026-05-02):
+- Add `handover_path` (string, optional) field to the `result.json`
+  schema. Path to a `handover.md` file written by either the
+  executor (Layer 2) or the post-hoc recovery routine (Layer 1).
+- Implement Layer 1 — executor-side post-hoc recovery in a new
+  `runtime/executors/claude/src/recovery.ts`. The recovery routine
+  is invoked from a `try/finally` around the Claude spawn in
+  `index.ts`. It commits any uncommitted work as
+  `wip(<task_id>): incomplete — agent terminated unexpectedly`,
+  pushes the branch, opens a draft impl PR if none exists, writes a
+  stub `handover.md`, and produces a valid `result.json` with
+  `terminal_status: "blocked"` + appropriate `blocked_reason` +
+  `pr_url` + `handover_path`.
+- The recovery is **idempotent** — if the agent already wrote a
+  valid `result.json` with `terminal_status: "in_review"`, the
+  recovery validates and exits without rewriting. If the agent
+  already opened a non-draft PR, the recovery does not re-draft it.
+- The recovery **must not throw** — each step is individually
+  wrapped in try/catch. The `finally` block always produces a
+  `result.json`.
+- Implement Layer 2 — the briefing template in
+  `runtime/orchestrator/src/briefing/` includes a "checkpoint
+  discipline" section (see `technical-design.md` §4.6.2 for the
+  exact text) instructing Claude to commit/push after each
+  substantial action and to perform a graceful checkpoint when the
+  budget is running out.
+- Implement Layer 3 — `runtime/orchestrator/src/briefing/agent-context.ts`
+  reads `handover.md` from the task working directory if present
+  and prepends it to the new agent's briefing on re-claim.
+
+Out of scope (unchanged):
 - Removing `pr-create` skill from Claude's loaded skills — it is the
   executor's PR-opener and remains in scope.
 - Changing the workspace-PR opening logic (`open-workspace-pr.ts`) —
   it stays orchestrator-owned, unchanged.
 - Adding any test-outcome inspection to the orchestrator — orchestrator
   is workflow-state-only and does not know about tests.
-- Migrating existing impl PRs (#58, #59, #60, #62, #63) — they remain
-  as merged history.
+- Migrating existing impl PRs (#58, #59, #60, #62, #63, #64) — they
+  remain as merged history.
+- Implementing watchdog-style turn-counting in the executor (counting
+  stream-json turn events to inject a budget warning into Claude's
+  context). Layer 1 + Layer 2 cover the failure mode without this
+  added complexity. Revisit if Layer 2's self-pacing proves
+  insufficient in practice.
 
 ### Required skills
 
 - typescript-best-practices
 
 ### Subtasks
+
+**Revised D5 — pr_url + side-effects cleanup:**
 
 - [ ] `runtime/abi/src/types.ts`: add `pr_url?: string` field to `ExecutorResult`. Document semantics in JSDoc — populated whenever the executor opened a PR, regardless of terminal_status.
 - [ ] `runtime/abi/src/schema.ts`: extend the JSON Schema to validate `pr_url`. Optional across all terminal_status values (a task may legitimately produce no PR if no commits were made).
@@ -407,5 +469,24 @@ Out of scope:
 - [ ] Remove the import of `openImplPr` from `dispatch.ts`.
 - [ ] Update `runtime/abi/docs/abi-spec.md` to document revised D5 — new `pr_url` field, executor's PR-open responsibility, the lifecycle-not-outcome framing for both PRs.
 - [ ] Update `runtime/executors/claude/src/CLAUDE.md` (or executor briefing template) to make impl-PR-open an explicit executor step applied regardless of test outcome.
+
+**Termination safety — handover_path + recovery routine + briefing checkpoint discipline:**
+
+- [ ] `runtime/abi/src/types.ts`: add `handover_path?: string` field to `ExecutorResult`. Document semantics in JSDoc — path to a `handover.md` file written by the executor or post-hoc recovery; optional, present only when a handover exists.
+- [ ] `runtime/abi/src/schema.ts`: extend the JSON Schema to validate `handover_path` as optional across all terminal_status values.
+- [ ] `runtime/abi/src/types.test.ts` and `schema.test.ts`: extend tests to cover `handover_path` (present on blocked, absent on clean in_review).
+- [ ] Create `runtime/executors/claude/src/recovery.ts` — the post-hoc recovery routine. Inputs: spawn result, taskRepoPath, taskBranch, taskId, featureId, taskRepoUrl, githubToken, sshKeyPath, resultPath. Behavior: detect terminal reason (max_turns, signal, crash, timeout); commit dirty working tree as `wip(<task_id>): incomplete — agent terminated unexpectedly`; push branch; open draft impl PR if none exists; write `handover.md` next to result.json with the format from `technical-design.md` §4.6.2; produce valid `result.json` with `terminal_status: "blocked"` + `blocked_reason` + `pr_url` + `handover_path` + `token_usage` (if available).
+- [ ] `runtime/executors/claude/src/recovery.ts` — recovery is **idempotent** and **non-throwing**: each step wrapped in its own try/catch, recovery returns successfully even if individual side-effects fail; if Claude's own valid `result.json` already exists with `terminal_status: "in_review"`, recovery validates and exits without overwriting; if a PR already exists, recovery reuses it.
+- [ ] `runtime/executors/claude/src/index.ts`: wrap the existing `main()` body in `try/finally`. The `finally` block invokes `runRecovery()`. The current `isMaxTurnsExit`-based fallback logic is folded into recovery as one of the terminal-reason classifiers.
+- [ ] `runtime/executors/claude/src/recovery.test.ts`: unit tests covering: dirty tree → wip commit; clean tree + no PR → draft PR opened; clean tree + existing PR → PR reused, no draft conversion; agent's own valid in_review result.json → recovery is no-op; recovery step failures (push fail, PR open fail) → recovery still produces a result.json.
+- [ ] `runtime/orchestrator/src/briefing/agent-context.ts` (or wherever the briefing template lives): add the **checkpoint discipline** section verbatim from `technical-design.md` §4.6.2 to every briefing. Include the wip commit pattern, graceful-checkpoint protocol, and the cue to write `handover.md` with rich context.
+- [ ] `runtime/orchestrator/src/briefing/agent-context.ts`: on briefing generation, check whether the task working directory or impl repo branch contains a `handover.md` from a previous run. If present, prepend its contents to the briefing under a `## Continuing previous run` heading.
+- [ ] `runtime/orchestrator/src/briefing/agent-context.test.ts`: unit test the handover-prepending logic — handover.md present → prepended; absent → briefing unchanged.
+- [ ] Update `runtime/abi/docs/abi-spec.md` to document Layers 1, 2, and 3, the new `handover_path` field, and the post-hoc recovery contract.
+
+**Validation:**
+
 - [ ] Run full test suite — all ABI, orchestrator, and executor tests must pass.
 - [ ] Drive one real task end-to-end through the new shape on a non-production workspace to verify: executor opens PR with rich body, orchestrator records `pr_url` from `result.json` for both passing and failing test scenarios, no duplicate impl PR is opened, no orchestrator-side test inspection.
+- [ ] Drive a max-turns scenario (set `MAX_TURNS=1` and run a non-trivial task): verify the recovery routine fires, a wip commit is pushed, a draft PR is opened, `handover.md` is written, and `result.json.handover_path` points at it.
+- [ ] Drive a re-claim scenario: with the previous run's handover.md present, claim the same task again and verify the new agent's briefing has the handover.md content prepended under `## Continuing previous run`.

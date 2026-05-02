@@ -1,7 +1,8 @@
 id: T6
-title: PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
+title: PR ownership split (revised D5) + termination safety — executor owns impl
+  PR; post-hoc recovery on abnormal exit
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -9,26 +10,107 @@ blocked_context: null
 branch: feature/agent-runtime-split-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-02T15:15:35.059Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/64
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/81
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-02T13:57:52+0700
-    note: >-
-      Task added during feature handoff drafting. Formalizes revised D5
-      (executor opens impl PR; orchestrator owns workspace PR + workflow
-      state). Adds pr_url to ABI result.json schema. Orchestrator
-      remains workflow-state-only — no test-outcome gating; executor's
-      internal quality gate decides terminal_status. Both PRs (workspace
-      and impl) are part of the task lifecycle — opened independently
-      of implementation outcome. pr_url reported across all
-      terminal_status values whenever a PR exists.
+    note: Task added during feature handoff drafting. Formalizes revised D5
+      (executor opens impl PR; orchestrator owns workspace PR + workflow state).
+      Adds pr_url to ABI result.json schema. Orchestrator remains
+      workflow-state-only — no test-outcome gating; executor's internal quality
+      gate decides terminal_status. Both PRs (workspace and impl) are part of
+      the task lifecycle — opened independently of implementation outcome.
+      pr_url reported across all terminal_status values whenever a PR exists.
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-05-02T09:04:27Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:23:43.279Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:23:57.744Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      runtime/orchestrator/src/side-effects/open-pr.ts,
+      docs/features/agent-runtime-split/technical-design.md,
+      runtime/orchestrator/tests/handle-merged-prs.test.ts"
+    rag_query: PR ownership split (revised D5) — executor opens impl PR;
+      orchestrator records pr_url agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:39:54+0000
+    note: Implementation started on feature/agent-runtime-split-T6.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T09:41:47+0000
+    note: "Implementation complete. PR opened:
+      https://github.com/tiendv89/agent-workflow/pull/64"
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-02T18:34:25+0700
+    note: "Reset to ready for rework. Termination safety scope (Layers 1/2/3) added
+      via PR #81 review comments — agent to implement from existing branch state
+      on feature/agent-runtime-split-T6."
+  - action: scope_expanded
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-02T09:56:28Z
+    note: 'Scope expanded to add termination safety (Layer 1 executor-side post-hoc
+      recovery + Layer 2 briefing-encoded checkpoint discipline + Layer 3
+      orchestrator handover surfacing). See tasks.md T6 § "Scope (termination
+      safety)" and technical-design.md §4.6.2 for the full spec. Status remains
+      in_review — additional work to be addressed via PR review comments on PR
+      #64 (impl) and #81 (workspace) rather than a reset to ready, so the agent
+      can continue from the existing branch state.'
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T11:36:31.434Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T11:36:38.991Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/agent-runtime-split/product-spec.md"
+    rag_query: PR ownership split (revised D5) — executor opens impl PR;
+      orchestrator records pr_url agent-runtime-split
+    note: Runtime pre-flight RAG fetch — written before claude spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T11:59:06+0000
+    note: "Termination safety implemented: Layer 1 post-hoc recovery (recovery.ts),
+      Layer 2 briefing checkpoint discipline, Layer 3 handover prepend. Revised
+      D5 formalized. 395 tests passing. PR:
+      https://github.com/tiendv89/agent-workflow/pull/64"
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-02T15:15:35.059Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
