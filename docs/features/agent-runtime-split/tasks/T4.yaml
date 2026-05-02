@@ -45,22 +45,20 @@ log:
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-05-02T04:19:58+0000
-    note: >-
-      Implementation started. T4 branch has documentation work from prior run
-      (PR #61 merged to main). Verifying artifacts and completing PR lifecycle.
+    note: "Implementation started. T4 branch has documentation work from prior run
+      (PR #61 merged to main). Verifying artifacts and completing PR lifecycle."
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
   - action: in_review
     by: tiendv.52@gmail.com
     at: 2026-05-02T04:24:24+0000
-    note: >-
-      PR #63 opened. Handoff updated to reference merged PR #61 for T4 documentation.
-      All tests pass (abi: 11, orchestrator: 345/346).
+    note: "PR #63 opened. Handoff updated to reference merged PR #61 for T4
+      documentation. All tests pass (abi: 11, orchestrator: 345/346)."
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
