@@ -1,5 +1,5 @@
 id: T6
-title: PR ownership split (revised D5) — executor opens impl PR, orchestrator gates on tests_passed
+title: PR ownership split (revised D5) — executor opens impl PR; orchestrator records pr_url
 repo: workflow
 status: todo
 depends_on:
@@ -22,5 +22,6 @@ log:
     note: >-
       Task added during feature handoff drafting. Formalizes revised D5
       (executor opens impl PR; orchestrator owns workspace PR + workflow
-      state). Adds tests_passed and pr_url to ABI result.json schema and
-      gates in_review transition on tests_passed.
+      state). Adds pr_url to ABI result.json schema. Orchestrator
+      remains workflow-state-only — no test-outcome gating; executor's
+      internal quality gate decides terminal_status.

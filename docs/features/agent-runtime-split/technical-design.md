@@ -424,13 +424,8 @@ blocked_reason: "result_schema_invalid"`.
 6. orchestrator/side-effects:
        read result.json
        if terminal_status === "in_review":
-         if result.tests_passed === false:
-           write task YAML status: blocked,
-             blocked_reason: "tests_failed",
-             append log entry
-         else:
-           record result.pr_url in task YAML pr field
-           write task YAML status: in_review, append log entry
+         record result.pr_url in task YAML pr field
+         write task YAML status: in_review, append log entry
        if terminal_status === "blocked":
          write task YAML status: blocked,
            blocked_reason / blocked_suggestion,
@@ -443,7 +438,10 @@ blocked_reason: "result_schema_invalid"`.
    NOTE: orchestrator does NOT open the implementation PR — the
    executor opens it before writing result.json (see revised D5).
    Orchestrator only opens the management/workspace PR (at claim time,
-   step 3 above).
+   step 3 above). Orchestrator does NOT inspect test outcomes — the
+   executor's internal quality gate is private; if it fails, the
+   executor reports blocked and the orchestrator simply applies that
+   state.
 7. orchestrator/poll: continue checking PR-merge state for
    previously-in_review tasks (this part is unchanged from today)
 ```
@@ -562,12 +560,20 @@ has the workflow-state context (task YAML state, log entries, dependency
 graph) to manage the workspace PR. Forcing both onto a single owner
 loses the context one of them has.
 
-**ABI implications.** `result.json` schema gains two fields:
+**ABI implications.** `result.json` schema gains one field:
 
 | Field | Required when | Meaning |
 |---|---|---|
 | `pr_url` | `terminal_status: "in_review"` | URL of the impl PR the executor opened. Orchestrator records it in `task.pr.url`. |
-| `tests_passed` | `terminal_status: "in_review"` | Boolean from the executor's test run. Orchestrator gates the `in_review` transition on this — if `false`, task is marked `blocked` with reason `tests_failed`. |
+
+**No `tests_passed` field is added.** Per D4, the orchestrator is pure
+workflow-state code — it does not gate on implementation-level signals
+like test outcomes. The executor's internal quality gate (tests, lint,
+type-check) is the executor's private concern. If the gate fails, the
+executor reports `terminal_status: "blocked"` with an appropriate
+`blocked_reason` (e.g. `tests_failed`) and does not open a PR. The
+orchestrator only sees the `terminal_status` and translates it into
+task YAML state — it never inspects what the gate did.
 
 **Code-level implications.**
 
@@ -576,15 +582,17 @@ loses the context one of them has.
   removed; the executor is the sole impl-PR opener.
 - `runtime/orchestrator/src/side-effects/dispatch.ts` no longer calls
   `openImplPr`. It reads `result.pr_url` directly and writes it to the
-  task YAML.
+  task YAML's `pr.url` field. No new gating logic is added — the
+  existing `terminal_status` translation already handles "tests
+  failed → blocked" correctly because the executor reports `blocked`
+  in that case.
 - The Claude executor's `runtime/executors/claude/src/index.ts` is
   responsible for ensuring Claude opens the impl PR (via the `pr-create`
   skill) before writing `result.json`. The executor extracts the PR URL
-  from Claude's output (or from a known location after `pr-create`
-  runs) and writes it to `result.json.pr_url`.
-- Test extraction: the Claude executor reads test outcome from Claude's
-  output (the `pr-create` skill already runs the project's test suite as
-  part of its own contract) and propagates it to `result.json.tests_passed`.
+  from Claude's output and writes it to `result.json.pr_url` when
+  `terminal_status === "in_review"`. If Claude's test plan reports
+  failures, the executor writes `terminal_status: "blocked"` with
+  `blocked_reason: "tests_failed"` and omits `pr_url`.
 
 ### 4.7 Operational implications
 
@@ -716,11 +724,14 @@ T1: Define ABI — types, JSON schema, fake-executor fixture, abi-spec.md
       │
       T6: PR ownership split (revised D5) — formalize the executor as
           impl-PR opener, orchestrator as workspace-PR + workflow-state
-          owner. Add `tests_passed` and `pr_url` to `result.json` schema;
-          remove `runtime/orchestrator/src/side-effects/open-pr.ts`;
-          update `dispatch.ts` to gate `in_review` transition on
-          `tests_passed: true`; update Claude executor entrypoint to
-          extract test outcome and PR URL from Claude's output; update
+          owner. Add `pr_url` to `result.json` schema (no
+          `tests_passed` — orchestrator does not gate on test outcomes
+          per D4); remove `runtime/orchestrator/src/side-effects/open-pr.ts`;
+          update `dispatch.ts` to read `pr_url` from `result.json` and
+          record it in the task YAML; update Claude executor entrypoint
+          to extract PR URL from Claude's output and to report
+          `terminal_status: "blocked"` with `blocked_reason: "tests_failed"`
+          when its internal test gate fails; update
           `runtime/abi/docs/abi-spec.md`. Added 2026-05-02 after the
           original five-task plan revealed that orchestrator-opened
           impl PRs lose context the executor already has.
