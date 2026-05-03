@@ -6,87 +6,143 @@
 
 ## Problem
 
-Today the agent runtime ships as a single image: orchestrator and Claude executor are built and released together, deployed by whoever runs the platform. This works for a single-team setup but does not scale to a platform play where multiple customers each want to run their own executor — different model providers, custom prompts, internal skills, proprietary tooling — without giving the platform their source code.
+The agent runtime today ships as a single image bundling orchestrator and Claude executor. It is operated by whoever runs the platform. This works for a single-team setup but does not scale to a platform business where many customers each want to run their own executor — different model providers, custom prompts, internal tools, proprietary code — without giving the platform their source.
 
-The platform needs a way to let a customer **register their own executor image**, **prove it conforms to the runtime ABI**, and have the platform **provision the runtime infrastructure** so that an orchestrator pod (platform-owned, workflow-aware) can spawn the customer's executor pod (customer-owned, opaque) per task.
+Equally, customers in regulated, on-prem, or otherwise locked-down environments cannot accept inbound connections from a platform — they need a model where their executor runs entirely inside their network and reaches out to the platform only over outbound HTTPS.
+
+The platform needs a way to (1) let a customer **register their own executor image**, (2) **prove it conforms** to the runtime ABI, and (3) run their workflows on infrastructure of their choosing — either platform-managed or customer-operated.
+
+## Vision
+
+Workflow is a service. The customer brings a workspace repo, registers an executor image, optionally chooses where their executors run, and the platform handles the rest: claim coordination, lifecycle, observability, billing.
+
+Two execution shapes are first-class, chosen per tenant at registration:
+
+- **Platform-hosted execution.** The platform runs the customer's executor image on its own infrastructure. Easiest onboarding; the customer just provides an image reference.
+- **Customer-hosted execution.** The customer runs a platform-supplied runner agent inside their own network. Outbound-only connectivity; their executor never sees the platform's network. Required for enterprise / on-prem / regulated customers.
+
+Both shapes coexist in the same platform deployment; one tenant may use one, another the other.
 
 ## Goals
 
-- Allow a customer to register an executor image (registry URL, version, pull credentials) against their workspace.
-- Run a conformance test suite against the registered image and gate activation on success.
-- Provision per-tenant runtime infrastructure where the orchestrator pod can launch and communicate with the customer's executor pod via the existing ABI.
-- Enforce tenant isolation — namespace, network policy, secrets — so executor pods cannot see other tenants' data.
-- Mint scoped credentials (GitHub token, SSH key) for the executor pod's lifetime; do not share platform-wide credentials with customer-controlled code.
-- Track per-tenant resource usage for metering and billing.
-- Provide the customer a self-service surface to view their own runs, logs, and conformance results.
+- A customer can register an executor image (registry URL, version, pull credentials, capability labels) against their workspace.
+- The platform runs a conformance test against every registered image and gates activation on a pass.
+- The platform provisions runtime infrastructure on demand, per tenant, and routes each task to the tenant's registered executor.
+- The platform supports both **push** (platform-spawned executor instances) and **pull** (customer-operated runner agents long-polling the platform) for the same `ExecutorPort` contract.
+- Tenants are isolated — namespace, network, secrets, observability — so no executor instance can see another tenant's data.
+- Credentials issued to executor instances are minted per-task with the smallest scope sufficient (e.g. one repo, one branch, the lifetime of one task).
+- Per-tenant resource usage is tracked for metering and billing.
+- Customers have a self-service surface to register images, view their own runs and logs, and check conformance status.
 
 ## Non-goals
 
-- Building the executor SDK or reference executor — those exist (`@workflow/runtime-abi`, `runtime/executors/claude/`).
-- Running customer code on shared infrastructure — every executor invocation runs in tenant-isolated infrastructure.
-- Supporting non-containerised executors — the platform contract is a container image.
-- Replacing the existing claim-via-git protocol — workflow state remains in git; this feature only changes who runs the executor.
+- Building the executor SDK or the reference Claude executor — they exist (`@workflow/runtime-abi`, `runtime/executors/claude/`).
+- Running customer code on shared infrastructure — every executor invocation runs in tenant-scoped infrastructure.
+- Supporting non-containerised executors — the contract is a container image plus the ABI.
+- Hosting customers' workspace repos. Customers keep workflow state on their own git provider; the platform reads/writes via standard git protocol.
+- Making the orchestrator workflow-aware of the executor's domain logic. The orchestrator only handles workflow state (claims, lifecycle, side-effects). Domain decisions stay inside the executor.
+
+## Personas
+
+- **Platform operator** (us). Operates the orchestrator pool, supporting services, billing pipeline.
+- **Tenant administrator.** Onboards their organisation, registers an executor image, configures workspace repos, manages tenant-scoped credentials.
+- **Tenant developer.** Authors workflow tasks in their workspace repo, reviews PRs the executor produces.
+- **Executor author.** Builds the executor image. May be the tenant developer, a different team inside the tenant org, or a third-party vendor producing a reusable executor.
+
+## Customer journey
+
+1. **Sign up.** Tenant administrator creates an account, gets a tenant ID and onboarding credentials.
+2. **Register an executor image.** Provide image registry URL, version tag, pull credentials, capability labels (e.g. `linux`, `gpu`, `python-3.12`). Platform stores the registration as `pending_conformance`.
+3. **Run conformance.** Platform spins up the registered image against a fixed synthetic task suite. On pass, the registration becomes `active`. On fail, the customer sees the failure report.
+4. **Choose execution shape.**
+   - Platform-hosted (default): nothing more to do.
+   - Customer-hosted: download the platform's runner agent binary / container, run it in the desired environment with a registration token. The agent starts long-polling the platform's Work Registry.
+5. **Configure a workspace.** Point the platform at a git repo that contains `workspace.yaml` and `tasks/`. Provide a GitHub installation token or App credentials.
+6. **Submit work.** Tenant developer pushes feature branches with task YAMLs marked `ready`. The platform claims them and dispatches to the tenant's executor.
+7. **Review.** Executor opens PRs in the tenant's repo. Tenant developer reviews; merge triggers downstream lifecycle.
+8. **Observe.** Tenant administrator views per-task metrics, logs, conformance status, and bills via the self-service dashboard.
+
+## Capabilities
+
+The platform delivers the following capabilities to tenants:
+
+- **Tenant management** — onboarding, identity, isolation boundaries.
+- **Executor image registry** — register, version, deactivate, rotate credentials.
+- **Conformance gate** — synthetic task suite that runs against every newly registered or version-bumped image.
+- **Workflow execution** — full workflow lifecycle: claim, run, dispatch results, review-fix, workspace-PR lifecycle.
+- **Push and pull execution shapes** — tenants choose per workspace.
+- **Per-tenant credentials** — short-lived, smallest-scope tokens issued per task.
+- **Self-service observability** — per-tenant logs, metrics, run history.
+- **Metering and billing** — aggregate per-tenant usage; bill on the agreed unit.
+
+## Scope decisions
+
+These are decided as of this spec; they shape the design and are not open for re-litigation without an explicit revision.
+
+- **Workspace repo lives on the customer's own git provider.** The platform reads and writes via standard git, never mirrors. Their repo is the source of truth for workflow state.
+- **The orchestrator pool is a single multi-tenant service** operated by the platform. Customers do not run orchestrator instances. Sharding the pool by tenant is a future scale concern, not day-one.
+- **Both push and pull execution shapes are supported** under the same internal contract. The choice is per-tenant configuration.
+- **The runtime ABI is the boundary** between platform and executor. Executor authors implement against the ABI; the platform never sees executor source.
+- **The platform supplies a runner agent** (binary + container) that customers run in their own infra for the pull shape. The agent is part of the platform deliverable, not customer-built.
+- **Each task uses an immutable executor image reference at claim time.** New image versions affect future tasks; in-flight tasks finish on the version they started with.
 
 ## Open questions
 
-The shape of the system depends on how each of these is resolved. They are listed here for spec-stage discussion, not yet decided.
+These remain open and require decisions before the technical design can be approved or implementation can begin.
 
-### Q1 — Pod lifecycle
-Are executor pods **ephemeral** (one pod per task, spun up at claim time, torn down at exit) or **long-running** (one pod per tenant, reused across tasks)?
-- Ephemeral: clean isolation, simple lifecycle, slow per-task spawn cost.
-- Long-running: fast spawn, idle cost, complex restart/upgrade semantics.
+### B1 — Conformance test scope
+What does "passing conformance" mean? Three plausible answers, mix-and-match acceptable:
+- A platform-defined synthetic task suite (e.g. five canned tasks the executor must complete correctly).
+- A schema-only check (the image accepts the ABI env vars and produces a valid `result.json`).
+- Customer-supplied test fixtures (each tenant ships their own conformance suite alongside their image registration).
 
-### Q2 — Conformance test
-What does "passing conformance" mean?
-- A fixed synthetic task suite the platform owns and runs?
-- Customer-supplied test fixtures?
-- Both — platform suite for ABI compliance, customer suite for functional smoke tests?
+### B2 — Billing unit
+What does the platform meter? Options to decide between (or combine):
+- Per task completed.
+- Per executor wall-clock minute.
+- Per orchestrator-claim event.
+- Per push or pull invocation.
+- Tiered subscription with included usage.
 
-### Q3 — Workspace repo ownership
-Where does the customer's management repo (workspace.yaml, task YAMLs) live?
-- On the customer's own GitHub org (platform reads via app/PAT)?
-- Mirrored / hosted by the platform?
-- Either, configurable per workspace?
+This shapes the design of the metering pipeline and the per-tenant observability surface.
 
-### Q4 — Credential model
-How does the executor pod get GitHub credentials for `git push` and `pr-create`?
-- Customer provides a long-lived PAT in their workspace `.env`?
-- Platform integrates as a GitHub App and mints per-task scoped tokens?
-- Per-task installation tokens issued to the executor's lifetime only?
+### B3 — Failure attribution policy
+When a task fails, the platform must distinguish three failure modes for SLA, billing, and dispute resolution:
+- Customer executor bug (their code crashed, hung, returned invalid `result.json`).
+- Platform infrastructure issue (orchestrator crashed, network error, image-pull failure).
+- Customer workflow problem (bad task spec, missing dependency).
 
-### Q5 — Network model
-How are orchestrator and executor pods connected?
-- Same K8s pod, sidecar containers (low latency, shared lifecycle)?
-- Same namespace, separate pods, K8s Service for IPC (cleaner separation)?
-- Different namespaces with NetworkPolicy (strongest isolation, more setup)?
-- Queue-based decoupling (orchestrator publishes, executor consumes — no direct connection)?
+The policy decision is who pays / whose SLA bites for each class. This drives observability requirements (what evidence the platform must retain to defend each classification).
 
-### Q6 — Versioning under load
-A customer pushes executor v2 while v1 has in-flight tasks. What happens?
-- New tasks start on v2; running tasks finish on v1 (drain semantics)?
-- All tasks killed and re-claimed on v2 (cutover semantics)?
-- Pinned per-task at claim time, immutable after (snapshot semantics)?
+### B4 — ABI versioning policy
+The runtime ABI evolves. Customer images may speak older versions. Decide:
+- Major.minor versioning with N concurrent supported versions, or single-version-at-a-time with mandatory upgrade windows?
+- How are deprecation windows communicated and enforced?
+- What happens to in-flight tasks when a version reaches end-of-support?
 
-### Q7 — Multi-executor per tenant
-Can a tenant register multiple executor images and route different task types to different executors? E.g., Claude executor for code tasks, custom Python executor for data tasks.
+### B5 — Credential model
+How does the executor get credentials for git push and PR creation?
+- Customer provides a long-lived personal access token in workspace config (simplest; weakest security).
+- Platform integrates as a GitHub App and mints per-task installation tokens (strongest scoping; requires App per provider).
+- Customer-provided cloud KMS / Vault that the platform reads at task-mint time (most flexible; most setup).
 
-### Q8 — Billing unit
-What does the platform meter and charge for?
-- Per task completed?
-- Per executor-minute (compute time)?
-- Per orchestrator-poll (workflow management)?
-- Some combination?
+### B6 — Tenant isolation guarantees
+What is the tenancy contract? Decide between:
+- Soft isolation (separate logical namespaces, shared compute, network policies).
+- Hard isolation (per-tenant compute, no shared workers).
+- Tiered (soft by default, hard for enterprise tier).
 
-### Q9 — Failure attribution
-When a task fails, the platform must distinguish:
-- Customer executor bug (their code crashed, hung, returned invalid result.json)
-- Platform infrastructure issue (orchestrator crashed, network error, image pull failure)
-- Customer workflow problem (bad task spec, missing dependency)
+This affects pricing, the design of the orchestrator pool, and conformance scope.
 
-This shapes SLA, billing dispute resolution, and observability requirements.
+## Success metrics
 
-### Q10 — ABI versioning and compatibility
-The runtime ABI evolves. Customer-registered images may speak older versions. How does the platform negotiate?
-- Image declares version via probe / manifest?
-- Platform supports N concurrent ABI versions?
-- Forced upgrades on breaking changes?
+- **Time-to-onboard.** Median minutes from sign-up to first claimed task.
+- **Conformance pass rate.** % of registered images passing on first attempt; trend tells us about ABI clarity.
+- **Per-task cost (platform side).** Compute and overhead per claim. Drives pricing.
+- **Tenant retention.** % of tenants still active 90 days after onboarding.
+- **Failure attribution accuracy.** % of failed tasks attributed correctly (validated against post-incident reviews).
+
+## References
+
+- `technical-design.md` — architecture, components, ports, adapters, profiles
+- `discussion-orchestrator-architecture.md` — long-form reasoning behind the architectural choices, including the discarded paths

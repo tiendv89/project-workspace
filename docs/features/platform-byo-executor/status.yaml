@@ -4,8 +4,12 @@ title: Bring-Your-Own-Executor — customer-supplied executor images on the plat
 feature_status: in_design
 current_stage: product_spec
 next_action: >-
-  Discuss and resolve open questions Q1–Q10 in product-spec.md, then submit
-  for human approval.
+  Product spec drafted with scope decisions and six remaining open business
+  questions (B1–B6). Technical design drafted with seven open technical
+  questions (T-Q1–T-Q7). Both reference discussion-orchestrator-architecture.md
+  for full reasoning. Ready for human review of the product spec; technical
+  design can be reviewed in parallel given how much architectural alignment
+  the discussion has already established.
 
 stages:
   product_spec:
