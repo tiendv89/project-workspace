@@ -172,6 +172,116 @@ controller):
   `label: platform=true` and reconciles their status against task YAMLs.
   No durable orchestrator state needed.
 
+### Loop topology — sequential cycle vs parallel loops
+
+A practical question once the orchestrator is non-blocking: should the
+three phases (claim, reap completed, reap failures) run sequentially in
+one cycle, or as independent concurrent loops?
+
+In TypeScript / Node.js, the runtime is single-threaded with cooperative
+concurrency. "Parallel loops" here means **multiple async functions
+running concurrently in the same event loop** — not threads, not
+processes. They interleave at `await` points. This is fine for our
+workload because every phase is I/O-bound (HTTP, git, K8s API), not
+CPU-bound.
+
+#### Shape A — One sequential cycle (simpler)
+
+```ts
+async function runOneCycle(): Promise<void> {
+  await claimPhase();          // poll, claim, dispatch new executors
+  await reapCompletedPhase();  // collect finished, dispatch side-effects
+  await reapFailuresPhase();   // collect failed/timed-out, mark blocked
+}
+
+async function runAgentLoop(): Promise<void> {
+  while (true) {
+    await runOneCycle();
+    await sleep(IDLE_MS);
+  }
+}
+```
+
+- All three phases share one cadence.
+- One logical "cycle" — easy to reason about, easy to log, easy to test.
+- One git-mutation flow per cycle (fewer surprises around concurrent
+  pushes from the same pod).
+- Fine when phases are fast — and they are, because we offloaded the
+  long-running part to K8s Jobs.
+- This is what today's `agent-loop.ts` already looks like; the only
+  change is splitting `runOneCycle` into three internal phases.
+
+#### Shape B — Three independent async loops (more flexible)
+
+```ts
+async function claimLoop(): Promise<void> {
+  while (true) {
+    await claimPhase();
+    await sleep(CLAIM_INTERVAL_MS);   // e.g. 10_000
+  }
+}
+
+async function reapCompletedLoop(): Promise<void> {
+  while (true) {
+    await reapCompletedPhase();
+    await sleep(REAP_INTERVAL_MS);    // e.g. 2_000 — tighter for UX
+  }
+}
+
+async function reapFailuresLoop(): Promise<void> {
+  while (true) {
+    await reapFailuresPhase();
+    await sleep(FAILURE_INTERVAL_MS); // e.g. 30_000 — failures are rare
+  }
+}
+
+async function main(): Promise<void> {
+  await Promise.all([
+    claimLoop(),
+    reapCompletedLoop(),
+    reapFailuresLoop(),
+  ]);
+}
+```
+
+- Each loop has its own cadence. Reaping completions can be tight
+  (sub-second perceived latency for the customer); claiming can be
+  slower; failure detection slower still.
+- A slow phase doesn't delay the others.
+- Closer to how mature K8s controllers behave (one informer/work-queue
+  per resource type).
+- Cost: more concurrency to reason about. Need synchronisation on
+  shared state — specifically anything that mutates the local git
+  working tree or the same task YAML. A single in-process mutex around
+  git operations is usually enough; the rest is read-only from
+  separate concerns.
+
+#### Across pods
+
+Multiple orchestrator pods give parallelism for free regardless of
+which internal shape you pick:
+
+- Shape A × 3 pods → 3 concurrent cycles, each doing all phases.
+- Shape B × 3 pods → 9 concurrent loops (3 phases × 3 pods).
+
+The git claim race + Job-list reaping handles cross-pod coordination
+the same way in either case. No coordination service needed.
+
+#### Recommended progression
+
+1. **Day 1** — single pod, Shape A (sequential cycle). Mirrors today's
+   `runOneCycle`; minimal change. Validate the K8s Job pattern works.
+2. **Day 2** — scale to N pods, still Shape A internally. Free
+   parallelism across pods via the existing claim race.
+3. **Day 3 (if measured)** — split into Shape B when you have evidence
+   that completion-reap latency hurts UX or that mixing cadences is
+   limiting throughput.
+4. **Day 4 (if measured)** — specialise pod roles (claim-pods vs
+   reap-pods) when fleet size makes homogeneity wasteful. Most
+   platforms never need this.
+
+Each step is additive — no rewrites, just splits.
+
 ### What stays unchanged
 
 The customer's executor image is **completely unaware** of this. From
@@ -284,6 +394,12 @@ the initial spec discussion:
    appendix below. Answer: hexagonal architecture with profile-bundled
    adapters; the core is infra-agnostic, the surroundings swap per
    environment.
+7. *"so 3 main loops should be run in parallel as well right?"* —
+   captured in *Loop topology* above. Answer: in TypeScript / Node.js,
+   "parallel loops" means multiple async functions sharing the event
+   loop. Day 1 use one sequential cycle (Shape A); split into three
+   independent async loops (Shape B) only when measured cadence
+   needs diverge.
 
 ---
 
