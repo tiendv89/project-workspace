@@ -115,41 +115,85 @@ the result."*
 
 The orchestrator's three workflow concerns (claim, review-fix,
 workspace-PR-lifecycle) all stay the same. What changes is **inside the
-claim concern**: the previously-blocking "await child exit" step splits
-into a non-blocking submit + a later reap.
+two concerns that spawn executors** (claim and review-fix): the
+previously-blocking "await child exit" step splits into a non-blocking
+submit + a later reap. The third concern (workspace-PR-lifecycle) does
+not spawn executors and is unchanged.
+
+#### Which concerns spawn executors
+
+| Concern | Spawns executor? | Why |
+|---|---|---|
+| Claim | ✅ Yes | Implementation work — the executor edits code in the impl repo |
+| Review-fix | ✅ Yes | Two cases: `respond-to-review` (executor edits files to address review threads) and tier-1 conflict resolution in `auto-rebase` (executor resolves conflict markers in agent-authored files) |
+| Workspace PR lifecycle | ❌ No | Pure GitHub API + git operations — no code editing |
 
 ```
 The three workflow concerns of the orchestrator
 ─────────────────────────────────────────────────
 
-CONCERN 1 — Claim
+CONCERN 1 — Claim                          (spawns executors)
   today (blocking):                        platform (async K8s Job):
     claim eligible task                      claim eligible task
     spawn executor child                     kubectl create job
-    AWAIT child.exit (mins–hours) ◄─ here    record job_name in YAML, return
-    dispatch result                          (later cycles)
-                                              list completed Jobs:
-                                                read result.json, dispatch
-                                              list failed/timed-out Jobs:
-                                                mark blocked, dispatch
+                                               label: kind=impl
+                                               label: task_id=T7
+    AWAIT child.exit (mins–hours) ◄─ here    record job_name, return
+    dispatch result                          (reaped later — see below)
 
-CONCERN 2 — Review-fix              (unchanged from today)
-  poll in-review PRs
-  for each PR with conflicts: auto-rebase or block
-  for each PR with unresolved review threads: dispatch respond-to-review
+CONCERN 2 — Review-fix                     (spawns executors — NEW: also async)
+  today (blocking):                        platform (async K8s Job):
+    poll in-review PRs                       poll in-review PRs
+    for each conflicting PR (tier-1):        for each conflicting PR (tier-1):
+      spawn executor child                     kubectl create job
+      AWAIT child.exit ◄─ here too              label: kind=review-fix
+      dispatch rebase result                    label: subkind=rebase
+                                              record job_name, return
+    for each PR with open threads:           for each PR with open threads:
+      spawn executor child                     kubectl create job
+      AWAIT child.exit ◄─ here too              label: kind=review-fix
+      dispatch respond-to-review result         label: subkind=respond
+                                              record job_name, return
 
-CONCERN 3 — Workspace PR lifecycle  (unchanged from today)
+CONCERN 3 — Workspace PR lifecycle         (no executor spawn — unchanged)
   open management-repo PR at claim time (synchronous, in claim concern)
   poll workspace PRs for merge readiness
   on impl PR merged → merge workspace PR
   recover stuck/conflicting workspace PRs
+
+REAP MECHANISM                              (shared by concerns 1 and 2)
+  list all completed K8s Jobs (any kind)
+  for each completed Job:
+    read result.json from PVC / S3 / stdout
+    switch on label.kind:
+      ─ kind=impl         → dispatchClaimResult()
+      ─ kind=review-fix   → dispatchReviewFixResult() (sub-route on subkind)
+    delete Job
+  list failed / timed-out Jobs:
+    same routing → dispatch blocked side-effects
 ```
 
-The bottleneck is fixed because **concern 1 no longer waits**. Each
-phase inside concern 1 is bounded by network round trips, not by
-executor wall-time. One orchestrator pod can manage hundreds or
-thousands of in-flight Jobs while concerns 2 and 3 continue working
-the same way they do today.
+The bottleneck is fixed because **both spawning concerns no longer
+wait**. Each phase is bounded by network round trips, not by executor
+wall-time. One orchestrator pod can manage hundreds or thousands of
+in-flight Jobs across both concerns simultaneously, while concern 3
+continues working the same way it does today.
+
+#### Pattern choice for the reap mechanism
+
+Two ways to structure result-collection:
+
+- **Pattern 1 — Per-concern reap.** Each spawning concern owns its own
+  Jobs and reaps them independently. Cleaner boundaries; two reap
+  implementations.
+- **Pattern 2 — Shared reap, routed by Job label.** One reap loop
+  enumerates all completed Jobs, dispatches by `label.kind` to the
+  right side-effect handler. DRYer; the reap component knows about all
+  Job types.
+
+**Recommendation: Pattern 2.** Fewer moving parts at the cost of a tiny
+dispatch-by-label step. The Job's labels carry enough context for clean
+routing.
 
 ### What this gives us
 
@@ -263,14 +307,35 @@ async function main(): Promise<void> {
   git operations is usually enough; the rest is read-only from
   separate concerns.
 
-#### Note on the claim concern's internal phases
+#### Note on internal sub-phases in spawning concerns
 
-Inside `claimConcern` (the only concern that involves running the
-executor), the platform model has three sub-phases — submit, reap
-completed, reap failed. These can also be split into their own loops
-if needed (e.g. tighter reap cadence for UX), but that's a second-order
-decision and only matters once the three top-level concerns are split.
-Day 1, fold them into one `claimConcern` function.
+Both `claimConcern` and `reviewFixConcern` involve running executors,
+so both have an internal "submit + reap" structure in the platform
+model. The reap step can be:
+
+- **Folded into each concern** (each concern reaps its own Jobs), or
+- **Extracted as a shared reap loop** (single reap loop dispatches by
+  `label.kind` — recommended Pattern 2 above).
+
+If you choose the shared-reap pattern, your top-level loops become
+four, not three:
+
+```ts
+async function main(): Promise<void> {
+  await Promise.all([
+    claimLoop(),         // submits impl Jobs, returns
+    reviewFixLoop(),     // submits review-fix Jobs, returns
+    workspacePrLoop(),   // pure API/git, no Jobs
+    reapLoop(),          // collects + routes results from impl + review-fix
+  ]);
+}
+```
+
+`workspacePrConcern` never has Jobs to reap, so it's unaffected.
+
+This is still a second-order decision — start with three concerns, one
+sequential cycle, internal submit-then-reap inside the spawning
+concerns. Split when measured.
 
 #### Across pods
 
@@ -416,9 +481,13 @@ the initial spec discussion:
    workspace-PR-lifecycle). In TypeScript / Node.js, "parallel loops"
    means multiple async functions sharing the event loop. Day 1 use
    one sequential cycle (Shape A); split into three independent async
-   loops (Shape B) only when measured cadence needs diverge. The
-   reap-completed / reap-failed sub-phases live *inside* the claim
-   concern — they are not separate top-level loops.
+   loops (Shape B) only when measured cadence needs diverge.
+8. *"review-fix also wakes the executor up"* — corrected the spawning
+   model. Both **claim** and **review-fix** spawn executors (impl
+   work, respond-to-review, tier-1 conflict resolution). The K8s Job
+   submit/reap pattern applies to both; only `workspace-PR-lifecycle`
+   is purely deterministic. The shared reap mechanism (Pattern 2)
+   routes completed Jobs by label kind, optionally as a fourth loop.
 
 ---
 
