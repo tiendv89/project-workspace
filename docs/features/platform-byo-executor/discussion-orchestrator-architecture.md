@@ -113,37 +113,43 @@ Hand executor lifecycle to **Kubernetes Jobs**. A K8s Job is exactly the
 right primitive: *"run this pod to completion, I'll come back later for
 the result."*
 
+The orchestrator's three workflow concerns (claim, review-fix,
+workspace-PR-lifecycle) all stay the same. What changes is **inside the
+claim concern**: the previously-blocking "await child exit" step splits
+into a non-blocking submit + a later reap.
+
 ```
-Orchestrator cycle (non-blocking, runs continuously):
+The three workflow concerns of the orchestrator
+─────────────────────────────────────────────────
 
-  Phase 1 — Claim new work (fast)
-    for each tenant (round-robin, bounded per cycle):
-      poll workspace repo
-      claim eligible task (git push race — same as today)
-      kubectl create job ─── tenant's executor image
-                          ── env vars (TASK_ID, ...)
-                          ── briefing as ConfigMap
-                          ── labels: tenant=A, task=T7, feature=X
-      record job_name in task YAML, commit "in_progress"
-      ▸ no waiting — Job runs in background
+CONCERN 1 — Claim
+  today (blocking):                        platform (async K8s Job):
+    claim eligible task                      claim eligible task
+    spawn executor child                     kubectl create job
+    AWAIT child.exit (mins–hours) ◄─ here    record job_name in YAML, return
+    dispatch result                          (later cycles)
+                                              list completed Jobs:
+                                                read result.json, dispatch
+                                              list failed/timed-out Jobs:
+                                                mark blocked, dispatch
 
-  Phase 2 — Reap completed work (fast)
-    list Jobs with label platform=true, status=Complete
-    for each completed job:
-      read result.json from Job's PVC / S3 / stdout
-      dispatch side-effects (PR open, status update, log entry)
-      delete Job
+CONCERN 2 — Review-fix              (unchanged from today)
+  poll in-review PRs
+  for each PR with conflicts: auto-rebase or block
+  for each PR with unresolved review threads: dispatch respond-to-review
 
-  Phase 3 — Reap failures / timeouts
-    similar — failed Jobs trigger blocked status + side-effects
-
-  sleep 5–30 s
-  loop
+CONCERN 3 — Workspace PR lifecycle  (unchanged from today)
+  open management-repo PR at claim time (synchronous, in claim concern)
+  poll workspace PRs for merge readiness
+  on impl PR merged → merge workspace PR
+  recover stuck/conflicting workspace PRs
 ```
 
-Each phase is bounded by **network round trips**, not by executor
-wall-time. One orchestrator pod can manage hundreds or thousands of
-in-flight Jobs.
+The bottleneck is fixed because **concern 1 no longer waits**. Each
+phase inside concern 1 is bounded by network round trips, not by
+executor wall-time. One orchestrator pod can manage hundreds or
+thousands of in-flight Jobs while concerns 2 and 3 continue working
+the same way they do today.
 
 ### What this gives us
 
@@ -175,8 +181,8 @@ controller):
 ### Loop topology — sequential cycle vs parallel loops
 
 A practical question once the orchestrator is non-blocking: should the
-three phases (claim, reap completed, reap failures) run sequentially in
-one cycle, or as independent concurrent loops?
+three workflow concerns (claim, review-fix, workspace-PR-lifecycle) run
+sequentially in one cycle, or as independent concurrent loops?
 
 In TypeScript / Node.js, the runtime is single-threaded with cooperative
 concurrency. "Parallel loops" here means **multiple async functions
@@ -185,13 +191,13 @@ processes. They interleave at `await` points. This is fine for our
 workload because every phase is I/O-bound (HTTP, git, K8s API), not
 CPU-bound.
 
-#### Shape A — One sequential cycle (simpler)
+#### Shape A — One sequential cycle (simpler — what today's code does)
 
 ```ts
 async function runOneCycle(): Promise<void> {
-  await claimPhase();          // poll, claim, dispatch new executors
-  await reapCompletedPhase();  // collect finished, dispatch side-effects
-  await reapFailuresPhase();   // collect failed/timed-out, mark blocked
+  await claimConcern();          // claim eligible tasks, submit/reap executors
+  await reviewFixConcern();      // auto-rebase + respond-to-review on in-review PRs
+  await workspacePrConcern();    // poll workspace PRs, merge ready ones, recover stuck
 }
 
 async function runAgentLoop(): Promise<void> {
@@ -202,52 +208,53 @@ async function runAgentLoop(): Promise<void> {
 }
 ```
 
-- All three phases share one cadence.
+- All three concerns share one cadence.
 - One logical "cycle" — easy to reason about, easy to log, easy to test.
 - One git-mutation flow per cycle (fewer surprises around concurrent
   pushes from the same pod).
-- Fine when phases are fast — and they are, because we offloaded the
-  long-running part to K8s Jobs.
-- This is what today's `agent-loop.ts` already looks like; the only
-  change is splitting `runOneCycle` into three internal phases.
+- Fine when each concern is fast — and they are, because we offloaded
+  the long-running part of the claim concern to K8s Jobs.
+- This is what today's `agent-loop.ts` does already; the change is only
+  inside `claimConcern` (split blocking await → submit + later reap).
 
 #### Shape B — Three independent async loops (more flexible)
 
 ```ts
 async function claimLoop(): Promise<void> {
   while (true) {
-    await claimPhase();
-    await sleep(CLAIM_INTERVAL_MS);   // e.g. 10_000
+    await claimConcern();
+    await sleep(CLAIM_INTERVAL_MS);    // e.g. 10_000
   }
 }
 
-async function reapCompletedLoop(): Promise<void> {
+async function reviewFixLoop(): Promise<void> {
   while (true) {
-    await reapCompletedPhase();
-    await sleep(REAP_INTERVAL_MS);    // e.g. 2_000 — tighter for UX
+    await reviewFixConcern();
+    await sleep(REVIEW_INTERVAL_MS);   // e.g. 30_000 — review feedback is human-paced
   }
 }
 
-async function reapFailuresLoop(): Promise<void> {
+async function workspacePrLoop(): Promise<void> {
   while (true) {
-    await reapFailuresPhase();
-    await sleep(FAILURE_INTERVAL_MS); // e.g. 30_000 — failures are rare
+    await workspacePrConcern();
+    await sleep(WS_PR_INTERVAL_MS);    // e.g. 60_000 — merges are infrequent
   }
 }
 
 async function main(): Promise<void> {
   await Promise.all([
     claimLoop(),
-    reapCompletedLoop(),
-    reapFailuresLoop(),
+    reviewFixLoop(),
+    workspacePrLoop(),
   ]);
 }
 ```
 
-- Each loop has its own cadence. Reaping completions can be tight
-  (sub-second perceived latency for the customer); claiming can be
-  slower; failure detection slower still.
-- A slow phase doesn't delay the others.
+- Each loop runs at the cadence its concern actually demands.
+  - **Claim** wants to be tight (fast pickup of new work).
+  - **Review-fix** is human-paced (no value polling every 5 s).
+  - **Workspace-PR** is event-rare (mostly idle; fires only on impl-PR merge).
+- A slow concern doesn't delay the others.
 - Closer to how mature K8s controllers behave (one informer/work-queue
   per resource type).
 - Cost: more concurrency to reason about. Need synchronisation on
@@ -255,6 +262,15 @@ async function main(): Promise<void> {
   working tree or the same task YAML. A single in-process mutex around
   git operations is usually enough; the rest is read-only from
   separate concerns.
+
+#### Note on the claim concern's internal phases
+
+Inside `claimConcern` (the only concern that involves running the
+executor), the platform model has three sub-phases — submit, reap
+completed, reap failed. These can also be split into their own loops
+if needed (e.g. tighter reap cadence for UX), but that's a second-order
+decision and only matters once the three top-level concerns are split.
+Day 1, fold them into one `claimConcern` function.
 
 #### Across pods
 
@@ -395,11 +411,14 @@ the initial spec discussion:
    adapters; the core is infra-agnostic, the surroundings swap per
    environment.
 7. *"so 3 main loops should be run in parallel as well right?"* —
-   captured in *Loop topology* above. Answer: in TypeScript / Node.js,
-   "parallel loops" means multiple async functions sharing the event
-   loop. Day 1 use one sequential cycle (Shape A); split into three
-   independent async loops (Shape B) only when measured cadence
-   needs diverge.
+   captured in *Loop topology* above. The "3 main loops" are the
+   orchestrator's three workflow concerns (claim, review-fix,
+   workspace-PR-lifecycle). In TypeScript / Node.js, "parallel loops"
+   means multiple async functions sharing the event loop. Day 1 use
+   one sequential cycle (Shape A); split into three independent async
+   loops (Shape B) only when measured cadence needs diverge. The
+   reap-completed / reap-failed sub-phases live *inside* the claim
+   concern — they are not separate top-level loops.
 
 ---
 
