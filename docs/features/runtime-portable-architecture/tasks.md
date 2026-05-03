@@ -4,6 +4,46 @@
 > Machine-mutable state (status, depends_on, branch, pr, log) lives in `tasks/T<n>.yaml`.
 > This document carries the narrative: descriptions, required skills, model overrides, and subtasks.
 
+## Redeployment notes — keeping the running stack alive through the rollout
+
+This section is the operational view of the rollout. It tells you, for each merged PR, whether you can redeploy in isolation without breaking your currently-running agents.
+
+**Headline:** you can keep running `local-subprocess` end-to-end through every task except T5+T6, which must ship together. The new `local-docker` profile becomes available after T9 — it does **not** replace `local-subprocess`; it's a new option chosen at startup via `--profile`.
+
+### Per-task impact
+
+| Task  | Safe to redeploy in isolation? | What changes operationally                                                                                       | Cutover notes                                                                                                |
+|-------|--------------------------------|------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
+| T1    | ✅ Yes                          | Nothing in the runtime path. New unused interfaces + fakes under `runtime/abi/`.                                  | None.                                                                                                         |
+| T2    | ✅ Yes                          | Refactor of today's runtime through ports. Behaviour preserved bit-for-bit. Same image, same flow.                | Watch the test-suite parity check on the PR. Redeploy is a drop-in. Default profile is `local-subprocess`.    |
+| T3    | ✅ Yes                          | Orchestrator binds a new HTTP port at startup (ephemeral by default). The broker is **dormant** — not yet wired into claims. | None for `local-subprocess` flow. Verify the port binding doesn't collide with anything else on the host.    |
+| T4    | ✅ Yes                          | New file in repo (`runtime/runner-wrapper/`). Not invoked yet.                                                    | None.                                                                                                         |
+| T5    | ⚠️ **Must ship with T6**        | Alone, `SubProcessAdapter` becomes async but the orchestrator's claim concern still expects blocking — **broken state**. | Do not merge T5 alone. Coordinate with T6 in the same merge window.                                            |
+| T6    | ⚠️ **Must ship with T5**        | Together with T5, the orchestrator's loop becomes non-blocking — first real behaviour change of the rollout.       | **Drain in-flight tasks before redeploy.** Let any running executor children finish, then redeploy. Functionally equivalent after cutover; the cycle just no longer pauses on each executor. |
+| T7    | ✅ Yes                          | New Go broker service binary + container image exist. Nothing talks to them yet — `local-subprocess` still uses the embedded `InMemoryBrokerAdapter`. | None for `local-subprocess`. Compose template doesn't reference the broker until T9.                          |
+| T8    | ✅ Yes                          | New `DockerRunAdapter` exists. No profile uses it until T9.                                                       | None.                                                                                                         |
+| T9    | ✅ Yes                          | `local-docker` profile becomes selectable. `local-subprocess` continues to work and stays the default.            | First run with `--profile local-docker` requires the `broker` and `redis` containers up (compose handles it). Subprocess users unaffected. |
+| T10   | ✅ Yes                          | Documentation and `fake-orchestrator` harness updates only.                                                       | None.                                                                                                         |
+
+### Continuity guarantees
+
+- **Through T1 → T4 (inclusive):** redeploy at will. `local-subprocess` is unchanged operationally.
+- **T5 + T6 together:** the only step that changes runtime semantics. Schedule a maintenance window or graceful drain.
+  - Graceful drain procedure: stop accepting new claims, let in-flight executor children finish, then redeploy. Same pattern as today's restart procedure.
+- **Through T7 → T8:** redeploy at will. The Go broker container can be built and even started, but `local-subprocess` doesn't touch it.
+- **T9:** `local-docker` becomes available as an opt-in profile. Pick when ready by passing `--profile local-docker` at startup; `--profile local-subprocess` (or no flag) keeps today's flow.
+- **T10:** docs and harness only.
+
+### Recommended rollout cadence
+
+1. Land T1–T4 in any order respecting dependencies. No agent disruption.
+2. Coordinate T5 + T6 merge as a single rollout. Drain first.
+3. Land T7, T8 in any order. No agent disruption.
+4. Land T9. Decide separately when (and which agents) to switch to `local-docker`.
+5. Land T10 to close out docs.
+
+If at any point you want to roll back, you can revert any task PR independently except for T5/T6 — those revert as a pair.
+
 ## Index
 
 | ID  | Wave | Title                                                                  | Depends on        |
