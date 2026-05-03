@@ -2,11 +2,12 @@ feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
 
 feature_status: in_tdd
-current_stage: technical_design
+current_stage: tasks
 next_action: >-
-  Product spec approved. Technical design is drafted and ready for human
-  review. Approve technical design to proceed to task planning (tech-lead
-  Phase 2).
+  Technical design approved. Tech lead can now run Phase 2 to produce
+  the task breakdown under docs/features/runtime-portable-architecture/tasks/.
+  Once tasks are drafted and approved, the feature moves to
+  ready_for_implementation.
 
 stages:
   product_spec:
@@ -20,11 +21,26 @@ stages:
         action: approved
         comment: Approved — proceed to technical design review.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-04T01:59:51+0700
+    review_comment: >-
+      Approved. Hexagonal split (D1b), async submit/reap (D2b),
+      runner-callback model (D3c), runtime-selected profiles (D4b),
+      nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and shared
+      completion broker (D7b) all settled. Per-profile submit
+      walk-through documented. Tech lead may proceed to task planning.
+    review_history:
+      - at: 2026-05-04T01:59:51+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: >-
+          Approved. Hexagonal split (D1b), async submit/reap (D2b),
+          runner-callback model (D3c), runtime-selected profiles (D4b),
+          nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and
+          shared completion broker (D7b) all settled. Per-profile submit
+          walk-through documented. Tech lead may proceed to task
+          planning.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -68,6 +84,14 @@ history:
     note: >-
       Product spec approved. Feature advanced from in_design to in_tdd;
       current_stage moved from product_spec to technical_design.
+  - at: 2026-05-04T01:59:51+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Technical design approved. current_stage moved from
+      technical_design to tasks. Tech lead may now run Phase 2 to draft
+      the task breakdown. Feature_status remains in_tdd until the tasks
+      stage is also approved (which moves it to ready_for_implementation).
 
 revalidation:
   product_spec_required: false
