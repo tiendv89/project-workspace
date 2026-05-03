@@ -488,6 +488,16 @@ the initial spec discussion:
    submit/reap pattern applies to both; only `workspace-PR-lifecycle`
    is purely deterministic. The shared reap mechanism (Pattern 2)
    routes completed Jobs by label kind, optionally as a fourth loop.
+9. *"basically our architecture is M orchestrators and N executors —
+   we should change to M:N even locally"* — confirmed. The bundled
+   image is a packaging convenience for one local case, not the
+   model. Three local profile variants documented:
+   `local-subprocess` (today, 1:1), `local-docker` (M:N via Docker
+   socket — first true M:N profile, BYO-executor capable), and
+   `local-kind` (production-parity via local K8s). Adoption order:
+   keep subprocess; add `DockerRunAdapter` + `local-docker` next
+   (blocks platform-byo-executor); then `K8sJobAdapter` for prod;
+   `local-kind` last and optional.
 
 ---
 
@@ -587,10 +597,41 @@ wiring fakes into every port.
 ══════════════════════════════════════════════════════════════════════ ┘
 ```
 
-### Local profile — laptop dev loop
+### M:N is the target across all profiles
 
-Optimised for speed and zero infra. Everything runs on the developer's
-machine.
+The architectural target is **M orchestrators : N executors** in every
+deployment shape. Today's bundled image (orchestrator + executor in the
+same container, paired 1:1 via child process) is a **packaging
+convenience for the simplest local case** — not a design constraint.
+
+Reasons to commit to M:N everywhere, including local:
+
+- **One code path** — the async submit/reap logic is exercised in dev,
+  not only in prod. Bugs that only manifest in the decoupled flow are
+  caught early.
+- **BYO-executor testability** — customers (or the executor team) can
+  register their image and test against the real orchestrator on a
+  laptop without forking the platform's Dockerfile.
+- **Heterogeneous fleets** — M orchestrators spawning N executors of
+  *different images* is testable on one laptop. This is the actual
+  platform shape.
+- **Profile parity** — the gap between local and prod is just the
+  adapter set, not the architecture.
+
+The bundled image stays available for the very fastest dev-inner-loop
+(orchestrator engineers iterating on orchestrator code, no Docker
+required), but it is **one variant**, not the model.
+
+### Local profile variants — three shapes for laptop dev
+
+There are three local profile variants in increasing fidelity. All are
+the same orchestrator binary; only the adapter set differs.
+
+#### Variant 1 — `local-subprocess` (fastest dev loop, 1:1 bundled)
+
+Today's model. M orchestrator containers, each with the executor binary
+baked into the same image. `SubProcessAdapter` spawns the executor as a
+child process.
 
 ```
 ┌──────────────────────────┐
@@ -608,9 +649,90 @@ machine.
 - Creds: env vars
 - Events: stdout JSON
 
-This is what `docker compose up` on a laptop runs. The executor is a
-child process of the orchestrator. Useful for orchestrator developers
-and for executor teams testing their image with `fake-orchestrator`.
+**Use case**: orchestrator engineers iterating on orchestrator code; no
+Docker socket needed; tightest test cycle.
+**Limitation**: cannot host a customer-supplied executor image.
+
+#### Variant 2 — `local-docker` (first true M:N locally)
+
+M orchestrator containers, **no bundled executor**. Each orchestrator
+does `docker run tenant/executor:v1` per claimed task via the Docker
+socket. Spawned executor is an ephemeral, separate container — possibly
+a different image per task or per tenant.
+
+```
+┌──────────────────────────┐         docker run
+│ orchestrator container 1 │ ─────────────────────►  ┌──────────────┐
+│  └─ DockerRun adapter ─┐ │                         │ exec for T7  │
+│  (mounts /var/run/     ││ │                         │ (ephemeral)  │
+│   docker.sock)         ││ │                         └──────────────┘
+└────────────────────────┘ │
+                           │
+┌──────────────────────────┐         docker run       ┌──────────────┐
+│ orchestrator container 2 │ ─────────────────────►  │ exec for T8  │
+└──────────────────────────┘                          │ (different   │
+                                                       │  image, OK!) │
+                                                       └──────────────┘
+```
+
+- Briefing: shared host volume mounted into the spawned executor
+- Result: shared host volume read after executor exits
+- State: local git clone
+- Creds: env vars passed via `docker run -e`
+- Events: orchestrator captures executor's stdout/stderr via Docker
+- Cost: Docker socket mount (light DinD trade-off, acceptable locally)
+
+**Use case**: BYO-executor testing, multi-executor scenarios, the first
+profile that exercises async submit/reap end-to-end.
+**This is the target for local development on the platform feature.**
+
+#### Variant 3 — `local-kind` (production-equivalent on a laptop)
+
+A tiny K8s cluster (kind / k3d / minikube) running on the dev machine.
+Same `K8sJobAdapter` as production — orchestrator submits Jobs into the
+local cluster.
+
+```
+┌──────────────────────────┐
+│ orchestrator container   │
+│  └─ K8sJob adapter ──────┼──► kind cluster
+└──────────────────────────┘     ├── platform namespace (orchestrator)
+                                  └── tenant-A namespace
+                                       └── exec Job pod
+```
+
+- Briefing: ConfigMap mount (same as prod)
+- Result: PVC + label (same as prod)
+- State: local git clone
+- Creds: K8s secret (mocked)
+- Events: stdout (or local Loki if you want)
+
+**Use case**: pre-deploy integration testing, production-equivalent
+parity, validating K8s manifests before they hit a real cluster.
+**Cost**: cluster setup overhead; slower spin-up; eats laptop RAM.
+
+### Recommended adoption order
+
+The path from today's bundled local image to a full M:N platform is
+incremental — each step is additive, none requires rewriting the
+previous one.
+
+1. **Today** — `local-subprocess` (bundled image). Already works.
+   Keep this profile available indefinitely as the dev-fastest option
+   for orchestrator engineers.
+2. **Step 1: implement `DockerRunAdapter` + `local-docker` profile.**
+   This is the **first M:N profile** and the one that unlocks
+   BYO-executor local testing. The platform feature blocks on this.
+3. **Step 2: implement `K8sJobAdapter` + `k8s` profile.**
+   Production scale, multi-tenant, async per-task pods.
+4. **Step 3 (optional): implement `local-kind` profile.**
+   Same `K8sJobAdapter` as step 2, just pointed at a local kind/k3d
+   cluster. Adds production-parity testing on a laptop. Skip until
+   pre-deploy parity becomes valuable.
+
+The platform-byo-executor feature itself depends on step 2 landing,
+and benefits enormously from step 1 landing first (testability,
+faster iteration on the customer-DX surface).
 
 ### K8s profile — production multi-tenant
 
