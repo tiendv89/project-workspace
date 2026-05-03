@@ -279,3 +279,316 @@ the initial spec discussion:
    platform-operated single pool with N workers internally.
 5. *"the orchestrator if blocking will be the bottleneck"* — the
    conversation captured here. Answer: decouple via K8s Jobs.
+6. *"think like an architect — local + K8s + alternative infra,
+   module-injection seam between orchestrator and executor"* — the
+   appendix below. Answer: hexagonal architecture with profile-bundled
+   adapters; the core is infra-agnostic, the surroundings swap per
+   environment.
+
+---
+
+# Appendix — Portable architecture across local, K8s, and alternative infra
+
+> **Why this matters.** We will run this tool in at least three shapes:
+> a developer's laptop (no cluster, fast loop), production Kubernetes
+> (multi-tenant, scaled), and at least one alternative we haven't
+> committed to yet (queue-based, serverless, on-prem VM, etc.). If the
+> orchestrator–executor boundary leaks infra assumptions, every new
+> environment is a rewrite. If we keep the boundary clean, every new
+> environment is a wiring change.
+
+## Architectural principle
+
+Treat the orchestrator as an **infra-agnostic core** surrounded by
+**ports** (interfaces) that are filled by **adapters** (concrete
+implementations) at startup. This is hexagonal architecture / ports
+and adapters.
+
+Concretely:
+- The **core** contains workflow logic only — eligibility, claim,
+  briefing generation, result dispatch, side-effect orchestration. It
+  knows nothing about Docker, K8s, S3, or queues.
+- A **port** is a TypeScript/Go interface the core depends on (e.g.
+  `ExecutorPort`, `BriefingTransportPort`, `ResultTransportPort`).
+- An **adapter** is one implementation of a port (e.g.
+  `K8sJobExecutorAdapter`, `S3BriefingAdapter`, `LocalFileResultAdapter`).
+- A **profile** is a named bundle of adapter choices that fits one
+  deployment shape (e.g. `local`, `k8s`, `queue`).
+
+The same orchestrator binary runs everywhere. The profile chosen at
+startup determines which adapters are wired into which ports.
+
+## The ports
+
+These are the seams in the system. Each one needs to be a real
+interface, not an embedded assumption.
+
+| Port | Purpose | Local-profile adapter | K8s-profile adapter | Alt (queue) adapter |
+|---|---|---|---|---|
+| `ExecutorPort` | Launch the executor for one task; await completion | `SubProcessAdapter` (child process) | `K8sJobAdapter` (`kubectl create job`) | `QueueProducerAdapter` (publish job message) |
+| `BriefingTransportPort` | Deliver briefing.md to the executor | `LocalFileBriefingAdapter` (path on shared FS) | `ConfigMapBriefingAdapter` (mount ConfigMap) | `S3SignedUrlBriefingAdapter` (pre-signed URL) |
+| `ResultTransportPort` | Receive result.json from the executor | `LocalFileResultAdapter` (read RESULT_PATH) | `PVCResultAdapter` (read from Job's PVC) | `S3ResultAdapter` / `HttpCallbackAdapter` |
+| `WorkflowStatePort` | Read/write task YAML, append logs | `GitWorkflowStateAdapter` (clone + commit + push) | `GitWorkflowStateAdapter` (same — git stays the truth) | `DBWorkflowStateAdapter` (Postgres) for high-throughput |
+| `CredentialPort` | Mint scoped credentials for executor pods (GitHub token, SSH key, image pull) | `EnvCredentialAdapter` (read from process env) | `GitHubAppCredentialAdapter` + `K8sSecretAdapter` (per-task scoped tokens, namespaced secrets) | `VaultCredentialAdapter` (HashiCorp Vault) |
+| `WorkspacePullPort` | Materialize the customer's workspace repo locally | `GitClonePullAdapter` (today) | `GitClonePullAdapter` (same) | `GitMirrorPullAdapter` (caching mirror) |
+| `ImageResolverPort` | Resolve tenant's executor image at claim time | `StaticImageResolver` (read from agent.yaml) | `WorkspaceConfigImageResolver` (read from tenant's workspace.yaml + image registry config) | same as K8s |
+| `EventEmitterPort` | Emit structured events (claims, dispatches, errors) | `StdoutJsonEmitter` (today) | `StructuredLogEmitter` (Loki / CloudWatch) + `MetricsEmitter` (Prometheus) | `KafkaEventEmitter` (Kafka topic) |
+| `SchedulerPort` | When to run next cycle, fairness across tenants | `SimpleSleepScheduler` (idle_sleep_seconds) | `FairTenantScheduler` (round-robin, bounded claims/cycle) | same as K8s |
+| `ClockPort` | Time, sleep, deadlines | `RealClock` | `RealClock` | `RealClock` (fake in tests) |
+
+Each port has a **fake adapter** for tests. This lets the orchestrator
+core be tested hermetically — no Docker, no cluster, no network — by
+wiring fakes into every port.
+
+## The three profiles
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                       Orchestrator core                                 │
+│  (eligibility, claim, briefing, dispatch — knows nothing about infra)  │
+└──┬─────────┬──────────┬──────────┬──────────┬──────────┬──────────┬───┘
+   │         │          │          │          │          │          │
+   ▼         ▼          ▼          ▼          ▼          ▼          ▼
+ Exec    Briefing    Result      State      Creds      Image      Events
+ Port     Port        Port        Port       Port       Port       Port
+   │         │          │          │          │          │          │
+   │         │          │          │          │          │          │
+═══╪═════════╪══════════╪══════════╪══════════╪══════════╪══════════╪═══
+   │         │          │          │          │          │          │
+   │  ┌──────┴──────────┴──────────┴──────────┴──────────┴──────────┴──┐
+   │  │                                                                │
+   │  │   ┌─ LOCAL profile ──────────────────────────────────────────┐ │
+   │  │   │                                                          │ │
+   │  └─► │ SubProc   LocalFile   LocalFile   Git    Env   Static  Stdout │ │
+   │      │                                                          │ │
+   │      └──────────────────────────────────────────────────────────┘ │
+   │                                                                    │
+   │      ┌─ K8S profile ────────────────────────────────────────────┐ │
+   │      │                                                          │ │
+   └────► │ K8sJob   ConfigMap   PVC        Git    GhApp WSConfig Loki │ │
+          │                                       +K8sSecret             │ │
+          └──────────────────────────────────────────────────────────┘ │
+                                                                        │
+          ┌─ QUEUE profile (alt) ────────────────────────────────────┐ │
+          │                                                          │ │
+          │ QPub     S3SignedUrl HttpCallback DB    Vault WSConfig Kafka │ │
+          │                                                          │ │
+          └──────────────────────────────────────────────────────────┘ │
+                                                                        │
+          ┌──────────────────────────────────────────────────────────┐ │
+          │  ...future profiles (Lambda, on-prem VM, etc.) plug in   │ │
+          │  here without touching the core.                         │ │
+          └──────────────────────────────────────────────────────────┘ │
+                                                                        │
+══════════════════════════════════════════════════════════════════════ ┘
+```
+
+### Local profile — laptop dev loop
+
+Optimised for speed and zero infra. Everything runs on the developer's
+machine.
+
+```
+┌──────────────────────────┐
+│ orchestrator process     │
+│  └─ SubProcess adapter ─┐│
+│                         ││
+│ child: executor binary ◄┘│   ← briefing on local FS
+│  └─ writes result.json ──┼─► local FS  → orchestrator reads it
+└──────────────────────────┘
+```
+
+- Briefing: file on disk
+- Result: file on disk
+- State: local git clone
+- Creds: env vars
+- Events: stdout JSON
+
+This is what `docker compose up` on a laptop runs. The executor is a
+child process of the orchestrator. Useful for orchestrator developers
+and for executor teams testing their image with `fake-orchestrator`.
+
+### K8s profile — production multi-tenant
+
+Optimised for scale and tenant isolation.
+
+```
+┌──────────────────────────────┐
+│ Platform namespace            │
+│ ┌──────────────────────────┐  │
+│ │ orchestrator pool (HA)    │  │
+│ │  └─ K8sJob adapter ─┐    │  │
+│ └─────────────────────┼────┘  │
+└───────────────────────┼───────┘
+                        │ kubectl create job
+                        ▼
+       ┌─────────────────────────────────────┐
+       │ Tenant A namespace                   │
+       │  ┌──────────────────────────────┐   │
+       │  │ executor Job pod (per-task)   │   │
+       │  │  briefing ◄ ConfigMap mount   │   │
+       │  │  result.json → PVC + label    │◄──┼─── orchestrator reaps later
+       │  │  image: tenant-A:v1.2.3        │   │
+       │  └──────────────────────────────┘   │
+       │  NetworkPolicy: deny cross-namespace │
+       └─────────────────────────────────────┘
+```
+
+- Briefing: ConfigMap (small) or PVC (large)
+- Result: PVC the orchestrator mounts read-only after Job completes
+- State: same git, but accessed through a per-cycle clone or a cached
+  mirror service
+- Creds: GitHub App per-task installation tokens + per-tenant K8s
+  secrets for image pulls
+- Events: structured logs to platform log stack + Prometheus metrics
+
+### Queue profile — alternative future shape
+
+For decoupled fleets, on-prem split, or third-party executors that
+shouldn't share infra with the platform.
+
+```
+┌──────────────────────────┐
+│ orchestrator (any infra) │
+│ └─ QueueProducer adapter ┘
+│         │
+│         ▼ publishes
+│   ┌────────────────┐
+│   │ task queue      │ (NATS / Kafka / SQS)
+│   └────────────────┘
+│         │
+│         ▼ consumed by
+│   ┌────────────────────────┐
+│   │ executor worker fleet   │
+│   │ (anywhere; on-prem,     │
+│   │  customer infra, etc.)  │
+│   └────────────────────────┘
+│         │
+│         ▼ result message
+│   ┌────────────────┐
+│   │ result topic    │
+│   └────────────────┘
+│         │
+│         ▼ consumed by
+│  orchestrator (reaps results)
+└──────────────────────────┘
+```
+
+This profile decouples *where the executor runs* from *who the platform
+trusts*. The platform never sees the executor pod; it only sees the
+result message. Useful if a customer wants to run executors on their own
+infra for compliance reasons.
+
+## Mechanism — how the profile is selected and adapters injected
+
+### Configuration
+
+`agent.yaml` (or platform config) selects the profile and allows
+per-port overrides:
+
+```yaml
+runtime:
+  profile: k8s            # local | k8s | queue | custom
+  overrides:              # optional, override individual ports
+    event_emitter: stdout # debug an issue without rebuilding
+    credential: env       # local creds even though we're on k8s
+```
+
+The profile name maps to a registered factory function in the
+orchestrator binary:
+
+```ts
+type ProfileFactory = (config: Config) => RuntimePorts;
+
+const profiles: Record<string, ProfileFactory> = {
+  local: localProfileFactory,
+  k8s: k8sProfileFactory,
+  queue: queueProfileFactory,
+  // future profiles register here
+};
+```
+
+### Wiring
+
+At startup, `main.ts` calls the factory for the chosen profile, then
+applies any overrides. The result is a `RuntimePorts` struct that gets
+passed into the orchestrator core. The core only sees the ports — it
+has no knowledge of which adapters were chosen.
+
+```ts
+// pseudocode
+const ports = profiles[config.runtime.profile](config);
+const overridden = applyOverrides(ports, config.runtime.overrides);
+const orchestrator = new Orchestrator(overridden);
+await orchestrator.run();
+```
+
+### Adding a new profile
+
+To add (say) a Lambda profile:
+1. Implement adapters for the ports that differ (executor =
+   `LambdaInvokeAdapter`, briefing = `S3BriefingAdapter`, result =
+   `LambdaReturnValueAdapter`).
+2. Register the profile factory: `profiles.lambda = lambdaProfileFactory`.
+3. Done. No core changes; no other adapter changes.
+
+This is the durability the architecture buys: new infra is additive,
+not invasive.
+
+## Where this leaves the executor side
+
+The executor sees **the ABI and only the ABI**. It reads env vars,
+reads `BRIEFING_PATH`, writes `RESULT_PATH`, exits with a status code.
+It doesn't know whether the orchestrator is local, in K8s, or behind a
+queue. It doesn't know which adapter wired its inputs.
+
+That's the whole point of keeping the ABI as the team boundary. The
+executor team writes one container; the platform handles the rest by
+choosing the right adapter set.
+
+## Operational and testing benefits
+
+- **Local dev** of the orchestrator runs against fake adapters or the
+  `local` profile — no cluster needed, full hermetic tests.
+- **Executor teams** dev against `fake-orchestrator`, which uses the
+  `local` profile internally to drive their image with realistic
+  inputs.
+- **Integration tests** swap one adapter at a time (e.g. real K8s,
+  fake everything else) to test that adapter in isolation.
+- **Production debugging** can override one port at a time
+  (e.g. switch event emitter to stdout while leaving everything else
+  as K8s) without rebuilding or redeploying — just config change.
+- **New infras** are a new profile, not a fork.
+
+## What needs to land in the codebase to enable this
+
+The current code already has *one* port done well (`ExecutorAdapter`).
+The architectural work is to extract the rest of the seams and define
+their interfaces. Roughly:
+
+1. Define `RuntimePorts` interface bundle in `runtime/abi/`.
+2. Extract today's inline adapters (git workflow state, stdout emitter,
+   local file briefing/result, env credentials) behind ports.
+3. Implement the `local` profile factory using the extracted adapters.
+4. Implement the `k8s` profile factory using K8s Jobs, ConfigMaps,
+   PVCs, GitHub App tokens.
+5. Add fake adapters for every port; convert existing tests to use them.
+6. Add profile selection + override mechanism in `main.ts`.
+
+This is itself a tractable, multi-task feature once the spec lands —
+likely the **first** technical task before any platform-specific work.
+The platform-byo-executor feature should depend on this scaffolding
+existing, not build it ad hoc.
+
+## Candidate addition to product-spec.md
+
+When this hardens, lift this paragraph into `## Architecture
+invariants`:
+
+> The orchestrator is implemented against a fixed set of ports
+> (executor launch, briefing transport, result transport, workflow
+> state, credentials, image resolution, event emission). Adapters for
+> each port are injected at startup based on a named profile (`local`,
+> `k8s`, future `queue` etc.). The same orchestrator binary runs in
+> every environment; differences are in adapter selection, not code.
+> Adding a new infrastructure target is a new profile, not a fork.
