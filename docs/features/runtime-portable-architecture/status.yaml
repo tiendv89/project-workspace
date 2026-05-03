@@ -1,24 +1,24 @@
 feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
 
-feature_status: in_design
-current_stage: product_spec
+feature_status: in_tdd
+current_stage: technical_design
 next_action: >-
-  Feature rescoped from platform-byo-executor down to the architectural
-  foundation only. Product spec and technical design rewritten for the
-  narrower scope: hexagonal refactor, async submit/reap, two local
-  profiles (local-subprocess, local-docker), no customer-facing surface.
-  BYO product work deferred to a future feature.
-  Ready for human review of the product spec; technical design can be
-  reviewed in parallel.
+  Product spec approved. Technical design is drafted and ready for human
+  review. Approve technical design to proceed to task planning (tech-lead
+  Phase 2).
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-03T23:30:36+0700
+    review_comment: Approved — proceed to technical design review.
+    review_history:
+      - at: 2026-05-03T23:30:36+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: Approved — proceed to technical design review.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -62,6 +62,12 @@ history:
       The discussion-orchestrator-architecture.md document is preserved
       and includes the long-term BYO direction for the future feature
       to pick up.
+  - at: 2026-05-03T23:30:36+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Product spec approved. Feature advanced from in_design to in_tdd;
+      current_stage moved from product_spec to technical_design.
 
 revalidation:
   product_spec_required: false
