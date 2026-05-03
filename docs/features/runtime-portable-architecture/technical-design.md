@@ -157,6 +157,126 @@ Every port method takes a `tenant_id` parameter (or carries it via context objec
 
 The exact extent of plumbing depends on the answer to product-spec B2.
 
+## Architecture diagrams
+
+### Hexagon view — orchestrator core surrounded by ports
+
+```
+                          ┌─────────────────────────┐
+                          │     SchedulerPort       │
+                          │   (cycle cadence)       │
+                          └───────────┬─────────────┘
+                                      │
+   ┌─────────────────────┐       ╱─────────╲       ┌─────────────────────┐
+   │     ClockPort       │──────╱           ╲──────│   EventEmitterPort  │
+   │   (time, sleep)     │     ╱             ╲     │  (events / metrics) │
+   └─────────────────────┘    ╱               ╲    └─────────────────────┘
+                             ╱                 ╲
+   ┌─────────────────────┐  ╱   ORCHESTRATOR    ╲  ┌─────────────────────┐
+   │ BriefingTransport   │ ╱        CORE         ╲ │  WorkflowStatePort  │
+   │   Port              │─                      ─│  (task YAML / git)  │
+   │ (deliver briefing)  │ ╲   • claim concern   ╱ └─────────────────────┘
+   └─────────────────────┘  ╲  • review-fix     ╱
+                             ╲ • workspace-PR  ╱
+   ┌─────────────────────┐    ╲• shared reap  ╱    ┌─────────────────────┐
+   │   CredentialPort    │     ╲             ╱     │  WorkspacePullPort  │
+   │ (creds → executor)  │──────╲           ╱──────│  (clone workspace)  │
+   └─────────────────────┘       ╲─────────╱       └─────────────────────┘
+                                      │
+                          ┌───────────┴─────────────┐
+                          │     ExecutorPort        │
+                          │  submit · listCompleted │
+                          │     readResult · ack    │
+                          └─────────────────────────┘
+
+      ── core depends ONLY on port interfaces; never on a concrete adapter ──
+```
+
+### Async submit/reap flow through `ExecutorPort`
+
+```
+     ┌────────────────────┐          ┌─────────────────────┐
+     │  Claim concern     │          │  Review-fix concern │
+     └─────────┬──────────┘          └──────────┬──────────┘
+               │ submit(ExecutorInput)          │ submit(ExecutorInput)
+               ▼                                 ▼
+     ╔═════════════════════════════════════════════════════╗
+     ║                  ExecutorPort                       ║
+     ║   submit ─► returns ExecutorHandle (immediately)    ║
+     ╚═════════════════════════════════════════════════════╝
+                              │
+            (work runs out-of-band: child proc / docker run)
+                              │
+                              ▼
+     ╔═════════════════════════════════════════════════════╗
+     ║   listCompleted()  ─►  [handle₁, handle₂, …]        ║
+     ║   readResult(h)    ─►  ExecutorResult               ║
+     ║   ack(h)                                            ║
+     ╚═════════════════════════════════════════════════════╝
+                              ▲
+                              │ once per cycle
+               ┌──────────────┴───────────────┐
+               │       Shared reap loop       │
+               │  routes by handle.kind →     │
+               │  claim dispatcher / review-  │
+               │  fix dispatcher              │
+               └──────────────────────────────┘
+```
+
+### Mermaid view — profile wiring
+
+```mermaid
+flowchart LR
+    subgraph Core["Orchestrator Core"]
+        C1[Claim concern]
+        C2[Review-fix concern]
+        C3[Workspace-PR concern]
+        C4[Shared reap loop]
+    end
+
+    subgraph Ports["Ports (TS interfaces)"]
+        P1[ExecutorPort]
+        P2[BriefingTransportPort]
+        P3[WorkflowStatePort]
+        P4[CredentialPort]
+        P5[WorkspacePullPort]
+        P6[EventEmitterPort]
+        P7[SchedulerPort]
+        P8[ClockPort]
+    end
+
+    subgraph Adapters["Adapters"]
+        A1a[SubProcessAdapter]
+        A1b[DockerRunAdapter]
+        A2[LocalFileBriefingAdapter]
+        A3[GitWorkflowStateAdapter]
+        A4[EnvCredentialAdapter]
+        A5[GitClonePullAdapter]
+        A6[StdoutJsonEmitter]
+        A7[SimpleSleepScheduler]
+        A8[RealClock]
+    end
+
+    subgraph Profiles["Profiles"]
+        PF1[local-subprocess]
+        PF2[local-docker]
+    end
+
+    Core --> Ports
+    P1 --- A1a & A1b
+    P2 --- A2
+    P3 --- A3
+    P4 --- A4
+    P5 --- A5
+    P6 --- A6
+    P7 --- A7
+    P8 --- A8
+    PF1 -. wires .-> A1a
+    PF1 -. wires .-> A2 & A3 & A4 & A5 & A6 & A7 & A8
+    PF2 -. wires .-> A1b
+    PF2 -. wires .-> A2 & A3 & A4 & A5 & A6 & A7 & A8
+```
+
 ## Implementation Waves
 
 The work is naturally five waves. Waves can be implemented and merged independently with no broken-state intermediate.
