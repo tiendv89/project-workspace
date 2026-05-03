@@ -1,0 +1,76 @@
+feature_id: platform-byo-executor
+title: Bring-Your-Own-Executor — customer-supplied executor images on the platform
+
+feature_status: blocked
+current_stage: product_spec
+next_action: >-
+  Deferred. Activate (move feature_status from blocked to in_design) only
+  after runtime-portable-architecture reaches done status. The product
+  spec is a placeholder capturing the long-term direction; the technical
+  design is intentionally empty until activation.
+
+blocked_reason: prerequisite_not_done
+blocked_details: >-
+  Hard dependency on runtime-portable-architecture, which is currently
+  in_design. This feature builds the customer-facing surface (image
+  registration, conformance, tenant management, runner agents, push and
+  pull production adapters, billing, self-service UI) on top of the
+  architectural foundation runtime-portable-architecture delivers.
+  Activating this feature before that prerequisite is done would force
+  premature commitment on questions whose answers depend on the
+  architecture.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-03T00:00:00+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Feature initialized via /init-feature as platform-byo-executor.
+      Original goal was to enable platform customers to register their
+      own executor images and run tasks on tenant-isolated infrastructure.
+      Product spec drafted with ten open questions (Q1–Q10).
+  - at: 2026-05-03T22:46:04+0700
+    by: matthew@swellnetwork.io
+    action: feature_split
+    note: >-
+      Feature split: the architectural foundation moved to a new feature
+      runtime-portable-architecture (took the discussion document, the
+      hexagonal/ports/adapters/profiles design, and the async submit/reap
+      decision). This feature retained the customer-facing BYO product
+      surface (image registration, conformance, tenant management,
+      runner agents, push/pull production adapters, billing) and was
+      marked blocked on the architectural feature.
+      Long-term direction preserved in product-spec.md as deferred goals
+      and open questions B1–B7.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
