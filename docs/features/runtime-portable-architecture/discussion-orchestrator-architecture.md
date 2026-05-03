@@ -552,6 +552,30 @@ the initial spec discussion:
     completion handler. Polling/watches are demoted to fallback
     reconciliation for stuck handles. Recorded in
     `technical-design.md` Decision D3c.
+14. *"I want the http implementation in this feature rather than
+    defer"* (2026-05-04) — pulled the HTTP callback receiver into
+    this feature's scope rather than deferring to BYO. Three
+    sub-decisions resolved together:
+    - **Both local profiles use HTTP** (not just `local-docker`).
+      `local-subprocess` POSTs back over loopback. One transport,
+      exercised every dev cycle. No in-process special case.
+      Reflected in the profiles table and recorded under D3c.
+    - **Runner wrapper mounted at runtime** (D6c) — small platform-
+      owned script that exec's the executor binary then POSTs the
+      result on exit. Same wrapper across both profiles. The
+      executor image's contract ("write `RESULT_PATH`, exit") is
+      unchanged.
+    - **Authentication is nonce-only** (D5a) for this feature.
+      HMAC-signed callbacks (D5b) are deferred to BYO. The threat
+      model assumed today is loopback or trusted dev bridge; HMAC
+      is required before the receiver is exposed beyond the local
+      host. The deferred-work note for the BYO feature must call
+      this out explicitly.
+    Net effect: the HTTP receiver, runner wrapper, and nonce-
+    validated callback ship in this feature. The BYO feature adds
+    HMAC, cross-orchestrator addressing, multi-tenancy enforcement
+    at the receiver, and pull-family runners on top of the same
+    code path.
 
 ---
 
