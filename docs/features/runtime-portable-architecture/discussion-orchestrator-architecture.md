@@ -402,7 +402,7 @@ interface, different implementation.
 | **Q5 — Network model** | Becomes "orchestrator pool in platform namespace, executor Jobs in tenant namespace". Briefing via ConfigMap or PVC; result via PVC + label, S3, or push endpoint. No sidecar. |
 | **Q6 — Versioning under load** | Cleanly handled — each task captures the executor image tag at claim time (snapshot semantics). Orchestrator pool is unaffected by tenant version churn. Running tasks finish on their pinned version. |
 | **Q7 — Multi-executor per tenant** | Cleanly supported — claim-time logic looks up `executor_image` per task type or per workspace config. Routing lives in the orchestrator pool. |
-| **New Q (implicit)** | *"How does the orchestrator know an executor is done?"* Two viable patterns: poll Jobs each cycle (simpler, scales fine to thousands), or use K8s informer / watch API for event-driven completion. Polling is what most controllers do. |
+| **New Q (implicit)** | *"How does the orchestrator know an executor is done?"* Resolved 2026-05-04: the **runner calls back to the orchestrator** with the result and a per-handle nonce. The adapter pushes the callback onto its internal completion queue; `listCompleted` drains it. Locally the callback is an in-process function; in production/BYO it is an authenticated HTTP POST. This direction works uniformly across push-family and pull-family runners (both have outbound reach to the platform), and never depends on a label-filtered global scan or a runtime-specific watch API. Polling and watches are reserved as fallback reconciliation for stuck handles, not the primary discovery path. |
 
 ---
 
@@ -536,6 +536,22 @@ the initial spec discussion:
     push-spawned and pull-based instances coexisting per-tenant.
     No specific runtime is privileged; all execution mechanisms are
     treated as adapter implementations behind `ExecutorPort`.
+13. *"why not provide a webhook api?" / "I am thinking about asking
+    executor to call the orchestrator"* (2026-05-04) — locked the
+    completion-delivery direction. Earlier framing assumed
+    orchestrator → executor (label-scan polling, per-handle watch).
+    Reversed to **runner → orchestrator**: at submit time the adapter
+    hands the runner a callback target (in-process function locally;
+    HTTP URL + per-handle nonce in production); on exit the runner
+    calls back, and the adapter pushes onto its internal completion
+    queue. This direction works uniformly across push-family and
+    pull-family runners (both have outbound reach), removes the
+    leaked discovery mechanism (`docker ps -f label=…`,
+    `kubectl get jobs status=Complete`), and makes the production
+    HTTP receiver and the local profiles share the exact same
+    completion handler. Polling/watches are demoted to fallback
+    reconciliation for stuck handles. Recorded in
+    `technical-design.md` Decision D3c.
 
 ---
 

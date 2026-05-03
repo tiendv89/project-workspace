@@ -56,17 +56,34 @@ The orchestrator calls `submit()` to dispatch a task, immediately stores the ret
 
 This is the substantive change in the runtime's behaviour. Pool size is decoupled from concurrent task count.
 
-### Decision D3 — Where the asynchronous-completion mechanism lives
+### Decision D3 — How completions are delivered
 
-The async pattern still has to physically work for the bundled Claude executor in the local profiles. Two ways the local-docker profile can deliver completions:
+The async pattern still has to physically work for the bundled Claude executor in the local profiles. Three shapes considered:
 
-#### Option D3a — Poll Docker container state
+#### Option D3a — Poll the runtime by label (orchestrator → executor)
 Orchestrator periodically lists Docker containers labelled `platform=true` and checks which have exited. `readResult` reads the result file from a shared host volume.
 
-#### Option D3b — Per-container watch
-Each `submit` registers a Docker `wait` callback on the spawned container; completions arrive as events.
+Rejected. Three problems:
+1. It assumes the runtime supports a label-filtered list-and-scan API. Docker and Kubernetes do; many other runtimes (queue-based workers, serverless functions, BYO customer-side runners) do not.
+2. It assumes the set of "things tagged `platform=true`" is uniquely owned by *this* orchestrator. False on shared infra, on multi-orchestrator hosts, after a crash leaves orphans, when other tools also label things.
+3. Its supposed virtue ("mirrors how production adapters discover completion") doesn't hold — most production runtimes give you a handle and you ask about it, not a label-filtered global scan.
 
-**Chosen: D3a (polling).** Simpler, mirrors how production adapters will discover completion (poll an API, list a queue), and exercises the same code path that future profiles will use.
+#### Option D3b — Per-handle watch (orchestrator → executor)
+Each `submit` registers a `docker wait` (or equivalent) on the spawned container; completions arrive as events the adapter pushes onto an internal queue.
+
+Better than D3a but still requires the orchestrator to be able to *reach into* the runtime to observe state. Fine for subprocess and local-docker, broken for any topology where the orchestrator cannot initiate contact with the executor's runtime — most notably pull-family customer runners (the deferred BYO direction).
+
+#### Option D3c — Runner callback (executor → orchestrator) — **chosen**
+Reverse the direction. At `submit` time the adapter passes the runner a callback target (an in-process function locally; an HTTP URL + per-handle nonce in production) alongside the briefing path. When the executor finishes, the *runner* (the small wrapper hosting the executor — subprocess parent, container entrypoint, future BYO worker) reports completion back to the orchestrator, which pushes it onto the adapter's internal completion queue. `listCompleted` drains that queue.
+
+Why this is the right shape:
+- **One direction works everywhere.** Subprocess, local-docker, future K8s, future queue-based workers, and future BYO customer runners all share the same property: they have outbound reach to the orchestrator (loopback, host network, egress to a known endpoint). Even pull-family BYO runners — which by definition cannot accept inbound from us — can call us back outbound. This dissolves the push-vs-pull dichotomy at the completion-delivery layer.
+- **No leaked discovery mechanism.** The port contract doesn't presume labels, scans, watches, or any specific runtime API.
+- **Local profiles don't pay HTTP cost.** For `local-subprocess` and `local-docker` the "callback" is an in-process function call from the adapter's child-monitoring code into the same handler the future HTTP receiver will call. Same code path, no actual network hop.
+- **Restart durability is explicit, not implicit.** Webhooks fired while the orchestrator is down are lost. On startup the orchestrator scans in-flight task YAMLs (handles are persisted there at claim time) and reconciles — runtime-specific reconciliation (`docker inspect`, k8s lookup) is a fallback for stuck handles, not the primary path.
+- **The executor image is unchanged.** The executor's contract remains "write `RESULT_PATH`, exit". The runner — not the executor — observes the exit and posts back. For local profiles the runner *is* the adapter; for future BYO it's a per-task entrypoint script.
+
+The `ExecutorPort` contract is unchanged: four methods (`submit`, `listCompleted`, `readResult`, `ack`). Only the mechanism *inside* the adapter changes.
 
 ### Decision D4 — Profile mechanism shape
 
@@ -124,6 +141,8 @@ interface ExecutorPort {
 
 The orchestrator's claim and review-fix concerns depend only on these four methods. **`submit` is non-blocking** — it returns as soon as the task has been dispatched, not when the task has finished. Today's blocking `spawn + await exit` flow is replaced.
 
+`ExecutorInput` carries a callback target the runner uses to report completion (an in-process function for local profiles; an HTTP endpoint + per-handle nonce in production). `listCompleted` drains the adapter's internal queue, populated by those callbacks. `readResult` reads the result the runner reported (or fetches a pointed-to artifact); `ack` releases adapter-side state and any runtime-specific cleanup. Runtime-specific reconciliation (`docker inspect`, k8s lookup, etc.) is a fallback for dropped callbacks and stuck handles — not the primary discovery mechanism.
+
 ### The three workflow concerns
 
 The orchestrator pool runs three concerns:
@@ -132,14 +151,14 @@ The orchestrator pool runs three concerns:
 2. **Review-fix concern.** Polls in-review PRs. For tier-1 conflicts, calls `submit` (`subkind=rebase`) to spawn an executor that resolves conflict markers. For unresolved review threads, calls `submit` (`subkind=respond`) to spawn an executor that addresses comments. Same non-blocking flow as claim.
 3. **Workspace-PR lifecycle concern.** Pure git/API operations: open the management-repo PR at claim time, merge it when the impl PR merges, recover stuck PRs. Never spawns an executor.
 
-A **shared reap loop** alongside the concerns enumerates completed handles via `ExecutorPort.listCompleted()`, routes each completion by its handle's label kind (`impl` → claim concern's dispatcher; `review-fix` → review-fix dispatcher), reads the result, dispatches side-effects, and acks the handle.
+A **shared reap loop** alongside the concerns calls `ExecutorPort.listCompleted()` to drain the adapter's internal completion queue (populated by runner callbacks, see Decision D3), routes each completion by its handle's kind (`impl` → claim concern's dispatcher; `review-fix` → review-fix dispatcher), reads the result, dispatches side-effects, and acks the handle.
 
 ### Profiles shipped in this feature
 
 | Profile | `ExecutorPort` adapter | Purpose |
 |---|---|---|
-| `local-subprocess` | `SubProcessAdapter` | Mirrors today's behaviour. Bundled image, child-process spawn. The async submit/reap pattern is implemented internally — `submit` starts the child and returns immediately; `listCompleted` checks child process state. |
-| `local-docker` | `DockerRunAdapter` | M:N profile. Orchestrator container has the Docker socket mounted. `submit` does `docker run` of the same Claude executor image as a per-task ephemeral container. `listCompleted` polls Docker for exited containers. `readResult` reads from a shared host volume. `ack` removes the container. |
+| `local-subprocess` | `SubProcessAdapter` | Mirrors today's behaviour. Bundled image, child-process spawn. `submit` starts the child and returns immediately; an internal `child.on('exit')` listener invokes the in-process callback handler, which pushes onto the adapter's completion queue. `listCompleted` drains the queue. |
+| `local-docker` | `DockerRunAdapter` | M:N profile. Orchestrator container has the Docker socket mounted. `submit` does `docker run` of the same Claude executor image as a per-task ephemeral container. The adapter watches the container's exit (via `docker wait` or stream) and invokes the in-process callback handler on completion. `listCompleted` drains the queue. `readResult` reads from a shared host volume. `ack` removes the container. |
 
 Both profiles use the same orchestrator binary, the same executor image, and the same async cycle. They differ only in the `ExecutorPort` adapter.
 
@@ -150,6 +169,15 @@ Day 1: one sequential cycle inside an orchestrator process — claim concern, th
 ### Workflow state pattern
 
 Git remains authoritative. The `WorkflowStatePort` adapter clones each workspace repo, reads/writes task YAMLs, commits and pushes. Behaviourally identical to today.
+
+### Callback transport
+
+Per Decision D3c, completion is reported by the runner back to the orchestrator. This feature ships the **in-process** transport only:
+
+- `SubProcessAdapter` — the runner is the parent process; the callback is a plain function call from the `child.on('exit')` handler.
+- `DockerRunAdapter` — the runner is the orchestrator process holding `docker wait`; the callback is the same in-process function.
+
+The HTTP transport (per-handle nonce, signed request, dedicated receiver) is **deferred to the production/BYO feature**. The handler shape — `(handle, result) => void` populating the adapter's completion queue — is identical in both cases, so the production receiver wraps the same handler the local profiles call directly. No core change is needed when the HTTP receiver is added.
 
 ### Tenant-context plumbing
 
@@ -225,35 +253,52 @@ The exact extent of plumbing depends on the answer to product-spec B2.
    └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Async submit/reap flow through `ExecutorPort`
+### Async submit/reap flow through `ExecutorPort` (runner-callback model)
 
 ```
      ┌────────────────────┐          ┌─────────────────────┐
      │  Claim concern     │          │  Review-fix concern │
      └─────────┬──────────┘          └──────────┬──────────┘
                │ submit(ExecutorInput)          │ submit(ExecutorInput)
+               │   (briefing path,              │
+               │    callback target,            │
+               │    per-handle nonce)           │
                ▼                                 ▼
      ╔═════════════════════════════════════════════════════╗
      ║                  ExecutorPort                       ║
      ║   submit ─► returns ExecutorHandle (immediately)    ║
      ╚═════════════════════════════════════════════════════╝
                               │
-            (work runs out-of-band: child proc / docker run)
-                              │
                               ▼
+                  ┌──────────────────────────┐
+                  │  Runner runs executor    │
+                  │  (subprocess parent /    │
+                  │   docker entrypoint /    │
+                  │   future BYO worker)     │
+                  └────────────┬─────────────┘
+                               │ on exit:
+                               │   call back with result + nonce
+                               │   (in-process handler locally;
+                               │    HTTP POST in production/BYO)
+                               ▼
      ╔═════════════════════════════════════════════════════╗
-     ║   listCompleted()  ─►  [handle₁, handle₂, …]        ║
-     ║   readResult(h)    ─►  ExecutorResult               ║
-     ║   ack(h)                                            ║
+     ║   Adapter's internal completion queue               ║
+     ║   (populated by callback; never by world-scan)      ║
      ╚═════════════════════════════════════════════════════╝
                               ▲
                               │ once per cycle
                ┌──────────────┴───────────────┐
                │       Shared reap loop       │
+               │  listCompleted() drains queue│
                │  routes by handle.kind →     │
-               │  claim dispatcher / review-  │
-               │  fix dispatcher              │
+               │  claim / review-fix dispatch │
+               │  readResult(h) · ack(h)      │
                └──────────────────────────────┘
+
+   Restart durability: handles are persisted on the task YAML at submit
+   time. On orchestrator startup the adapter scans in-flight task YAMLs
+   and reconciles. Runtime-specific lookups (docker inspect, k8s API, …)
+   are a fallback for stuck handles, not the primary mechanism.
 ```
 
 ### Mermaid view — profile wiring
@@ -334,29 +379,37 @@ Define the `local-subprocess` profile factory bundling these. Wire the orchestra
 
 End of wave: today's behaviour is preserved. No new external behaviour visible.
 
-### Wave 3 — Convert `ExecutorPort` to non-blocking submit/reap
+### Wave 3 — Convert `ExecutorPort` to non-blocking submit/reap (runner-callback)
+
+Define the in-process callback shape — a function `(handle, result) => void` that pushes onto the adapter's internal completion queue. This is the same shape the future HTTP receiver will use; production/BYO adapters will wrap it in an authenticated POST handler.
 
 Inside `SubProcessAdapter`:
-- `submit` spawns the child and returns a handle keyed by PID.
-- `listCompleted` checks child state via `wait4` / Node's `child.on('exit')` callbacks (internally tracked).
-- `readResult` reads `RESULT_PATH` from the spawned child's working directory.
-- `ack` cleans up the temp result file.
+- `submit` spawns the child with the briefing path and a reference to the in-process callback in its closure; returns a handle keyed by PID.
+- `child.on('exit')` reads the result file the executor wrote and invokes the callback with the handle and result.
+- `listCompleted` drains the adapter's internal queue.
+- `readResult` returns the result associated with the handle.
+- `ack` cleans up the temp result file and removes adapter-side state.
 
 Refactor the orchestrator's claim and review-fix concerns to:
 - Call `submit` instead of `spawn + await exit`.
-- Add a shared reap loop that calls `listCompleted` and routes results.
+- Add a shared reap loop that calls `listCompleted` and routes results by `handle.kind`.
+
+Persist handles on the task YAML at submit time so the adapter can reconcile in-flight work after a restart.
 
 End of wave: orchestrator's cycle no longer waits for executor exits. Concurrency improves on a single machine. Pool size becomes independent of task count.
 
 ### Wave 4 — `DockerRunAdapter` and `local-docker` profile
 
 Implement `DockerRunAdapter`:
-- `submit` calls `docker run -d` with mounted briefing volume, env vars, label.
-- `listCompleted` polls `docker ps -a -f status=exited -f label=platform=true`.
-- `readResult` reads from the shared host volume.
-- `ack` runs `docker rm`.
+- `submit` calls `docker run -d` with mounted briefing volume, env vars, and a per-handle label for forensics. Returns a handle keyed by container ID.
+- The adapter starts a `docker wait` (or equivalent stream) on the spawned container; on exit it reads the result file from the shared host volume and invokes the in-process callback (same shape as `SubProcessAdapter`).
+- `listCompleted` drains the adapter's internal queue.
+- `readResult` returns the result associated with the handle.
+- `ack` runs `docker rm` and removes adapter-side state.
 
 Define the `local-docker` profile factory. Update `docker-compose.yml` template to mount the Docker socket into orchestrator containers. The Claude executor image is unchanged.
+
+Reconciliation on restart: the adapter scans in-flight task YAMLs, looks up each container via `docker inspect`, and re-attaches a `docker wait` to any still-running container — a fallback for the in-memory wait state lost across restart, not the primary discovery path.
 
 End of wave: M:N is functional locally. Multiple orchestrators each spawn their own per-task Claude executor containers. The architecture is proven.
 
@@ -393,11 +446,11 @@ None. Work begins immediately on Wave 1.
 
 To resolve in technical design review.
 
-### T-Q1 — Where does `listCompleted` live?
-Inside the `ExecutorPort` adapter (each adapter tracks its own outstanding handles), or in a shared in-memory registry the adapter writes to? Recommend the former — keeps each adapter self-contained.
+### T-Q1 — Where does `listCompleted` live? (resolved by D3c)
+Inside each `ExecutorPort` adapter. Each adapter owns its in-memory completion queue, populated by the runner callback. `listCompleted` is a queue-drain — never a world-scan.
 
-### T-Q2 — How does the reap loop know which concern to route to?
-Two options: (a) handles carry a label / metadata identifying their originating concern (claim / review-fix / subkind=rebase / subkind=respond); (b) the orchestrator maintains a side-table mapping handles to concerns. Recommend (a) — simpler, stateless reap loop.
+### T-Q2 — How does the reap loop know which concern to route to? (resolved by D3c)
+Handles carry a `kind` (`impl` | `review-fix`) and, where applicable, a `subkind` (`rebase` | `respond`). The reap loop routes on `handle.kind`; no side-table or stateful registry. The runner echoes the handle back via the callback so routing requires no orchestrator-side bookkeeping beyond the handle itself.
 
 ### T-Q3 — Tenant-context plumbing depth
 Bound by product-spec B2. Recommend: define `WorkflowContext` interface containing `tenantId`, plumb it through orchestrator core function signatures, accept always-default value at call sites today.
