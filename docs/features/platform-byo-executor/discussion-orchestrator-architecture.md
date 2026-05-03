@@ -508,6 +508,22 @@ the initial spec discussion:
     storage polling. The orchestrator core depends only on the four
     interface methods — never on the implementation. A long-polling
     executor service is a first-class option, no K8s required.
+11. *"executor can be in different infra — how was GitHub runner
+    designed?"* — captured the push vs pull dichotomy. GitHub
+    Actions is the canonical pull-based model: outbound-only
+    runners, label-based work matching, three-component
+    architecture (orchestrator + work registry + runner agent).
+    Both push and pull adapters fit the same `ExecutorPort`
+    contract. Pull is essential for enterprise / on-prem / regulated
+    customers who cannot accept inbound platform connections.
+12. *"don't take K8s into our high level architecture — draw a
+    system diagram with all components"* — produced Appendix B with
+    an infrastructure-neutral system diagram. Three layers (tenant,
+    platform, executor fleet); platform contains the orchestrator
+    pool + supporting services; executor fleet contains both
+    push-spawned and pull-based instances coexisting per-tenant.
+    No specific runtime is privileged; all execution mechanisms are
+    treated as adapter implementations behind `ExecutorPort`.
 
 ---
 
@@ -1006,9 +1022,229 @@ When this hardens, lift this paragraph into `## Architecture
 invariants`:
 
 > The orchestrator is implemented against a fixed set of ports
-> (executor launch, briefing transport, result transport, workflow
-> state, credentials, image resolution, event emission). Adapters for
-> each port are injected at startup based on a named profile (`local`,
-> `k8s`, future `queue` etc.). The same orchestrator binary runs in
-> every environment; differences are in adapter selection, not code.
-> Adding a new infrastructure target is a new profile, not a fork.
+> (executor lifecycle, briefing transport, workflow state, credentials,
+> image resolution, event emission). Adapters for each port are
+> injected at startup based on a named profile. The same orchestrator
+> binary runs in every environment; differences are in adapter
+> selection, not code. Adding a new infrastructure target is a new
+> profile, not a fork. The platform supports both push-style execution
+> (orchestrator submits work to executor instances it can reach) and
+> pull-style execution (executor agents in customer infrastructure
+> long-poll the platform for work) under the same `ExecutorPort`
+> contract.
+
+---
+
+# Appendix B — System diagram
+
+The diagram below collects every component identified in the
+discussion, drawn at infrastructure-neutral level. No execution
+mechanism is privileged; "executor" means any process that fulfils
+the ABI contract, regardless of where it runs or how it was reached.
+
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                                ║
+║    CUSTOMER / TENANT                  ◀──── many tenants per platform ────▶   ║
+║   ─────────────────                                                            ║
+║                                                                                ║
+║   ┌────────────────────┐         ┌─────────────────────┐                      ║
+║   │  Workspace repo     │         │  Executor image      │                      ║
+║   │  (git, customer-    │         │  registration        │                      ║
+║   │   hosted)           │         │                      │                      ║
+║   │                     │         │  ─ image reference   │                      ║
+║   │  ─ tasks/T*.yaml    │         │  ─ registry creds    │                      ║
+║   │  ─ docs/            │         │  ─ conformance pass  │                      ║
+║   │  ─ workspace.yaml   │         │  ─ labels (linux/gpu/│                      ║
+║   │                     │         │     etc.)            │                      ║
+║   └─────────┬──────────┘         └──────────┬──────────┘                      ║
+║             │                                │                                  ║
+║             │ git ops                        │ identifies which image           ║
+║             │ (read state /                  │ to use per task                  ║
+║             │  write claims /                │                                  ║
+║             │  open PRs)                     │                                  ║
+║             │                                │                                  ║
+╚═════════════╪════════════════════════════════╪════════════════════════════════╝
+              │                                │
+              │                                │
+╔═════════════╪════════════════════════════════╪════════════════════════════════╗
+║   PLATFORM (multi-tenant; single source of truth for workflow lifecycle)       ║
+║   ─────────                                  │                                  ║
+║             │                                │                                  ║
+║   ┌─────────▼────────────────────────────────▼────────────────────────────┐  ║
+║   │                                                                        │  ║
+║   │      ORCHESTRATOR POOL  (M stateless instances)                        │  ║
+║   │      ─────────────────                                                  │  ║
+║   │                                                                        │  ║
+║   │     ┌────────────────┐  ┌────────────────┐  ┌────────────────────┐   │  ║
+║   │     │ Claim concern   │  │ Review-fix     │  │ Workspace-PR        │   │  ║
+║   │     │                 │  │ concern         │  │ lifecycle concern    │   │  ║
+║   │     │  poll workspace │  │                 │  │                      │   │  ║
+║   │     │  claim ready    │  │  poll in-review │  │  open WS PR at claim │   │  ║
+║   │     │  submit work    │  │  spawn for      │  │  merge on impl-PR    │   │  ║
+║   │     │                 │  │  rebase &       │  │  recover stuck PRs   │   │  ║
+║   │     │  (spawns        │  │  respond-to-    │  │                      │   │  ║
+║   │     │   executors)    │  │  review         │  │  (no executor spawn) │   │  ║
+║   │     │                 │  │                 │  │                      │   │  ║
+║   │     └────────┬───────┘  └────────┬───────┘  └──────────┬───────────┘   │  ║
+║   │              │                    │                      │              │  ║
+║   │              └───────────┬────────┘                      │              │  ║
+║   │                          │                                │              │  ║
+║   │                          ▼                                ▼              │  ║
+║   │     ┌──────────────────────────────────┐    ┌─────────────────────────┐ │  ║
+║   │     │   ExecutorPort  (interface)       │    │  WorkflowStatePort      │ │  ║
+║   │     │   ─────────────                    │    │  ───────────────────    │ │  ║
+║   │     │   submit / listCompleted /        │    │  read / write task YAML │ │  ║
+║   │     │   readResult / ack                │    │  append logs            │ │  ║
+║   │     └──┬───────────────────────────┬──┘    └────────────┬────────────┘ │  ║
+║   │        │                            │                     │              │  ║
+║   │        │ push family                │ pull family         │ git          │  ║
+║   │        ▼                            ▼                     │              │  ║
+║   │   ┌─────────────────┐      ┌────────────────────┐         │              │  ║
+║   │   │ Push adapters    │      │ Pull adapters       │         │              │  ║
+║   │   │  ─ direct submit │      │  ─ submit = enqueue │         │              │  ║
+║   │   │    to executor   │      │    to Work Registry │         │              │  ║
+║   │   │    instance      │      │  ─ executor pulls   │         │              │  ║
+║   │   │                  │      │                     │         │              │  ║
+║   │   └────────┬────────┘      └──────────┬─────────┘         │              │  ║
+║   │            │                            │                    │              │  ║
+║   │   ┌────────┴───────────────────────────┴─────────────────────┘              │  ║
+║   │   │                                                                        │  ║
+║   │   │  Reap loop (shared, runs alongside the concerns)                       │  ║
+║   │   │  ──────── routes completions back to the originating concern by       │  ║
+║   │   │           job-handle label kind (claim / review-fix subkind)           │  ║
+║   │   │                                                                        │  ║
+║   │   └────────────────────────────────────────────────────────────────────────┘  ║
+║   │                                                                              │  ║
+║   └──────────────────────────────────────────────────────────────────────────┘  ║
+║                                                                                   ║
+║                                                                                   ║
+║   PLATFORM SUPPORTING SERVICES                                                    ║
+║   ────────────────────────────                                                    ║
+║                                                                                   ║
+║   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        ║
+║   │ Work         │  │ Briefing     │  │ Result       │  │ Credential   │        ║
+║   │ Registry     │  │ transport    │  │ artifact     │  │ broker       │        ║
+║   │              │  │              │  │ store        │  │              │        ║
+║   │ - durable    │  │ - delivers   │  │ - receives   │  │ - mints      │        ║
+║   │ - long-poll  │  │   briefing.md│  │   result.json│  │   per-task   │        ║
+║   │   API for    │  │   to executor│  │ - stores     │  │   tokens     │        ║
+║   │   pull       │  │              │  │   stdout/    │  │ - per-tenant │        ║
+║   │ - matches    │  │              │  │   logs       │  │   secrets    │        ║
+║   │   labels     │  │              │  │              │  │              │        ║
+║   └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘        ║
+║                                                                                   ║
+║   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐                          ║
+║   │ Image        │  │ Conformance  │  │ Event /      │                          ║
+║   │ registration │  │ test runner  │  │ metrics      │                          ║
+║   │ catalog      │  │              │  │ pipeline     │                          ║
+║   │              │  │ - validates  │  │              │                          ║
+║   │ - per-tenant │  │   ABI        │  │ - per-tenant │                          ║
+║   │   image refs │  │ - smoke      │  │   isolation  │                          ║
+║   │ - registry   │  │   tasks      │  │ - billing    │                          ║
+║   │   credentials│  │ - gates      │  │   metering   │                          ║
+║   │              │  │   activation │  │              │                          ║
+║   └──────────────┘  └──────────────┘  └──────────────┘                          ║
+║                                                                                   ║
+╚═════╪══════════════════════════════════════════════════════╪═════════════════════╝
+      │                                                      │
+      │ submit (push)                                        │ long-poll work
+      │ deliver briefing                                     │ upload result
+      │ collect result                                       │ heartbeat
+      │                                                      │
+╔═════▼══════════════════════════════════════════════════════▼═════════════════════╗
+║                                                                                   ║
+║   EXECUTOR INSTANCES  (N total — heterogeneous, per-tenant, anywhere)            ║
+║   ──────────────────                                                              ║
+║                                                                                   ║
+║   PUSH-spawned executors                       PULL-based runners                 ║
+║   (platform reaches them)                      (they reach platform)              ║
+║   ───────────────────────                      ───────────────────────            ║
+║                                                                                   ║
+║   ┌────────────────────────┐                  ┌────────────────────────────┐    ║
+║   │ Tenant A executor       │                  │ Tenant B runner agent       │    ║
+║   │ ─ ephemeral per task   │                  │ ─ runs in their VPC          │    ║
+║   │ ─ image: A/exec:v1.2.3 │                  │ ─ outbound HTTPS only        │    ║
+║   │ ─ platform-spawned     │                  │ ─ pulls from Work Registry   │    ║
+║   └────────────────────────┘                  │ ─ image: B/exec:custom       │    ║
+║                                                └────────────────────────────┘    ║
+║   ┌────────────────────────┐                                                     ║
+║   │ Tenant A executor       │                  ┌────────────────────────────┐    ║
+║   │ (another claimed task)  │                  │ Tenant C runner agent       │    ║
+║   └────────────────────────┘                  │ ─ on-prem, air-gapped        │    ║
+║                                                │ ─ tunnels out via proxy      │    ║
+║   ┌────────────────────────┐                  │ ─ image: C/exec:internal     │    ║
+║   │ Tenant D long-running   │                  └────────────────────────────┘    ║
+║   │ executor service        │                                                     ║
+║   │ ─ HTTP service mode    │                  Each runner / executor:             ║
+║   │ ─ platform pushes work │                   ─ reads briefing                   ║
+║   └────────────────────────┘                   ─ runs to completion               ║
+║                                                 ─ writes result.json              ║
+║                                                 ─ uploads / returns result        ║
+║                                                                                   ║
+╚═══════════════════════════════════════════════════════════════════════════════════╝
+```
+
+## Reading the diagram
+
+### Three layers
+1. **Customer / tenant** owns two artifacts: a workspace repo (workflow
+   state, customer-hosted git) and an executor image registration (a
+   pointer + credentials, validated by conformance).
+2. **Platform** is the orchestrator pool plus supporting services. The
+   pool is stateless and multi-tenant. Every workflow concern lives
+   here. Every cross-tenant policy (fairness, billing, conformance)
+   lives here.
+3. **Executor instances** are heterogeneous and per-tenant. They live
+   wherever the tenant chose — push-spawned in platform-controlled
+   infra, or pull-based in customer-controlled infra. Both shapes
+   coexist; the orchestrator does not know the difference.
+
+### Three workflow concerns inside the orchestrator
+- **Claim** — finds new work, claims it via git push race, submits an
+  executor (spawns one).
+- **Review-fix** — handles in-review PRs that need rebase or
+  respond-to-review (also spawns executors).
+- **Workspace-PR lifecycle** — pure git/API work; never spawns an
+  executor.
+
+### One port, two adapter families
+- `ExecutorPort` is the only seam the orchestrator core sees for
+  execution.
+- **Push adapters** put work directly onto an executor instance the
+  platform can reach.
+- **Pull adapters** put work into the Work Registry; executors elsewhere
+  long-poll for it. Same interface, different network topology.
+- A shared **reap loop** routes completed work back to the originating
+  concern.
+
+### Supporting services are platform-internal
+Briefing transport, result store, credential broker, image catalog,
+conformance runner, event/metrics pipeline. These are platform-side
+shared services. None of them are part of the orchestrator core; they
+are all reached via their own ports/adapters.
+
+### Two coexisting execution shapes per platform
+The platform supports both push and pull simultaneously. A single
+tenant might use push (platform-spawned ephemeral executors); another
+might use pull (their own runner agent in their VPC); a third might
+use a long-running HTTP service. None of these affect any other
+tenant. The choice is per-tenant, recorded as part of executor image
+registration.
+
+## What this diagram intentionally does NOT show
+
+- No specific compute runtime (no Kubernetes, no Docker, no Lambda).
+  The diagram is infrastructure-neutral. Specific adapters
+  (Kubernetes, long-poll, queue, sub-process, etc.) are
+  implementation details inside the push or pull adapter families.
+- No specific transport (no S3, no PVC, no ConfigMap). Briefing /
+  result transport are abstract services that an adapter chooses an
+  implementation for.
+- No specific orchestrator runtime (no specific process manager,
+  language). The pool is "M stateless instances"; the implementation
+  detail of "how M instances are deployed" is a separate concern.
+
+This is the high-level architecture. Specific deployments choose
+specific adapters and runtimes inside this shape — they never modify
+the shape itself.
