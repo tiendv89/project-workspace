@@ -242,6 +242,120 @@ The runner wrapper is **identical** in both profiles — only the `$CALLBACK_URL
 
 A wrapper-crash safety net runs alongside the broker callback: `child.on('exit')` (subprocess) or `docker wait` (docker) detects when the runner exits without a corresponding callback arriving at the broker within a grace window. The adapter then issues a synthetic `failed` completion via the broker's callback route on the runner's behalf — same code path, just sourced from the orchestrator instead of the runner. HTTP is the primary mechanism; exit observation is the safety net.
 
+### How `submit` works per profile
+
+Concrete walk-through of the spawn flow per profile, plus the production targets the same code path will support. The orchestrator-side `submit` flow has four pieces:
+
+1. **Generate identifiers.** A new `handle` and a per-handle `nonce` (random 256-bit, single-use).
+2. **Register with the broker.** `await broker.register(handle, nonce, metadata)` where `metadata` carries `kind` / `subkind` / `task_id` / `feature_id` / `tenant_id` / `started_at`.
+3. **Spawn the runner.** Profile-specific — see below. This is the only step that varies.
+4. **Return** the handle to the caller (the claim or review-fix concern). The concern then writes the handle to the task YAML.
+
+The runner does the rest — exec the executor binary, read `RESULT_PATH` on exit, POST `{ handle, nonce, result }` to `$CALLBACK_URL`. Identical across all profiles.
+
+#### `local-subprocess` — `child_process.spawn`
+
+Step 3:
+
+```
+spawn('/platform/runner.js', [], {
+  env: {
+    BRIEFING_PATH: '/workspaces/<task>/briefing.md',
+    RESULT_PATH:   '/workspaces/<task>/result.json',
+    CALLBACK_URL:  'http://127.0.0.1:<broker_port>/callback',
+    HANDLE:        handle,
+    NONCE:         nonce,
+  }
+})
+```
+
+The broker's `<broker_port>` was bound at orchestrator startup (T-Q10). The wrapper POSTs to it over loopback. `child.on('exit')` is the wrapper-crash safety net; the adapter records `(handle, pid, started_at, nonce)` in its supervision map for that purpose.
+
+#### `local-docker` — `docker run -d`
+
+Step 3:
+
+```
+docker run -d \
+  --name exec-<handle> \
+  --network agents-net \                              # shared bridge
+  --entrypoint /platform/runner.js \                  # D6c wrapper
+  --restart=no \
+  -v /platform-bin:/platform:ro \                     # mount wrapper
+  -v /workspaces/<task>:/workspace:rw \               # briefing in / result out
+  -e BRIEFING_PATH=/workspace/briefing.md \
+  -e RESULT_PATH=/workspace/result.json \
+  -e CALLBACK_URL=http://broker:7000/callback \       # broker service name
+  -e HANDLE=$handle \
+  -e NONCE=$nonce \
+  --label platform.handle=$handle \                   # forensics only
+  executor:current
+```
+
+The container runs the wrapper as PID 1; when the wrapper exits (after POSTing) the container exits naturally. `docker wait` runs as the wrapper-crash safety net.
+
+**Why no `--rm`:** the container must persist between exit and `ack` so that:
+- `docker logs` and `docker inspect` remain available for forensics during dispatch.
+- The wrapper-crash safety net can read the exit code and stderr to construct a synthetic `failed` completion if the wrapper died before POSTing.
+- A briefly unreachable broker doesn't cause Docker to GC the container while the wrapper is still retrying.
+
+**Why `--restart=no`:** Docker must never silently restart a crashed wrapper — a restarted container would re-POST with the same nonce, which the broker has already invalidated. Recovery is a platform concern, never Docker's.
+
+**Cleanup.** `DockerRunAdapter.ack(handle)` runs `docker rm <container_id>` and unlinks the result file. The container leaves `docker ps -a` only after the orchestrator has dispatched the completion.
+
+**Orphan sweep.** If `ack` never happens (e.g. broker lost after enqueue, no orchestrator drains), exited containers accumulate. A periodic sweep scans `docker ps -a -f label=platform.handle=*` for containers older than a threshold with no corresponding in-flight broker entry and removes them. Belongs in Wave 4 alongside the safety net.
+
+#### Production — push family (e.g. K8s Job) — *deferred to BYO*
+
+Step 3 becomes a Job apply:
+
+```
+apply Job manifest:
+  image:                    <tenant_image>          # from ImageResolverPort
+  command:                  /platform/runner.js
+  env:                      BRIEFING_PATH, RESULT_PATH, CALLBACK_URL,
+                            HANDLE, NONCE
+  volumes:                  briefing (ConfigMap | PVC), result PVC, runner volume
+  restartPolicy:            Never
+  ttlSecondsAfterFinished:  <safety net for orphan Jobs>
+  labels:                   platform.handle, platform.tenant
+```
+
+Same lifecycle as local-docker: pod runs to completion, exits naturally; Job persists for forensics; deleted at `ack` (or after TTL as a safety net). HMAC middleware (D5b) and per-tenant routing live at the broker's edge — `submit` itself is unchanged.
+
+#### Production — pull family (queue + customer runner agent) — *deferred to BYO*
+
+`submit` does **not** spawn anything. Step 3 enqueues:
+
+```
+await workQueue.enqueue(tenant_id, {
+  handle,
+  nonce,
+  briefing_url:  '<signed URL the runner fetches>',
+  callback_url:  'https://broker.platform/callback',
+  deadline:       now() + maxRunMs,
+})
+```
+
+The customer's runner agent — running in their VPC with outbound-only network access — long-polls the queue, picks up the message, fetches the briefing via the signed URL, exec's their executor with the same env contract, and on exit POSTs to `callback_url` with `{ handle, nonce, result }`. Identical callback path to all other profiles.
+
+There is no orchestrator-side runner supervision; the safety net is the broker's visibility timeout plus a per-handle deadline sweep.
+
+#### Summary across deployments
+
+| Concern | `local-subprocess` | `local-docker` | Prod push (K8s) | Prod pull (queue) |
+|---|---|---|---|---|
+| `register` (broker) | embedded broker | Redis broker | Redis / managed broker | Redis / managed broker |
+| `submit` mechanism | `child_process.spawn` | `docker run -d` | `kubectl apply` (Job) | `queue.publish` |
+| Where runner runs | orchestrator's host | spawned container | tenant K8s namespace | customer VPC |
+| `CALLBACK_URL` | `127.0.0.1:<broker_port>` | `broker:7000` (bridge DNS) | `broker.platform/callback` | `broker.platform/callback` |
+| Auth | nonce | nonce | nonce + HMAC (D5b) | nonce + HMAC (D5b) |
+| Wrapper-crash safety net | `child.on('exit')` | `docker wait` | K8s Job watch | broker visibility timeout + deadline sweep |
+| Cleanup at `ack` | unlink result file | `docker rm` + unlink | delete Job (or rely on TTL) | broker entry only |
+| Reap | broker peek+lock | broker peek+lock | broker peek+lock | broker peek+lock |
+
+Steps 1–2 (handle + nonce + broker register), step 4 (return), and the runner-side callback are identical across all four deployments. Only step 3 — how the runner is launched — varies.
+
 ### Loop topology
 
 Day 1: one sequential cycle inside an orchestrator process — claim concern, then review-fix, then workspace-PR-lifecycle, then sleep. Mirrors today's `agent-loop.ts`. Splits into independent concurrent loops only when measured cadence needs diverge. Detail in `discussion-orchestrator-architecture.md`.
@@ -747,7 +861,8 @@ Two new adapters share the surface delivered in Wave 3.
   - Env vars: `BRIEFING_PATH`, `RESULT_PATH`, `CALLBACK_URL=http://broker:<port>/callback` (broker's service name on the bridge network), `HANDLE`, `NONCE`.
 - The container's wrapper runs the executor; on exit it POSTs to the broker. Any orchestrator drains via `listCompleted`.
 - `docker wait` runs as the wrapper-crash safety net.
-- `ack` runs `docker rm`.
+- `ack` runs `docker rm` and unlinks the result file.
+- Add a periodic **orphan sweep**: scans `docker ps -a -f label=platform.handle=*` for containers older than a threshold with no corresponding in-flight broker entry, removes them. Handles the rare case where `ack` never fires (broker lost after enqueue, no orchestrator drained).
 
 #### 4c — Compose template
 
