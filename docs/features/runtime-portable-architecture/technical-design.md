@@ -192,6 +192,39 @@ The exact extent of plumbing depends on the answer to product-spec B2.
       ── core depends ONLY on port interfaces; never on a concrete adapter ──
 ```
 
+### Layered view — how a profile wires adapters into ports
+
+```
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  PROFILE  (selected at startup via --profile or agent.yaml)     │
+   │     local-subprocess                local-docker                │
+   └──────────────────┬──────────────────────────┬───────────────────┘
+                      │ injects                  │ injects
+                      ▼                          ▼
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  ADAPTERS                                                       │
+   │   ExecutorPort         → SubProcessAdapter  | DockerRunAdapter  │
+   │   BriefingTransport    → LocalFileBriefingAdapter               │
+   │   WorkflowState        → GitWorkflowStateAdapter                │
+   │   Credential           → EnvCredentialAdapter                   │
+   │   WorkspacePull        → GitClonePullAdapter                    │
+   │   EventEmitter         → StdoutJsonEmitter                      │
+   │   Scheduler            → SimpleSleepScheduler                   │
+   │   Clock                → RealClock                              │
+   └─────────────────────────────────┬───────────────────────────────┘
+                                     │ implement
+                                     ▼
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  PORTS  (TypeScript interfaces — the only thing core sees)      │
+   └─────────────────────────────────┬───────────────────────────────┘
+                                     │ depended on by
+                                     ▼
+   ┌─────────────────────────────────────────────────────────────────┐
+   │  ORCHESTRATOR CORE                                              │
+   │    Claim · Review-fix · Workspace-PR · Shared reap loop         │
+   └─────────────────────────────────────────────────────────────────┘
+```
+
 ### Async submit/reap flow through `ExecutorPort`
 
 ```
