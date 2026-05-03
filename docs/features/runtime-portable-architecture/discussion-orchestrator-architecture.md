@@ -402,7 +402,7 @@ interface, different implementation.
 | **Q5 — Network model** | Becomes "orchestrator pool in platform namespace, executor Jobs in tenant namespace". Briefing via ConfigMap or PVC; result via PVC + label, S3, or push endpoint. No sidecar. |
 | **Q6 — Versioning under load** | Cleanly handled — each task captures the executor image tag at claim time (snapshot semantics). Orchestrator pool is unaffected by tenant version churn. Running tasks finish on their pinned version. |
 | **Q7 — Multi-executor per tenant** | Cleanly supported — claim-time logic looks up `executor_image` per task type or per workspace config. Routing lives in the orchestrator pool. |
-| **New Q (implicit)** | *"How does the orchestrator know an executor is done?"* Two viable patterns: poll Jobs each cycle (simpler, scales fine to thousands), or use K8s informer / watch API for event-driven completion. Polling is what most controllers do. |
+| **New Q (implicit)** | *"How does the orchestrator know an executor is done?"* Resolved 2026-05-04: the **runner calls back to the orchestrator** with the result and a per-handle nonce. The adapter pushes the callback onto its internal completion queue; `listCompleted` drains it. Locally the callback is an in-process function; in production/BYO it is an authenticated HTTP POST. This direction works uniformly across push-family and pull-family runners (both have outbound reach to the platform), and never depends on a label-filtered global scan or a runtime-specific watch API. Polling and watches are reserved as fallback reconciliation for stuck handles, not the primary discovery path. |
 
 ---
 
@@ -536,6 +536,73 @@ the initial spec discussion:
     push-spawned and pull-based instances coexisting per-tenant.
     No specific runtime is privileged; all execution mechanisms are
     treated as adapter implementations behind `ExecutorPort`.
+13. *"why not provide a webhook api?" / "I am thinking about asking
+    executor to call the orchestrator"* (2026-05-04) — locked the
+    completion-delivery direction. Earlier framing assumed
+    orchestrator → executor (label-scan polling, per-handle watch).
+    Reversed to **runner → orchestrator**: at submit time the adapter
+    hands the runner a callback target (in-process function locally;
+    HTTP URL + per-handle nonce in production); on exit the runner
+    calls back, and the adapter pushes onto its internal completion
+    queue. This direction works uniformly across push-family and
+    pull-family runners (both have outbound reach), removes the
+    leaked discovery mechanism (`docker ps -f label=…`,
+    `kubectl get jobs status=Complete`), and makes the production
+    HTTP receiver and the local profiles share the exact same
+    completion handler. Polling/watches are demoted to fallback
+    reconciliation for stuck handles. Recorded in
+    `technical-design.md` Decision D3c.
+14. *"I want the http implementation in this feature rather than
+    defer"* (2026-05-04) — pulled the HTTP callback receiver into
+    this feature's scope rather than deferring to BYO. Three
+    sub-decisions resolved together:
+    - **Both local profiles use HTTP** (not just `local-docker`).
+      `local-subprocess` POSTs back over loopback. One transport,
+      exercised every dev cycle. No in-process special case.
+      Reflected in the profiles table and recorded under D3c.
+    - **Runner wrapper mounted at runtime** (D6c) — small platform-
+      owned script that exec's the executor binary then POSTs the
+      result on exit. Same wrapper across both profiles. The
+      executor image's contract ("write `RESULT_PATH`, exit") is
+      unchanged.
+    - **Authentication is nonce-only** (D5a) for this feature.
+      HMAC-signed callbacks (D5b) are deferred to BYO. The threat
+      model assumed today is loopback or trusted dev bridge; HMAC
+      is required before the receiver is exposed beyond the local
+      host. The deferred-work note for the BYO feature must call
+      this out explicitly.
+    Net effect: the HTTP receiver, runner wrapper, and nonce-
+    validated callback ship in this feature. The BYO feature adds
+    HMAC, cross-orchestrator addressing, multi-tenancy enforcement
+    at the receiver, and pull-family runners on top of the same
+    code path.
+15. *"the workflow is not in redis, the orchestrator state is in
+    redis"* (2026-05-04) — corrected a category error. Constraint #1
+    ("workflow state in git") governs the customer-visible task
+    lifecycle, audit log, and claim records. It does **not** govern
+    platform-internal orchestrator runtime state — in-flight handles,
+    pending completions, nonces. That category can live wherever the
+    platform finds convenient. With this distinction in hand, the
+    per-orchestrator in-process completion buffer was rejected in
+    favour of a **shared completion broker** (D7b) — a peek-and-lock
+    work queue (SQS / RabbitMQ unacked / Redis Streams pattern). The
+    broker is a port (`CompletionBrokerPort`); embedded
+    `InMemoryBrokerAdapter` for `local-subprocess`, separate broker
+    service backed by Redis (`RedisBrokerAdapter`) for `local-docker`
+    and beyond. Net effects:
+    - **T-Q7 dissolves.** Runners POST to one URL — the broker.
+      No per-orchestrator addressing problem.
+    - **Submit and reap decouple.** Any orchestrator can drain any
+      completion. Tasks are no longer "owned end-to-end" by the
+      submitter — dispatch is opportunistic.
+    - **Orchestrator A dying mid-task is no longer special.** Its
+      pending completion sits in the broker until any surviving
+      orchestrator drains it. No `docker inspect` reconciliation
+      as the primary recovery path.
+    - **`ExecutorPort` shrinks** to `submit` + (optional) `readResult`.
+      `listCompleted` and `ack` move to `CompletionBrokerPort`.
+    Recorded in `technical-design.md` as Decision D7 and the new
+    `CompletionBrokerPort` contract.
 
 ---
 

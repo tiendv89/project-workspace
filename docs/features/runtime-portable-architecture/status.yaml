@@ -1,36 +1,71 @@
 feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
 
-feature_status: in_design
-current_stage: product_spec
+feature_status: ready_for_implementation
+current_stage: implementation
 next_action: >-
-  Feature rescoped from platform-byo-executor down to the architectural
-  foundation only. Product spec and technical design rewritten for the
-  narrower scope: hexagonal refactor, async submit/reap, two local
-  profiles (local-subprocess, local-docker), no customer-facing surface.
-  BYO product work deferred to a future feature.
-  Ready for human review of the product spec; technical design can be
-  reviewed in parallel.
+  Tasks approved. Wave 1 task T1 is now ready and may be claimed by
+  any agent. Follow the rollout cadence in tasks.md to keep the running
+  local-subprocess stack alive: T1-T4 redeploy at will; T5+T6 must
+  ship together with a graceful drain; T7-T8 redeploy at will; T9
+  introduces local-docker as an opt-in profile. The handoff stage is
+  drafted and reviewed only after all tasks reach done.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-03T23:30:36+0700
+    review_comment: Approved — proceed to technical design review.
+    review_history:
+      - at: 2026-05-03T23:30:36+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: Approved — proceed to technical design review.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-04T01:59:51+0700
+    review_comment: >-
+      Approved. Hexagonal split (D1b), async submit/reap (D2b),
+      runner-callback model (D3c), runtime-selected profiles (D4b),
+      nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and shared
+      completion broker (D7b) all settled. Per-profile submit
+      walk-through documented. Tech lead may proceed to task planning.
+    review_history:
+      - at: 2026-05-04T01:59:51+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: >-
+          Approved. Hexagonal split (D1b), async submit/reap (D2b),
+          runner-callback model (D3c), runtime-selected profiles (D4b),
+          nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and
+          shared completion broker (D7b) all settled. Per-profile submit
+          walk-through documented. Tech lead may proceed to task
+          planning.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-04T02:21:32+0700
+    review_comment: >-
+      Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+      T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
+      (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
+      established at docs/language-policy.md; T7 is the Go beachhead.
+      Redeployment notes at the top of tasks.md document the rollout
+      cadence so agents keep running through the implementation.
+    review_history:
+      - at: 2026-05-04T02:21:32+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: >-
+          Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+          T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
+          (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
+          established at docs/language-policy.md; T7 is the Go
+          beachhead. Redeployment notes at the top of tasks.md document
+          the rollout cadence so agents keep running through the
+          implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -62,6 +97,30 @@ history:
       The discussion-orchestrator-architecture.md document is preserved
       and includes the long-term BYO direction for the future feature
       to pick up.
+  - at: 2026-05-03T23:30:36+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Product spec approved. Feature advanced from in_design to in_tdd;
+      current_stage moved from product_spec to technical_design.
+  - at: 2026-05-04T01:59:51+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Technical design approved. current_stage moved from
+      technical_design to tasks. Tech lead may now run Phase 2 to draft
+      the task breakdown. Feature_status remains in_tdd until the tasks
+      stage is also approved (which moves it to ready_for_implementation).
+  - at: 2026-05-04T02:21:32+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Tasks approved. Feature advanced from in_tdd to
+      ready_for_implementation. current_stage moved from tasks to
+      implementation. T1 (Wave 1 — port interfaces + fakes) activated
+      from todo to ready. T2-T10 remain todo until their dependencies
+      reach done. The handoff stage will be drafted once all tasks are
+      done and reviewed at that point.
 
 revalidation:
   product_spec_required: false
