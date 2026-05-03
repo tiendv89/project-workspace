@@ -4,6 +4,18 @@
 > reasoning to be revisited as the product spec evolves. When a decision is
 > reached, lift it into `product-spec.md` (Goals / Architecture invariants)
 > and reference this file from the relevant Q.
+>
+> **Scope note (2026-05-03)**: this feature was originally drafted as
+> `platform-byo-executor` and rescoped to `runtime-portable-architecture`.
+> The current feature scope is the **architectural foundation only** —
+> hexagonal refactor, async submit/reap, two local profiles, no
+> customer-facing surface. The BYO/customer-facing direction described
+> in later sections (image registration, conformance, pull/runner
+> agents, multi-tenant identity, billing, push and pull production
+> adapters) is **deferred to a future feature** that will reference the
+> architecture this one establishes. Read the discussion as: "the
+> architecture this feature delivers, plus the longer-term direction
+> it intentionally enables but does not implement."
 
 This document records the architectural discussion behind several of the
 open questions (Q1, Q5, Q6, Q7) in `product-spec.md`. The questions

@@ -1,0 +1,70 @@
+feature_id: runtime-portable-architecture
+title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
+
+feature_status: in_design
+current_stage: product_spec
+next_action: >-
+  Feature rescoped from platform-byo-executor down to the architectural
+  foundation only. Product spec and technical design rewritten for the
+  narrower scope: hexagonal refactor, async submit/reap, two local
+  profiles (local-subprocess, local-docker), no customer-facing surface.
+  BYO product work deferred to a future feature.
+  Ready for human review of the product spec; technical design can be
+  reviewed in parallel.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-03T00:00:00+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Feature initialized via /init-feature as platform-byo-executor.
+      Original goal was to enable platform customers to register their
+      own executor images and run tasks on tenant-isolated infrastructure.
+      Product spec drafted with ten open questions (Q1–Q10).
+  - at: 2026-05-03T22:46:04+0700
+    by: matthew@swellnetwork.io
+    action: feature_rescoped
+    note: >-
+      Feature renamed from platform-byo-executor to
+      runtime-portable-architecture and rescoped to the architectural
+      foundation only. Customer-facing BYO surface (image registration,
+      conformance, tenant management, billing, pull-family runner agents,
+      production push/pull adapters) deferred to a future feature.
+      Remaining scope: hexagonal refactor (ports + adapters + profiles),
+      async submit/reap, two local profiles (local-subprocess and
+      local-docker), tenant-context plumbing without enforcement.
+      The discussion-orchestrator-architecture.md document is preserved
+      and includes the long-term BYO direction for the future feature
+      to pick up.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
