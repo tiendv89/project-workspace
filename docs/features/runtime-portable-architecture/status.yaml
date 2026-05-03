@@ -1,13 +1,15 @@
 feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
 
-feature_status: in_tdd
-current_stage: tasks
+feature_status: ready_for_implementation
+current_stage: implementation
 next_action: >-
-  Technical design approved. Tech lead can now run Phase 2 to produce
-  the task breakdown under docs/features/runtime-portable-architecture/tasks/.
-  Once tasks are drafted and approved, the feature moves to
-  ready_for_implementation.
+  Tasks approved. Wave 1 task T1 is now ready and may be claimed by
+  any agent. Follow the rollout cadence in tasks.md to keep the running
+  local-subprocess stack alive: T1-T4 redeploy at will; T5+T6 must
+  ship together with a graceful drain; T7-T8 redeploy at will; T9
+  introduces local-docker as an opt-in profile. The handoff stage is
+  drafted and reviewed only after all tasks reach done.
 
 stages:
   product_spec:
@@ -42,11 +44,28 @@ stages:
           walk-through documented. Tech lead may proceed to task
           planning.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-04T02:21:32+0700
+    review_comment: >-
+      Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+      T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
+      (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
+      established at docs/language-policy.md; T7 is the Go beachhead.
+      Redeployment notes at the top of tasks.md document the rollout
+      cadence so agents keep running through the implementation.
+    review_history:
+      - at: 2026-05-04T02:21:32+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        comment: >-
+          Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+          T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
+          (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
+          established at docs/language-policy.md; T7 is the Go
+          beachhead. Redeployment notes at the top of tasks.md document
+          the rollout cadence so agents keep running through the
+          implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -92,6 +111,16 @@ history:
       technical_design to tasks. Tech lead may now run Phase 2 to draft
       the task breakdown. Feature_status remains in_tdd until the tasks
       stage is also approved (which moves it to ready_for_implementation).
+  - at: 2026-05-04T02:21:32+0700
+    by: matthew@liquid-labs.xyz
+    action: stage_approved
+    note: >-
+      Tasks approved. Feature advanced from in_tdd to
+      ready_for_implementation. current_stage moved from tasks to
+      implementation. T1 (Wave 1 — port interfaces + fakes) activated
+      from todo to ready. T2-T10 remain todo until their dependencies
+      reach done. The handoff stage will be drafted once all tasks are
+      done and reviewed at that point.
 
 revalidation:
   product_spec_required: false
