@@ -1,5 +1,5 @@
 id: T7
-title: RedisBrokerAdapter + broker service container
+title: Redis-backed broker service (Go) + container
 repo: workflow
 status: todo
 depends_on: [T3]

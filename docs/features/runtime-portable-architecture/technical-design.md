@@ -886,7 +886,8 @@ End of wave: feature is shippable; future profiles can be added by registering a
 ### External
 - `@workflow/runtime-abi` — extend with handle / completion / label types and the new `CompletionBrokerPort` interface. Bump minor version.
 - Docker socket access in compose — already partially in place; needs verification across local profiles.
-- **Redis** — new dependency, used only by `RedisBrokerAdapter` in `local-docker` and beyond. Local-subprocess does not use Redis. Compose config carries the Redis container.
+- **Redis** — new dependency, used only by the broker service in `local-docker` and beyond. Local-subprocess does not use Redis. Compose config carries the Redis container.
+- **Go toolchain in CI** — the broker service (T7) is implemented in Go per the workspace [language policy](../../language-policy.md) ("new standalone services in Go; existing components stay TypeScript"). CI gains a Go lane (toolchain, `go test`, container build).
 
 ### Cross-feature
 - `agent-runtime-split` (T1–T7, all done) — provides today's `ExecutorAdapter` interface, which Wave 2 generalizes. No further work required from that feature.

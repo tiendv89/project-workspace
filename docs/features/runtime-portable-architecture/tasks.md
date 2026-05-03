@@ -14,7 +14,7 @@
 | T4  | 3b   | Runner wrapper script (D6c)                                            | T1                |
 | T5  | 3c   | `SubProcessAdapter` async submit/reap with broker integration          | T3, T4            |
 | T6  | 3d   | Refactor orchestrator concerns + shared reap loop                      | T5                |
-| T7  | 4a   | `RedisBrokerAdapter` + broker service container                        | T3                |
+| T7  | 4a   | Redis-backed broker service (Go) + container                           | T3                |
 | T8  | 4b   | `DockerRunAdapter`                                                     | T4, T6, T7        |
 | T9  | 4c   | docker-compose template + bridge network                               | T7, T8            |
 | T10 | 5    | Portability spec doc + fake-orchestrator harness + CLAUDE.md updates   | T9                |
@@ -42,9 +42,10 @@ T4: Runner wrapper script (D6c)
       └── BLOCKED on T3 (broker contract + HTTP receiver in place;
                           register / listCompleted / ack are call sites)
       └── BLOCKED on T4 (wrapper script must exist to be spawned as the child)
-    T7: RedisBrokerAdapter + broker service container
-      └── BLOCKED on T3 (peek-and-lock semantics settled by the reference
-                          InMemoryBrokerAdapter; behavioural parity is the bar)
+    T7: Redis-backed broker service (Go) + container
+      └── BLOCKED on T3 (broker HTTP contract + JSON fixtures pinned by the
+                          reference InMemoryBrokerAdapter; T7 conforms via
+                          black-box fixture replay)
       └── T5 and T7 run in parallel after T3 (T5 also waits on T4)
       │
       T6: Refactor orchestrator concerns + shared reap loop
@@ -135,7 +136,7 @@ Refactor today's inline orchestrator code so each side effect goes through a por
 ### Description
 Implement the `CompletionBrokerPort` contract end-to-end with in-process state. Bind an HTTP route (`POST /callback`) on the orchestrator process at startup. The receiver validates the per-handle nonce against the in-flight registry and, on success, enqueues the completion onto the peek-and-lock queue. The reclaim sweep (T-Q9) returns expired-lock items to the queue.
 
-This is the **reference implementation** of the broker contract — `RedisBrokerAdapter` (T7) must produce identical behaviour against the same test suite.
+This is the **reference implementation** of the broker contract. The HTTP contract pinned here is **language-agnostic** — the future Redis-backed broker (T7) is implemented in Go and reuses these HTTP fixtures via black-box conformance tests, not shared type imports. Author the HTTP request/response shapes as a JSON fixture set (e.g. `runtime/broker-protocol/fixtures/`) checked into the repo; both T3 (in-process TS) and T7 (separate Go service) must pass them identically.
 
 ### Required skills
 - typescript-best-practices
@@ -152,7 +153,8 @@ This is the **reference implementation** of the broker contract — `RedisBroker
 - [ ] Generate per-orchestrator port (ephemeral by default; write to runtime file per T-Q10)
 - [ ] Validate nonce in callback handler; 401 on invalid
 - [ ] Implement reclaim sweep on visibility-timeout expiry (cadence per T-Q9)
-- [ ] Write hermetic test suite — used as the parity bar for `RedisBrokerAdapter`
+- [ ] Write hermetic TS test suite for in-process behaviour
+- [ ] Author the **broker protocol JSON fixtures** (`runtime/broker-protocol/fixtures/`) — language-agnostic HTTP request/response shapes. Run them against this adapter end-to-end. T7 (Go) reuses them.
 
 ---
 
@@ -221,25 +223,28 @@ End of task: orchestrator's cycle no longer waits for any single executor to fin
 
 ---
 
-## T7 — `RedisBrokerAdapter` + broker service container
+## T7 — Redis-backed broker service (Go) + container
 
 ### Description
-Implement the same `CompletionBrokerPort` contract backed by Redis. Use Redis Streams + consumer groups (or simpler list primitives if Streams is overkill) for peek-and-lock; enforce visibility timeout via `XPENDING` + `XCLAIM` reclaim sweep. Package as a small Node service exposing the same `POST /callback` HTTP route as the in-memory broker, runnable as a container.
+Implement the broker service as a **standalone Go binary** backed by Redis, conforming to the language-agnostic HTTP contract pinned by T3. This is the workspace's first Go service, in line with the language policy at `docs/language-policy.md` ("new standalone services in Go; existing components and orchestrator core stay in TypeScript").
 
-Behavioural parity with `InMemoryBrokerAdapter` (T3) is the acceptance bar — the same hermetic test suite must pass against both adapters.
+Use `net/http` for the receiver, `go-redis` for the Redis client, and Redis Streams + consumer groups for peek-and-lock; enforce visibility timeout via `XPENDING` + `XCLAIM` reclaim sweep. Single static binary; small container image.
+
+The orchestrator-side adapter for `local-docker` (in TypeScript) talks to this service over HTTP — language boundary at the network, no in-process interop. Behavioural parity with `InMemoryBrokerAdapter` (T3) is the acceptance bar; the parity tests are **black-box HTTP fixtures** (request/response JSON shapes), not shared type imports.
 
 ### Required skills
-- typescript-best-practices
-- backend-engineer
+- go-best-practices
 
 ### Subtasks
-- [ ] Implement `CompletionBrokerPort` against Redis primitives
-- [ ] Use Streams + consumer groups for peek-and-lock semantics
-- [ ] Implement reclaim sweep via `XPENDING` + `XCLAIM`
-- [ ] Package as a small Node service exposing `POST /callback`
-- [ ] Build broker service container (Dockerfile)
-- [ ] Document AOF/RDB defaults; note that production HA is BYO
-- [ ] Run T3's hermetic test suite against this adapter — must pass identically
+- [ ] Lay out Go module structure (`cmd/broker/main.go`, internal packages)
+- [ ] Implement `POST /callback` route validating the per-handle nonce
+- [ ] Implement `register` / `listCompleted` (peek+lock) / `ack` / `nack` HTTP routes (broker's orchestrator-facing surface)
+- [ ] Wire `go-redis` client; use Redis Streams + consumer groups for peek-and-lock
+- [ ] Implement `XPENDING` + `XCLAIM` visibility-timeout reclaim sweep (cadence per T-Q9)
+- [ ] Document the AOF/RDB Redis defaults; flag that production HA is BYO
+- [ ] Multi-stage Dockerfile producing a small static-binary container image
+- [ ] Add Go to CI (toolchain, `go test`, build)
+- [ ] Author the JSON-fixture parity test suite (HTTP request/response shapes); both T3 (in-process) and T7 (Go service) must pass it identically
 
 ---
 
@@ -292,6 +297,8 @@ End of task: M:N is functional locally — multiple agents spawn per-task execut
 ### Description
 Close out the feature with documentation. Author `runtime/portability-spec.md` documenting every port (including `CompletionBrokerPort`) and adapter, with the per-profile mechanism contract derived from "How `submit` works per profile" in the technical design. Update the executor team's `fake-orchestrator` harness to use the new `ExecutorPort` + `CompletionBrokerPort` contracts so executor authors test against the interface the platform actually uses. Update `CLAUDE.md` references that assume the bundled-image model.
 
+This task also lands the **language policy** for the workspace: a short, durable note that orchestrator core, runner wrapper, and existing adapters stay in TypeScript while new standalone services (starting with T7's broker) are written in Go. The policy lives at `docs/language-policy.md` (workspace-level) and is referenced from this feature's portability spec.
+
 ### Required skills
 - typescript-best-practices
 
@@ -299,6 +306,8 @@ Close out the feature with documentation. Author `runtime/portability-spec.md` d
 - [ ] Author `runtime/portability-spec.md` covering every port + adapter + profile
 - [ ] Document the `runner.js` env contract and POST payload shape
 - [ ] Document the per-profile `submit` mechanism (subprocess, docker, future K8s, future pull)
+- [ ] Document the **broker protocol JSON fixtures** as the language-agnostic source of truth
 - [ ] Update `fake-orchestrator` harness to use new contracts
 - [ ] Update `CLAUDE.md` sections that assume the bundled-image model
+- [ ] Reference `docs/language-policy.md` from `runtime/portability-spec.md`
 - [ ] Add a "How to add a new profile" section to `runtime/portability-spec.md`
