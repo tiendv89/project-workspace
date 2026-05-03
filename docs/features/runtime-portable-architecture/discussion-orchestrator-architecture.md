@@ -576,6 +576,33 @@ the initial spec discussion:
     HMAC, cross-orchestrator addressing, multi-tenancy enforcement
     at the receiver, and pull-family runners on top of the same
     code path.
+15. *"the workflow is not in redis, the orchestrator state is in
+    redis"* (2026-05-04) — corrected a category error. Constraint #1
+    ("workflow state in git") governs the customer-visible task
+    lifecycle, audit log, and claim records. It does **not** govern
+    platform-internal orchestrator runtime state — in-flight handles,
+    pending completions, nonces. That category can live wherever the
+    platform finds convenient. With this distinction in hand, the
+    per-orchestrator in-process completion buffer was rejected in
+    favour of a **shared completion broker** (D7b) — a peek-and-lock
+    work queue (SQS / RabbitMQ unacked / Redis Streams pattern). The
+    broker is a port (`CompletionBrokerPort`); embedded
+    `InMemoryBrokerAdapter` for `local-subprocess`, separate broker
+    service backed by Redis (`RedisBrokerAdapter`) for `local-docker`
+    and beyond. Net effects:
+    - **T-Q7 dissolves.** Runners POST to one URL — the broker.
+      No per-orchestrator addressing problem.
+    - **Submit and reap decouple.** Any orchestrator can drain any
+      completion. Tasks are no longer "owned end-to-end" by the
+      submitter — dispatch is opportunistic.
+    - **Orchestrator A dying mid-task is no longer special.** Its
+      pending completion sits in the broker until any surviving
+      orchestrator drains it. No `docker inspect` reconciliation
+      as the primary recovery path.
+    - **`ExecutorPort` shrinks** to `submit` + (optional) `readResult`.
+      `listCompleted` and `ack` move to `CompletionBrokerPort`.
+    Recorded in `technical-design.md` as Decision D7 and the new
+    `CompletionBrokerPort` contract.
 
 ---
 
