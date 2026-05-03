@@ -498,6 +498,16 @@ the initial spec discussion:
    keep subprocess; add `DockerRunAdapter` + `local-docker` next
    (blocks platform-byo-executor); then `K8sJobAdapter` for prod;
    `local-kind` last and optional.
+10. *"if we don't use K8s Job but a long-polling app — result
+    retrieval should be a mechanism, not depend on K8s"* — corrected.
+    K8s-heavy diagrams earlier in the doc were misleading: K8s Job is
+    one implementation of the abstract `ExecutorPort` contract
+    (submit / listCompleted / readResult / ack). Six concrete
+    implementations enumerated: sub-process, K8s Job,
+    long-polling HTTP service, message queue, HTTP callback, blob
+    storage polling. The orchestrator core depends only on the four
+    interface methods — never on the implementation. A long-polling
+    executor service is a first-class option, no K8s required.
 
 ---
 
@@ -537,11 +547,10 @@ startup determines which adapters are wired into which ports.
 These are the seams in the system. Each one needs to be a real
 interface, not an embedded assumption.
 
-| Port | Purpose | Local-profile adapter | K8s-profile adapter | Alt (queue) adapter |
+| Port | Purpose | Local-profile adapter | K8s-profile adapter | Alt (queue / long-poll) adapter |
 |---|---|---|---|---|
-| `ExecutorPort` | Launch the executor for one task; await completion | `SubProcessAdapter` (child process) | `K8sJobAdapter` (`kubectl create job`) | `QueueProducerAdapter` (publish job message) |
-| `BriefingTransportPort` | Deliver briefing.md to the executor | `LocalFileBriefingAdapter` (path on shared FS) | `ConfigMapBriefingAdapter` (mount ConfigMap) | `S3SignedUrlBriefingAdapter` (pre-signed URL) |
-| `ResultTransportPort` | Receive result.json from the executor | `LocalFileResultAdapter` (read RESULT_PATH) | `PVCResultAdapter` (read from Job's PVC) | `S3ResultAdapter` / `HttpCallbackAdapter` |
+| `ExecutorPort` | **Full executor lifecycle** — submit, list completed, read result, ack. See "Result retrieval is a port, not a constraint" below. | `SubProcessAdapter` (child process; submit blocks → completes synchronously) | `K8sJobAdapter` (`kubectl create job`; list via Job status) | `LongPollHttpAdapter` (HTTP submit + long-poll completion) / `QueueAdapter` (publish + subscribe) |
+| `BriefingTransportPort` | Deliver briefing.md to the executor | `LocalFileBriefingAdapter` (path on shared FS) | `ConfigMapBriefingAdapter` (mount ConfigMap) | `S3SignedUrlBriefingAdapter` (pre-signed URL) / inline in submit payload |
 | `WorkflowStatePort` | Read/write task YAML, append logs | `GitWorkflowStateAdapter` (clone + commit + push) | `GitWorkflowStateAdapter` (same — git stays the truth) | `DBWorkflowStateAdapter` (Postgres) for high-throughput |
 | `CredentialPort` | Mint scoped credentials for executor pods (GitHub token, SSH key, image pull) | `EnvCredentialAdapter` (read from process env) | `GitHubAppCredentialAdapter` + `K8sSecretAdapter` (per-task scoped tokens, namespaced secrets) | `VaultCredentialAdapter` (HashiCorp Vault) |
 | `WorkspacePullPort` | Materialize the customer's workspace repo locally | `GitClonePullAdapter` (today) | `GitClonePullAdapter` (same) | `GitMirrorPullAdapter` (caching mirror) |
@@ -554,45 +563,130 @@ Each port has a **fake adapter** for tests. This lets the orchestrator
 core be tested hermetically — no Docker, no cluster, no network — by
 wiring fakes into every port.
 
+## Result retrieval is a port, not a constraint
+
+A core insight that's easy to lose in K8s-heavy diagrams: the
+orchestrator should not bake in *how* it retrieves executor results.
+"Submit a task and later collect its result" is an abstract concern.
+K8s Jobs are *one* implementation of it. There are several others,
+and the orchestrator core should not know which one is in use.
+
+This is the contract `ExecutorPort` exposes:
+
+```ts
+interface ExecutorPort {
+  /** Submit a task; returns an opaque handle the orchestrator stores. */
+  submit(input: ExecutorInput): Promise<ExecutorHandle>;
+
+  /** List every previously-submitted task that has finished
+   *  (completed, failed, or timed out) and is ready to be reaped. */
+  listCompleted(): Promise<ExecutorCompletion[]>;
+
+  /** Read the full result for a given handle. */
+  readResult(handle: ExecutorHandle): Promise<ExecutorResult>;
+
+  /** Mark the result as reaped (delete K8s Job, ack queue message,
+   *  delete temp file, etc.) so the same result is not delivered twice. */
+  ack(handle: ExecutorHandle): Promise<void>;
+}
+```
+
+The orchestrator's claim and reap loops depend only on this interface.
+Below are six concrete ways to implement it. The choice is independent
+of *where the executor runs* — the same executor binary can be reached
+via any of these.
+
+| Mechanism | `submit` | `listCompleted` | `readResult` | `ack` | When it fits |
+|---|---|---|---|---|---|
+| **Sub-process** (today) | spawn child, await exit | trivial — exit blocks | read `RESULT_PATH` file | unlink temp file | Single-machine local dev |
+| **K8s Job** | `kubectl create job` | `kubectl get jobs status=Complete` | read PVC / Job logs | `kubectl delete job` | Production K8s |
+| **Long-polling executor service** | `POST /tasks` with briefing | `GET /tasks?completed=true` (long-poll) | `GET /tasks/{id}/result` | `DELETE /tasks/{id}` | Customer runs a stateful executor service; **no K8s required** |
+| **Message queue** | `publish(in_queue, payload)` | subscribe to `out_queue`, drain | parse message body | `ack(message_id)` | Decoupled fleets, on-prem split |
+| **HTTP callback** | `POST /run` with callback URL | maintained internally — callbacks fill a buffer | callback body | mark internal entry done | Push-based, executor knows orchestrator URL |
+| **Blob storage polling** | upload briefing to `s3://in/{id}` | list `s3://out/` for new objects | `GET s3://out/{id}.json` | delete blob | Stateless, durable, cheap |
+
+### What this means in practice
+
+- **The K8s Job pattern shown earlier in this doc is one example, not the
+  only mechanism.** The discussion's diagrams show K8s because that's a
+  concrete production target — but every reference to `kubectl create
+  job` could equally be `POST /tasks`, `publish(queue)`, or `upload S3
+  blob`.
+- **Long-polling is a first-class option.** A customer who runs an
+  executor as a long-lived HTTP service (autoscaler keeps it warm,
+  internal queueing handles concurrency) is a perfectly valid platform
+  configuration. The orchestrator doesn't care.
+- **The retrieval mechanism and the execution mechanism are
+  independent.** You can submit work to an executor service while
+  reading results from a queue; or submit to K8s but read from S3.
+  These are implementation choices inside the adapter, not new ports.
+
+### Why this matters for the platform spec
+
+Several of the open questions in `product-spec.md` (Q5 network model,
+Q9 failure attribution) hinge on the assumption that everything goes
+through K8s Jobs. If the platform supports multiple `ExecutorPort`
+implementations — e.g. K8s Job for hosted-execution tenants and
+long-polling HTTP for BYOI (bring-your-own-infra) tenants — those
+questions need answers per implementation, or the abstraction needs to
+hide the difference.
+
+The recommended invariant: **the orchestrator core depends only on
+`ExecutorPort`'s four methods. Implementation-specific concerns
+(networking, transport, isolation) are entirely inside each adapter.**
+
 ## The three profiles
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                       Orchestrator core                                 │
 │  (eligibility, claim, briefing, dispatch — knows nothing about infra)  │
-└──┬─────────┬──────────┬──────────┬──────────┬──────────┬──────────┬───┘
-   │         │          │          │          │          │          │
-   ▼         ▼          ▼          ▼          ▼          ▼          ▼
- Exec    Briefing    Result      State      Creds      Image      Events
- Port     Port        Port        Port       Port       Port       Port
-   │         │          │          │          │          │          │
-   │         │          │          │          │          │          │
-═══╪═════════╪══════════╪══════════╪══════════╪══════════╪══════════╪═══
-   │         │          │          │          │          │          │
-   │  ┌──────┴──────────┴──────────┴──────────┴──────────┴──────────┴──┐
-   │  │                                                                │
-   │  │   ┌─ LOCAL profile ──────────────────────────────────────────┐ │
-   │  │   │                                                          │ │
-   │  └─► │ SubProc   LocalFile   LocalFile   Git    Env   Static  Stdout │ │
-   │      │                                                          │ │
-   │      └──────────────────────────────────────────────────────────┘ │
-   │                                                                    │
-   │      ┌─ K8S profile ────────────────────────────────────────────┐ │
-   │      │                                                          │ │
-   └────► │ K8sJob   ConfigMap   PVC        Git    GhApp WSConfig Loki │ │
-          │                                       +K8sSecret             │ │
-          └──────────────────────────────────────────────────────────┘ │
-                                                                        │
-          ┌─ QUEUE profile (alt) ────────────────────────────────────┐ │
-          │                                                          │ │
-          │ QPub     S3SignedUrl HttpCallback DB    Vault WSConfig Kafka │ │
-          │                                                          │ │
-          └──────────────────────────────────────────────────────────┘ │
-                                                                        │
-          ┌──────────────────────────────────────────────────────────┐ │
-          │  ...future profiles (Lambda, on-prem VM, etc.) plug in   │ │
-          │  here without touching the core.                         │ │
-          └──────────────────────────────────────────────────────────┘ │
+└──┬─────────┬──────────┬──────────┬──────────┬──────────┬──────────────┘
+   │         │          │          │          │          │
+   ▼         ▼          ▼          ▼          ▼          ▼
+ Exec    Briefing     State      Creds      Image      Events
+ Port     Port         Port       Port       Port       Port
+ (full
+  exec
+  lifecycle:
+  submit,
+  list,
+  read,
+  ack)
+   │         │          │          │          │          │
+═══╪═════════╪══════════╪══════════╪══════════╪══════════╪═══
+   │         │          │          │          │          │
+   │  ┌──────┴──────────┴──────────┴──────────┴──────────┴──┐
+   │  │                                                     │
+   │  │   ┌─ LOCAL profile ───────────────────────────────┐ │
+   │  │   │                                               │ │
+   │  └─► │ SubProc   LocalFile   Git    Env   Static  Stdout │ │
+   │      │                                               │ │
+   │      └───────────────────────────────────────────────┘ │
+   │                                                         │
+   │      ┌─ K8S profile ─────────────────────────────────┐ │
+   │      │                                               │ │
+   └────► │ K8sJob    ConfigMap   Git    GhApp  WSConfig  Loki │ │
+          │           (+ PVC for                  +K8sSecret    │ │
+          │            results)                                 │ │
+          └───────────────────────────────────────────────┘ │
+                                                              │
+          ┌─ LONG-POLL profile ────────────────────────────┐ │
+          │                                                │ │
+          │ LongPoll  HttpInline  Git    HttpAuth WSConfig HttpLog│ │
+          │ HTTP                                            │ │
+          └───────────────────────────────────────────────┘ │
+                                                              │
+          ┌─ QUEUE profile ─────────────────────────────────┐ │
+          │                                                 │ │
+          │ QPub+QSub MsgInline   DB     Vault   WSConfig  Kafka │ │
+          │                                                 │ │
+          └────────────────────────────────────────────────┘ │
+                                                              │
+          ┌─────────────────────────────────────────────────┐ │
+          │  ...future profiles (Lambda, on-prem VM, etc.)  │ │
+          │  plug in here without touching the core.        │ │
+          └─────────────────────────────────────────────────┘ │
                                                                         │
 ══════════════════════════════════════════════════════════════════════ ┘
 ```
