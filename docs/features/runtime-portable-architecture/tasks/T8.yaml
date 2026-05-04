@@ -1,7 +1,7 @@
 id: T8
 title: DockerRunAdapter
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T4
   - T6
@@ -10,8 +10,8 @@ blocked_reason: null
 branch: feature/runtime-portable-architecture-T8
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:05:33+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-04T08:42:37.226Z
 pr:
   url: null
   status: null
@@ -24,3 +24,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T08:40:54.216Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:42:37.226Z
+    note: Claimed via git-based claim protocol.
