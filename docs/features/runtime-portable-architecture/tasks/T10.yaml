@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T9
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T16:52:24.965Z
+  last_updated_at: 2026-05-04T18:02:46.821Z
 pr:
   url: null
   status: null
@@ -121,14 +121,17 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-05T00:30:40+0700
-    note: >-
-      Reset to ready — implementation is complete. PR #75
+    note: "Reset to ready — implementation is complete. PR #75
       (https://github.com/tiendv89/agent-workflow/pull/75) is already open on
       branch feature/runtime-portable-architecture-T10 with all work committed
       (portability spec, fake-orchestrator harness, tests, language policy).
-      Next agent: do NOT re-implement. Check out the existing branch, verify
-      the PR is still open, and set status to in_review with pr.url pointing
-      to PR #75.
+      Next agent: do NOT re-implement. Check out the existing branch, verify the
+      PR is still open, and set status to in_review with pr.url pointing to PR
+      #75."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T18:02:46.821Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
