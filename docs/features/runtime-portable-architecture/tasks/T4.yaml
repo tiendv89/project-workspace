@@ -1,15 +1,15 @@
 id: T4
 title: Runner wrapper script (D6c)
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T4
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T11:52:58+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-04T04:54:41.891Z
 pr:
   url: null
   status: null
@@ -36,7 +36,12 @@ log:
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T11:52:58+0700
-    note: Reset to ready — executor crashed before producing any work (pr.url is null).
+    note: Reset to ready — executor crashed before producing any work (pr.url is
+      null).
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-04T04:54:41.891Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/89
   status: open
