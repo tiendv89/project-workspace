@@ -1,15 +1,15 @@
 feature_id: dashboard
 title: Workflow Dashboard Web
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Teams execute tasks in the dashboard repo. T1 is ready to claim.
+feature_status: in_design
+current_stage: product_spec
+next_action: Human to review product-spec.md and approve or reject before implementation proceeds.
 
 stages:
   product_spec:
-    review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: "2026-05-04T15:41:19+0700"
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
     review_comment: null
     review_history:
       - status: draft
@@ -20,6 +20,10 @@ stages:
         by: minhkienn203@gmail.com
         at: "2026-05-04T15:41:19+0700"
         comment: null
+      - status: awaiting_approval
+        by: matthew@swellnetwork.io
+        at: "2026-05-04T16:50:13+0700"
+        comment: Reset to product_spec for re-review.
   technical_design:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
@@ -103,9 +107,16 @@ history:
     by: minhkienn203@gmail.com
     at: "2026-05-04T16:09:15+0700"
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: product_spec
+    action: reset
+    by: matthew@swellnetwork.io
+    at: "2026-05-04T16:50:13+0700"
+    note: >-
+      Stage reset to product_spec for re-review. Artifacts preserved.
+      technical_design and tasks flagged for revalidation pending product spec outcome.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
+  technical_design_required: true
+  tasks_required: true
   deployment_checklist_required: false
