@@ -1,8 +1,10 @@
 id: T5
 title: SubProcessAdapter async submit/reap with broker integration
 repo: workflow
-status: todo
-depends_on: [T3, T4]
+status: ready
+depends_on:
+  - T3
+  - T4
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T5
 execution:
@@ -17,3 +19,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T05:45:53.990Z
+    note: Task activated — dependency T4 merged and marked done.
