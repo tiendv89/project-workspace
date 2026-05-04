@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T9
 blocked_reason: null
@@ -143,6 +143,16 @@ log:
     rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
       runtime-portable-architecture
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T01:29:20+0700
+    note: >-
+      Reset to ready — implementation already complete on
+      feature/runtime-portable-architecture-T10 in the workflow repo. PR #75
+      (https://github.com/tiendv89/agent-workflow/pull/75) is open. Next agent:
+      do NOT re-implement. Checkout the branch in the workflow repo, rebase it
+      onto origin/main (git rebase origin/main), force-push with lease, then set
+      status to in_review with pr.url = https://github.com/tiendv89/agent-workflow/pull/75.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
