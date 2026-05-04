@@ -1,0 +1,22 @@
+id: T6
+title: Route integration, fallback screens, and toast wiring
+repo: dashboard
+status: todo
+depends_on:
+  - T3
+  - T4
+  - T5
+blocked_reason: null
+branch: feature/dashboard-T6
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T16:07:16+0700"
+    note: Task created from approved technical design.

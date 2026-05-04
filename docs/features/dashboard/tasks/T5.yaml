@@ -1,0 +1,20 @@
+id: T5
+title: Kanban and task detail compound components
+repo: dashboard
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/dashboard-T5
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T16:07:16+0700"
+    note: Task created from approved technical design.
