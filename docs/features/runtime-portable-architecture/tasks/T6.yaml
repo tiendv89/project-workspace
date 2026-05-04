@@ -1,15 +1,15 @@
 id: T6
 title: Refactor orchestrator concerns + shared reap loop
 repo: workflow
-status: blocked
+status: in_review
 depends_on:
   - T5
-blocked_reason: max_turns_exceeded
+blocked_reason: null
 branch: feature/runtime-portable-architecture-T6
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T07:32:59.705Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-04T14:39:52+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/72
   status: open
@@ -54,6 +54,12 @@ log:
     by: tiendv.52@gmail.com
     note: max_turns_exceeded
     at: 2026-05-04T07:32:59.705Z
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T14:39:52+0700
+    note: >-
+      Unblocked — PR #72 is a WIP draft but going in the right direction.
+      Agent should continue implementation and convert draft to ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/94
   status: open
