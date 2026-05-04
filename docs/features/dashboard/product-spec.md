@@ -1,15 +1,15 @@
 # Product Specification
 
 ## Feature
+
 - Feature ID: `dashboard`
 - Title: `Workflow Dashboard Web`
 
 ## References
-- Workspace page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=34-490&t=l6DiKoWXEtl6DNSM-0
-- Workspace detail page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=34-537&t=l6DiKoWXEtl6DNSM-0
-- Filter task Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=35-752&t=l6DiKoWXEtl6DNSM-0
-- Switch workspace Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=36-935&t=l6DiKoWXEtl6DNSM-0
-- Task detail Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=36-1108&t=l6DiKoWXEtl6DNSM-0
+
+- Workspaces page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3198&t=dBztH5XSYbZ9jPyR-0
+- Workspace detail page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3026&t=dBztH5XSYbZ9jPyR-0
+- Task detail Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3276&t=dBztH5XSYbZ9jPyR-0
 
 ## Problem
 
@@ -64,9 +64,10 @@ Teams using the workflow system manage their project state through YAML files in
 2. The left side of the board shows a compact task status panel with three rows: `IN PROGRESS`, `READY`, and `DONE`.
 3. Each row lists tasks whose current task YAML status matches that row.
 4. Each task item shows the task title, parent feature name, and a status-aware elapsed time:
-   - `IN PROGRESS`: how long the task has been in progress.
-   - `READY`: how long the task has been ready.
    - `DONE`: how long the task has been done.
+   - `READY`: how long the task has been ready.
+   - `IN PROGRESS`: how long the task has been in progress.
+
 5. Clicking a task in the left panel opens the same task detail panel used by task cards on the Kanban board.
 
 ## Repository Access
@@ -94,11 +95,11 @@ No other files are read. The system treats the YAML as read-only; it never write
 
 ## API Surface (high level)
 
-| Method | Path | Purpose |
-|---|---|---|
-| `POST` | `/api/workspaces` | Clone the repo and import workflow YAML. |
-| `GET` | `/api/workspaces/:id/features` | Return parsed features and tasks for the board. |
-| `POST` | `/api/workspaces/:id/sync` | Re-pull and re-parse the repository. |
+| Method | Path                           | Purpose                                         |
+| ------ | ------------------------------ | ----------------------------------------------- |
+| `POST` | `/api/workspaces`              | Clone the repo and import workflow YAML.        |
+| `GET`  | `/api/workspaces/:id/features` | Return parsed features and tasks for the board. |
+| `POST` | `/api/workspaces/:id/sync`     | Re-pull and re-parse the repository.            |
 
 Detailed request/response contracts are defined in the technical design.
 
