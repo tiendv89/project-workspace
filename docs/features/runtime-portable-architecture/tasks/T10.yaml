@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T9
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T11:24:04.864Z
+  last_updated_at: 2026-05-04T12:51:32.973Z
 pr:
   url: null
   status: null
@@ -79,9 +79,13 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-04T18:30:45+0700
-    note: >-
-      Reset to ready — runner crashed again (runner.js missing from image).
-      Dockerfile fixed to include runner-wrapper; rebuild required before next claim.
+    note: Reset to ready — runner crashed again (runner.js missing from image).
+      Dockerfile fixed to include runner-wrapper; rebuild required before next
+      claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T12:51:32.973Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
