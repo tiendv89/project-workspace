@@ -31,9 +31,9 @@ stages:
           Approved revised spec — end-to-end scope, no auth in v1,
           import-first journey, user story format.
   technical_design:
-    review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: "2026-05-04T16:02:18+0700"
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
     review_comment: null
     review_history:
       - status: awaiting_approval
@@ -52,6 +52,12 @@ stages:
         by: minhkienn203@gmail.com
         at: "2026-05-04T16:02:18+0700"
         comment: null
+      - status: draft
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-04T17:10:28+0700"
+        comment: >-
+          Reset to draft — product spec changed to end-to-end, frontend-only
+          GitHub API approach. Prior frontend-only compound-component design is superseded.
   tasks:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
