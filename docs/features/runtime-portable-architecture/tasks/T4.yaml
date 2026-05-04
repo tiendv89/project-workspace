@@ -26,6 +26,13 @@ log:
     by: pentative@gmail.com
     at: 2026-05-04T03:50:01.578Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-04T03:50:10.278Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: HTTP 404"
+    rag_query: Runner wrapper script (D6c) runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/89
   status: open
