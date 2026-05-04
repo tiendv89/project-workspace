@@ -1,7 +1,7 @@
 id: T6
 title: Refactor orchestrator concerns + shared reap loop
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T5
 blocked_reason: null
@@ -14,10 +14,10 @@ branch: feature/runtime-portable-architecture-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T08:24:38+0000
+  last_updated_at: 2026-05-04T08:40:54.183Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/72
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -88,10 +88,14 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-04T08:24:38+0000
-    note: >-
-      Resolved 1 inline review thread: renamed SubProcessAdapterW2 → SubProcessAdapter,
-      deleted adapter/spawn.ts (old blocking adapter), migrated dispatch-draft-review.ts
-      to the renamed class. PR converted to ready-for-review.
+    note: "Resolved 1 inline review thread: renamed SubProcessAdapterW2 →
+      SubProcessAdapter, deleted adapter/spawn.ts (old blocking adapter),
+      migrated dispatch-draft-review.ts to the renamed class. PR converted to
+      ready-for-review."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:40:54.183Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/94
   status: open
