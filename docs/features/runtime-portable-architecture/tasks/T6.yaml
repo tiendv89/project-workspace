@@ -1,8 +1,9 @@
 id: T6
 title: Refactor orchestrator concerns + shared reap loop
 repo: workflow
-status: todo
-depends_on: [T5]
+status: ready
+depends_on:
+  - T5
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T6
 execution:
@@ -17,3 +18,11 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-04T06:50:29.786Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T06:50:30.186Z
+    note: Task activated — dependency T5 merged and marked done.

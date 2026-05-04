@@ -1,7 +1,7 @@
 id: T5
 title: SubProcessAdapter async submit/reap with broker integration
 repo: workflow
-status: in_progress
+status: done
 depends_on:
   - T3
   - T4
@@ -9,11 +9,11 @@ blocked_reason: null
 branch: feature/runtime-portable-architecture-T5
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T05:47:25.922Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-04T06:50:29.767Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/71
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -27,6 +27,20 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T05:47:25.922Z
     note: Claimed via git-based claim protocol.
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T13:48:11+0700
+    note: "Manual reconcile — workspace PR #92 accidentally merged mid-claim.
+      Implementation PR already exists at
+      https://github.com/tiendv89/agent-workflow/pull/71."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-04T06:50:29.767Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T06:50:30.118Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/92
-  status: open
+  url: null
+  status: null
