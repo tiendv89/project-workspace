@@ -26,6 +26,18 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T03:36:48.946Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T03:37:02.953Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/discussion-orchestrator-archi\
+      tecture.md,
+      docs/features/runtime-portable-architecture/technical-design.md,
+      runtime/orchestrator/src/adapter/adapter.ts"
+    rag_query: Extract today's adapters; wire `local-subprocess` profile
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/88
   status: open
