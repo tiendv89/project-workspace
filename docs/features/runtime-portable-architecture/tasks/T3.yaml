@@ -1,8 +1,9 @@
 id: T3
 title: CompletionBrokerPort + InMemoryBrokerAdapter + HTTP receiver
 repo: workflow
-status: todo
-depends_on: [T2]
+status: ready
+depends_on:
+  - T2
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T3
 execution:
@@ -17,3 +18,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-04T04:51:21.848Z
+    note: Task activated — dependency T2 merged and marked done.
