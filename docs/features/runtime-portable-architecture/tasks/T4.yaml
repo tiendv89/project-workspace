@@ -1,8 +1,9 @@
 id: T4
 title: Runner wrapper script (D6c)
 repo: workflow
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T4
 execution:
@@ -17,3 +18,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T03:34:59.259Z
+    note: Task activated — dependency T1 merged and marked done.
