@@ -1,7 +1,7 @@
 id: T7
 title: Redis-backed broker service (Go) + container
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T3
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/runtime-portable-architecture-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T05:27:24.426Z
+  last_updated_at: 2026-05-04T05:45:30.636Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/70
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
