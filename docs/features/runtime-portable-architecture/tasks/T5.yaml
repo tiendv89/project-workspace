@@ -1,7 +1,7 @@
 id: T5
 title: SubProcessAdapter async submit/reap with broker integration
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T4
@@ -9,8 +9,8 @@ blocked_reason: null
 branch: feature/runtime-portable-architecture-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:05:33+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-04T05:47:25.922Z
 pr:
   url: null
   status: null
@@ -23,3 +23,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T05:45:53.990Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T05:47:25.922Z
+    note: Claimed via git-based claim protocol.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/92
+  status: open
