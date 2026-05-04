@@ -1,18 +1,23 @@
 id: T6
 title: Refactor orchestrator concerns + shared reap loop
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T5
 blocked_reason: null
+blocked_suggestion: A previous agent started this task and opened a WIP draft PR
+  at https://github.com/tiendv89/agent-workflow/pull/72 on branch
+  feature/runtime-portable-architecture-T6. Check out that branch, review the
+  existing work, and continue implementation from where it left off. Do not
+  start from scratch. When complete, convert the draft PR to ready-for-review.
 branch: feature/runtime-portable-architecture-T6
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:05:33+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-04T08:40:54.183Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/72
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -26,3 +31,71 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T06:50:30.186Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T06:59:19.796Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T06:59:34.902Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/product-spec.md,
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: Refactor orchestrator concerns + shared reap loop
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: agent@workflow.local
+    at: 2026-05-04T07:30:23+0000
+    note: Implementation started — async orchestrator refactor with shared reap loop.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: max_turns_exceeded
+    at: 2026-05-04T07:32:59.705Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T14:39:52+0700
+    note: "Unblocked — reset to ready. WIP draft PR #72 exists on branch
+      feature/runtime-portable-architecture-T6. Next agent must continue from
+      that branch, not start from scratch."
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-04T07:44:25.483Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-04T07:44:31.283Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: HTTP 500"
+    rag_query: Refactor orchestrator concerns + shared reap loop
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/72"
+    at: 2026-05-04T07:55:09.280Z
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:16:19.522Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:24:38+0000
+    note: "Resolved 1 inline review thread: renamed SubProcessAdapterW2 →
+      SubProcessAdapter, deleted adapter/spawn.ts (old blocking adapter),
+      migrated dispatch-draft-review.ts to the renamed class. PR converted to
+      ready-for-review."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:40:54.183Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/94
+  status: open

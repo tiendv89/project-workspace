@@ -1,8 +1,11 @@
 id: T8
 title: DockerRunAdapter
 repo: workflow
-status: todo
-depends_on: [T4, T6, T7]
+status: ready
+depends_on:
+  - T4
+  - T6
+  - T7
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T8
 execution:
@@ -17,3 +20,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:40:54.216Z
+    note: Task activated — dependency T6 merged and marked done.
