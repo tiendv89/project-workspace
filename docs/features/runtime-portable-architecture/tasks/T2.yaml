@@ -9,7 +9,7 @@ branch: feature/runtime-portable-architecture-T2
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-04T03:56:31.296Z
+  last_updated_at: 2026-05-04T04:01:20+0000
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/67
   status: open
@@ -46,6 +46,13 @@ log:
     by: pentative@gmail.com
     at: 2026-05-04T03:56:31.296Z
     note: Review dispatch claimed.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-04T04:01:20+0000
+    note: >-
+      Resolved 1 inline review thread (remove SSH_KEY_PATH fallback from
+      EnvCredentialAdapter — env var no longer used); PR converted to
+      ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/88
   status: open
