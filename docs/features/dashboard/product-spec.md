@@ -14,429 +14,493 @@
 
 ## Problem
 
-The current Workflow Dashboard web app is a local demo dashboard built with TanStack Router and Vite. It has useful UI foundations for login, workspace selection, workspace import, a Kanban-style workflow board, task details, and fallback screens, but most data is still local or hardcoded:
+The current Workflow Dashboard is a local demo app built with React, Vite, and TanStack Router. It has useful UI foundations — login, workspace selection, workspace import, a Kanban-style workflow board, task details, and fallback screens — but it has no backend. All state is local or hardcoded:
 
 - Authentication is simulated through `localStorage.isLoggedIn`.
 - Workspace records are stored in `localStorage.workspaces`.
-- First load seeds demo workspaces.
+- First load seeds demo workspaces; there is no server-side record.
 - Repository import only parses and stores a repository URL; it does not clone, sync, or call a backend.
-- The workspace detail board uses hardcoded sample feature/task data instead of loading real workspace-specific feature and task YAML.
-- Existing chat components are present in source but are not mounted.
-- Toast calls may not be visible because the app does not mount a toaster.
+- The workspace detail board uses hardcoded sample feature and task data instead of loading real YAML from the linked repository.
+- Private repository tokens are collected in the UI but cannot be stored safely in the browser.
+- There is no server to clone repositories, parse workflow YAML, or serve real feature and task state.
 
-This creates a polished visual prototype, but not yet a production-ready workflow dashboard. Users can navigate and inspect sample workflow data, but they cannot trust the board as the source of truth for a real workspace repository.
+This is a prototype, not a production system. Users can navigate and inspect sample data, but cannot trust the board as the source of truth for a real workspace repository.
 
 ## Goals
 
-- Preserve the current page structure and visual direction from the supplied Figma references.
-- Document all current routes, states, interactions, dropdowns, sheets, empty states, and limitations as the baseline product behavior.
-- Clarify the expected v1 product scope for a Workflow Dashboard Web app before technical design begins.
-- Keep the current app focused on reading, filtering, and inspecting workflow data.
-- Make clear which features are intentionally local/demo behavior and which capabilities are missing from production scope.
-- Provide acceptance criteria that can be used later to design and implement backend-backed workspace and workflow data loading.
+- Deliver a complete end-to-end workflow dashboard: frontend UI backed by a real server API.
+- Replace all `localStorage` state with server-backed storage — workspaces, features, and tasks.
+- Implement real repository import: clone the linked Git repository on the server, parse workflow YAML files, and serve the result to the frontend.
+- Support private repository import by storing GitHub personal access tokens securely on the server.
+- Serve real feature and task data from the parsed repository YAML on every board load.
+- Keep the current page structure and visual direction from the supplied Figma references.
+- Preserve the existing route layout: login, workspace list, workspace detail board, task detail sheet, 404, and error boundary.
 
 ## Non-goals
 
-- Do not design backend APIs in this product spec.
-- Do not define the repository sync implementation, Git provider integration, or file parsing architecture here.
-- Do not add drag-and-drop Kanban status updates in this stage.
-- Do not add create/edit/delete feature or task flows in this stage.
-- Do not define real authentication, organization membership, or multi-user permission handling in this stage.
-- Do not mount or connect a real AI chat backend in this stage.
-- Do not treat the current repository import flow as a real clone/sync operation.
+- Authentication design is deferred — see the `## Authentication` section.
+- Drag-and-drop Kanban status updates are not in scope.
+- Create, edit, or delete feature and task flows are not in scope.
+- Organisation membership, team management, or multi-user permission handling is not in scope.
+- AI chat backend integration is not in scope.
+- Real-time board sync (websockets, SSE) is not in scope; a manual refresh or sync-on-load is sufficient.
+- The `Create workspace` option in the Add Workspace modal remains a visible but disabled placeholder.
+
+## Authentication
+
+> **TBD — auth strategy to be decided separately before technical design begins.**
+>
+> All API endpoints that operate on user-owned resources (workspaces, features, tasks) must be protected. The frontend must carry the session credential on every API request. The login page UI requirements below remain valid regardless of the auth mechanism chosen.
+
+## Data Model
+
+### User
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | string (UUID) | Primary key |
+| `email` | string | Unique |
+| `createdAt` | ISO 8601 timestamp | |
+
+Auth-specific fields (password hash, tokens, etc.) are deferred to the auth decision.
+
+### Workspace
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | string (UUID) | Primary key |
+| `userId` | string | Owner |
+| `name` | string | Derived from repo name at import time |
+| `repoUrl` | string | Full Git clone URL |
+| `initials` | string | Derived from name |
+| `avatarColor` | string | Assigned from palette on creation |
+| `role` | string | Always `Owner` in v1 |
+| `isPrivate` | boolean | Whether the repo requires a token |
+| `tokenConfigured` | boolean | True if a GitHub token has been stored server-side |
+| `lastSyncedAt` | ISO 8601 timestamp or null | Time of last successful YAML parse |
+| `createdAt` | ISO 8601 timestamp | |
+
+The raw GitHub personal access token must never be returned to the frontend. Only `tokenConfigured: true/false` is exposed.
+
+### Feature
+
+Parsed from `docs/features/<featureId>/status.yaml` in the workspace repository.
+
+| Field | Type | Notes |
+|---|---|---|
+| `featureId` | string | Directory name under `docs/features/` |
+| `workspaceId` | string | Parent workspace |
+| `title` | string | From `status.yaml` |
+| `featureStatus` | string | Lifecycle status from `status.yaml` |
+| `currentStage` | string | Current stage from `status.yaml` |
+| `tasks` | Task[] | All tasks belonging to this feature |
+
+### Task
+
+Parsed from `docs/features/<featureId>/tasks/T<n>.yaml` in the workspace repository.
+
+| Field | Type | Notes |
+|---|---|---|
+| `taskId` | string | e.g. `T1` |
+| `featureId` | string | Parent feature |
+| `workspaceId` | string | Parent workspace |
+| `title` | string | From task YAML |
+| `status` | string | Task lifecycle status |
+| `branch` | string or null | |
+| `dependsOn` | string[] | Task IDs |
+| `blockedReason` | string or null | |
+| `execution` | object | `actorType`, `lastUpdatedBy`, `lastUpdatedAt` |
+| `pr` | object | `url`, `status` |
+| `log` | LogEntry[] | Activity timeline |
+
+### LogEntry
+
+| Field | Type |
+|---|---|
+| `action` | string |
+| `by` | string |
+| `at` | ISO 8601 timestamp |
+| `note` | string or null |
+
+## Backend API
+
+All endpoints are prefixed `/api`. All request and response bodies are JSON. All protected endpoints require the session credential resolved from the auth decision. Error responses use the shape `{ "error": "<message>" }`.
+
+### Authentication
+
+> **TBD** — endpoints will be defined once the auth strategy is decided.
+
+### Workspaces
+
+#### `GET /api/workspaces`
+
+Returns all workspaces owned by the authenticated user, sorted by `createdAt` descending.
+
+Response `200`:
+```json
+[
+  {
+    "id": "uuid",
+    "name": "project-workspace",
+    "repoUrl": "https://github.com/org/repo",
+    "initials": "PW",
+    "avatarColor": "#4f46e5",
+    "role": "Owner",
+    "isPrivate": false,
+    "tokenConfigured": false,
+    "lastSyncedAt": "2026-05-04T10:00:00+07:00",
+    "createdAt": "2026-05-04T09:00:00+07:00"
+  }
+]
+```
+
+#### `POST /api/workspaces`
+
+Import a new workspace by cloning its repository and parsing its YAML.
+
+Request body:
+```json
+{
+  "repoUrl": "https://github.com/org/repo",
+  "isPrivate": false,
+  "token": "ghp_xxxx"
+}
+```
+
+- `token` is required when `isPrivate` is `true`; omit or send `null` otherwise.
+- The server clones the repository using the supplied token if private, then parses all feature and task YAML files.
+- The raw token must be stored encrypted server-side and never returned to the client.
+- If the repository URL is already imported for this user, return `409` with `{ "error": "already imported" }`.
+- If clone fails due to auth, return `422` with `{ "error": "repository access denied — check token" }`.
+- If clone fails for any other reason, return `422` with an appropriate error message.
+
+Response `201`:
+```json
+{
+  "id": "uuid",
+  "name": "repo",
+  "repoUrl": "https://github.com/org/repo",
+  "initials": "R",
+  "avatarColor": "#0891b2",
+  "role": "Owner",
+  "isPrivate": false,
+  "tokenConfigured": false,
+  "lastSyncedAt": "2026-05-04T10:00:00+07:00",
+  "createdAt": "2026-05-04T10:00:00+07:00"
+}
+```
+
+#### `DELETE /api/workspaces/:id`
+
+Removes the workspace record, deletes the cloned repository from the server, and deletes the stored token if present.
+
+Response `204` (no body).
+
+Returns `404` if the workspace does not exist or does not belong to the authenticated user.
+
+#### `POST /api/workspaces/:id/sync`
+
+Re-pulls the repository and re-parses all YAML files. Updates `lastSyncedAt`.
+
+Response `200` — same shape as the single workspace object.
+
+### Features
+
+#### `GET /api/workspaces/:id/features`
+
+Returns all features parsed from the workspace repository, each including its tasks.
+
+Response `200`:
+```json
+[
+  {
+    "featureId": "runtime-portable-architecture",
+    "workspaceId": "uuid",
+    "title": "Runtime Portable Architecture",
+    "featureStatus": "in_implementation",
+    "currentStage": "tasks",
+    "tasks": [
+      {
+        "taskId": "T1",
+        "title": "Dockerfile and entrypoint setup",
+        "status": "done",
+        "branch": "feature/runtime-portable-architecture-T1",
+        "dependsOn": [],
+        "blockedReason": null,
+        "execution": {
+          "actorType": "agent",
+          "lastUpdatedBy": "agent",
+          "lastUpdatedAt": "2026-05-04T08:00:00+07:00"
+        },
+        "pr": { "url": "https://github.com/org/repo/pull/12", "status": "open" },
+        "log": []
+      }
+    ]
+  }
+]
+```
 
 ## Current Application Overview
 
-The app currently contains the following user-visible routes and fallback states:
+The app contains the following user-visible routes and fallback states. The data source for each route changes from `localStorage` to the backend API described above.
 
-| Route / Screen | Access State | Main Functionality | Source Files |
-|---|---|---|---|
-| `/` | Public redirect route | Checks `isLoggedIn`; redirects logged-in users to `/workspaces`, otherwise redirects to `/login`. No standalone UI. | `src/routes/index.tsx` |
-| `/login` | Public, redirects if already logged in | Demo login form, writes `isLoggedIn=true` to `localStorage`, then navigates to the workspace list. | `src/routes/login.tsx` |
-| `/workspaces` | Protected | Workspace list, import repository URL into a workspace, remove workspace, sign out. | `src/routes/workspaces/index.tsx` |
-| `/workspaces/:workspaceId` | Protected | Kanban-style feature/task board, search, status filter, workspace switcher, task detail sheet. | `src/routes/workspaces/$workspaceId.tsx`, `src/components/KanbanBoard.tsx` |
-| 404 Not Found | Public fallback | Shows a missing page message and a `Go home` button. | `src/routes/__root.tsx` |
-| Error boundary | App fallback | Shows a runtime error state with `Try again` and `Go home`; in dev mode it also displays the error message. | `src/router.tsx` |
-
-## Current Data And State
-
-- Auth state is stored through `src/lib/auth.ts` and uses `localStorage.isLoggedIn`.
-- Workspace state is stored through `src/lib/workspaces.ts` and uses `localStorage.workspaces`.
-- First workspace-list load seeds 3 default workspaces: `Acme Corp`, `Personal Dashboard`, and `Startup Project`.
-- Importing a repository URL creates a local workspace object only.
-- The app parses repository names from GitHub, GitLab, and Bitbucket HTTPS or SSH URLs.
-- Imported workspaces receive derived initials, role `Owner`, and an avatar color from the configured palette order.
-- `/workspaces/:workspaceId` uses `workspaceId` only to select the header workspace identity; the board data is still sample data.
-- The sample board has 4 features, 16 tasks, and 7 status columns: `TODO`, `READY`, `IN PROGRESS`, `BLOCKED`, `IN REVIEW`, `DONE`, and `CANCELLED`.
+| Route / Screen | Access State | Main Functionality |
+|---|---|---|
+| `/` | Public redirect | Checks session; redirects authenticated users to `/workspaces`, others to `/login`. No standalone UI. |
+| `/login` | Public, redirects if authenticated | Login form. Auth mechanism TBD. |
+| `/workspaces` | Protected | Workspace list fetched from `GET /api/workspaces`. Import repository via `POST /api/workspaces`. Remove workspace via `DELETE /api/workspaces/:id`. Sign out. |
+| `/workspaces/:workspaceId` | Protected | Kanban board loaded from `GET /api/workspaces/:id/features`. Workspace switcher, search, status filter, task detail sheet. |
+| 404 Not Found | Public fallback | Missing page message with `Go home` button. |
+| Error boundary | App fallback | Runtime error state with `Try again` and `Go home`; dev mode shows error message. |
 
 ## Functional Requirements
 
 ### `/` Redirect Entry
 
 - The root route must not render standalone UI.
-- If `auth.isLoggedIn()` returns `true`, it must redirect to `/workspaces`.
-- If the user is not logged in, it must redirect to `/login`.
-- The auth check must remain based on `localStorage.getItem("isLoggedIn") === "true"` until real auth is designed.
-- Users should effectively see the destination page immediately after redirect.
+- If the user has a valid session, redirect to `/workspaces`.
+- If not authenticated, redirect to `/login`.
 
 ### `/login`
 
 - The login page must be public.
-- If an already logged-in user visits `/login`, the route must redirect to `/workspaces`.
+- If an authenticated user visits `/login`, redirect to `/workspaces`.
 - Layout must be a full-height centered screen with content capped at `360px`.
 - The top area must include a `Zap` icon in a light primary container, title `Welcome back`, and subtitle `Sign in to your account to continue`.
 - The form must be placed in a card with card background, border, rounded corners, padding, and subtle shadow.
-- Email input must be `type="email"`, required, placeholder `name@example.com`, and default value `demo@example.com`.
-- Password input must be `type="password"`, required, and default value `password123`.
+- Email input: `type="email"`, required, placeholder `name@example.com`.
+- Password input: `type="password"`, required.
 - Input focus must remove the default outline and show a ring using the ring color.
-- Submitting a valid form must prevent default submission, call `auth.login()`, set `localStorage.isLoggedIn = "true"`, and navigate to `/workspaces`.
 - The `Sign In` button must be full width, primary colored, height `h-10`, and use a darker primary hover state.
-- The login page must not include modal, tooltip, dropdown, toast, or real server validation.
+- On submit, the frontend sends credentials to the auth endpoint (TBD) and stores the session credential.
+- On auth failure, display an inline error below the form.
 
 ### `/workspaces`
 
-- The workspace list route must be protected; unauthenticated users must be redirected to `/login`.
-- Header height must be `h-14`, with bottom border and card background.
-- The header should not include a generic app title, workspace icon, or workspace name.
-- The right side of the header must show a `Sign out` button with `LogOut` icon.
-- Signing out must remove `localStorage.isLoggedIn` and navigate to `/login`.
-- Main content must be centered, max width `3xl`, padded, and visually positioned below the header.
-- Intro copy must include `Welcome back!` and a subtitle instructing the user to choose or import a workspace.
+- Protected; unauthenticated users redirected to `/login`.
+- On mount, call `GET /api/workspaces` and render the result.
+- Show a loading state while the request is in flight.
+- Show an error state if the request fails.
+- Header height `h-14`, with bottom border and card background.
+- The right side of the header shows a `Sign out` button with `LogOut` icon. Signing out clears the session and navigates to `/login`.
+- Main content centered, max width `3xl`, padded.
+- Intro copy: `Welcome back!` with a subtitle instructing the user to choose or import a workspace.
 
 ### Workspace Import
 
 - The import area must be a standalone card.
-- Card header must include a link icon and title `Import from Repository`.
-- Description must tell the user to paste a GitHub, GitLab, or Bitbucket repository URL.
-- Repository URL input must use placeholder `https://github.com/owner/repo`.
-- Input must be disabled while importing.
-- Editing the input while an error is visible must clear the error.
-- Focus state must show a soft primary ring and primary-tinted border.
-- The form must include a `Private repository` switch row below the repository URL input.
-- The private repository switch is off by default.
-- The switch row must match the compact visual shape from the reference image: left-aligned switch control followed by monospace label text `Private repository`.
-- When the private repository switch is on, show a token field below it:
-  - Label: `GITHUB PERSONAL ACCESS TOKEN`.
-  - Placeholder: `ghp_xxxxxxxxxxxxxxxxxxxx`.
-  - Single-line input with full width and the same focus styling as the repository URL input.
+- Card header includes a link icon and title `Import from Repository`.
+- Description tells the user to paste a GitHub, GitLab, or Bitbucket repository URL.
+- Repository URL input: placeholder `https://github.com/owner/repo`, disabled while importing.
+- Editing the input while an error is visible clears the error.
+- Focus state shows a soft primary ring and primary-tinted border.
+- A `Private repository` switch row appears below the URL input — off by default.
+- When the switch is on, show a token field:
+  - Label: `GITHUB PERSONAL ACCESS TOKEN`
+  - Placeholder: `ghp_xxxxxxxxxxxxxxxxxxxx`
+  - Single-line, full width, same focus styling.
   - Disabled while importing.
-- When the private repository switch is off, hide the token field and clear any visible token error.
-- The `Import` button must be disabled while importing or when the input is empty.
-- Button hover must darken the primary background.
-- Active state must slightly scale to `0.97`.
-- Disabled state must use 50% opacity and `cursor-not-allowed`.
-- While importing, the button must show a spinning `Loader2` icon and text `Importing...`.
+- When the switch is off, hide and clear the token field.
+- The `Import` button is disabled while importing or when the input is empty.
+- While importing, show a spinning `Loader2` icon and text `Importing...`.
 
-Import behavior:
+Import behavior (frontend validation, then API call):
 
 - Trim the input before validation.
-- If empty, show `Please enter a repository URL`.
-- If the URL does not start with `https://`, `http://`, or `git@`, show `URL must start with https://, http://, or git@`.
-- If the exact repository URL already exists, show `"workspace name" already imported`.
-- If `Private repository` is enabled and the token is empty, show `GitHub personal access token is required for private repositories`.
-- The token validation must only require a non-empty value for now; it must not reject fine-grained GitHub tokens such as `github_pat_...`.
-- If valid, clear the error, set `importing=true`, wait 400ms, parse the repo name, derive initials, assign role `Owner`, assign avatar color, save to `localStorage.workspaces`, clear the input, and stop loading.
-- For current local-only import, do not persist the raw token into `localStorage.workspaces`.
-- Imported private workspaces may store safe metadata only, such as `privateRepository: true` and `tokenConfigured: true`.
-- Workspace cards must not display or reveal the token.
+- If empty: show `Please enter a repository URL`.
+- If URL does not start with `https://`, `http://`, or `git@`: show `URL must start with https://, http://, or git@`.
+- If private switch is on and token is empty: show `GitHub personal access token is required for private repositories`.
+- If frontend validation passes, call `POST /api/workspaces` with the URL, `isPrivate`, and `token`.
+- On `409` from the API: show `"<workspace name>" already imported`.
+- On `422` from the API: show the error message returned by the server.
+- On success: add the returned workspace to the list, clear the input, and stop loading.
+- The raw token is never stored in the browser.
 
 ### Workspace Cards
 
-- Each workspace must be displayed as a clickable card row.
-- Cards must include a colored `12x12` avatar, initials, workspace name, role, and a monospaced repository URL preview for imported workspaces.
-- Clicking a card must navigate to `/workspaces/:workspaceId`.
-- Card hover must change border to a soft primary color, add a subtle shadow, change workspace name to primary, change the right arrow to primary, and reveal the delete button.
-- The delete button must use the `Trash2` icon.
-- Deleting must call `preventDefault()` and `stopPropagation()` so the card does not navigate.
-- Deleting must remove the workspace from `localStorage.workspaces`.
-- Delete hover must use soft destructive background and destructive icon/text color.
-- Delete tooltip must be the native browser tooltip `title="Remove workspace"`.
-- `ArrowRight` must remain as the visual cue that the card opens the detail page.
+- Each workspace must be a clickable card row.
+- Cards include a colored `12x12` avatar, initials, workspace name, role, and a monospaced repository URL preview.
+- `lastSyncedAt` may be shown as a secondary label (e.g. `Synced 5 min ago`).
+- Clicking a card navigates to `/workspaces/:workspaceId`.
+- Card hover: primary border, subtle shadow, workspace name turns primary, right arrow turns primary, delete button reveals.
+- Delete button uses the `Trash2` icon; clicking calls `DELETE /api/workspaces/:id`, then removes the card from the list on success.
+- Delete must call `preventDefault()` and `stopPropagation()`.
+- Delete hover: soft destructive background and destructive icon/text.
+- Native `title="Remove workspace"` tooltip on the delete button.
 
 ### `Create a new workspace` Placeholder
 
-- Display the button below the workspace list.
-- The button must use dashed border, plus icon, title `Create a new workspace`, and subtitle `Start fresh with a new team`.
-- Hover must use soft accent background.
-- It remains a visual placeholder for now and must not create a real workspace until that flow is designed.
-
-### Workspace Empty State
-
-- No dedicated empty state is required while default seeding exists.
-- If all workspaces are removed, the page may show only the `Workspaces` heading and the `Create a new workspace` button.
+- Displayed below the workspace list.
+- Dashed border, plus icon, title `Create a new workspace`, subtitle `Start fresh with a new team`.
+- Hover uses soft accent background.
+- Remains a placeholder — no create flow in this scope.
 
 ### `/workspaces/:workspaceId`
 
-- The workspace detail route must be protected.
-- The route must read `workspaceId` from the URL and pass it into `KanbanBoard`.
-- `KanbanBoard` must find the workspace from localStorage by `workspaceId`.
-- If the workspace is not found, it may fall back to the first workspace.
-- On board load, the app must force light theme by removing the `dark` class from `document.documentElement` and setting `localStorage.theme = "light"`.
+- Protected route.
+- On mount, call `GET /api/workspaces/:id/features` and render the result on the Kanban board.
+- Show a loading state while the request is in flight.
+- Show an error state if the request fails, with a `Retry` action that re-calls the endpoint.
+- A `Sync` button in the board header calls `POST /api/workspaces/:id/sync` and refreshes the board on success.
+- On board load, force light theme by removing the `dark` class from `document.documentElement`.
 
 ### Board Header
 
-- The board header must be sticky, height `h-14`, and contain:
+- Sticky, height `h-14`, containing:
   - Workspace switcher on the left.
-  - Feature/task counters in the middle-left.
+  - Feature and task counters in the middle-left (totals from the API response).
+  - `Sync` button.
   - Search and filter controls on the right.
-- The board must represent workspace identity through the workspace avatar and name, and must not repeat a generic app logo/title.
-- Counters must show totals from current sample data: `4 features` and `16 tasks`.
-- Counter text must be small and monospaced, with numbers stronger than labels.
+- Counter text: small, monospaced, numbers stronger than labels.
 
 ### Workspace Switcher Dropdown
 
-- The switcher button must be the current workspace initials avatar.
-- Avatar must be square `size-8`, small radius, workspace-specific color, and use native tooltip `title={currentWorkspace.name}`.
-- Hover must add a soft primary ring and active state must scale to 95%.
-- Open state must add a stronger primary ring.
-- Clicking the avatar opens a custom dropdown below the avatar.
-- Dropdown must be width `w-64`, bordered, shadowed, and use a light fade/slide animation.
-- Dropdown header must show current workspace avatar, workspace name, role, and demo email `demo@example.com`.
-- If there are at least 2 workspaces, show a `Switch workspace` section with other workspaces.
-- Each switch item must show small avatar, name, and role.
-- Clicking a workspace item closes the dropdown and navigates to that workspace detail route.
-- Actions must include `Add workspace`.
-- Clicking `Add workspace` closes the dropdown and opens an `Add workspace` modal.
-- If current workspace role is `Owner`, actions must include `Delete workspace`; clicking it removes the workspace and navigates to `/workspaces`.
-- Actions must always include `Sign out`; clicking clears auth and navigates to `/login`.
-- Action hover states must use soft destructive background and destructive text.
-- Clicking outside the dropdown must close it.
-- No confirmation dialog is required for deletion in the current scope.
+- Button: current workspace initials avatar, square `size-8`, small radius, workspace-specific color, native `title={currentWorkspace.name}`.
+- Hover: soft primary ring; active: scale to 95%; open: stronger primary ring.
+- Dropdown below avatar: width `w-64`, bordered, shadowed, light fade/slide animation.
+- Header: current workspace avatar, name, role, and user email.
+- If at least 2 workspaces, show `Switch workspace` section with other workspaces. Switching navigates to that workspace and calls `GET /api/workspaces/:id/features`.
+- Actions: `Add workspace` (opens Add Workspace modal), `Delete workspace` (if role is `Owner` — calls `DELETE /api/workspaces/:id` and navigates to `/workspaces`), `Sign out`.
+- Click outside closes the dropdown.
 
 ### Add Workspace Modal
 
-- The modal opens from the board workspace switcher `Add workspace` action.
-- The modal must be centered over a dim overlay and must not navigate away from the current board.
-- Modal title must be `Add workspace`.
-- Modal content must offer two choices:
-  - `Import repository`
-  - `Create workspace`
-- `Import repository` is enabled and uses the same local repository import behavior as the `/workspaces` import card.
-- The import form must accept GitHub, GitLab, or Bitbucket repository URLs.
-- The modal import form must include the same `Private repository` switch and `GITHUB PERSONAL ACCESS TOKEN` field behavior as the `/workspaces` import card.
-- Import validation must match the `/workspaces` import flow:
-  - Empty input shows `Please enter a repository URL`.
-  - URLs not starting with `https://`, `http://`, or `git@` show `URL must start with https://, http://, or git@`.
-  - Duplicate repository URLs show `"workspace name" already imported`.
-  - Private repository enabled with an empty token shows `GitHub personal access token is required for private repositories`.
-- Successful modal import must create a new workspace in `localStorage.workspaces`, close the modal, and navigate to the newly created `/workspaces/:workspaceId` board.
-- Successful modal import must also avoid persisting the raw token; only safe private-repo metadata may be stored locally.
-- `Create workspace` must be visible but disabled for now.
-- The disabled create option must use muted text, disabled cursor, and a short helper such as `Coming soon`.
-- The modal must provide a close `X` button and close on overlay click.
-- Closing the modal without importing must preserve the current workspace and board state.
+- Opened from the workspace switcher `Add workspace` action.
+- Centered over a dim overlay; does not navigate away from the current board.
+- Title: `Add workspace`.
+- Offers two choices: `Import repository` (enabled) and `Create workspace` (disabled, `Coming soon` label).
+- Import form: same URL input, private repository switch, token field, and validation as the `/workspaces` import card.
+- Import calls `POST /api/workspaces`; on success, closes the modal and navigates to the newly created `/workspaces/:workspaceId`.
+- Close `X` button and overlay click close the modal without side effects.
 
 ### Search
 
-- Search input must sit on the right side of the board header.
-- It must show a `Search` icon inside the input.
-- Placeholder must be `Search features or tasks...`.
-- Width must be `w-64`; height must be `h-8`.
-- Focus state must show a soft primary ring.
-- Query matching must be lowercased.
-- Search must not be debounced.
-- Search state must not be persisted in the URL or localStorage.
-- If the query matches a feature title, that feature must keep all of its tasks after status filtering is applied.
-- If the query does not match the feature title, tasks must be filtered by `task.title` or `task.id`.
-- If no results remain, the board must show `No tasks or features match your search.`
+- Right side of the board header, `Search` icon inside the input, placeholder `Search features or tasks...`, width `w-64`, height `h-8`.
+- Focus: soft primary ring.
+- Matching is lowercased, not debounced, not persisted.
+- If a query matches a feature title, keep all of its tasks.
+- If it does not match the feature title, filter tasks by `task.title` or `task.taskId`.
+- No results: show `No tasks or features match your search.`
 
 ### Status Filter Dropdown
 
-- The `Filter` button must include the `Filter` icon.
-- With no filters active, the button uses normal border and muted text.
-- With active filters, the button uses primary border/text and a small circular badge showing selected status count.
-- Hover must use foreground text and stronger muted border.
-- Clicking `Filter` opens a custom right-aligned dropdown, width `w-56`, with border and shadow.
-- Dropdown header text must be `Status`.
-- If filters are selected, a `Clear` button with `X` icon must appear.
-- `Clear` must remove all selected statuses.
-- The dropdown must show all 7 statuses with custom checkbox, status color dot, label, and count.
-- Counts must be calculated from all sample features, not the current search/filter result.
-- Clicking a status toggles that status.
-- Multiple statuses can be selected with OR logic.
-- Active checkbox must use primary background and `Check` icon.
-- Row hover must use soft accent background.
-- Clicking outside the dropdown must close it.
+- `Filter` button with `Filter` icon.
+- No filters active: normal border and muted text. Active filters: primary border/text, circular badge with count.
+- Clicking opens a right-aligned dropdown, width `w-56`, with border and shadow.
+- Header text: `Status`. With active filters, a `Clear` button with `X` icon removes all selections.
+- All 7 statuses shown with custom checkbox, status color dot, label, and count (calculated from the full API response, not the current filtered view).
+- Selecting toggles that status; multiple statuses use OR logic.
+- Active checkbox: primary background with `Check` icon. Row hover: soft accent background.
+- Click outside closes the dropdown.
 
 ### Board Columns
 
-The board must have 7 fixed columns:
+Seven fixed columns: `TODO`, `READY`, `IN PROGRESS`, `BLOCKED`, `IN REVIEW`, `DONE`, `CANCELLED`.
 
-1. `TODO`
-2. `READY`
-3. `IN PROGRESS`
-4. `BLOCKED`
-5. `IN REVIEW`
-6. `DONE`
-7. `CANCELLED`
-
-Each column header must include:
-
-- Status-specific color dot.
-- Uppercase label with letter spacing.
-- Small count badge calculated from all sample data.
-- `bg-surface` header background.
-- Dividers created by `gap-px bg-border`.
+Each column header includes a status-specific color dot, uppercase label with letter spacing, and a small count badge from the API response.
 
 ### Feature Rows
 
-- Each feature must render as an expandable/collapsible row.
-- Collapsed row must show chevron, `Layers` icon, uppercase feature name, lifecycle pill, progress text, segment bar, and first active task next action on large screens.
-- Lifecycle pill statuses must include `In Design`, `In TDD`, `Ready`, `In Progress`, `Handoff`, `Done`, `Blocked`, and `Cancelled`.
-- Lifecycle pills must include color dot, border, and soft background.
-- Progress text must use `doneTasks/totalTasks`.
-- Segment bar must include one segment per task.
-- Clicking the row toggles expand/collapse.
-- Hover must use soft accent background.
+- Each feature renders as an expandable/collapsible row.
+- Collapsed: chevron, `Layers` icon, uppercase feature name, lifecycle pill, progress text (`doneTasks/totalTasks`), segment bar, first active task next action on large screens.
+- Lifecycle pills: `In Design`, `In TDD`, `Ready`, `In Progress`, `Handoff`, `Done`, `Blocked`, `Cancelled`.
+- Clicking toggles expand/collapse. Hover: soft accent background.
 
 ### Segment Bar Tooltip
 
-- Segment tooltip must be custom, not Radix Tooltip.
-- Bar width must be `w-24`; visible height must be `6px`.
-- Hover zone must be taller than the visible bar.
-- Hovering over a segment must brighten that segment and increase vertical scale.
-- Tooltip must appear above the segment with status dot, uppercase status label, arrow, border, shadow, popover background, and fast fade-in animation.
-- Mouse leave must hide the tooltip.
+- Bar width `w-24`, visible height `6px`, hover zone taller than the visible bar.
+- Hovering a segment: brightens that segment, increases vertical scale, shows custom tooltip above with status dot, uppercase status label, arrow, border, shadow, and fast fade-in.
+- Mouse leave hides the tooltip.
 
 ### Expanded Feature Grid
 
-- Expanded feature rows must render a 7-column grid matching board statuses.
-- Each task must create one logical row.
-- A task card appears only in the column matching its status.
-- Other cells remain empty.
-- Cells must have small padding, `min-h-[64px]`, and card background.
-- No drag/drop, reorder, or click-to-update-status behavior is included in current scope.
+- 7-column grid matching board statuses.
+- Each task occupies one logical row; its card appears only in the column matching its status. Other cells are empty.
+- Cells: small padding, `min-h-[64px]`, card background.
 
 ### Task Card
 
-- Task cards must use small border, elevated background, small radius, and padding.
-- Title must include a small monospace `T{index+1}` prefix.
-- If the status has a hardcoded transition, the card must show the next workflow action:
+- Small border, elevated background, small radius, padding.
+- Title with small monospace task ID prefix (`T1`, `T2`, …).
+- Next workflow action label based on status:
   - `todo`: `Approve stage`
   - `ready`: `Claim by agent`
-  - `inprogress`: `Submit for review`
+  - `in_progress`: `Submit for review`
   - `blocked`: `Resolve block`
-  - `inreview`: `Approve review`
-  - `done`: no action
-  - `cancelled`: no action
-- If `execution.actor_type` exists, show an actor badge on the right.
-- Agent actor badge uses soft purple background and native tooltip `title="Agent"`.
-- Human actor badge uses soft blue background and native tooltip `title="Human"`.
-- Hover must use accent background, stronger border, and 150ms transition.
-- Cursor must be pointer.
-- Active click state must scale slightly to `0.98`.
-- Clicking a task card opens the task detail sheet.
+  - `in_review`: `Approve review`
+  - `done` / `cancelled`: no action
+- If `execution.actorType` is set, show an actor badge: agent (soft purple, `title="Agent"`), human (soft blue, `title="Human"`).
+- Hover: accent background, stronger border, 150ms transition. Active: scale to `0.98`.
+- Clicking opens the task detail sheet.
 
 ### Task Detail Sheet
 
-- Task detail must be a right-side sheet implemented through the local `Sheet` component using Radix Dialog primitives.
-- Clicking a task card sets `selectedTask` and renders the detail sheet.
-- Sheet must be open by default when rendered.
-- It must slide in from the right and use a `black/80` overlay.
-- Close `X` button must appear in the top-right corner.
-- Clicking overlay or closing the dialog must call `onClose` and clear `selectedTask`.
-- Mobile width must be full; responsive max widths must use `sm:max-w-md`, `md:max-w-lg`, and `lg:max-w-xl`.
+- Right-side sheet using Radix Dialog primitives.
+- Slides in from the right, `black/80` overlay.
+- Close `X` in the top-right; overlay click also closes.
+- Mobile: full width. Responsive max widths: `sm:max-w-md`, `md:max-w-lg`, `lg:max-w-xl`.
 
-Sheet header requirements:
+Sheet header:
+- Card background, bottom border, padding.
+- Uppercase task ID badge.
+- Uppercase status badge with status-specific color.
+- Task title in `text-xl`.
+- `SheetDescription` with screen-reader text (`sr-only`).
 
-- Card background, bottom border, and padding.
-- Uppercase task id badge, for example `T1`.
-- Uppercase status badge using status-specific color.
-- Task title in larger `text-xl` text.
-- `SheetDescription` must contain screen-reader text and be visually hidden with `sr-only`.
+Meta grid (2 columns, inside a scroll area):
+- `Repository`: `Layers` icon, muted italic `None` if missing.
+- `Branch`: `GitBranch` icon; emerald when present, muted italic `None` if missing.
+- `Next Action`: primary arrow icon and action label, or `None`.
+- `Executed By`: actor icon, capitalized actor type, optional `lastUpdatedAt` formatted as `MMM d, HH:mm`.
+- `Depends On`: dependency badges or `None`.
+- `Blocked Reason`: destructive alert with `AlertCircle` when present, otherwise `None`.
+- `Blocked Context`: soft amber whitespace-preserving box when present, otherwise `None`.
 
-Meta information requirements:
+Pull request section:
+- `Workspace PR` and `Repository PR` link cards.
+- Cards with URLs open in a new tab, soft primary hover border.
+- Cards without URLs: 70% opacity, `pointer-events-none`.
+- PR status `open`: emerald badge. Other statuses: muted.
 
-- Content must be inside a scroll area.
-- Meta grid must use 2 columns.
-- `Repository` shows `Layers` icon and muted italic `None` if missing.
-- `Branch` shows `GitBranch` icon; branch text is emerald when present and muted italic `None` if missing.
-- `Next Action` shows primary arrow icon and task next action when available, otherwise `None`.
-- `Executed By` shows agent/human state, actor icon, capitalized actor type, and optional last-updated time formatted as `MMM d, HH:mm`.
-- `Depends On` shows dependency badges or `None`.
-- `Blocked Reason` shows a destructive alert with `AlertCircle` when present, otherwise `None`.
-- `Blocked Context` shows a soft amber whitespace-preserving box when present, otherwise `None`.
-
-Pull request requirements:
-
-- Show `Workspace PR` and `Repository PR` link cards.
-- Cards with URLs must open in a new tab and use soft primary hover border.
-- Cards without URLs must have 70% opacity and `pointer-events-none`.
-- PR status badge `open` must be emerald; other statuses are muted.
-- Repository PR card must use `GitPullRequest` icon.
-
-Timeline requirements:
-
-- If `task.log` exists, render a vertical activity timeline.
-- Timeline dot colors:
-  - `blocked`: destructive
-  - `cancelled`: muted
-  - `done`: emerald
-  - other actions: primary
-- A line must connect timeline dots.
-- Each entry must show action, formatted time `MMM d, HH:mm`, `by <actor>`, and note inside a muted box.
-- If there is no log, show italic text `No activity logs available.`
+Timeline:
+- If `task.log` is non-empty, render a vertical activity timeline.
+- Dot colors: `blocked` → destructive, `cancelled` → muted, `done` → emerald, others → primary.
+- A line connects dots.
+- Each entry shows action, formatted time, `by <actor>`, and note in a muted box.
+- Empty log: italic `No activity logs available.`
 
 Footer actions:
-
-- Footer buttons only appear when `task.status === "done"`.
-- Buttons are `Approve Workspace` and `Approve Repo`.
-- Clicking either button calls `toast.success("Code approved and merged")`.
-- Visible toast support is out of scope until toaster mounting is addressed.
+- Visible only when `task.status === "done"`.
+- Buttons: `Approve Workspace` and `Approve Repo`.
+- Clicking either shows a success toast: `Code approved and merged`.
+- A `Toaster` must be mounted at the app root so toasts are visible.
 
 ### 404 Not Found
 
-- Render when no TanStack Router route matches.
 - Full-screen centered layout.
-- Show large title `404`, subtitle `Page not found`, and description `The page you're looking for doesn't exist or has been moved.`
-- `Go home` button links to `/`.
-- Hovering `Go home` changes background to `bg-primary/90`.
-- Navigating to `/` follows normal auth-based redirect behavior.
-- No modal, tooltip, or toast is required.
+- Large title `404`, subtitle `Page not found`, description `The page you're looking for doesn't exist or has been moved.`
+- `Go home` links to `/`. Hover: `bg-primary/90`.
 
 ### Error Boundary
 
-- Render when the router catches an unexpected runtime error.
 - Full-screen centered layout.
-- Show warning icon inside a soft destructive circle.
-- Title must be `Something went wrong`.
-- Description must be `An unexpected error occurred. Please try again.`
-- In dev mode, if `error.message` exists, show a scrollable `pre` with muted background and destructive text.
-- `Try again` must call `router.invalidate()` and `reset()`.
-- `Go home` must link to `/`.
+- Warning icon in a soft destructive circle.
+- Title `Something went wrong`, description `An unexpected error occurred. Please try again.`
+- Dev mode: scrollable `pre` with error message.
+- `Try again` calls `router.invalidate()` and `reset()`. `Go home` links to `/`.
 
 ### AI Chat Components
 
-- `ChatModal` and `ChatPanel` exist in source but are not mounted in any current route.
-- Current product behavior must treat chat as unavailable in the mounted UI.
-- Chat remains mock-only and does not call a real AI/backend.
-- Mounting chat, connecting a backend, or adding a real workspace agent is out of scope for this product spec.
-
-## Tooltip, Modal, And Dropdown Inventory
-
-Visible in mounted UI:
-
-- Workspace switcher avatar uses native `title` with workspace name.
-- Remove workspace button uses native `title="Remove workspace"`.
-- Actor badge on task cards uses native `title="Agent"` or `title="Human"`.
-- Feature segment bar uses a custom tooltip with status dot/label, arrow, shadow, and fade-in animation.
-- Task detail sheet is the only mounted modal/sheet.
-- Workspace switcher and status filter are custom dropdowns/popovers.
-
-Available but not mounted:
-
-- Radix tooltip wrapper in `src/components/ui/tooltip.tsx`.
-- Sidebar tooltip logic.
-- `ChatModal`.
-- `ChatPanel`.
+- `ChatModal` and `ChatPanel` exist in source but are not mounted.
+- Chat remains unavailable in the mounted UI until a later approved scope adds it.
 
 ## Design Requirements
 
 - Light theme is prioritized on the board.
-- Overall radius should remain small through `--radius: 0.25rem`.
-- The UI should feel dense, operational, and dashboard-oriented.
-- Primary color should remain green/teal and be used for actions, focus rings, logo accents, and hover states.
-- Body font should remain Inter/system sans-serif.
+- Overall radius: `--radius: 0.25rem`.
+- Feel: dense, operational, dashboard-oriented.
+- Primary color: green/teal — used for actions, focus rings, logo accents, and hover states.
+- Body font: Inter/system sans-serif.
 - Main surfaces:
   - `background`: page background
   - `card`: cards, sheet, header
@@ -451,37 +515,53 @@ Available but not mounted:
   - Done: emerald/teal
   - Cancelled: neutral
 
-## Current Limitations To Preserve Until Designed
+## Limitations And Deferred Scope
 
-- No backend API.
-- No GitHub/GitLab/Bitbucket repository sync.
-- No secure backend token storage; private repository token collection is UI/validation scope only and raw tokens must not be stored in localStorage.
-- No real workspace-specific feature/task loading.
-- No real workspace creation from the `Create a new workspace` button or the disabled modal `Create workspace` option.
+- Authentication strategy is TBD — all protected routes and API endpoints must be secured once decided.
+- No real-time board sync; manual sync via the `Sync` button is sufficient for v1.
 - No create/edit/delete feature or task flow.
-- No task status transition mutation.
+- No task status transition from the UI.
 - No Kanban drag/drop.
 - No confirmation dialog for workspace deletion.
 - No mounted chat assistant.
-- No real AI/chat backend.
-- Toast may not be visible if no `Toaster` is mounted.
+- `Create workspace` option remains disabled.
 
 ## Acceptance Criteria
 
-- `/` redirects based on `localStorage.isLoggedIn` and renders no standalone UI.
-- `/login` matches the described centered demo login flow and redirects logged-in users.
-- `/workspaces` supports seeded workspaces, local import validation, local import persistence, workspace deletion, and sign out.
-- Workspace import supports a `Private repository` switch that reveals a GitHub personal access token input.
-- Private repository import requires a non-empty token but does not persist the raw token locally.
-- Repository import remains local-only and does not claim to clone or sync repositories.
-- `/workspaces/:workspaceId` renders the selected workspace identity and sample Kanban data.
-- Workspace switcher `Add workspace` opens a modal with enabled repository import and disabled create-workspace option.
-- Add workspace modal import includes the same private repository switch and token validation as the workspace-list import card.
-- Successful modal import saves the workspace locally and navigates to the new workspace board.
-- Board search and multi-status filter behave exactly as documented.
-- Feature rows expand/collapse and preserve the 7-column status grid layout.
-- Segment bar tooltip, task cards, workspace switcher dropdown, filter dropdown, and task detail sheet match the specified interactions.
-- Task detail sheet shows metadata, PR cards, timeline, and done-state footer actions.
-- 404 and error boundary states remain available and match the specified UI behavior.
-- Chat components remain unmounted unless a later approved scope explicitly adds them.
-- The product spec clearly separates current implemented behavior from missing production capabilities.
+### Authentication
+- Protected routes redirect unauthenticated users to `/login`.
+- Session credentials are carried on every API request.
+- Sign out clears the session and redirects to `/login`.
+- (Specific auth AC to be added once the auth strategy is decided.)
+
+### Workspace List (`/workspaces`)
+- On mount, workspaces are loaded from `GET /api/workspaces`, not from `localStorage`.
+- A loading state is shown during the request.
+- Import calls `POST /api/workspaces`; validation errors from both frontend and API are displayed inline.
+- Private repository import sends a token to the server; the raw token is never stored in the browser.
+- Import success adds the new workspace to the list without a full page reload.
+- Delete calls `DELETE /api/workspaces/:id` and removes the card from the list on success.
+
+### Workspace Board (`/workspaces/:workspaceId`)
+- On mount, features and tasks are loaded from `GET /api/workspaces/:id/features`.
+- A loading state is shown during the request; an error state with a `Retry` action is shown on failure.
+- Feature and task counters in the board header reflect real data from the API.
+- The `Sync` button calls `POST /api/workspaces/:id/sync` and refreshes the board.
+- Workspace switcher, search, multi-status filter, segment bar tooltip, and task detail sheet function as specified.
+
+### Task Detail Sheet
+- All metadata fields (branch, PR links, execution, dependencies, blocked reason, log) are rendered from real API data.
+- The `Toaster` is mounted at the app root so toast messages are visible.
+- Footer approve buttons appear only when `task.status === "done"` and show a visible success toast on click.
+
+### Server / API
+- `GET /api/workspaces` returns only workspaces belonging to the authenticated user.
+- `POST /api/workspaces` clones the repository server-side, parses YAML, and persists the workspace and its features/tasks.
+- Private repository tokens are stored encrypted server-side and never returned to the client.
+- `DELETE /api/workspaces/:id` removes the workspace record and the cloned repository from the server.
+- `POST /api/workspaces/:id/sync` re-pulls the repository and updates parsed feature/task data.
+- `GET /api/workspaces/:id/features` returns the current parsed state of all features and tasks.
+
+### Fallback States
+- 404 and error boundary states match the specified UI and remain accessible.
+- Chat components remain unmounted.
