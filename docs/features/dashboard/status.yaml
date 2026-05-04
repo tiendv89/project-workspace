@@ -1,0 +1,111 @@
+feature_id: dashboard
+title: Workflow Dashboard Web
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Teams execute tasks in the dashboard repo. T1 is ready to claim.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: "2026-05-04T15:41:19+0700"
+    review_comment: null
+    review_history:
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T15:29:14+0700"
+        comment: Product spec updated with private repository import token requirements.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T15:41:19+0700"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: "2026-05-04T16:02:18+0700"
+    review_comment: null
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T15:46:50+0700"
+        comment: Technical design drafted for review.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T15:54:28+0700"
+        comment: Technical design updated for React/Vite compound component and Provider/Context architecture.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T15:58:58+0700"
+        comment: Technical design updated to use dashboard repo id and DASHBOARD_UI_LOCAL_PATH.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T16:02:18+0700"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: "2026-05-04T16:09:15+0700"
+    review_comment: null
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T16:07:16+0700"
+        comment: Task breakdown drafted for review.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: "2026-05-04T16:09:15+0700"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T15:10:54+07:00"
+  - stage: product_spec
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T15:29:14+0700"
+    note: Product spec updated with private repository import token requirements.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T15:41:19+0700"
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T15:54:28+0700"
+    note: Technical design updated for React/Vite compound component and Provider/Context architecture.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T15:58:58+0700"
+    note: Technical design updated to use dashboard repo id and DASHBOARD_UI_LOCAL_PATH.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T16:02:18+0700"
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T16:07:16+0700"
+    note: Task breakdown drafted and submitted for approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: "2026-05-04T16:09:15+0700"
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
