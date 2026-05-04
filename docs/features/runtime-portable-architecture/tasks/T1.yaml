@@ -1,14 +1,14 @@
 id: T1
 title: Port interfaces + types + fake adapters
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T1
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:21:32+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-04T03:07:04.082Z
 pr:
   url: null
   status: null
@@ -21,3 +21,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-03T19:21:32Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T03:07:04.082Z
+    note: Claimed via git-based claim protocol.
