@@ -1,8 +1,10 @@
 id: T9
 title: docker-compose template + bridge network
 repo: workflow
-status: todo
-depends_on: [T7, T8]
+status: ready
+depends_on:
+  - T7
+  - T8
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T9
 execution:
@@ -17,3 +19,7 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-04T02:05:33+0700
     note: Created by tech-lead Phase 2.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T09:20:10.592Z
+    note: Task activated — dependency T8 merged and marked done.

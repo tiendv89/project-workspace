@@ -1,7 +1,7 @@
 id: T8
 title: DockerRunAdapter
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T4
   - T6
@@ -10,11 +10,11 @@ blocked_reason: null
 branch: feature/runtime-portable-architecture-T8
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:05:33+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-04T09:20:10.536Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/73
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -24,3 +24,28 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T08:40:54.216Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:42:37.226Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:42:51.818Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md,
+      docs/features/platform-byo-executor/product-spec.md"
+    rag_query: DockerRunAdapter runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/73"
+    at: 2026-05-04T09:05:48.300Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T09:20:10.536Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/95
+  status: open
