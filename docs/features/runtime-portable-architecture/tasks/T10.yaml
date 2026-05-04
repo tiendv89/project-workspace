@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T9
 blocked_reason: null
@@ -76,6 +76,12 @@ log:
     rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
       runtime-portable-architecture
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T18:30:45+0700
+    note: >-
+      Reset to ready — runner crashed again (runner.js missing from image).
+      Dockerfile fixed to include runner-wrapper; rebuild required before next claim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
