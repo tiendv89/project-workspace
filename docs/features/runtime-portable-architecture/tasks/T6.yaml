@@ -1,18 +1,24 @@
 id: T6
 title: Refactor orchestrator concerns + shared reap loop
 repo: workflow
-status: in_review
+status: ready
 depends_on:
   - T5
 blocked_reason: null
+blocked_suggestion: >-
+  A previous agent started this task and opened a WIP draft PR at
+  https://github.com/tiendv89/agent-workflow/pull/72 on branch
+  feature/runtime-portable-architecture-T6. Check out that branch, review the
+  existing work, and continue implementation from where it left off. Do not
+  start from scratch. When complete, convert the draft PR to ready-for-review.
 branch: feature/runtime-portable-architecture-T6
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
   last_updated_at: 2026-05-04T14:39:52+0700
 pr:
-  url: https://github.com/tiendv89/agent-workflow/pull/72
-  status: open
+  url: null
+  status: null
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -54,12 +60,13 @@ log:
     by: tiendv.52@gmail.com
     note: max_turns_exceeded
     at: 2026-05-04T07:32:59.705Z
-  - action: in_review
+  - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-04T14:39:52+0700
     note: >-
-      Unblocked — PR #72 is a WIP draft but going in the right direction.
-      Agent should continue implementation and convert draft to ready-for-review.
+      Unblocked — reset to ready. WIP draft PR #72 exists on branch
+      feature/runtime-portable-architecture-T6. Next agent must continue from
+      that branch, not start from scratch.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/94
   status: open
