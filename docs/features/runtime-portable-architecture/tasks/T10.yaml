@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T9
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-04T12:53:36.595Z
+  last_updated_at: 2026-05-04T16:52:24.965Z
 pr:
   url: null
   status: null
@@ -101,9 +101,12 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-04T23:49:46+0700
-    note: >-
-      Reset to ready — claimed 4 times with no implementation. Dockerfile
-      fixed (runner-wrapper added). Rebuild images before agents restart.
+    note: Reset to ready — claimed 4 times with no implementation. Dockerfile fixed
+      (runner-wrapper added). Rebuild images before agents restart.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T16:52:24.965Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
