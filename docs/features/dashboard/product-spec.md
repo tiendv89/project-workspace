@@ -58,6 +58,17 @@ Teams using the workflow system manage their project state through YAML files in
 3. The system re-pulls the repository and re-parses the YAML.
 4. The board updates to reflect any changes since the last sync.
 
+### Journey 4 — Review task status from the left panel
+
+1. The user is on the Kanban board of their connected workspace.
+2. The left side of the board shows a compact task status panel with three rows: `IN PROGRESS`, `READY`, and `DONE`.
+3. Each row lists tasks whose current task YAML status matches that row.
+4. Each task item shows the task title, parent feature name, and a status-aware elapsed time:
+   - `IN PROGRESS`: how long the task has been in progress.
+   - `READY`: how long the task has been ready.
+   - `DONE`: how long the task has been done.
+5. Clicking a task in the left panel opens the same task detail panel used by task cards on the Kanban board.
+
 ## Repository Access
 
 Two approaches are supported. The user chooses one during the connect flow.
@@ -77,7 +88,7 @@ The system provides a dedicated GitHub bot account. The user adds the bot as a c
 The system reads the following from the connected repository:
 
 - `docs/features/<featureId>/status.yaml` — feature title, lifecycle status, current stage.
-- `docs/features/<featureId>/tasks/T<n>.yaml` — task title, status, branch, dependencies, blocked reason, execution actor, PR links, and activity log.
+- `docs/features/<featureId>/tasks/T<n>.yaml` — task title, status, branch, dependencies, blocked reason, execution actor, PR links, and activity log with status transition timestamps.
 
 No other files are read. The system treats the YAML as read-only; it never writes back to the repository.
 
@@ -97,5 +108,7 @@ Detailed request/response contracts are defined in the technical design.
 - The board reflects the real YAML state of the repository — no hardcoded or seeded sample data.
 - Board access fails with a clear error if the repository URL is invalid or the credential cannot access the repository.
 - The `Sync` button pulls fresh state from the repository and updates the board.
+- The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `DONE` rows, and each row contains only tasks matching that status.
+- Each left-panel task item shows elapsed time derived from when the task entered its current status: time in progress for `IN PROGRESS`, time since ready for `READY`, and time since done for `DONE`.
 - Private repository tokens are stored server-side only; they are never exposed to the browser.
 - If the repository contains no recognisable workflow YAML, the board shows an empty state with guidance rather than crashing.
