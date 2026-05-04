@@ -1,15 +1,15 @@
 feature_id: dashboard
 title: Workflow Dashboard Web
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Human to review product-spec.md and approve or reject before implementation proceeds.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead to revise technical-design.md to reflect the updated end-to-end product spec, then submit for approval.
 
 stages:
   product_spec:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-05-04T17:07:15+0700"
     review_comment: null
     review_history:
       - status: draft
@@ -24,6 +24,12 @@ stages:
         by: matthew@swellnetwork.io
         at: "2026-05-04T16:50:13+0700"
         comment: Reset to product_spec for re-review.
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-04T17:07:15+0700"
+        comment: >-
+          Approved revised spec — end-to-end scope, no auth in v1,
+          import-first journey, user story format.
   technical_design:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
@@ -114,6 +120,13 @@ history:
     note: >-
       Stage reset to product_spec for re-review. Artifacts preserved.
       technical_design and tasks flagged for revalidation pending product spec outcome.
+  - stage: product_spec
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-04T17:07:15+0700"
+    note: >-
+      Product spec approved (revised). Feature advances to in_tdd.
+      Technical design and tasks require revalidation against the new end-to-end scope.
 
 revalidation:
   product_spec_required: false
