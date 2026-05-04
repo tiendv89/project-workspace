@@ -28,3 +28,6 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T08:42:37.226Z
     note: Claimed via git-based claim protocol.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/95
+  status: open
