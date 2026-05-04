@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T9
 blocked_reason: null
