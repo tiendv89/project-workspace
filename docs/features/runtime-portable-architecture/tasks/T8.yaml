@@ -28,6 +28,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T08:42:37.226Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T08:42:51.818Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md,
+      docs/features/platform-byo-executor/product-spec.md"
+    rag_query: DockerRunAdapter runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/95
   status: open
