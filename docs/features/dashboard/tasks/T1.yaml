@@ -1,17 +1,17 @@
 id: T1
 title: App scaffold — routing, connect screen, localStorage service
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/dashboard-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-05T11:36:28.359Z
+  last_updated_at: 2026-05-05T15:13:38.836Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/19
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
