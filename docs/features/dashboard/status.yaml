@@ -2,8 +2,8 @@ feature_id: dashboard
 title: Workflow Dashboard Web
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead to regenerate technical-design.md against the frontend-only product spec, then submit for human approval.
+current_stage: tasks
+next_action: Run tech-lead Phase 2 to generate new task breakdown, then submit for human approval.
 
 stages:
   product_spec:
@@ -53,10 +53,12 @@ stages:
           Approved frontend-only alpha spec: GitHub Contents API from browser,
           PAT in localStorage, no backend server.
   technical_design:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: "2026-05-05T14:45:00+0700"
+    review_comment: >-
+      Approved frontend-only design: Option B compound components, GitHub
+      Contents API from browser, PAT in localStorage, digital-factory-ui only.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -143,8 +145,14 @@ stages:
         at: "2026-05-05T14:38:18+0700"
         comment: >-
           Regenerated technical design for frontend-only alpha: GitHub Contents
-          API from browser, PAT in localStorage, yaml npm package, Option A
-          minimal service layer. NestJS/Supabase/Prisma design removed entirely.
+          API from browser, PAT in localStorage, yaml npm package, Option B
+          compound components. NestJS/Supabase/Prisma design removed entirely.
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: "2026-05-05T14:45:00+0700"
+        comment: >-
+          Approved frontend-only design: Option B compound components, GitHub
+          Contents API from browser, PAT in localStorage, digital-factory-ui only.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -389,10 +397,17 @@ history:
     at: "2026-05-05T14:38:18+0700"
     note: >-
       Technical design regenerated for frontend-only alpha. GitHub Contents API
-      from browser, PAT in localStorage, yaml npm package, Option A minimal
-      service layer. digital-factory-ui only — no backend repos involved.
+      from browser, PAT in localStorage, yaml npm package, Option B compound
+      components. digital-factory-ui only — no backend repos involved.
+  - stage: technical_design
+    action: approved
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:45:00+0700"
+    note: >-
+      Technical design approved. Feature advances to task planning.
+      Tasks require regeneration from the new frontend-only design.
 revalidation:
   product_spec_required: false
-  technical_design_required: true
+  technical_design_required: false
   tasks_required: true
   deployment_checklist_required: false
