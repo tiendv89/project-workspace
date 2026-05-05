@@ -9,7 +9,7 @@ branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-05T03:08:41.521Z
+  last_updated_at: 2026-05-05T03:31:43.898Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/75
   status: open
@@ -121,13 +121,11 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-05T00:30:40+0700
-    note: "Reset to ready — implementation is complete. PR #75
+    note: >-
+      Reset to ready — implementation is complete. PR #75
       (https://github.com/tiendv89/agent-workflow/pull/75) is already open on
       branch feature/runtime-portable-architecture-T10 with all work committed
       (portability spec, fake-orchestrator harness, tests, language policy).
-      Next agent: do NOT re-implement. Check out the existing branch, verify the
-      PR is still open, and set status to in_review with pr.url pointing to PR
-      #75."
   - action: claimed
     by: tiendv.52@gmail.com
     at: 2026-05-04T18:02:46.821Z
@@ -146,13 +144,7 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-05T01:29:20+0700
-    note: "Reset to ready — implementation already complete on
-      feature/runtime-portable-architecture-T10 in the workflow repo. PR #75
-      (https://github.com/tiendv89/agent-workflow/pull/75) is open. Next agent:
-      do NOT re-implement. Checkout the branch in the workflow repo, rebase it
-      onto origin/main (git rebase origin/main), force-push with lease, then set
-      status to in_review with pr.url =
-      https://github.com/tiendv89/agent-workflow/pull/75."
+    note: Reset to ready — PR #75 is open on agent-workflow.
   - action: claimed
     by: tiendv.52@gmail.com
     at: 2026-05-04T18:32:09.395Z
@@ -175,14 +167,22 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-05T10:29:33+0700
-    note: >-
-      Reset to ready — implementation is done and PR #75 is open
-      (https://github.com/tiendv89/agent-workflow/pull/75). Next agent: the
-      impl branch feature/runtime-portable-architecture-T10 in agent-workflow
-      is behind main. Do NOT re-implement. Checkout the branch, run
-      `git rebase origin/main`, force-push with --force-with-lease, then
-      write result.json with terminal_status=in_review and
-      pr_url=https://github.com/tiendv89/agent-workflow/pull/75.
+    note: Reset to ready for next agent pickup.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:31:43.898Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:31:52.379Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-05T10:54:16+0700
