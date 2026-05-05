@@ -5,6 +5,12 @@
 - Title: Bring-Your-Own-Executor — customer-supplied executor images on the platform
 - **Status: deferred** — blocked on `runtime-portable-architecture`. This is a placeholder product spec capturing the long-term direction agreed during the architectural discussion. Activate this feature only after `runtime-portable-architecture` is `done`.
 
+## Open Technical Debt
+
+The following internal items are deferred until this feature is activated. They were noted during earlier orchestrator work and belong here because they require the executor registration model this feature defines.
+
+- **Broker `registry-size` endpoint**: The orchestrator's `local-docker` concurrency guard currently uses a local in-process counter (`dockerInFlight`) to track how many executor containers are running. This counter resets on orchestrator restart and cannot be shared across multiple orchestrator instances. The correct fix is a `GET /registry-size` endpoint on the Go broker service (backed by a Redis `SCAN broker:reg:*` or a dedicated counter key), exposed as `registrySize(): Promise<number>` on the `CompletionBrokerPort` interface. This becomes load-bearing when tenants have multiple orchestrators competing for the same executor pool. Tracked in code as `TODO` in `workflow/runtime/orchestrator/src/main.ts`.
+
 ## Dependency
 
 This feature has a hard prerequisite: **`runtime-portable-architecture` must be `done`** before any technical design or implementation work on this feature begins.
