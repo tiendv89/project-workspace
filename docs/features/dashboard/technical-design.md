@@ -20,7 +20,7 @@ Implementation tasks that touch these UI surfaces must include matching `### Fig
 
 ## 1. Current State
 
-The `digital-factory-ui` repo is a React + Vite application with TanStack Router. It has working UI foundations:
+The `digital-factory-ui` repo is a React + Vite application with TanStack Router. The `main` branch is expected to be empty or minimal. The `dev` branch contains an existing prototype with working UI foundations:
 
 - Demo login/auth flow using `localStorage.isLoggedIn`.
 - Workspace list and import screen — parses a repository URL and stores it in `localStorage.workspaces`.
@@ -29,11 +29,14 @@ The `digital-factory-ui` repo is a React + Vite application with TanStack Router
 - Route fallbacks: 404 and error boundary.
 - Shared UI primitives under `src/components/ui`.
 
+**Agent instruction:** Before starting implementation, check out the `dev` branch to inspect existing code. Low-level primitives (`src/components/ui` — Button, Input, Badge, etc.), the TanStack Router setup, `tailwind.config`, and `src/styles.css` design tokens may be worth carrying forward. High-level components (`KanbanBoard.tsx`, `TaskDetailSheet.tsx`, route files) are replaced by Figma-aligned new components and should not be reused as-is.
+
 Limitations that block real usefulness:
 
 - Board data is hardcoded sample data — no real YAML is loaded.
 - Workspace import stores a URL string but never fetches anything from GitHub.
 - The login/workspace-list flow is a demo and does not match the product spec's no-login, connect-first journey.
+- The existing high-level components (`KanbanBoard.tsx`, `TaskDetailSheet.tsx`, workspace list/import) do not match the Figma design and will be replaced entirely. The low-level primitives under `src/components/ui` (Button, Input, Badge, etc.) and TanStack Router routing infrastructure may be retained where they fit the new design.
 
 The `workflow-backend` repo exists but is **not required by this design**. All data access is browser-side.
 
@@ -73,49 +76,103 @@ The `workflow-backend` repo exists but is **not required by this design**. All d
 
 ## 3. Options Considered
 
-### Option A — Minimal service layer added to existing structure
+### Option A — Minimal service layer, adapt existing components
 
-Add new service files (`github.ts`, `workspace-store.ts`, `yaml-parser.ts`) and a data loading hook, then update existing routes and components to consume real data. Keep the existing component and route shape largely intact.
+Add new service files (`github.ts`, `workspace-store.ts`, `yaml-parser.ts`) and a data loading hook, then adapt existing high-level components to consume real data.
 
 **Pros**
-- Fast to ship — existing board UI is already close to the target visual shape.
-- Low risk of visual regressions — components change data source, not structure.
-- Right scope for an alpha: get real data flowing, improve architecture later.
-- No cross-repo dependencies.
+- Smallest diff if existing components can be reused.
 
 **Cons**
-- Keeps some monolithic component habits (e.g. `KanbanBoard.tsx`).
-- Adds tech debt if the app grows significantly before a proper refactor.
+- The Figma design is a complete UI replacement — existing `KanbanBoard.tsx`, `TaskDetailSheet.tsx`, and route components do not match the new design and cannot be adapted in place.
+- Forces agents to work around legacy component shape while building a new UI, increasing complexity.
+- The main advantage of Option A (reuse existing UI) does not apply here.
 
-**Implementation impact:** Low. Files added: `src/services/github.ts`, `src/services/workspace-store.ts`, `src/services/yaml-parser.ts`, `src/hooks/useBoardData.ts`. Updated: connect screen, routes, board.
+**Implementation impact:** Medium-high despite the "minimal" label — old components must be replaced anyway, so the diff size is similar to Option B but with worse structure.
 
-**Dependency impact:** Adds `yaml` npm package for YAML parsing.
+**Dependency impact:** Adds `yaml` npm package.
 
 ### Option B — Feature-folder compound components with Provider/Context
 
-Full refactor into feature modules (`auth`, `workspaces`, `board`, `tasks`, `errors`), each owning a Provider/Context, compound component API, and service layer.
+Build new UI from Figma using feature modules (`workspaces`, `board`, `tasks`, `errors`), each owning a Provider/Context, compound component API, and service layer. Reuse low-level primitives and routing infrastructure from `dev` branch.
 
 **Pros**
-- Clean architecture for a growing product.
-- Clear seams for future real backend or multi-workspace support.
+- Since the UI is rebuilt from scratch anyway, choosing a clean structure costs nothing extra.
+- Feature modules give clear file ownership — important when multiple tasks run in parallel (T4/T5/T6 can each own distinct directories without write conflicts).
+- Provider/Context boundaries isolate board state, connect state, and task detail state cleanly.
+- Creates the right seams for future improvements (multi-workspace, backend sync).
 
 **Cons**
-- Large refactor relative to MVP scope.
-- Risk of visual regressions across all board states.
-- Delays real data loading behind architecture work.
-- Not the right investment for an alpha.
+- Requires naming discipline and strict feature boundaries during implementation.
 
-**Implementation impact:** High. Touches nearly every file in the repo.
+**Implementation impact:** Moderate. New feature folders, providers, and compound components. Low-level primitives and router setup carried from `dev` branch.
 
-**Dependency impact:** No new runtime dependencies, but large scope creep.
+**Dependency impact:** Adds `yaml` npm package for YAML parsing.
 
 ---
 
 ## 4. Chosen Design
 
-**Chosen approach: Option A — minimal service layer.**
+**Chosen approach: Option B — feature-folder compound components with Provider/Context.**
 
-The app already has a working visual board. The right alpha move is to plumb real data through it, not rebuild the architecture. Feature-folder refactoring can be a dedicated follow-up feature once the product is validated.
+The Figma design replaces the existing UI entirely, so there is no existing board to preserve. Since the UI is being rebuilt from scratch regardless, choosing a clean feature-folder structure costs nothing extra and gives better parallel-execution properties: T4 (board), T5 (left panel), and T6 (task detail) can each own separate feature directories with no git write contention between them. Low-level primitives and routing setup are carried from the `dev` branch.
+
+### Proposed folder structure
+
+```
+src/
+  app/
+    providers/
+      AppProviders.tsx      ← root provider composition
+  components/
+    ui/                     ← carried from dev branch (Button, Input, Badge, etc.)
+  features/
+    workspaces/
+      components/
+        ConnectForm/
+          index.tsx
+          ConnectForm.tsx
+          ConnectForm.context.tsx
+      services/
+        workspace-store.ts  ← localStorage read/write
+      index.ts
+    board/
+      components/
+        KanbanBoard/
+          index.tsx
+          KanbanBoard.tsx
+          KanbanBoard.context.tsx
+        FeatureRow/
+          index.tsx
+        TaskCard/
+          index.tsx
+        TaskTrackingPanel/
+          index.tsx
+          TaskTrackingPanel.tsx
+      hooks/
+        useBoardData.ts     ← GitHub API calls + YAML parsing + board state
+      index.ts
+    tasks/
+      components/
+        TaskDetailSheet/
+          index.tsx
+          TaskDetailSheet.tsx
+      index.ts
+    errors/
+      components/
+        ErrorScreen/
+          index.tsx
+      index.ts
+  services/
+    github.ts               ← GitHub Contents API client
+    yaml-parser.ts          ← YAML decode + typed board objects
+  routes/
+    __root.tsx
+    index.tsx               ← redirect: /connect or /board
+    connect.tsx             ← ConnectForm page shell
+    board.tsx               ← KanbanBoard + TaskTrackingPanel shell
+  styles.css                ← carried from dev branch
+```
 
 ### localStorage schema
 
