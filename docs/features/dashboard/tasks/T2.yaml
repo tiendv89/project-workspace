@@ -7,8 +7,8 @@ blocked_reason: null
 branch: feature/dashboard-T2
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: "2026-05-05T09:35:00+0000"
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-05T09:36:54.679Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/18
   status: open
@@ -62,10 +62,13 @@ log:
     note: Review dispatch claimed.
   - action: comments_addressed
     by: tiendv.52@gmail.com
-    at: "2026-05-05T09:35:00+0000"
-    note: >-
-      Resolved 1 inline review thread (workspace_pr as top-level in RawTask);
-      PR converted to ready-for-review.
+    at: 2026-05-05T09:35:00+0000
+    note: Resolved 1 inline review thread (workspace_pr as top-level in RawTask); PR
+      converted to ready-for-review.
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-05T09:36:54.679Z
+    note: Review dispatch claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
