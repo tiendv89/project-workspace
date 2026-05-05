@@ -8,7 +8,8 @@
 ## References
 
 - Workspaces page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3198&t=dBztH5XSYbZ9jPyR-0
-- Workspace detail page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3026&t=dBztH5XSYbZ9jPyR-0
+- Workspace detail page Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-85&t=xHuTHtgkwgQhVAcT-0
+- Task tracking panel Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-2&t=xHuTHtgkwgQhVAcT-0
 - Task detail Figma: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3276&t=dBztH5XSYbZ9jPyR-0
 
 ## Problem
@@ -29,6 +30,7 @@ Teams using the workflow system manage their project state through YAML files in
 - Kanban drag-and-drop or task status mutations are out of scope.
 - Real-time sync (websocket / SSE) is out of scope; sync-on-load and a manual refresh are sufficient.
 - AI chat integration is out of scope.
+- GitHub Bot Account access is out of scope for v1.
 
 ## User Journey
 
@@ -61,10 +63,10 @@ Teams using the workflow system manage their project state through YAML files in
 ### Journey 4 — Review task status from the left panel
 
 1. The user is on the Kanban board of their connected workspace.
-2. The left side of the board shows a compact task status panel with three rows: `IN PROGRESS`, `READY`, and `DONE`.
+2. The left side of the board shows a compact task status panel with three rows: `IN PROGRESS`, `READY`, and `IN REVIEW`.
 3. Each row lists tasks whose current task YAML status matches that row.
 4. Each task item shows the task title, parent feature name, and a status-aware elapsed time:
-   - `DONE`: how long the task has been done.
+   - `IN REVIEW`: how long the task has been done and waiting for review.
    - `READY`: how long the task has been ready.
    - `IN PROGRESS`: how long the task has been in progress.
 
@@ -72,17 +74,11 @@ Teams using the workflow system manage their project state through YAML files in
 
 ## Repository Access
 
-Two approaches are supported. The user chooses one during the connect flow.
+V1 uses GitHub Personal Access Token access only.
 
-### Option A — GitHub Personal Access Token
+### GitHub Personal Access Token
 
 The user provides a GitHub PAT with read access to the repository. The system uses it to clone the repo. The token is stored encrypted on the server and is never returned to the browser.
-
-### Option B — GitHub Bot Account
-
-The system provides a dedicated GitHub bot account. The user adds the bot as a collaborator on their repository (read permission is sufficient). The system then uses the bot credentials to clone and sync. No token input is required from the user.
-
-> Which option is presented as the default, and whether both are offered simultaneously, is a UX decision for the technical design phase.
 
 ## Data Read From Repository
 
@@ -109,7 +105,8 @@ Detailed request/response contracts are defined in the technical design.
 - The board reflects the real YAML state of the repository — no hardcoded or seeded sample data.
 - Board access fails with a clear error if the repository URL is invalid or the credential cannot access the repository.
 - The `Sync` button pulls fresh state from the repository and updates the board.
-- The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `DONE` rows, and each row contains only tasks matching that status.
-- Each left-panel task item shows elapsed time derived from when the task entered its current status: time in progress for `IN PROGRESS`, time since ready for `READY`, and time since done for `DONE`.
+- The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `IN REVIEW` rows, and each row contains only tasks matching that status.
+- Each left-panel task item shows elapsed time derived from when the task entered its current status: time in progress for `IN PROGRESS`, time since ready for `READY`, and time waiting for review after completion for `IN REVIEW`.
+- The connect flow accepts a GitHub PAT as the only v1 repository access method.
 - Private repository tokens are stored server-side only; they are never exposed to the browser.
 - If the repository contains no recognisable workflow YAML, the board shows an empty state with guidance rather than crashing.

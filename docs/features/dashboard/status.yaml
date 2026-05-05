@@ -8,9 +8,11 @@ next_action: Tech lead to revise technical-design.md to reflect the updated end-
 stages:
   product_spec:
     review_status: approved
-    reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-04T17:07:15+0700"
-    review_comment: null
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: "2026-05-05T11:14:36+0700"
+    review_comment: >-
+      Approved latest product spec updates: PAT-only v1 repository access,
+      task tracking panel Figma reference, and IN REVIEW task timing.
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
@@ -30,6 +32,12 @@ stages:
         comment: >-
           Approved revised spec — end-to-end scope, no auth in v1,
           import-first journey, user story format.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:14:36+0700"
+        comment: >-
+          Approved latest product spec updates: PAT-only v1 repository access,
+          task tracking panel Figma reference, and IN REVIEW task timing.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -133,6 +141,14 @@ history:
     note: >-
       Product spec approved (revised). Feature advances to in_tdd.
       Technical design and tasks require revalidation against the new end-to-end scope.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:14:36+0700"
+    note: >-
+      Product spec updates approved: PAT-only v1 repository access,
+      task tracking panel Figma reference, and IN REVIEW task timing.
+      Technical design and tasks still require revalidation.
 
 revalidation:
   product_spec_required: false

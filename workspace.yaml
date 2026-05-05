@@ -58,9 +58,15 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
-  - id: dashboard
+  - id: digital-factory-ui
     github: git@github.com:tiendv89/digital-factory-ui.git
-    local_path: env:DASHBOARD_UI_LOCAL_PATH
+    local_path: env:DIGITAL_FACTORY_UI_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
+  - id: workflow-backend
+    github: git@github.com:tiendv89/workflow-backend.git
+    local_path: env:WORKFLOW_BACKEND_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
 
