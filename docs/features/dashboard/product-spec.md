@@ -16,21 +16,27 @@
 
 Teams using the workflow system manage their project state through YAML files in a management repository. Today there is no visual interface to that state — users must read raw YAML or rely on CLI tools. The goal of the dashboard is to give any team a browser-based view of their workflow: what features exist, where each task stands, and what is blocked or in review.
 
+This is an alpha-stage MVP. Simplicity and speed to value are priorities over infrastructure correctness. No backend server is required or introduced in v1.
+
 ## Goals
 
 - Let a user connect their management repository to the dashboard and immediately see a live Kanban view of all features and tasks.
-- Read and parse workflow YAML directly from the connected repository so the board always reflects the real state of the repo.
-- Require no login in v1 — the repository access credential is the only gate.
+- Read and parse workflow YAML directly from the GitHub Contents API — called from the browser, no backend server required.
+- Support both public repositories (no credential) and private repositories (GitHub Personal Access Token).
+- Persist workspace identity in the browser so a returning user does not need to re-import.
+- Deliver a read-only alpha overview; task mutation, account management, and server-side sync infrastructure are deferred.
 
 ## Non-goals
 
+- No backend server is required or designed in this spec.
 - User authentication and accounts are out of scope for v1.
 - Adding a second workspace after the initial import is deferred.
 - Creating, editing, or deleting features or tasks from the UI is out of scope.
 - Kanban drag-and-drop or task status mutations are out of scope.
 - Real-time sync (websocket / SSE) is out of scope; sync-on-load and a manual refresh are sufficient.
 - AI chat integration is out of scope.
-- GitHub Bot Account access is out of scope for v1.
+- GitLab and Bitbucket repository access are out of scope for v1; only GitHub repositories are supported.
+- Secure server-side token storage is out of scope; token handling is sessionStorage-only in this alpha.
 
 ## User Journey
 
@@ -39,20 +45,19 @@ Teams using the workflow system manage their project state through YAML files in
 1. The user opens the dashboard for the first time. No login is required.
 2. The app has no workspace configured yet, so it presents a single prompt: connect a management repository.
 3. The user provides:
-   - A GitHub repository input that follows the expected repository pattern (for example `org/project-workspace` or `https://github.com/org/project-workspace`).
-   - A way for the system to access that repository — see **Repository Access** below.
-4. The user submits. The system clones the repository, reads all workflow YAML files, and builds the board state.
-5. On success, the system persists the workspace metadata and backend repo cache so the workspace can be opened again without a new import.
+   - A GitHub repository identifier — `owner/repo` or a full `https://github.com/owner/repo` URL.
+   - For private repositories: a GitHub Personal Access Token with read access.
+4. The user submits. The app calls the GitHub Contents API directly from the browser to read workflow YAML and builds the board state.
+5. On success, the app stores the repository identity (`owner/repo`) in `localStorage`. The PAT, if provided, is stored in `sessionStorage` keyed by workspace ID for the current browser session.
 6. The user is taken directly to the Kanban board for that workspace.
-7. On failure (access denied, clone/sync failure, or no workflow YAML found), the user sees a clear error and can correct their input.
+7. On failure (access denied, invalid PAT, or no workflow YAML found), the user sees a clear error and can correct their input.
 
 ### Journey 1b — Return to an imported workspace
 
-1. The user opens the dashboard after a workspace was already imported.
-2. The app loads the existing workspace metadata from the backend.
-3. The backend serves the board from the persisted workspace record and cached repository data.
-4. The user reaches the Kanban board without re-entering the repository input or PAT.
-5. If the cached repository is missing or stale, the UI shows a sync/reconnect action instead of forcing a full re-import.
+1. The user opens the dashboard in the same browser after a workspace was previously imported.
+2. The app reads the workspace identity from `localStorage` and navigates to the board.
+3. For public repositories, board data loads without any PAT.
+4. For private repositories, if a PAT is still present in `sessionStorage`, the load proceeds silently. If the `sessionStorage` PAT has expired (new browser session), the app shows a prompt for the user to re-enter their token before loading.
 
 ### Journey 2 — View the workflow board
 
@@ -66,60 +71,61 @@ Teams using the workflow system manage their project state through YAML files in
 
 1. The user wants to see the latest state from the repository.
 2. They click a `Sync` button on the board.
-3. If the PAT is no longer available in the current browser session, the app asks the user to provide it again for this sync.
-4. The system re-pulls the repository and re-parses the YAML.
-5. The board updates to reflect any changes since the last sync.
+3. For public repositories, the app re-fetches the GitHub Contents API immediately.
+4. For private repositories, if a PAT is still in `sessionStorage`, it is reused silently. If it has expired, the app prompts the user to re-enter their token for this sync.
+5. The board updates to reflect any changes since the last load.
 
 ### Journey 4 — Review task status from the left panel
 
-1. The user is on the Kanban board of their connected workspace.
+1. The user is on the Kanban board.
 2. The left side of the board shows a compact task status panel with three rows: `IN PROGRESS`, `READY`, and `IN REVIEW`.
-3. Each row lists tasks whose current task YAML status matches that row.
+3. Each row lists tasks whose current YAML status matches that row.
 4. Each task item shows the task title, parent feature name, and a status-aware elapsed time:
-   - `IN REVIEW`: how long the task has been done and waiting for review.
-   - `READY`: how long the task has been ready.
    - `IN PROGRESS`: how long the task has been in progress.
-
+   - `READY`: how long the task has been ready and waiting to be claimed.
+   - `IN REVIEW`: how long the task has been waiting for review since it was submitted.
 5. Clicking a task in the left panel opens the same task detail panel used by task cards on the Kanban board.
 
 ## Repository Access
 
-V1 uses GitHub Personal Access Token access only.
+V1 reads repository data from the browser using the GitHub Contents API (`https://api.github.com`). No backend proxy is involved.
 
-### GitHub Personal Access Token
+### Public repositories
 
-The user provides a GitHub PAT with read access to the repository. The system sends the PAT to the backend for import and sync only. The token is not persisted in browser storage or backend durable storage, and it is never returned to the browser.
+No credential is required. The app calls the GitHub Contents API unauthenticated.
+
+### Private repositories
+
+The user provides a GitHub Personal Access Token (classic `ghp_` or fine-grained `github_pat_`) with read access to the repository. The PAT is:
+
+- Passed directly from the browser to the GitHub Contents API as a `Bearer` token in the `Authorization` header.
+- Stored in `sessionStorage` keyed by workspace ID after a successful import.
+- Never written to `localStorage`.
+- Never sent to any backend server.
+- Automatically cleared when the browser session ends (tab or window close).
+
+When `sessionStorage` no longer holds a valid token for a private workspace, the app shows a re-entry prompt rather than a hard error.
 
 ## Data Read From Repository
 
-The system reads the following from the connected repository:
+The app reads the following from the connected repository via the GitHub Contents API:
 
+- `docs/features/` — directory listing to discover all feature IDs.
 - `docs/features/<featureId>/status.yaml` — feature title, lifecycle status, current stage.
-- `docs/features/<featureId>/tasks/T<n>.yaml` — task title, status, branch, dependencies, blocked reason, execution actor, PR links, and activity log with status transition timestamps.
+- `docs/features/<featureId>/tasks/` — directory listing to discover all task files for a feature.
+- `docs/features/<featureId>/tasks/T<n>.yaml` — task status, branch, dependencies, blocked reason, execution actor, PR links, and activity log with status transition timestamps.
 
-No other files are read. The system treats the YAML as read-only; it never writes back to the repository.
-
-## API Surface (high level)
-
-| Method | Path                           | Purpose                                         |
-| ------ | ------------------------------ | ----------------------------------------------- |
-| `GET`  | `/api/workspaces`      | Return the existing imported workspace, if any. |
-| `POST` | `/api/workspaces`              | Clone the repo and import workflow YAML.        |
-| `GET`  | `/api/workspaces/:workspaceId` | Return one workspace detail record.             |
-| `GET`  | `/api/workspaces/:id/features` | Return parsed features and tasks for the board. |
-| `POST` | `/api/workspaces/:id/sync`     | Re-pull and re-parse using a transient PAT when needed. |
-
-Detailed request/response contracts are defined in the technical design.
+No other files are read. The app treats all YAML as read-only and never writes back to the repository.
 
 ## Acceptance Criteria
 
-- A user with no account can open the dashboard, provide a GitHub repository input and access credential, and reach the Kanban board without any login step.
-- After the first successful import, a user can reopen the dashboard and reach the existing board without re-importing or re-entering PAT.
+- A user with no account can open the dashboard, provide a GitHub repository identifier and optional PAT, and reach the Kanban board without any login step.
+- Public repositories load without a PAT. Private repositories require a PAT.
+- After the first successful import, a user can reopen the dashboard and the workspace identity is restored from `localStorage`. Public repos load immediately; private repos prompt for PAT if `sessionStorage` has expired.
 - The board reflects the real YAML state of the repository — no hardcoded or seeded sample data.
-- Board access fails with a clear error if the credential cannot access the repository, import/sync fails, or workflow YAML cannot be found.
-- The `Sync` button pulls fresh state from the repository and updates the board using the in-memory PAT or a PAT re-entered for that sync.
-- The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `IN REVIEW` rows, and each row contains only tasks matching that status.
-- Each left-panel task item shows elapsed time derived from when the task entered its current status: time in progress for `IN PROGRESS`, time since ready for `READY`, and time waiting for review after completion for `IN REVIEW`.
-- The connect flow accepts a GitHub PAT as the only v1 repository access method.
-- Private repository tokens are used transiently for import/sync only; they are not persisted in browser storage or backend durable storage.
-- If the repository contains no recognisable workflow YAML, the board shows an empty state with guidance rather than crashing.
+- Board access fails with a clear error if the repository cannot be accessed, the PAT is invalid, or no workflow YAML is found under `docs/features/`.
+- The `Sync` button re-fetches data from the GitHub Contents API and updates the board using the in-session PAT or a PAT re-entered for that sync.
+- The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `IN REVIEW` rows; each row contains only tasks matching that status.
+- Each left-panel task item shows elapsed time derived from when the task last entered its current status.
+- Private repository PATs are stored in `sessionStorage` only; they are never written to `localStorage` and never sent to any backend.
+- If the repository contains no recognisable workflow YAML under `docs/features/`, the board shows an empty state with guidance rather than crashing.

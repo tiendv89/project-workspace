@@ -1,18 +1,16 @@
 feature_id: dashboard
 title: Workflow Dashboard Web
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Human reviewer to approve or reject the revised technical design. After technical-design approval, review the regenerated task breakdown.
+feature_status: in_design
+current_stage: product_spec
+next_action: Human reviewer to approve or reject the revised product spec (frontend-only, no backend). After approval, technical design and tasks must be regenerated.
 
 stages:
   product_spec:
-    review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: "2026-05-05T11:14:36+0700"
-    review_comment: >-
-      Approved latest product spec updates: PAT-only v1 repository access,
-      task tracking panel Figma reference, and IN REVIEW task timing.
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
@@ -38,6 +36,14 @@ stages:
         comment: >-
           Approved latest product spec updates: PAT-only v1 repository access,
           task tracking panel Figma reference, and IN REVIEW task timing.
+      - status: awaiting_approval
+        by: matthew@swellnetwork.io
+        at: "2026-05-05T14:27:29+0700"
+        comment: >-
+          Revised to frontend-only alpha: removed backend server and API surface.
+          GitHub Contents API called directly from browser; PAT stored in
+          sessionStorage only; workspace identity in localStorage. Technical design
+          and tasks must be regenerated against this scope.
   technical_design:
     review_status: awaiting_approval
     reviewed_by: null
@@ -346,8 +352,17 @@ history:
     note: >-
       Task breakdown updated so frontend implementation agents read Figma via
       API/MCP with FIGMA_ACCESS_TOKEN and fallback to checked-in screenshots.
+  - stage: product_spec
+    action: updated
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:27:29+0700"
+    note: >-
+      Revised to frontend-only alpha: removed backend server and API surface.
+      GitHub Contents API called directly from browser; PAT stored in
+      sessionStorage only; workspace identity in localStorage. Technical design
+      and tasks must be regenerated.
 revalidation:
-  product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
+  product_spec_required: true
+  technical_design_required: true
+  tasks_required: true
   deployment_checklist_required: false
