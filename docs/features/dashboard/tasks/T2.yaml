@@ -25,6 +25,15 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-05T08:41:54.999Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T08:42:08.602Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/task-branch-lifecycle/technical-design.md,
+      agent-runtime/src/main.ts, docs/features/dashboard/technical-design.md"
+    rag_query: GitHub Contents API client and YAML parser dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
