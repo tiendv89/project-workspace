@@ -38,7 +38,7 @@ Sequence:
 9. Commit with message `feat: v2 scaffold — Next.js 16 App Router`.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `typescript-best-practices`
 
@@ -63,7 +63,7 @@ Sequence:
 Implements all server-side data access and write-back logic: workspace discovery, YAML readers for features and tasks, shared TypeScript types, and Server Actions for approve/reject/reset stage and new-feature scaffolding. Must complete before any screen can render live data.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `typescript-best-practices`
 
@@ -88,7 +88,7 @@ Implements all server-side data access and write-back logic: workspace discovery
 Implements the root layout shell: sidebar navigation, top header bar, WorkspaceContext provider, and WorkspaceSwitcher. Every page renders inside this shell. Must exist before any screen task can produce a consistent page layout.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -116,7 +116,7 @@ Implements the root layout shell: sidebar navigation, top header bar, WorkspaceC
 Implements the Workspace Picker — the full-page grid that renders on first visit when no `active_workspace_id` is stored. Each card shows workspace name and summary counts. Selecting a card stores the workspace ID in localStorage and transitions to the Dashboard.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -142,7 +142,7 @@ Implements the Workspace Picker — the full-page grid that renders on first vis
 Implements the main Dashboard: workspace-level stat cards (total features, in_progress, blocked, done) and a recent activity feed drawn from feature and task history entries. Rendered after a workspace is selected.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -168,7 +168,7 @@ Implements the main Dashboard: workspace-level stat cards (total features, in_pr
 Implements the `/features` page: a filterable table of all features in the active workspace with status badges, stage progress bars, and filter pills by lifecycle stage and review status.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -195,7 +195,7 @@ Implements the `/features` page: a filterable table of all features in the activ
 Implements the `/features/[featureId]` page: a stage stepper showing current lifecycle position, a review card per stage (with approve/reject/reset buttons wired to Server Actions), and a task table. This is the only screen with write-back interactions.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -223,7 +223,7 @@ Implements the `/features/[featureId]` page: a stage stepper showing current lif
 Implements the New Feature modal: a form for feature name, auto-generated ID slug (kebab-case, editable), and description. Submitting calls `initFeature` Server Action, which scaffolds `docs/features/<id>/` and commits to a new feature branch.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
@@ -250,7 +250,7 @@ Implements the New Feature modal: a form for feature name, auto-generated ID slu
 Implements the `/tasks` page: a Kanban board with one column per task status (todo, ready, in_progress, blocked, in_review, done). Task cards show title, repo badge, actor type, and PR link. Filter row for feature and repo selectors.
 
 ### Required skills
-- `frontend-engineer`
+- frontend-engineer
 - `nextjs-best-practices`
 - `heroui-react`
 - `typescript-best-practices`
