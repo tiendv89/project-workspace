@@ -229,6 +229,9 @@ Rules:
 - The management repo commit is the canonical record of task ownership. Without it, the claim is not valid and the agent must not proceed with implementation.
 - Agents may only modify their own task file (`T_x.yaml`) in the management repo. See "Task file scope" rule.
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
+- **Rebase-before-PR rule**: before opening a workspace PR (or pushing the final implementation branch for review), the feature branch must be rebased onto `origin/<base_branch>` of the target repo. `<base_branch>` is declared in `workspace.yaml` for each repo — do not assume `main`. This prevents duplicate commits from parallel tasks that merged while this task was in flight.
+- **Rebase-before-done rule**: before a workspace PR is merged (and a task marked `done`), the feature branch must be rebased onto `origin/<base_branch>`. A PR whose branch is not up-to-date with the base branch must not be merged — rebase it first, then merge. This applies to both the management repo PR and any implementation repo PR for the same task.
+- **Mergeable-before-close rule**: before the runtime merges the workspace PR, it checks whether the PR is in a mergeable state. If the PR is `CONFLICTING` (`mergeable: false`), the merge is skipped and a `workspace_pr_not_mergeable` event is emitted — the PR is left open. The task YAML remains `done`; only the workspace PR merge is deferred. If mergeability is `UNKNOWN` (GitHub has not finished computing it), the merge proceeds and any error is handled by the existing `workspace_pr_merge_failed` path. Operators must resolve the conflict on the feature branch and push before the next recovery cycle will retry.
 - **No direct push to main rule**: nothing may be committed directly to `main` on the management repo — not task state, not feature docs, not skill updates, not workspace initialisation, not any other change. Every write to the management repo must land on a feature branch and be merged via PR. This applies to agents, workflow skills (`init-feature`, `approve-feature`, `init-workspace`, etc.), and humans alike. No exceptions.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
 - **Task branch rule**: every commit to the management repo during task execution must land on the task's feature branch, not on `main`. Before committing, follow the **branch checkout + sync protocol** below. This rule applies to all management repo writes during a task — claim commits, status updates, log entries, and log file flushes.
@@ -288,14 +291,16 @@ If `git pull` is rejected because the origin branch has diverged (e.g. another a
 
    Only apply the patch when the answer to "still required and not yet present" is unambiguous.
 
-### Step 4 — Rebase onto latest main before committing
+### Step 4 — Rebase onto base branch before committing
 
 ```bash
 git fetch origin
-git rebase origin/main
+git rebase origin/<base_branch>
 ```
 
-This keeps history linear and prevents merge conflicts when the branch is eventually merged into `main`.
+Where `<base_branch>` is the repo's base branch as declared in `workspace.yaml` (e.g. `main`, `matthew`). Do not hardcode `main` — always resolve from `workspace.yaml` for the repo being operated on.
+
+This keeps history linear and prevents merge conflicts when the branch is eventually merged into the base branch.
 
 ### Scope
 
@@ -459,6 +464,23 @@ printenv CLAUDE_AGENT_RUNTIME
 
 - If the output is `1` — you are inside the agent runtime. Proceed with autonomous implementation as instructed by the task.
 - If the output is empty or the variable is absent — you are in an interactive session. **Do not implement code unless the human has explicitly asked you to in this conversation.** Read, plan, and discuss freely; write or modify files only on explicit instruction.
+
+## Runtime ABI
+
+The agent runtime is split into orchestrator and executor layers (see `agent-runtime-split` feature).
+The orchestrator owns all workflow-state writes; the executor only performs code work and writes
+`result.json`. This `CLAUDE.md` contains workflow rules only — it is not injected into the
+executor's runtime context.
+
+The runtime uses a **ports-and-adapters architecture**: the orchestrator core depends only on typed
+TypeScript interfaces; concrete adapters are injected at startup based on a named profile
+(`local-subprocess` or `local-docker`). This means the same orchestrator binary runs in every
+topology — no bundled-image assumption. Profiles and adapters are purely additive.
+
+For third-party runtime authors and operators, the authoritative references are:
+- **Portability spec**: `runtime/portability-spec.md` — every port, adapter, profile, runner env contract, broker protocol fixtures, and how to add a new profile
+- **ABI spec**: `runtime/abi/docs/abi-spec.md` — executor-facing inputs, outputs, side-effects, lifecycle, examples
+- **Operator guide**: `runtime/orchestrator/docs/OPERATOR-GUIDE.md` — deployment, Docker Compose entry point, environment variables, common issues
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
