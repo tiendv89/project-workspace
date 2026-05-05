@@ -1,18 +1,18 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T9
 blocked_reason: null
 branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-04T02:05:33+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-05T05:29:40.445Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/75
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -22,3 +22,193 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-04T10:47:34.132Z
     note: Task activated — dependency T9 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T10:48:35.096Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T10:48:48.854Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T18:18:13+0700
+    note: Reset from in_progress to ready — executor hung on printenv
+      CLAUDE_AGENT_RUNTIME for 27 minutes with no output. No implementation
+      commits were made. Safe to re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T11:20:56.449Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T11:21:04.987Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T18:22:57+0700
+    note: Reset to ready — runner crashed with MODULE_NOT_FOUND for
+      runner-wrapper/runner.js. Container image predates T9 merge. Rebuild
+      images before re-claiming.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T11:24:04.864Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T11:24:15.464Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T18:30:45+0700
+    note: Reset to ready — runner crashed again (runner.js missing from image).
+      Dockerfile fixed to include runner-wrapper; rebuild required before next
+      claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T12:51:32.973Z
+    note: Claimed via git-based claim protocol.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T12:53:36.595Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T12:53:46.525Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-04T23:49:46+0700
+    note: Reset to ready — claimed 4 times with no implementation. Dockerfile fixed
+      (runner-wrapper added). Rebuild images before agents restart.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T16:52:24.965Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T16:52:33.494Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T00:30:40+0700
+    note: "Reset to ready — implementation is complete. PR #75
+      (https://github.com/tiendv89/agent-workflow/pull/75) is already open on
+      branch feature/runtime-portable-architecture-T10 with all work committed
+      (portability spec, fake-orchestrator harness, tests, language policy)."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T18:02:46.821Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T18:02:55.397Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T01:29:20+0700
+    note: Reset to ready — PR
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T18:32:09.395Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-04T18:32:17.259Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: max_turns_exceeded
+    at: 2026-05-05T03:08:41.521Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T10:29:33+0700
+    note: Reset to ready for next agent pickup.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:31:43.898Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:31:52.379Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T10:54:16+0700
+    note: Reset to ready for next agent pickup.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:59:09.510Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T03:59:17.670Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/agent-runtime-split/technical-design.md,
+      docs/features/runtime-portable-architecture/product-spec.md"
+    rag_query: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+      runtime-portable-architecture
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/75"
+    at: 2026-05-05T04:09:51.075Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T05:29:40.445Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/100
+  status: open

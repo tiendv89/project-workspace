@@ -332,12 +332,14 @@ End of task: M:N is functional locally — multiple agents spawn per-task execut
 
 ---
 
-## T10 — Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
+## T10 — Portability spec doc + fake-orchestrator harness + CLAUDE.md updates + operator setup
 
 ### Description
 Close out the feature with documentation. Author `runtime/portability-spec.md` documenting every port (including `CompletionBrokerPort`) and adapter, with the per-profile mechanism contract derived from "How `submit` works per profile" in the technical design. Update the executor team's `fake-orchestrator` harness to use the new `ExecutorPort` + `CompletionBrokerPort` contracts so executor authors test against the interface the platform actually uses. Update `CLAUDE.md` references that assume the bundled-image model.
 
 This task also lands the **language policy** for the workspace: a short, durable note that orchestrator core, runner wrapper, and existing adapters stay in TypeScript while new standalone services (starting with T7's broker) are written in Go. The policy lives at `docs/language-policy.md` (workspace-level) and is referenced from this feature's portability spec.
+
+Finally, this task separates the operator quickstart into profile-specific guides and cleans up stale content in the operator docs that was left from the development rollout.
 
 ### Required skills
 - typescript-best-practices
@@ -351,3 +353,6 @@ This task also lands the **language policy** for the workspace: a short, durable
 - [ ] Update `CLAUDE.md` sections that assume the bundled-image model
 - [ ] Reference `docs/language-policy.md` from `runtime/portability-spec.md`
 - [ ] Add a "How to add a new profile" section to `runtime/portability-spec.md`
+- [ ] Create `runtime/orchestrator/templates/QUICKSTART-local-docker.md` — dedicated M:N setup guide
+- [ ] Update `runtime/orchestrator/templates/QUICKSTART.md` — add "Which profile?" section and link to local-docker guide
+- [ ] Clean up `runtime/orchestrator/docs/OPERATOR-GUIDE.md` — remove stale "Deleted legacy paths" and "Smoke-gate outcome" sections; update Day-1 note to reflect that `local-docker` is now available
