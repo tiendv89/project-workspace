@@ -183,6 +183,10 @@ log:
       `git rebase origin/main`, force-push with --force-with-lease, then
       write result.json with terminal_status=in_review and
       pr_url=https://github.com/tiendv89/agent-workflow/pull/75.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T10:54:16+0700
+    note: Reset to ready for next agent pickup.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
