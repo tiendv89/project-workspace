@@ -1,24 +1,19 @@
 id: T7
-title: Backend tests, security checks, and sync hardening
-repo: workflow-backend
+title: Error states, empty states, and end-to-end QA
+repo: digital-factory-ui
 status: todo
-depends_on:
-  - T1
-  - T2
-  - T3
+depends_on: [T4, T5, T6]
 blocked_reason: null
 branch: feature/dashboard-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: "2026-05-05T14:45:00+0700"
 pr:
-  url: ""
-  status: not_created
+  url: null
+  status: null
 log:
-  - action: reset
-    by: minhkienn203@gmail.com
-    at: "2026-05-05T11:25:56+0700"
-    note: >-
-      Task regenerated from revised technical design for backend validation,
-      credential safety, and sync hardening.
+  - action: created
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:45:00+0700"
+    note: Task created from tech-lead Phase 2 (frontend-only alpha design).

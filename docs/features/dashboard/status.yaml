@@ -154,12 +154,10 @@ stages:
           Approved frontend-only design: Option B compound components, GitHub
           Contents API from browser, PAT in localStorage, digital-factory-ui only.
   tasks:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
-    review_comment: >-
-      Task breakdown regenerated from revised technical design; pending
-      technical-design approval before task approval.
+    review_comment: null
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -406,6 +404,13 @@ history:
     note: >-
       Technical design approved. Feature advances to task planning.
       Tasks require regeneration from the new frontend-only design.
+  - stage: tasks
+    action: submitted
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:45:00+0700"
+    note: >-
+      Task breakdown regenerated for frontend-only alpha. 7 tasks, all todo,
+      all in digital-factory-ui. T8 (old backend QA task) removed.
 revalidation:
   product_spec_required: false
   technical_design_required: false

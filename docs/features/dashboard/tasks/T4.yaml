@@ -1,21 +1,19 @@
 id: T4
-title: Frontend React/Vite provider and API client foundation
+title: Kanban board compound components
 repo: digital-factory-ui
 status: todo
-depends_on: []
+depends_on: [T3]
 blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: "2026-05-05T14:45:00+0700"
 pr:
-  url: ""
-  status: not_created
+  url: null
+  status: null
 log:
-  - action: reset
-    by: minhkienn203@gmail.com
-    at: "2026-05-05T11:25:56+0700"
-    note: >-
-      Task regenerated from revised technical design for React/Vite providers,
-      Context boundaries, API client, and compound component foundation.
+  - action: created
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:45:00+0700"
+    note: Task created from tech-lead Phase 2 (frontend-only alpha design).
