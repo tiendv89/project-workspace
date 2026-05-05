@@ -7,8 +7,8 @@ blocked_reason: result_not_written
 branch: feature/dashboard-T2
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-05T09:41:28.773Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-05T09:41:46.618Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/18
   status: open
@@ -92,6 +92,10 @@ log:
     by: pentative@gmail.com
     note: result_not_written
     at: 2026-05-05T09:41:28.773Z
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:41:46.618Z
+    note: Review dispatch claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
