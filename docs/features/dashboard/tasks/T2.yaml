@@ -8,7 +8,7 @@ branch: feature/dashboard-T2
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-05T09:38:08+0000
+  last_updated_at: 2026-05-05T09:39:48.042Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/18
   status: open
@@ -76,14 +76,18 @@ log:
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-05-05T09:38:08+0000
-    note: >-
-      Resolved 1 unresolved inline review thread (PRRT_kwDOSF7HBs5_mOPM) — workspace_pr
-      as top-level sibling of pr in RawTask already addressed in prior commits; PR
-      converted to ready-for-review.
+    note: Resolved 1 unresolved inline review thread (PRRT_kwDOSF7HBs5_mOPM) —
+      workspace_pr as top-level sibling of pr in RawTask already addressed in
+      prior commits; PR converted to ready-for-review.
   - action: in_review
     by: pentative@gmail.com
     at: 2026-05-05T09:38:08+0000
-    note: Status reset from blocked to in_review — PR url set, review comments addressed.
+    note: Status reset from blocked to in_review — PR url set, review comments
+      addressed.
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-05T09:39:48.042Z
+    note: Review dispatch claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
