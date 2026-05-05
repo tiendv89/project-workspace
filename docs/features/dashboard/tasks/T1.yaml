@@ -1,7 +1,7 @@
 id: T1
-title: React/Vite feature architecture and provider scaffold
-repo: dashboard
-status: ready
+title: Backend workspace metadata persistence and sync history
+repo: workflow-backend
+status: todo
 depends_on: []
 blocked_reason: null
 branch: feature/dashboard-T1
@@ -13,11 +13,21 @@ pr:
   url: ""
   status: not_created
 log:
-  - action: created
+  - action: reset
     by: minhkienn203@gmail.com
-    at: "2026-05-04T16:07:16+0700"
-    note: Task created from approved technical design.
-  - action: ready
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Task regenerated from revised technical design for NestJS backend,
+      Supabase Postgres, Prisma 7, and workspace metadata persistence.
+  - action: updated
     by: minhkienn203@gmail.com
-    at: "2026-05-04T09:09:16Z"
-    note: Task activated on tasks-stage approval — dependencies met.
+    at: "2026-05-05T11:46:13+0700"
+    note: >-
+      Scope simplified: PAT is transient for import/sync and is not stored in
+      backend persistence.
+  - action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:22:55+0700"
+    note: >-
+      Scope clarified: workspace metadata must include reusable repo cache
+      reference so users can import once and reopen the board without PAT.

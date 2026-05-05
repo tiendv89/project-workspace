@@ -1,9 +1,11 @@
 id: T7
-title: End-to-end QA and release handoff
-repo: dashboard
+title: Backend tests, security checks, and sync hardening
+repo: workflow-backend
 status: todo
 depends_on:
-  - T6
+  - T1
+  - T2
+  - T3
 blocked_reason: null
 branch: feature/dashboard-T7
 execution:
@@ -14,7 +16,9 @@ pr:
   url: ""
   status: not_created
 log:
-  - action: created
+  - action: reset
     by: minhkienn203@gmail.com
-    at: "2026-05-04T16:07:16+0700"
-    note: Task created from approved technical design.
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Task regenerated from revised technical design for backend validation,
+      credential safety, and sync hardening.

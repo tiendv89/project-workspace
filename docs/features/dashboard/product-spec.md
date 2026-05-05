@@ -39,11 +39,20 @@ Teams using the workflow system manage their project state through YAML files in
 1. The user opens the dashboard for the first time. No login is required.
 2. The app has no workspace configured yet, so it presents a single prompt: connect a management repository.
 3. The user provides:
-   - The GitHub URL of their management repository (e.g. `https://github.com/org/project-workspace`).
+   - A GitHub repository input that follows the expected repository pattern (for example `org/project-workspace` or `https://github.com/org/project-workspace`).
    - A way for the system to access that repository — see **Repository Access** below.
 4. The user submits. The system clones the repository, reads all workflow YAML files, and builds the board state.
-5. On success, the user is taken directly to the Kanban board for that workspace.
-6. On failure (bad URL, access denied, no workflow YAML found), the user sees a clear error and can correct their input.
+5. On success, the system persists the workspace metadata and backend repo cache so the workspace can be opened again without a new import.
+6. The user is taken directly to the Kanban board for that workspace.
+7. On failure (access denied, clone/sync failure, or no workflow YAML found), the user sees a clear error and can correct their input.
+
+### Journey 1b — Return to an imported workspace
+
+1. The user opens the dashboard after a workspace was already imported.
+2. The app loads the existing workspace metadata from the backend.
+3. The backend serves the board from the persisted workspace record and cached repository data.
+4. The user reaches the Kanban board without re-entering the repository input or PAT.
+5. If the cached repository is missing or stale, the UI shows a sync/reconnect action instead of forcing a full re-import.
 
 ### Journey 2 — View the workflow board
 
@@ -57,8 +66,9 @@ Teams using the workflow system manage their project state through YAML files in
 
 1. The user wants to see the latest state from the repository.
 2. They click a `Sync` button on the board.
-3. The system re-pulls the repository and re-parses the YAML.
-4. The board updates to reflect any changes since the last sync.
+3. If the PAT is no longer available in the current browser session, the app asks the user to provide it again for this sync.
+4. The system re-pulls the repository and re-parses the YAML.
+5. The board updates to reflect any changes since the last sync.
 
 ### Journey 4 — Review task status from the left panel
 
@@ -78,7 +88,7 @@ V1 uses GitHub Personal Access Token access only.
 
 ### GitHub Personal Access Token
 
-The user provides a GitHub PAT with read access to the repository. The system uses it to clone the repo. The token is stored encrypted on the server and is never returned to the browser.
+The user provides a GitHub PAT with read access to the repository. The system sends the PAT to the backend for import and sync only. The token is not persisted in browser storage or backend durable storage, and it is never returned to the browser.
 
 ## Data Read From Repository
 
@@ -93,20 +103,23 @@ No other files are read. The system treats the YAML as read-only; it never write
 
 | Method | Path                           | Purpose                                         |
 | ------ | ------------------------------ | ----------------------------------------------- |
+| `GET`  | `/api/workspaces`      | Return the existing imported workspace, if any. |
 | `POST` | `/api/workspaces`              | Clone the repo and import workflow YAML.        |
+| `GET`  | `/api/workspaces/:workspaceId` | Return one workspace detail record.             |
 | `GET`  | `/api/workspaces/:id/features` | Return parsed features and tasks for the board. |
-| `POST` | `/api/workspaces/:id/sync`     | Re-pull and re-parse the repository.            |
+| `POST` | `/api/workspaces/:id/sync`     | Re-pull and re-parse using a transient PAT when needed. |
 
 Detailed request/response contracts are defined in the technical design.
 
 ## Acceptance Criteria
 
-- A user with no account can open the dashboard, provide a repository URL and access credential, and reach the Kanban board without any login step.
+- A user with no account can open the dashboard, provide a GitHub repository input and access credential, and reach the Kanban board without any login step.
+- After the first successful import, a user can reopen the dashboard and reach the existing board without re-importing or re-entering PAT.
 - The board reflects the real YAML state of the repository — no hardcoded or seeded sample data.
-- Board access fails with a clear error if the repository URL is invalid or the credential cannot access the repository.
-- The `Sync` button pulls fresh state from the repository and updates the board.
+- Board access fails with a clear error if the credential cannot access the repository, import/sync fails, or workflow YAML cannot be found.
+- The `Sync` button pulls fresh state from the repository and updates the board using the in-memory PAT or a PAT re-entered for that sync.
 - The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `IN REVIEW` rows, and each row contains only tasks matching that status.
 - Each left-panel task item shows elapsed time derived from when the task entered its current status: time in progress for `IN PROGRESS`, time since ready for `READY`, and time waiting for review after completion for `IN REVIEW`.
 - The connect flow accepts a GitHub PAT as the only v1 repository access method.
-- Private repository tokens are stored server-side only; they are never exposed to the browser.
+- Private repository tokens are used transiently for import/sync only; they are not persisted in browser storage or backend durable storage.
 - If the repository contains no recognisable workflow YAML, the board shows an empty state with guidance rather than crashing.

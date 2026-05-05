@@ -1,9 +1,10 @@
 id: T5
-title: Kanban and task detail compound components
-repo: dashboard
+title: Frontend connect workspace flow
+repo: digital-factory-ui
 status: todo
 depends_on:
-  - T1
+  - T2
+  - T4
 blocked_reason: null
 branch: feature/dashboard-T5
 execution:
@@ -14,7 +15,9 @@ pr:
   url: ""
   status: not_created
 log:
-  - action: created
+  - action: reset
     by: minhkienn203@gmail.com
-    at: "2026-05-04T16:07:16+0700"
-    note: Task created from approved technical design.
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Task regenerated from revised technical design for PAT-only workspace
+      import through the backend API.

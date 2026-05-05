@@ -3,7 +3,7 @@ title: Workflow Dashboard Web
 
 feature_status: in_tdd
 current_stage: technical_design
-next_action: Tech lead to revise technical-design.md to reflect the updated end-to-end product spec, then submit for approval.
+next_action: Human reviewer to approve or reject the revised technical design. After technical-design approval, review the regenerated task breakdown.
 
 stages:
   product_spec:
@@ -39,7 +39,7 @@ stages:
           Approved latest product spec updates: PAT-only v1 repository access,
           task tracking panel Figma reference, and IN REVIEW task timing.
   technical_design:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -66,11 +66,71 @@ stages:
         comment: >-
           Reset to draft — product spec changed to end-to-end, frontend-only
           GitHub API approach. Prior frontend-only compound-component design is superseded.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:25:56+0700"
+        comment: >-
+          Revised technical design for React/Vite compound frontend,
+          NestJS backend, Supabase Postgres, Prisma 7, server-side encrypted
+          PAT storage, and updated Figma references.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:41:32+0700"
+        comment: >-
+          Updated design to remove a separate repository-format gate and keep
+          the minimal frontend-to-backend import, board, and sync flow.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:46:13+0700"
+        comment: >-
+          Simplified PAT handling: no encryption or durable PAT storage; PAT is
+          transient for frontend-to-backend import and sync only.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:51:16+0700"
+        comment: >-
+          Removed FIGMA_PERSONAL_ACCESS_TOKEN as an implementation dependency;
+          public Figma links are browser references only.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:58:22+0700"
+        comment: >-
+          Clarified Figma access: token may be used only as local
+          implementation-tooling secret for Figma MCP/API, never as frontend
+          runtime config.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:22:55+0700"
+        comment: >-
+          Clarified import-once reuse: persisted workspace metadata and repo
+          cache allow returning users to open the board without re-importing or
+          re-entering PAT.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:33:27+0700"
+        comment: >-
+          Added workspace detail endpoint GET /api/workspaces/:workspaceId for
+          direct board routes and refreshes.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:39:33+0700"
+        comment: >-
+          Added checked-in design fallback screenshots to the Figma reference
+          table so implementation can continue if Figma API/MCP access fails.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:47:27+0700"
+        comment: >-
+          Added FIGMA_ACCESS_TOKEN as a local agent/tooling secret for Figma
+          API/MCP design reads; it must not be committed or exposed to frontend
+          runtime config.
   tasks:
-    review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: "2026-05-04T16:09:15+0700"
-    review_comment: null
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: >-
+      Task breakdown regenerated from revised technical design; pending
+      technical-design approval before task approval.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -80,6 +140,42 @@ stages:
         by: minhkienn203@gmail.com
         at: "2026-05-04T16:09:15+0700"
         comment: null
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:25:56+0700"
+        comment: >-
+          Regenerated tasks for split frontend/backend implementation across
+          digital-factory-ui, workflow-backend, and management-repo.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:41:32+0700"
+        comment: >-
+          Updated task wording to follow the repository input pattern only and
+          preserve a minimal full frontend-to-backend implementation flow.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T11:46:13+0700"
+        comment: >-
+          Simplified backend task scope to remove encrypted PAT storage and use
+          transient PAT handling for import and sync.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:22:55+0700"
+        comment: >-
+          Updated tasks to include current-workspace lookup and reusable repo
+          cache so users import once and reuse the board many times.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:33:27+0700"
+        comment: >-
+          Added workspace detail endpoint coverage to backend, frontend API
+          client, routing, and tests.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T13:47:27+0700"
+        comment: >-
+          Updated frontend task wording to require local FIGMA_ACCESS_TOKEN for
+          agent Figma API/MCP reads and use screenshot fallbacks if unavailable.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -149,9 +245,109 @@ history:
       Product spec updates approved: PAT-only v1 repository access,
       task tracking panel Figma reference, and IN REVIEW task timing.
       Technical design and tasks still require revalidation.
-
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Revised technical design submitted for review: React/Vite compound
+      frontend, NestJS backend, Supabase Postgres, Prisma 7, server-side
+      encrypted PAT storage, and updated Figma references.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Regenerated task breakdown from revised technical design. Tasks remain
+      draft until technical design approval and task approval.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:41:32+0700"
+    note: >-
+      Technical design updated to remove a separate repository-format gate and
+      keep the minimal frontend-to-backend import, board, and sync flow.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:41:32+0700"
+    note: >-
+      Task breakdown wording updated to follow repository input pattern only
+      while preserving PAT, import, board, sync, and QA coverage.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:46:13+0700"
+    note: >-
+      Technical design simplified to remove encrypted PAT storage and use
+      transient PAT handling for import and sync.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:46:13+0700"
+    note: >-
+      Task breakdown updated so backend persistence stores workspace metadata
+      and sync history only, with no durable PAT storage.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:51:16+0700"
+    note: >-
+      Removed FIGMA_PERSONAL_ACCESS_TOKEN from external dependencies because
+      the provided Figma references are public browser links.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T11:58:22+0700"
+    note: >-
+      Clarified Figma access handling: any Figma token is a local tooling
+      secret for MCP/API extraction only and must not be exposed in the
+      frontend runtime.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:22:55+0700"
+    note: >-
+      Technical design clarified import-once reuse: existing workspace metadata
+      and repo cache load the board on later visits without requiring PAT.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:22:55+0700"
+    note: >-
+      Task breakdown updated with current-workspace lookup, cache reuse, and
+      QA for reopening the board without re-importing.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:33:27+0700"
+    note: >-
+      Added GET /api/workspaces/:workspaceId as the workspace detail endpoint
+      for direct board routes and refreshes.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:33:27+0700"
+    note: >-
+      Task breakdown updated to cover workspace detail API, frontend API client
+      support, direct routing, and backend tests.
+  - stage: technical_design
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:47:27+0700"
+    note: >-
+      Added FIGMA_ACCESS_TOKEN as local agent/tooling secret for reading design
+      through Figma API/MCP. Token must not be committed, logged, or shipped to
+      frontend runtime.
+  - stage: tasks
+    action: updated
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T13:47:27+0700"
+    note: >-
+      Task breakdown updated so frontend implementation agents read Figma via
+      API/MCP with FIGMA_ACCESS_TOKEN and fallback to checked-in screenshots.
 revalidation:
   product_spec_required: false
-  technical_design_required: true
-  tasks_required: true
+  technical_design_required: false
+  tasks_required: false
   deployment_checklist_required: false

@@ -1,11 +1,13 @@
-id: T2
-title: Backend GitHub import and sync service
-repo: workflow-backend
+id: T8
+title: End-to-end QA and release handoff
+repo: management-repo
 status: todo
 depends_on:
-  - T1
+  - T5
+  - T6
+  - T7
 blocked_reason: null
-branch: feature/dashboard-T2
+branch: feature/dashboard-T8
 execution:
   actor_type: agent
   last_updated_by: null
@@ -14,9 +16,9 @@ pr:
   url: ""
   status: not_created
 log:
-  - action: reset
+  - action: created
     by: minhkienn203@gmail.com
     at: "2026-05-05T11:25:56+0700"
     note: >-
-      Task regenerated from revised technical design for server-side GitHub
-      repository import and sync.
+      Task created from revised technical design for end-to-end QA and
+      release handoff evidence.

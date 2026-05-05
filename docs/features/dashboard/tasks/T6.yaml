@@ -1,11 +1,10 @@
 id: T6
-title: Route integration, fallback screens, and toast wiring
-repo: dashboard
+title: Frontend board and task tracking panel
+repo: digital-factory-ui
 status: todo
 depends_on:
   - T3
   - T4
-  - T5
 blocked_reason: null
 branch: feature/dashboard-T6
 execution:
@@ -16,7 +15,9 @@ pr:
   url: ""
   status: not_created
 log:
-  - action: created
+  - action: reset
     by: minhkienn203@gmail.com
-    at: "2026-05-04T16:07:16+0700"
-    note: Task created from approved technical design.
+    at: "2026-05-05T11:25:56+0700"
+    note: >-
+      Task regenerated from revised technical design for board rendering,
+      task tracking panel, and task detail interactions.
