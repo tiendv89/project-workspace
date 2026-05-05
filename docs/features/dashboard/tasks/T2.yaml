@@ -8,7 +8,7 @@ branch: feature/dashboard-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-05T09:14:13.788Z
+  last_updated_at: 2026-05-05T09:29:30+0000
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/18
   status: open
@@ -42,6 +42,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-05T09:14:13.788Z
     note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:29:30+0000
+    note: >-
+      Resolved 1 inline review thread: separated workspace_pr from pr as a
+      top-level field in ParsedTask and RawTask types; PR converted to
+      ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
