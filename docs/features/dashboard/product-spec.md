@@ -23,7 +23,7 @@ This is an alpha-stage MVP. Simplicity and speed to value are priorities over in
 - Let a user connect their management repository to the dashboard and immediately see a live Kanban view of all features and tasks.
 - Read and parse workflow YAML directly from the GitHub Contents API — called from the browser, no backend server required.
 - Support both public repositories (no credential) and private repositories (GitHub Personal Access Token).
-- Persist workspace identity in the browser so a returning user does not need to re-import.
+- Persist workspace identity and PAT in `localStorage` so a returning user never needs to re-import or re-enter credentials.
 - Deliver a read-only alpha overview; task mutation, account management, and server-side sync infrastructure are deferred.
 
 ## Non-goals
@@ -36,7 +36,7 @@ This is an alpha-stage MVP. Simplicity and speed to value are priorities over in
 - Real-time sync (websocket / SSE) is out of scope; sync-on-load and a manual refresh are sufficient.
 - AI chat integration is out of scope.
 - GitLab and Bitbucket repository access are out of scope for v1; only GitHub repositories are supported.
-- Secure server-side token storage is out of scope; token handling is sessionStorage-only in this alpha.
+- Secure server-side token storage is out of scope; the PAT is stored in `localStorage` as an accepted tradeoff for this internal alpha.
 
 ## User Journey
 
@@ -48,16 +48,15 @@ This is an alpha-stage MVP. Simplicity and speed to value are priorities over in
    - A GitHub repository identifier — `owner/repo` or a full `https://github.com/owner/repo` URL.
    - For private repositories: a GitHub Personal Access Token with read access.
 4. The user submits. The app calls the GitHub Contents API directly from the browser to read workflow YAML and builds the board state.
-5. On success, the app stores the repository identity (`owner/repo`) in `localStorage`. The PAT, if provided, is stored in `sessionStorage` keyed by workspace ID for the current browser session.
+5. On success, the app stores the repository identity and PAT (if provided) in `localStorage` keyed by workspace ID.
 6. The user is taken directly to the Kanban board for that workspace.
 7. On failure (access denied, invalid PAT, or no workflow YAML found), the user sees a clear error and can correct their input.
 
 ### Journey 1b — Return to an imported workspace
 
 1. The user opens the dashboard in the same browser after a workspace was previously imported.
-2. The app reads the workspace identity from `localStorage` and navigates to the board.
-3. For public repositories, board data loads without any PAT.
-4. For private repositories, if a PAT is still present in `sessionStorage`, the load proceeds silently. If the `sessionStorage` PAT has expired (new browser session), the app shows a prompt for the user to re-enter their token before loading.
+2. The app reads the workspace identity and, for private repositories, the stored PAT from `localStorage`.
+3. Board data loads immediately — no re-entry required.
 
 ### Journey 2 — View the workflow board
 
@@ -71,9 +70,8 @@ This is an alpha-stage MVP. Simplicity and speed to value are priorities over in
 
 1. The user wants to see the latest state from the repository.
 2. They click a `Sync` button on the board.
-3. For public repositories, the app re-fetches the GitHub Contents API immediately.
-4. For private repositories, if a PAT is still in `sessionStorage`, it is reused silently. If it has expired, the app prompts the user to re-enter their token for this sync.
-5. The board updates to reflect any changes since the last load.
+3. The app re-fetches the GitHub Contents API using the stored PAT from `localStorage` (or unauthenticated for public repos).
+4. The board updates to reflect any changes since the last load.
 
 ### Journey 4 — Review task status from the left panel
 
@@ -99,12 +97,10 @@ No credential is required. The app calls the GitHub Contents API unauthenticated
 The user provides a GitHub Personal Access Token (classic `ghp_` or fine-grained `github_pat_`) with read access to the repository. The PAT is:
 
 - Passed directly from the browser to the GitHub Contents API as a `Bearer` token in the `Authorization` header.
-- Stored in `sessionStorage` keyed by workspace ID after a successful import.
-- Never written to `localStorage`.
+- Stored in `localStorage` keyed by workspace ID after a successful import, so the user never needs to re-enter it.
 - Never sent to any backend server.
-- Automatically cleared when the browser session ends (tab or window close).
 
-When `sessionStorage` no longer holds a valid token for a private workspace, the app shows a re-entry prompt rather than a hard error.
+This is an internal alpha tool; durable local PAT storage is an acceptable tradeoff for simplicity.
 
 ## Data Read From Repository
 
@@ -121,11 +117,11 @@ No other files are read. The app treats all YAML as read-only and never writes b
 
 - A user with no account can open the dashboard, provide a GitHub repository identifier and optional PAT, and reach the Kanban board without any login step.
 - Public repositories load without a PAT. Private repositories require a PAT.
-- After the first successful import, a user can reopen the dashboard and the workspace identity is restored from `localStorage`. Public repos load immediately; private repos prompt for PAT if `sessionStorage` has expired.
+- After the first successful import, a user can reopen the dashboard and the board loads immediately — workspace identity and PAT are both restored from `localStorage` without re-entry.
 - The board reflects the real YAML state of the repository — no hardcoded or seeded sample data.
 - Board access fails with a clear error if the repository cannot be accessed, the PAT is invalid, or no workflow YAML is found under `docs/features/`.
-- The `Sync` button re-fetches data from the GitHub Contents API and updates the board using the in-session PAT or a PAT re-entered for that sync.
+- The `Sync` button re-fetches data from the GitHub Contents API using the stored PAT from `localStorage` and updates the board.
 - The board includes a left-side task status panel with `IN PROGRESS`, `READY`, and `IN REVIEW` rows; each row contains only tasks matching that status.
 - Each left-panel task item shows elapsed time derived from when the task last entered its current status.
-- Private repository PATs are stored in `sessionStorage` only; they are never written to `localStorage` and never sent to any backend.
+- Private repository PATs are stored in `localStorage` keyed by workspace ID and never sent to any backend.
 - If the repository contains no recognisable workflow YAML under `docs/features/`, the board shows an empty state with guidance rather than crashing.
