@@ -1,9 +1,9 @@
 feature_id: dashboard
 title: Workflow Dashboard Web
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Run tech-lead Phase 2 to generate new task breakdown, then submit for human approval.
+next_action: Tasks approved. T1 and T2 are ready. Owning teams may begin execution.
 
 stages:
   product_spec:
@@ -154,10 +154,10 @@ stages:
           Approved frontend-only design: Option B compound components, GitHub
           Contents API from browser, PAT in localStorage, digital-factory-ui only.
   tasks:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: "2026-05-05T15:16:56+0700"
+    review_comment: Approved frontend-only alpha task breakdown. T1 and T2 activated.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -203,6 +203,10 @@ stages:
         comment: >-
           Updated frontend task wording to require local FIGMA_ACCESS_TOKEN for
           agent Figma API/MCP reads and use screenshot fallbacks if unavailable.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: "2026-05-05T15:16:56+0700"
+        comment: Approved frontend-only alpha task breakdown. T1 and T2 activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -411,8 +415,15 @@ history:
     note: >-
       Task breakdown regenerated for frontend-only alpha. 7 tasks, all todo,
       all in digital-factory-ui. T8 (old backend QA task) removed.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T15:16:56+0700"
+    note: >-
+      Tasks approved. Feature advances to ready_for_implementation. T1 and T2
+      activated.
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: true
+  tasks_required: false
   deployment_checklist_required: false

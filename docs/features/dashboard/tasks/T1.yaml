@@ -1,7 +1,7 @@
 id: T1
 title: App scaffold — routing, connect screen, localStorage service
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/dashboard-T1
@@ -17,3 +17,7 @@ log:
     by: matthew@swellnetwork.io
     at: "2026-05-05T14:45:00+0700"
     note: Task created from tech-lead Phase 2 (frontend-only alpha design).
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: "2026-05-05T08:16:56Z"
+    note: Task activated on tasks-stage approval — dependencies met.

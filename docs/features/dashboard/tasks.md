@@ -1,6 +1,6 @@
 # Tasks — Workflow Dashboard Web
 
-Feature status reference: `in_tdd`; stage status: `tasks/draft`. Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
+Feature status reference: `ready_for_implementation`; stage status: `tasks/approved`. Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
 
 ## Index
 
