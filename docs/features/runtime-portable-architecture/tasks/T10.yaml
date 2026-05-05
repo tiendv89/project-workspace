@@ -1,10 +1,10 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T9
-blocked_reason: max_turns_exceeded
+blocked_reason: null
 branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
@@ -172,6 +172,17 @@ log:
     by: tiendv.52@gmail.com
     note: max_turns_exceeded
     at: 2026-05-05T03:08:41.521Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-05T10:29:33+0700
+    note: >-
+      Reset to ready — implementation is done and PR #75 is open
+      (https://github.com/tiendv89/agent-workflow/pull/75). Next agent: the
+      impl branch feature/runtime-portable-architecture-T10 in agent-workflow
+      is behind main. Do NOT re-implement. Checkout the branch, run
+      `git rebase origin/main`, force-push with --force-with-lease, then
+      write result.json with terminal_status=in_review and
+      pr_url=https://github.com/tiendv89/agent-workflow/pull/75.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
