@@ -138,6 +138,13 @@ stages:
           Added FIGMA_ACCESS_TOKEN as a local agent/tooling secret for Figma
           API/MCP design reads; it must not be committed or exposed to frontend
           runtime config.
+      - status: awaiting_approval
+        by: matthew@swellnetwork.io
+        at: "2026-05-05T14:38:18+0700"
+        comment: >-
+          Regenerated technical design for frontend-only alpha: GitHub Contents
+          API from browser, PAT in localStorage, yaml npm package, Option A
+          minimal service layer. NestJS/Supabase/Prisma design removed entirely.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -376,6 +383,14 @@ history:
     note: >-
       Product spec approved (frontend-only alpha). Feature advances to in_tdd.
       Technical design and tasks require regeneration against the new scope.
+  - stage: technical_design
+    action: submitted
+    by: matthew@swellnetwork.io
+    at: "2026-05-05T14:38:18+0700"
+    note: >-
+      Technical design regenerated for frontend-only alpha. GitHub Contents API
+      from browser, PAT in localStorage, yaml npm package, Option A minimal
+      service layer. digital-factory-ui only — no backend repos involved.
 revalidation:
   product_spec_required: false
   technical_design_required: true
