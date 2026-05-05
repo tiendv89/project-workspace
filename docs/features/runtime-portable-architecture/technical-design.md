@@ -872,14 +872,21 @@ Two new adapters share the surface delivered in Wave 3.
 
 End of wave: M:N is functional locally. Multiple orchestrators each spawn their own per-task Claude executor containers; runners POST to the shared broker; any orchestrator drains. Submit and reap are decoupled. The HTTP+broker code path matches what the production feature will use.
 
-### Wave 5 — Documentation, fake-orchestrator harness, port spec
+### Wave 5 — Documentation, fake-orchestrator harness, port spec, operator setup
 
 - Author `runtime/portability-spec.md` documenting every port and adapter.
 - Update the executor team's `fake-orchestrator` harness to use the new `ExecutorPort` contract so executor authors test against an interface the platform actually uses.
 - Update `CLAUDE.md` references where they assume the bundled-image model.
 - Documentation for adding a new profile.
+- **Separate operator quickstarts for each profile:**
+  - `runtime/orchestrator/templates/QUICKSTART.md` — `local-subprocess` only (single-container, default). Add a "Which profile?" section at the top that explains the choice and links to the `local-docker` guide.
+  - `runtime/orchestrator/templates/QUICKSTART-local-docker.md` — `local-docker` M:N topology. Covers the additional prerequisites (Docker socket, `RUNTIME_PROFILE=local-docker`), how to start with `--profile local-docker`, how to scale to N orchestrators, and `local-docker`-specific troubleshooting.
+- **Clean up `runtime/orchestrator/docs/OPERATOR-GUIDE.md`:**
+  - Remove the "Deleted legacy paths" section — stale historical content not relevant to operators.
+  - Remove the "Smoke-gate outcome (T2 cutover)" section — internal development detail.
+  - Update the "Architecture overview" Day-1/future note: `local-docker` is now available (not "future"); reference `QUICKSTART-local-docker.md`.
 
-End of wave: feature is shippable; future profiles can be added by registering a factory.
+End of wave: feature is shippable; future profiles can be added by registering a factory. Both profiles have clear operator entry points.
 
 ## Dependency Analysis
 
