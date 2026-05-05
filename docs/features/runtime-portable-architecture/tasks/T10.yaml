@@ -1,7 +1,7 @@
 id: T10
 title: Portability spec doc + fake-orchestrator harness + CLAUDE.md updates
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T9
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/runtime-portable-architecture-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-05T04:09:51.075Z
+  last_updated_at: 2026-05-05T05:29:40.445Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/75
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -205,6 +205,10 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/75"
     at: 2026-05-05T04:09:51.075Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T05:29:40.445Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/100
   status: open
