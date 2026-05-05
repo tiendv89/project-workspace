@@ -64,6 +64,12 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
+  - id: workflow-backend
+    github: git@github.com:tiendv89/workflow-backend.git
+    local_path: env:WORKFLOW_BACKEND_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
   - id: rag-service
     github: git@github.com:tiendv89/rag-service.git
     local_path: env:RAG_SERVICE_LOCAL_PATH

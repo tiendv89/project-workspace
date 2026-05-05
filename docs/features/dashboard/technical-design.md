@@ -1,283 +1,140 @@
 # Technical Design
 
 ## Feature
+
 - Feature ID: `dashboard`
 - Title: `Workflow Dashboard Web`
 
 ## Figma
 
-The product spec includes Figma links. These links are design contracts for downstream UI implementation tasks.
-
 | Figma reference | Covers |
 |---|---|
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=14-2&t=l6DiKoWXEtl6DNSM-0 | Login page |
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=34-490&t=l6DiKoWXEtl6DNSM-0 | Workspace list and repository import |
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=34-537&t=l6DiKoWXEtl6DNSM-0 | Workspace detail Kanban board |
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=35-752&t=l6DiKoWXEtl6DNSM-0 | Status filter dropdown |
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=36-935&t=l6DiKoWXEtl6DNSM-0 | Workspace switcher dropdown |
-| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Untitled?node-id=36-1108&t=l6DiKoWXEtl6DNSM-0 | Task detail sheet |
+| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3198&t=dBztH5XSYbZ9jPyR-0 | Workspace connect / import screen |
+| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-85&t=xHuTHtgkwgQhVAcT-0 | Workspace detail Kanban board |
+| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-2&t=xHuTHtgkwgQhVAcT-0 | Left-side task tracking panel |
+| https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3276&t=dBztH5XSYbZ9jPyR-0 | Task detail sheet |
 
-Implementation tasks that touch these UI surfaces must include matching `### Figma` subsections in `tasks.md`. If `FIGMA_PERSONAL_ACCESS_TOKEN` is unavailable during implementation, those tasks must block rather than guess visual details.
+Implementation tasks that touch these UI surfaces must include matching `### Figma` subsections. If `FIGMA_ACCESS_TOKEN` is set in the local tooling environment, agents must read design context through the Figma API/MCP before writing UI code. `FIGMA_ACCESS_TOKEN` is a local implementation-tooling secret only — never commit it, never expose it in frontend runtime config.
 
-## Current State
+---
 
-The dashboard application described by the product spec is a React + Vite frontend using TanStack Router. It currently has local demo authentication, local workspace storage, a workspace list/import screen, a workspace detail Kanban board, a task detail sheet, route-level fallback states, and reusable UI primitives under `src/components/ui`.
+## 1. Current State
 
-Current implementation shape:
+The `digital-factory-ui` repo is a React + Vite application with TanStack Router. The `main` branch is expected to be empty or minimal. The `dev` branch contains an existing prototype with working UI foundations:
 
-- Routes currently own substantial UI and workflow state directly.
-- Board behavior is concentrated in `src/components/KanbanBoard.tsx`.
-- Task sheet behavior lives in `src/components/TaskDetailSheet.tsx`.
-- Workspace persistence lives in `src/lib/workspaces.ts`.
-- Auth persistence lives in `src/lib/auth.ts`.
-- Chat components exist but are not mounted.
+- Demo login/auth flow using `localStorage.isLoggedIn`.
+- Workspace list and import screen — parses a repository URL and stores it in `localStorage.workspaces`.
+- Kanban board (`KanbanBoard.tsx`) that shows hardcoded sample features and tasks.
+- Task detail sheet (`TaskDetailSheet.tsx`) wired to sample task data.
+- Route fallbacks: 404 and error boundary.
+- Shared UI primitives under `src/components/ui`.
 
-Current data boundaries:
+**Agent instruction:** Before starting implementation, check out the `dev` branch to inspect existing code. Low-level primitives (`src/components/ui` — Button, Input, Badge, etc.), the TanStack Router setup, `tailwind.config`, and `src/styles.css` design tokens may be worth carrying forward. High-level components (`KanbanBoard.tsx`, `TaskDetailSheet.tsx`, route files) are replaced by Figma-aligned new components and should not be reused as-is.
 
-- Auth state is local-only through `localStorage.isLoggedIn`.
-- Workspace state is local-only through `localStorage.workspaces`.
-- Repository import parses and stores repository metadata only; it does not clone, sync, or call a backend.
-- Board feature and task data is sample data in the frontend.
-- Toast calls may not render visibly until the root app mounts a toaster.
+Limitations that block real usefulness:
 
-Current workspace/repo constraints:
+- Board data is hardcoded sample data — no real YAML is loaded.
+- Workspace import stores a URL string but never fetches anything from GitHub.
+- The login/workspace-list flow is a demo and does not match the product spec's no-login, connect-first journey.
+- The existing high-level components (`KanbanBoard.tsx`, `TaskDetailSheet.tsx`, workspace list/import) do not match the Figma design and will be replaced entirely. The low-level primitives under `src/components/ui` (Button, Input, Badge, etc.) and TanStack Router routing infrastructure may be retained where they fit the new design.
 
-- `workspace.yaml` declares `dashboard` as the frontend implementation repo id.
-- The implementation repository is `git@github.com:Kadamato/dashboard.git`.
-- `.env` points `DASHBOARD_UI_LOCAL_PATH` to `/home/kadamato/Documents/dashboard`.
-- `/home/kadamato/Documents/dashboard` exists locally and is currently an empty git checkout with no React/Vite app files.
-- Future task YAML must use `repo: dashboard`.
+The `workflow-backend` repo exists but is **not required by this design**. All data access is browser-side.
 
-## Problem Framing
+---
 
-The product needs a stable React + Vite architecture before implementation continues. The current UI works as a prototype, but route files and large components hold too much state and behavior. Adding private repository import, an `Add workspace` modal, shared validation, workspace switching, and future real data loading will become brittle if state stays scattered across routes and monolithic components.
+## 2. Problem Framing
 
-The implementation must change:
+### What must change
 
-- Use React + Vite as the explicit frontend stack.
-- Keep TanStack Router for routing.
-- Move routes toward thin composition shells.
-- Introduce feature folders with compound components.
-- Hide feature logic inside Provider/Context instead of pushing state into every UI part.
-- Expose declarative compound APIs using direct root attachment such as `WorkspaceImport.Root = Root` and `WorkspaceImport.TokenField = TokenField`; do not introduce a generic compound helper factory.
-- Add private repository import UI and validation.
-- Share import behavior between the `/workspaces` import card and the board `Add workspace` modal.
-- Add the board `Add workspace` modal with enabled `Import repository` and disabled `Create workspace`.
-- Preserve existing login, workspace list, board, filter, switcher, task sheet, 404, and error boundary behavior.
+- Replace the demo login + workspace-list flow with a single **connect screen** where the user provides a GitHub `owner/repo` and optional PAT.
+- Persist the workspace identity and PAT in `localStorage` keyed by workspace ID so the board opens immediately on return visits.
+- Add a **GitHub Contents API client** that fetches feature and task YAML from the connected repository.
+- Add a **YAML parser** that decodes base64 GitHub API responses into typed feature/task objects.
+- Wire the board to real parsed data — no more hardcoded sample features.
+- Add a **left-side task tracking panel** for `IN PROGRESS`, `READY`, and `IN REVIEW` tasks with elapsed-time labels.
+- Add a **Sync button** that re-fetches the GitHub Contents API and refreshes the board.
+- Show clear error states: access denied, no workflow YAML found, parse failures.
 
-The implementation must not change:
+### What must remain stable
 
-- No real backend API is added in this scope.
-- No repository clone or Git provider sync is added in this scope.
-- No real authentication is added in this scope.
-- No Kanban drag/drop or task mutation is added in this scope.
-- No create/edit/delete feature or task workflow is added in this scope.
-- No raw GitHub personal access token is persisted in browser storage.
+- No task/status mutations from the UI — the connected repo is read-only.
+- No user account system — repository credential is the only gate.
+- No drag-and-drop Kanban mutations.
+- No real-time sync — sync-on-load plus manual sync is sufficient.
+- Figma frames are the visual source of truth for all screens.
 
-Fixed assumptions:
+### Fixed assumptions
 
-- This is a frontend-only local behavior update unless a later approved feature introduces backend-backed sync.
-- Workspace imports continue to create local workspace records.
-- Private repository mode records safe metadata only, such as `privateRepository: true` and `tokenConfigured: true`.
-- Figma frames are the visual source of truth for UI implementation.
+- GitHub is the only repository provider for v1.
+- The app calls `https://api.github.com` directly from the browser — no backend proxy.
+- PAT is stored in `localStorage` — this is an accepted tradeoff for an internal alpha.
+- The workflow YAML structure follows `docs/features/<featureId>/status.yaml` and `docs/features/<featureId>/tasks/T<n>.yaml`.
+- Task YAML `title` field is present (tech-lead generates it; see task generation rules).
+- Only one workspace is supported per browser profile in v1.
 
-## Options Considered
+---
 
-### Option A: Route-level state with shared utility functions
+## 3. Options Considered
 
-Keep route and component ownership close to the current app. Extract import validation and parsing into shared utility functions, then update the existing routes and board component directly.
+### Option A — Minimal service layer, adapt existing components
 
-Pros:
+Add new service files (`github.ts`, `workspace-store.ts`, `yaml-parser.ts`) and a data loading hook, then adapt existing high-level components to consume real data.
 
-- Smallest immediate diff.
-- Fast to implement for the private repository switch.
-- Does not require a larger folder refactor.
+**Pros**
+- Smallest diff if existing components can be reused.
 
-Cons:
+**Cons**
+- The Figma design is a complete UI replacement — existing `KanbanBoard.tsx`, `TaskDetailSheet.tsx`, and route components do not match the new design and cannot be adapted in place.
+- Forces agents to work around legacy component shape while building a new UI, increasing complexity.
+- The main advantage of Option A (reuse existing UI) does not apply here.
 
-- Keeps `KanbanBoard.tsx` and route files too large.
-- Duplicates interaction state across workspace list and modal flows.
-- Makes future real data loading harder because UI parts stay coupled to storage details.
-- Does not satisfy the requested compound/provider/context architecture.
+**Implementation impact:** Medium-high despite the "minimal" label — old components must be replaced anyway, so the diff size is similar to Option B but with worse structure.
 
-Implementation impact:
+**Dependency impact:** Adds `yaml` npm package.
 
-- Low immediate effort, but more future churn.
+### Option B — Feature-folder compound components with Provider/Context
 
-Dependency impact:
+Build new UI from Figma using feature modules (`workspaces`, `board`, `tasks`, `errors`), each owning a Provider/Context, compound component API, and service layer. Reuse low-level primitives and routing infrastructure from `dev` branch.
 
-- No additional dependencies.
+**Pros**
+- Since the UI is rebuilt from scratch anyway, choosing a clean structure costs nothing extra.
+- Feature modules give clear file ownership — important when multiple tasks run in parallel (T4/T5/T6 can each own distinct directories without write conflicts).
+- Provider/Context boundaries isolate board state, connect state, and task detail state cleanly.
+- Creates the right seams for future improvements (multi-workspace, backend sync).
 
-### Option B: Feature-based compound components with Provider/Context
+**Cons**
+- Requires naming discipline and strict feature boundaries during implementation.
 
-Refactor the React + Vite app into feature folders. Each substantial workflow surface owns a Provider/Context for behavior and exposes compound UI parts for composition. Routes become thin shells that assemble feature page components.
+**Implementation impact:** Moderate. New feature folders, providers, and compound components. Low-level primitives and router setup carried from `dev` branch.
 
-Pros:
+**Dependency impact:** Adds `yaml` npm package for YAML parsing.
 
-- Matches the requested architecture.
-- Keeps component UI small and declarative.
-- Hides logic inside feature providers and hooks.
-- Makes shared flows like repository import reusable between page card and modal.
-- Creates clear seams for later backend-backed workspace data.
-- Limits rerender scope by splitting auth, workspace, import, board, and task-detail state.
+---
 
-Cons:
+## 4. Chosen Design
 
-- Larger refactor than a utility-only patch.
-- Requires careful migration so existing UX does not regress.
-- Requires naming discipline and strict feature boundaries.
+**Chosen approach: Option B — feature-folder compound components with Provider/Context.**
 
-Implementation impact:
+The Figma design replaces the existing UI entirely, so there is no existing board to preserve. Since the UI is being rebuilt from scratch regardless, choosing a clean feature-folder structure costs nothing extra and gives better parallel-execution properties: T4 (board), T5 (left panel), and T6 (task detail) can each own separate feature directories with no git write contention between them. Low-level primitives and routing setup are carried from the `dev` branch.
 
-- Moderate. Requires moving files, adding providers/hooks, and rewriting route composition.
+### Proposed folder structure
 
-Dependency impact:
-
-- No new runtime state library is required.
-- Depends on React Context, existing TanStack Router, existing UI primitives, and Figma access for visual fidelity.
-
-### Option C: Global state library first
-
-Introduce a global state library for auth, workspaces, board filters, selected task, modal state, and import state.
-
-Pros:
-
-- Centralized state can simplify cross-page reads.
-- May help if the app later needs complex server cache integration.
-
-Cons:
-
-- Unnecessary for the current local-only scope.
-- Adds a dependency before real backend data exists.
-- Can make feature logic less encapsulated if used as an app-wide store.
-- Does not naturally produce the requested compound component API.
-
-Implementation impact:
-
-- Medium to high, plus future migration risk.
-
-Dependency impact:
-
-- Adds package/dependency review and state architecture decisions outside current scope.
-
-## Chosen Design
-
-Choose Option B: feature-based compound components with Provider/Context.
-
-The dashboard will remain a React + Vite application with TanStack Router. The implementation should reorganize UI into feature modules and keep route files thin. Each feature module owns:
-
-- Domain types.
-- Local storage or sample-data adapters.
-- Provider/Context state.
-- Hooks for feature behavior.
-- Compound UI components.
-- A public `index.ts` or `index.tsx` API.
-
-Compound component rule:
-
-- Use explicit, manual root attachment.
-- Do not use a generic `createCompoundComponent()` helper.
-- Keep UI parts small.
-- Hide state transitions and localStorage writes inside providers/hooks.
-
-Example shape:
-
-```tsx
-function WorkspaceImportRoot(props: WorkspaceImportRootProps) {
-  return (
-    <WorkspaceImportProvider {...props}>
-      <WorkspaceImportLayout>{props.children}</WorkspaceImportLayout>
-    </WorkspaceImportProvider>
-  )
-}
-
-function UrlField() {
-  const { url, setUrl, importing, clearError } = useWorkspaceImport()
-  return <input value={url} disabled={importing} onChange={...} />
-}
-
-export const WorkspaceImport = WorkspaceImportRoot as typeof WorkspaceImportRoot & {
-  UrlField: typeof UrlField
-  PrivateRepositorySwitch: typeof PrivateRepositorySwitch
-  TokenField: typeof TokenField
-  SubmitButton: typeof SubmitButton
-  ErrorMessage: typeof ErrorMessage
-}
-
-WorkspaceImport.UrlField = UrlField
-WorkspaceImport.PrivateRepositorySwitch = PrivateRepositorySwitch
-WorkspaceImport.TokenField = TokenField
-WorkspaceImport.SubmitButton = SubmitButton
-WorkspaceImport.ErrorMessage = ErrorMessage
 ```
-
-The route/page can then compose:
-
-```tsx
-<WorkspaceImport.Root onImported={handleImported}>
-  <WorkspaceImport.UrlField />
-  <WorkspaceImport.PrivateRepositorySwitch />
-  <WorkspaceImport.TokenField />
-  <WorkspaceImport.ErrorMessage />
-  <WorkspaceImport.SubmitButton />
-</WorkspaceImport.Root>
-```
-
-### Proposed Folder Structure
-
-```text
 src/
   app/
     providers/
-      AppProviders.tsx
-    routing/
-      RouterProvider.tsx
+      AppProviders.tsx      ← root provider composition
   components/
-    ui/
-      ...
+    ui/                     ← carried from dev branch (Button, Input, Badge, etc.)
   features/
-    auth/
-      components/
-        LoginForm/
-          index.tsx
-          LoginForm.tsx
-          LoginForm.context.tsx
-      hooks/
-        useAuth.ts
-      model/
-        auth.types.ts
-      services/
-        auth.storage.ts
-      index.ts
     workspaces/
       components/
-        WorkspaceList/
+        ConnectForm/
           index.tsx
-          WorkspaceList.tsx
-          WorkspaceList.context.tsx
-        WorkspaceCard/
-          index.tsx
-        WorkspaceSwitcher/
-          index.tsx
-          WorkspaceSwitcher.tsx
-          WorkspaceSwitcher.context.tsx
-        WorkspaceImport/
-          index.tsx
-          WorkspaceImport.tsx
-          WorkspaceImport.context.tsx
-        AddWorkspaceModal/
-          index.tsx
-          AddWorkspaceModal.tsx
-          AddWorkspaceModal.context.tsx
-      hooks/
-        useWorkspaces.ts
-        useWorkspaceImport.ts
-      model/
-        workspace.types.ts
-        workspace-import.types.ts
+          ConnectForm.tsx
+          ConnectForm.context.tsx
       services/
-        workspace.storage.ts
-        workspace-import.service.ts
+        workspace-store.ts  ← localStorage read/write
       index.ts
     board/
       components/
@@ -285,308 +142,264 @@ src/
           index.tsx
           KanbanBoard.tsx
           KanbanBoard.context.tsx
-        BoardHeader/
-          index.tsx
-        StatusFilter/
-          index.tsx
-          StatusFilter.context.tsx
         FeatureRow/
           index.tsx
-        SegmentBar/
+        TaskCard/
           index.tsx
+        TaskTrackingPanel/
+          index.tsx
+          TaskTrackingPanel.tsx
       hooks/
-        useBoardFilters.ts
-        useFeatureRows.ts
-      model/
-        board.types.ts
-        sample-features.ts
+        useBoardData.ts     ← GitHub API calls + YAML parsing + board state
       index.ts
     tasks/
       components/
-        TaskCard/
-          index.tsx
         TaskDetailSheet/
           index.tsx
           TaskDetailSheet.tsx
-          TaskDetailSheet.context.tsx
-      model/
-        task.types.ts
       index.ts
     errors/
       components/
-        NotFoundScreen/
-          index.tsx
-        ErrorBoundaryScreen/
+        ErrorScreen/
           index.tsx
       index.ts
-  lib/
-    storage/
-      safe-local-storage.ts
-    utils.ts
+  services/
+    github.ts               ← GitHub Contents API client
+    yaml-parser.ts          ← YAML decode + typed board objects
   routes/
     __root.tsx
-    index.tsx
-    login.tsx
-    workspaces/
-      index.tsx
-      $workspaceId.tsx
-  styles.css
+    index.tsx               ← redirect: /connect or /board
+    connect.tsx             ← ConnectForm page shell
+    board.tsx               ← KanbanBoard + TaskTrackingPanel shell
+  styles.css                ← carried from dev branch
 ```
 
-### Provider / Context Design
-
-`AppProviders`
-
-- Owns app-wide provider composition only.
-- Should not own feature-specific business logic.
-- May mount toaster support if the existing app needs visible `toast.success()` behavior.
-
-`AuthProvider`
-
-- Owns demo auth state.
-- Wraps `localStorage.isLoggedIn` reads/writes.
-- Exposes `isLoggedIn`, `login()`, and `logout()`.
-
-`WorkspacesProvider`
-
-- Owns workspace list state and seed behavior.
-- Wraps `localStorage.workspaces`.
-- Exposes `workspaces`, `getWorkspace(id)`, `addWorkspace(input)`, `removeWorkspace(id)`.
-- Preserves existing seeded defaults.
-
-`WorkspaceImportProvider`
-
-- Owns import form state: `url`, `privateRepository`, `token`, `error`, `importing`.
-- Exposes `submit()`, `reset()`, and field setters.
-- Uses `workspace-import.service.ts` for validation and workspace creation payloads.
-- Clears token after successful import, modal close, or private switch off.
-- Never writes raw token to `localStorage`.
-
-`BoardProvider`
-
-- Owns workspace-specific board UI state: search query, selected status filters, expanded feature ids, selected task, open dropdown/modal state.
-- Reads workspace identity from `WorkspacesProvider`.
-- Reads sample board data from `features/board/model/sample-features.ts` until real data loading is designed.
-
-`TaskDetailProvider`
-
-- Owns selected task sheet state if task detail behavior becomes too large for `BoardProvider`.
-- Can remain colocated with `BoardProvider` if state remains small.
-
-### Import Safety Design
-
-Workspace import creates local records only. The import service should return a safe payload:
+### localStorage schema
 
 ```ts
-type CreateWorkspaceInput = {
-  repositoryUrl: string
-  privateRepository: boolean
-  tokenConfigured: boolean
+// Key: "dashboard:workspace"
+type StoredWorkspace = {
+  id: string           // UUID generated at connect time
+  owner: string        // parsed from user input
+  repo: string         // parsed from user input
+  name: string         // derived display name (= repo)
+  isPrivate: boolean   // true when PAT was provided
+  pat?: string         // stored for private repos (alpha tradeoff)
+  connectedAt: string  // ISO timestamp
 }
 ```
 
-The raw token may exist only inside transient React state before submit. It must not be:
+### GitHub Contents API client (`src/services/github.ts`)
 
-- Stored in `localStorage`.
-- Included in workspace cards.
-- Added to route params.
-- Logged to console.
-- Written into task metadata.
+Wraps `https://api.github.com`. Sends `Authorization: Bearer {pat}` when PAT is present.
 
-When `privateRepository` is false:
+Key methods:
 
-- Hide the token field.
-- Clear token and token error.
-- Save no private metadata or save `privateRepository: false` consistently with existing workspace type decisions.
+```ts
+async listDirectory(path: string): Promise<GitHubEntry[]>
+// GET /repos/{owner}/{repo}/contents/{path}
+// Returns array of { name, path, type: "file" | "dir", sha }
 
-When `privateRepository` is true:
-
-- Require non-empty token.
-- Accept both classic `ghp_...` and fine-grained `github_pat_...` token shapes by validating only non-empty value in this scope.
-- Persist only `privateRepository: true` and `tokenConfigured: true`.
-
-### Route Composition Design
-
-Routes should become thin:
-
-- `/` handles redirect only.
-- `/login` renders `LoginPage` or `LoginForm` from `features/auth`.
-- `/workspaces` renders `WorkspacesPage` composed from `WorkspaceList`, `WorkspaceImport`, and sign-out action.
-- `/workspaces/:workspaceId` renders `WorkspaceBoardPage` composed from `KanbanBoard`, `WorkspaceSwitcher`, `StatusFilter`, `FeatureRow`, and `TaskDetailSheet`.
-
-Route files should not own import validation, workspace parsing, filter counting, or task sheet formatting logic. Those belong in feature services/providers/hooks.
-
-Affected repositories:
-
-- Implementation repo: `dashboard`.
-- Management repo: `management-repo` stores this design and future task state only.
-
-Compatibility considerations:
-
-- Existing workspace records without `privateRepository` or `tokenConfigured` must continue to load.
-- Imported public workspaces should not gain private metadata unless a default value is intentionally added.
-- Existing duplicate detection by exact repository URL must continue to work.
-- Existing workspace cards must not reveal tokens or imply token storage.
-- Existing redirects, local auth, sample Kanban data, dropdowns, sheet behavior, and fallback screens must remain compatible.
-- Existing public component behavior should be preserved while internals move behind providers.
-
-Operational and release implications:
-
-- This is a frontend-only release once the implementation repo is resolved.
-- No data migration is required for existing localStorage records.
-- Users who enable private repository mode should understand that this is local demo metadata until backend sync exists.
-
-## Dependency Analysis
-
-Internal dependencies:
-
-- `src/lib/workspaces.ts` logic should move or be wrapped by `features/workspaces/services/workspace.storage.ts`.
-- `src/lib/auth.ts` logic should move or be wrapped by `features/auth/services/auth.storage.ts`.
-- `src/routes/workspaces/index.tsx` should become a thin route that composes `WorkspacesPage`.
-- `src/components/KanbanBoard.tsx` should be split into `features/board` compound components and providers.
-- `src/components/TaskDetailSheet.tsx` should move under `features/tasks/components/TaskDetailSheet`.
-- Shared visual tokens in `src/styles.css` remain the source for colors and surfaces.
-- `src/components/ui` remains the shared primitive layer and should not own feature state.
-
-External dependencies:
-
-- D1: Dashboard repo scaffold. The repo id is now resolved as `dashboard`; the local repo is empty and needs the React/Vite app scaffold before feature modules can be implemented.
-- D2: Figma access. Product spec includes Figma links. If implementation tasks include `### Figma` and `FIGMA_PERSONAL_ACCESS_TOKEN` is missing, implementation must block rather than guess visual values.
-- D3: GitHub personal access token behavior. In this scope, tokens are user input for validation only and are not persisted.
-
-Blocking decisions:
-
-- Implementation tasks can use `repo: dashboard`.
-- Feature UI tasks that depend on app files must wait until the React/Vite scaffold exists in the dashboard repo.
-- Figma-backed UI tasks cannot start without either Figma MCP access or an explicit human decision to defer strict Figma reading.
-
-Vendor/tooling choices:
-
-- React + Vite is the app stack.
-- TanStack Router remains the routing layer.
-- React Context is the state-sharing mechanism for local feature state.
-- Existing UI primitives and lucide icons remain preferred.
-- Do not introduce Redux, Zustand, Jotai, or another global state library for this scope.
-- Do not introduce a GitHub SDK, backend client, or secret storage library in this scope.
-
-Configuration dependencies:
-
-- `DASHBOARD_UI_LOCAL_PATH` points to `/home/kadamato/Documents/dashboard`.
-- The local dashboard repo remote currently uses GitHub HTTPS while `workspace.yaml` declares the SSH URL; align remotes before implementation push if the workflow requires SSH.
-- `FIGMA_PERSONAL_ACCESS_TOKEN` is not present in project `.env` during planning inspection.
-
-Release dependencies:
-
-- No backend deployment is required.
-- Frontend validation and browser QA are required before PR creation.
-
-## Parallelization / Blocking Analysis
-
-External decisions and dependencies:
-
-```
-D1: Dashboard repo app scaffold
-  Repo id is resolved as dashboard. Unblock feature work by creating the React/Vite scaffold in /home/kadamato/Documents/dashboard.
-
-D2: Provide Figma access for UI implementation
-  Unblock by setting FIGMA_PERSONAL_ACCESS_TOKEN if tasks will enforce Figma MCP reads.
+async getFileContent(path: string): Promise<string>
+// GET /repos/{owner}/{repo}/contents/{path}
+// Returns decoded UTF-8 content (atob base64 from response.content)
 ```
 
-Proposed implementation task graph for the next planning phase:
+Rate limits: 60 req/hr unauthenticated, 5000/hr with PAT. For a typical workspace with ~20 features and ~100 tasks, one load makes roughly 2 + 20 + 100 = 122 requests — well within the authenticated limit, but unauthenticated load of large repos may hit the ceiling. A single `GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1` call can retrieve the full file tree in one request as a later optimisation.
+
+Error mapping:
+
+| HTTP status | Displayed error |
+|---|---|
+| 401 / 403 | "Access denied. Check your PAT or repository visibility." |
+| 404 on `docs/features` | "No workflow data found in this repository." |
+| Other 4xx / 5xx | "GitHub API error. Try again." |
+
+### YAML parser (`src/services/yaml-parser.ts`)
+
+Uses the `yaml` npm package. Parses `status.yaml` and task YAML into typed objects.
+
+```ts
+type ParsedFeature = {
+  id: string
+  title: string
+  featureStatus: string
+  tasks: ParsedTask[]
+}
+
+type ParsedTask = {
+  id: string
+  title: string
+  status: string
+  dependsOn: string[]
+  execution?: { actor_type: string }
+  branch?: string
+  pr?: { url?: string; status?: string; workspace_pr?: { url?: string; status?: string } }
+  blockedReason?: string
+  log?: Array<{ action: string; by: string; at: string; note?: string }>
+}
+```
+
+Malformed YAML files are skipped with a console warning; they do not crash the board.
+
+### Workspace storage service (`src/services/workspace-store.ts`)
+
+Thin wrapper over `localStorage`:
+
+```ts
+getWorkspace(): StoredWorkspace | null
+saveWorkspace(w: StoredWorkspace): void
+clearWorkspace(): void
+```
+
+### Board data hook (`src/hooks/useBoardData.ts`)
+
+```ts
+function useBoardData(workspace: StoredWorkspace): {
+  features: ParsedFeature[]
+  loading: boolean
+  error: string | null
+  reload: () => void
+}
+```
+
+On call: lists `docs/features/`, fetches all `status.yaml` and `tasks/T*.yaml` files in parallel batches, parses YAML, and returns typed feature/task state.
+
+### Routing changes
+
+| Route | Before | After |
+|---|---|---|
+| `/` | Checks `localStorage.isLoggedIn`, redirects | Checks `StoredWorkspace` in `localStorage`, redirects to `/board` or `/connect` |
+| `/login` | Demo login form | Replaced by `/connect` |
+| `/connect` | (new) | Repository connect form: `owner/repo` input + optional PAT, validates with a test API call, saves to `localStorage`, navigates to `/board` |
+| `/workspaces` | Workspace list + import | Removed (one workspace per profile in v1) |
+| `/board` | Kanban board (sample data) | Kanban board + left panel (real data via `useBoardData`) |
+
+### Left-side task tracking panel
+
+Renders three rows: `IN PROGRESS`, `READY`, `IN REVIEW`.
+
+Each row filters all tasks (across all features) by `task.status`. Each task item shows:
+- Task title
+- Parent feature name
+- Elapsed time since the task last entered its current status
+
+Elapsed time computation: scan `task.log` for the most recent entry whose `action` matches the current status (e.g., `in_progress`, `ready`, `in_review`, `moved_to_review`). Compute `Date.now() - new Date(logEntry.at).getTime()`. Format as `Xh Ym` or `Xd Yh`. If no matching log entry exists, show `—`.
+
+### Sync button
+
+Mounted in the board header. Calls `reload()` from `useBoardData`. Shows a loading spinner during re-fetch. Re-uses the PAT from `localStorage`.
+
+### Connect screen
+
+Parses user input as:
+1. `owner/repo` short form.
+2. `https://github.com/owner/repo` full HTTPS URL.
+3. `git@github.com:owner/repo.git` SSH form.
+
+Validates by calling `GET /repos/{owner}/{repo}` (unauthenticated first; if 404 and PAT provided, retries with PAT). On 401/403, shows "Access denied." On success, saves to `localStorage` and navigates to `/board`.
+
+### Compatibility
+
+- Existing `localStorage.workspaces` and `localStorage.isLoggedIn` keys are ignored and left untouched.
+- The board route is renamed from `/workspaces/:workspaceId` to `/board` to match the single-workspace v1 model.
+
+---
+
+## 5. Dependency Analysis
+
+| Dependency | Type | Status | Notes |
+|---|---|---|---|
+| React + Vite | Frontend stack | Resolved | Existing in `digital-factory-ui`. |
+| TanStack Router | Routing | Resolved | Existing; routes `/connect` and `/board` need adding. |
+| `yaml` npm package | YAML parsing | Needs install | Add to `package.json`. Alternatively `js-yaml` — both are small and actively maintained. |
+| GitHub Contents API | Data source | Resolved | Public API; no registration required. |
+| GitHub PAT | Runtime credential | User-provided | Only required for private repos. Stored in `localStorage`. |
+| Figma frames | UI source of truth | Resolved | Links provided in product spec; `FIGMA_ACCESS_TOKEN` is optional local tooling secret. |
+| `docs/features` YAML layout | Data contract | Resolved | Parser targets `status.yaml` + `tasks/T<n>.yaml`. |
+
+No unresolved blocking dependencies.
+
+---
+
+## 6. Parallelization / Blocking Analysis
 
 ```
-T1: React/Vite feature architecture and provider scaffold
-  └── Can begin now after tasks approval — repo id dashboard is declared and local path exists
-  │
-  T2: Workspace domain services and import provider
-    └── BLOCKED on T1 (feature folders and provider conventions must exist)
+T1: Connect screen + localStorage service + routing — digital-factory-ui
+  └── Can begin now — no blockers
+
+T2: GitHub Contents API client + YAML parser — digital-factory-ui
+  └── Can begin now — no blockers
+  └── T1 and T2 run in parallel
+
+  T3: Board data loading hook + sync button — digital-factory-ui
+    └── BLOCKED on T1 (connect screen must exist so routing to /board is wired)
+    └── BLOCKED on T2 (GitHub client and YAML parser must be in place for real data)
     │
-    T3: Workspace list page compound components
-      └── BLOCKED on T2 (workspace storage and import provider must be in place)
-      └── BLOCKED on D2 (Figma frame for workspace page must be read before UI implementation)
+    T4: Kanban board wired to real data — digital-factory-ui
+    T5: Left task tracking panel — digital-factory-ui
+    T6: Task detail sheet with real data — digital-factory-ui
+      └── T4, T5, T6 run in parallel
+      └── BLOCKED on T3 (parsed feature/task data and elapsed-time helpers must be available)
+      └── T4 and T5 must not mutate the same component files to avoid git conflicts
       │
-    T4: Board shell, workspace switcher, and Add workspace modal
-      └── BLOCKED on T2 (modal import must reuse the shared import provider)
-      └── BLOCKED on D2 (Figma frames for workspace detail and switcher must be read before UI implementation)
-      └── T3 and T4 can run in parallel after T2
-      │
-      T5: Kanban feature row, filter, segment bar, and task sheet compounds
-        └── BLOCKED on T1 (board provider and compound structure must exist)
-        └── BLOCKED on D2 (Figma frames for board, filter, and task detail must be read before UI implementation)
-        └── T5 can run in parallel with T3/T4 after T1 if it avoids workspace import files
-        │
-        T6: Route integration, fallback screens, and toast wiring
-          └── BLOCKED on T3 (workspace list route composition must be ready)
-          └── BLOCKED on T4 (workspace detail shell and modal must be ready)
-          └── BLOCKED on T5 (board/task compounds must be ready)
-          │
-          T7: End-to-end QA and release handoff
-            └── BLOCKED on T6 (routes and providers must be integrated before full QA)
+      T7: Error states, empty states, end-to-end QA — digital-factory-ui
+        └── BLOCKED on T4 (board must render real data)
+        └── BLOCKED on T5 (left panel must be implemented)
+        └── BLOCKED on T6 (task detail must use real data)
 ```
 
-Notes:
+Parallelization summary:
 
-- T3 and T4 run in parallel after T2 because they touch different entry points but share import behavior.
-- T5 can run in parallel with T3/T4 after T1 if it limits edits to board/task component files and does not mutate workspace import provider files.
-- T6 waits for the UI branches to converge because route composition and provider nesting must be validated together.
-- T7 waits for all implementation tasks because it validates full user flows.
+- T1 and T2 start immediately and run in parallel (independent files).
+- T3 follows T1 and T2.
+- T4, T5, T6 run in parallel after T3; each owns distinct files so there is no write contention.
+- T7 is the final QA and validation pass and waits for T4, T5, T6.
 
-## Repository Impact
+---
 
-`management-repo`:
+## 7. Repository Impact
 
-- Stores `docs/features/dashboard/product-spec.md`, `technical-design.md`, future `tasks.md`, and future task YAML state.
-- No implementation code changes belong here.
+| Repo ID | Impact |
+|---|---|
+| `digital-factory-ui` | All implementation work: GitHub API client, YAML parser, localStorage service, connect screen, board data hook, routing changes, left panel, real-data board wiring, error states, sync button. |
+| `management-repo` | Holds this feature plan and final handoff evidence only. No runtime code. |
 
-`dashboard`:
+No changes planned for `workflow-backend`, `workflow`, or `rag-service`.
 
-- Declared frontend repo id in `workspace.yaml`.
-- GitHub URL: `git@github.com:Kadamato/dashboard.git`.
-- Local path env: `DASHBOARD_UI_LOCAL_PATH`.
-- Current local path: `/home/kadamato/Documents/dashboard`.
-- Future task YAML must use `repo: dashboard`.
-- The repo currently needs React/Vite app scaffolding and the feature-based compound/provider structure.
+---
 
-No changes are planned for:
+## 8. Validation and Release Impact
 
-- `workflow`
-- `rag-service`
+**Testing expectations:**
 
-## Validation And Release Impact
+- Typecheck and production build must pass.
+- Unit tests for:
+  - `github.ts` — input parsing, auth header presence, error mapping (mock `fetch`).
+  - `yaml-parser.ts` — valid YAML, malformed YAML skip, missing optional fields, missing log entries.
+  - `workspace-store.ts` — save, load, and clear round-trip.
+  - `useBoardData` — loading state, success state, error state (mock GitHub client).
+  - Elapsed-time computation — known timestamps to expected formatted strings.
+- Browser QA for: connect screen (public repo, private repo, invalid PAT, invalid URL), board load, left panel, sync button, task detail sheet, 404, error boundary.
 
-Testing expectations:
+**Migration / config impact:**
 
-- Typecheck and build the React + Vite app.
-- Unit or component tests for repository URL validation and private token validation if the app has an established test setup.
-- Provider-level tests for auth, workspace storage, import form state, and board filters where test tooling exists.
-- Browser QA for `/login`, `/workspaces`, `/workspaces/:workspaceId`, status filter dropdown, workspace switcher dropdown, `Add workspace` modal, private repository token field, and task detail sheet.
-- Manual localStorage inspection to confirm raw tokens are not persisted.
-- Regression checks for duplicate repository URL handling.
-- Regression checks for workspace deletion, sign out, route redirects, 404, and error boundary behavior.
+- Add `yaml` (or `js-yaml`) to `package.json`.
+- No backend configuration required.
+- Existing `localStorage.workspaces` and `localStorage.isLoggedIn` keys are ignored — no migration needed.
 
-Migration and config impact:
+**Rollout concerns:**
 
-- Existing localStorage workspace records must remain valid.
-- No backend migration is required.
-- No token migration is required because raw tokens are not stored.
-- File moves should preserve exported route/component behavior through feature `index.ts` APIs.
-- The dashboard repo must be scaffolded before page-level UI tasks can run.
+- Rate limiting: unauthenticated repos with many features/tasks may approach the 60 req/hr ceiling. Mitigate by prompting users to add a PAT. A future optimisation can replace per-file fetches with a single Git Tree API call.
+- PAT in `localStorage`: documented as an alpha tradeoff. If the product grows to external users, replace with a secure backend token store in a later feature.
 
-Rollout concerns:
+**Backward compatibility:**
 
-- Private repository UI may imply real private repo access. Copy and behavior must remain clear that current import is local-only.
-- Token input must be cleared after successful import, private switch off, or modal close.
-- Token values must never appear in workspace cards, task sheets, console logs, URL params, or persisted JSON.
-- Refactoring `KanbanBoard.tsx` into compounds is broad enough to require visual regression checks across all existing board states.
+- Existing demo/sample data is removed. There is no production user base to migrate.
+- Route `/workspaces` and `/login` are removed or redirected; no external links to preserve.
 
-Backward compatibility constraints:
+**Handoff implications:**
 
-- Public repository import flow must remain unchanged when the private switch is off.
-- Existing workspace cards and fallback behavior must remain stable.
-- Existing sample Kanban feature/task data remains the current board data source.
-- Existing route paths must not change.
-
-Deployment and handoff implications:
-
-- This feature can ship as a frontend-only change after implementation repo resolution and browser QA.
-- Backend-backed private repository sync should be handled by a separate future feature with secure token storage and provider validation.
+- No backend deployment required — pure frontend release.
+- Browser QA and Figma fidelity check are required before handoff approval.
+- Known v1 limitation: only one workspace per browser profile; PAT stored in `localStorage`.
