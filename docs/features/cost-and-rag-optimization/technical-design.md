@@ -11,7 +11,7 @@
 ### Executor (`workflow/runtime/executors/claude/src/`)
 
 - `token-usage.ts` — already parses per-turn `assistant` events from `stream-json` stdout and sums `input_tokens` + `output_tokens`. Result is `{ input, output } | undefined`.
-- `index.ts` — attaches `token_usage` to `result.json` before writing it. Enforces a token budget gate via `BUDGET_TOKENS` env var.
+- `index.ts` — attaches `token_usage` to `result.json` before writing it. Checks `BUDGET_TOKENS` env var **after the run exits** — if total tokens exceeded the limit, writes `blocked_reason: "budget_exceeded"`. This is post-hoc detection, not enforcement: Claude has already consumed the tokens before the check runs. There is no mechanism to interrupt a `claude -p` subprocess mid-turn based on token count without killing the process (which would leave no `result.json`).
 - The `assistant` event in stream-json also carries a `model` field (e.g. `"claude-sonnet-4-6"`) — **this is currently ignored and discarded**.
 - RAG MCP is conditionally wired via `--mcp-config` only when `MCP_RAG_URL` is present in the executor's env. There is no mechanism that guarantees it will be set — the orchestrator passes it only if the operator has manually added it to the executor env.
 - The executor emits a `budget_audit` structured log event but **no** `rag_mcp_registered` / `rag_mcp_unavailable` events.
@@ -210,7 +210,9 @@ Write to task YAML log entry:
   cost_usd: 0.19
 ```
 
-#### 4.6 Orchestrator — `budget_usd` soft gate
+#### 4.6 Orchestrator — `budget_usd` dispatch gate
+
+This is the **only real enforcement point** for spend control. Per-run budget checks (both `BUDGET_TOKENS` and cost-based) are post-hoc — they detect overrun after Claude has already exited. The per-feature dispatch gate operates between tasks, where a genuine stop is achievable.
 
 Add optional `budget_usd` to feature `status.yaml` under a `config:` key:
 ```yaml
@@ -220,9 +222,9 @@ config:
 
 Before dispatching a new task for a feature:
 1. Sum all `cost_usd` values from `run_completed` log entries across all task YAMLs for the feature.
-2. If sum >= `budget_usd`, emit `budget_usd_exceeded` event and skip dispatch for this feature until operator resets or raises the cap.
+2. If sum >= `budget_usd`, emit `budget_usd_exceeded` event and skip dispatch for this feature until the operator either acknowledges and raises the cap, or cancels remaining tasks.
 
-This is a **soft gate** — in-flight tasks are not cancelled. Only new dispatches are paused.
+In-flight tasks are **not** cancelled — there is no safe way to interrupt a running Claude session. Only the next dispatch is blocked.
 
 ---
 
@@ -348,7 +350,7 @@ No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 ### Backward compatibility
 
 - All changes are additive. No existing fields are removed or renamed.
-- The `BUDGET_TOKENS` token-level gate continues to work unchanged alongside the new `budget_usd` USD-level gate.
+- `BUDGET_TOKENS` post-hoc detection continues to work unchanged. Neither `BUDGET_TOKENS` nor per-run `budget_usd` can interrupt an in-flight Claude session — both detect overrun after the run exits. The only real enforcement point is the per-feature `budget_usd` gate (T5), which prevents dispatching the **next** task when cumulative spend is over the cap.
 
 ### Rollout
 
