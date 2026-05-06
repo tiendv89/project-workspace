@@ -112,6 +112,13 @@ log:
     by: pentative@gmail.com
     at: 2026-05-06T10:51:23.097Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T10:51:30.447Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
