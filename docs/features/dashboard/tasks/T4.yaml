@@ -1,18 +1,18 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: in_review
+status: ready
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-06T11:06:32.286Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-06T18:19:01+0700
 pr:
-  url: https://github.com/tiendv89/digital-factory-ui/pull/23
-  status: open
+  url: null
+  status: null
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -123,6 +123,14 @@ log:
     by: pentative@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/23"
     at: 2026-05-06T11:06:32.286Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T18:17:44+0700
+    note: Reset task to ready for rework.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T18:19:01+0700
+    note: Reset implementation repo PR metadata for rework.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
