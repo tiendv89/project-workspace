@@ -26,3 +26,6 @@ log:
     by: pentative@gmail.com
     at: 2026-05-06T07:31:51.787Z
     note: Claimed via git-based claim protocol.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/110
+  status: open
