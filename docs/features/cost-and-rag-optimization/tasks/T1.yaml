@@ -1,17 +1,17 @@
 id: T1
 title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: blocked
+status: in_review
 depends_on: []
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/cost-and-rag-optimization-T1
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-06T12:41:12.016Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-06T23:31:04+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/79
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -175,17 +175,23 @@ log:
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-06T12:38:10+0000
-    note: "Resolved 1 inline review thread (CI failure on
-      handle-merged-prs.test.ts). Verified failures are pre-existing on
-      origin/main from commit 412fb64 (added unconditional spawnSync rebase
-      --abort without updating test mocks); 21/30 tests fail identically on
-      origin/main with no T1 changes applied. Posted reply on PR #79 explaining
-      the diagnosis and recommending a separate follow-up task to repair mock
-      chains. PR converted to ready-for-review."
+    note: >-
+      Resolved 1 inline review thread (CI failure on handle-merged-prs.test.ts).
+      Verified failures are pre-existing on origin/main from commit 412fb64 (added
+      unconditional spawnSync rebase --abort without updating test mocks); 21/30
+      tests fail identically on origin/main with no T1 changes applied. Posted
+      reply on PR #79 explaining the diagnosis and recommending a separate
+      follow-up task to repair mock chains. PR converted to ready-for-review.
   - action: blocked
     by: tiendv.52@gmail.com
     note: result_not_written
     at: 2026-05-06T12:41:12.016Z
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T23:31:04+0700
+    note: >-
+      Human unblock — PR #79 merged. Test suite fixed separately (21 mock-chain
+      failures resolved in same PR). Moving to in_review for orchestrator close-out.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/111
   status: open
