@@ -67,7 +67,7 @@ log:
 - Model name appears in `stream-json` `assistant` events under `message.model` — same events already parsed for token counts.
 - RAG tool_use events appear in stream-json as `type: "assistant"` with `content[].type == "tool_use"` and `name == "mcp__rag-server__rag_query"`.
 - RAG tool_result events follow as `type: "user"` with `content[].type == "tool_result"` carrying the chunks (each with a `score` field from the rag-service response).
-- `budget_usd` is a soft gate — no in-flight task cancellation required.
+- Budget enforcement (blocking dispatch based on cumulative cost) is out of scope for this feature — accounting correctness comes first.
 
 ---
 
@@ -210,22 +210,6 @@ Write to task YAML log entry:
   cost_usd: 0.19
 ```
 
-#### 4.6 Orchestrator — `budget_usd` dispatch gate
-
-This is the **only real enforcement point** for spend control. Per-run budget checks (both `BUDGET_TOKENS` and cost-based) are post-hoc — they detect overrun after Claude has already exited. The per-feature dispatch gate operates between tasks, where a genuine stop is achievable.
-
-Add optional `budget_usd` to feature `status.yaml` under a `config:` key:
-```yaml
-config:
-  budget_usd: 5.00
-```
-
-Before dispatching a new task for a feature:
-1. Sum all `cost_usd` values from `run_completed` log entries across all task YAMLs for the feature.
-2. If sum >= `budget_usd`, emit `budget_usd_exceeded` event and skip dispatch for this feature until the operator either acknowledges and raises the cap, or cancels remaining tasks.
-
-In-flight tasks are **not** cancelled — there is no safe way to interrupt a running Claude session. Only the next dispatch is blocked.
-
 ---
 
 ### Track 2 — RAG audit log
@@ -275,7 +259,6 @@ Emit each as a structured log event after the Claude run completes:
 | T3 (orchestrator MCP injection) | T1 — needs `rag` config schema in `workspace.yaml` | Human completes T1 |
 | T4 (cost calculation) | T1 — needs `model_pricing` in `workspace.yaml` | Human completes T1 |
 | T4 (cost calculation) | T2 — needs `model` field in `result.json` | T2 ships to `workflow` |
-| T5 (budget gate) | T4 — needs `cost_usd` in task YAML log | T4 merges |
 
 ### External dependencies
 
@@ -283,9 +266,10 @@ None. All changes are within the `workflow` and `management-repo` repos. No thir
 
 ### Unresolved decisions
 
-None — both open questions from the product spec are resolved:
+None — the one open question from the product spec is resolved:
 1. **Model capture**: from `stream-json` stdout (same events as token extraction) — not via env var. More reliable.
-2. **`budget_usd` scope**: pauses new dispatches only. No in-flight cancellation.
+
+Budget enforcement (`budget_usd` dispatch gate) is deferred to a follow-on feature. Accounting correctness ships first.
 
 ---
 
@@ -298,7 +282,7 @@ T1: workspace.yaml — add model_pricing + rag config     [management-repo]
 
 T2: Executor — model capture + rag_mcp events + RAG audit extraction     [workflow]
   └── Can begin now — no blockers
-  └── T2 and T1 run in parallel
+  └── T1 and T2 run in parallel
 
   T3: Orchestrator — auto-inject MCP_RAG_URL from workspace.yaml rag config     [workflow]
       └── BLOCKED on T1 (rag config schema must exist in workspace.yaml before orchestrator reads it)
@@ -307,12 +291,9 @@ T2: Executor — model capture + rag_mcp events + RAG audit extraction     [work
       └── BLOCKED on T1 (model_pricing table must exist in workspace.yaml)
       └── BLOCKED on T2 (model field must be present in result.json)
       └── T3 and T4 run in parallel once T1 and T2 are done
-
-      T5: Orchestrator — budget_usd soft gate on feature dispatch     [workflow]
-            └── BLOCKED on T4 (cost_usd must be persisted to task YAML log before cumulative sum is meaningful)
 ```
 
-T1 and T2 start immediately in parallel. T3 and T4 unblock when T1 and T2 are done respectively. T5 waits on T4. Maximum depth is 3 steps (T1/T2 → T4 → T5).
+T1 and T2 start immediately in parallel. T3 and T4 unblock when T1 and T2 are done respectively. Maximum depth is 2 steps (T1/T2 → T3/T4).
 
 ---
 
@@ -320,13 +301,13 @@ T1 and T2 start immediately in parallel. T3 and T4 unblock when T1 and T2 are do
 
 | Repo | Changes | Why |
 |---|---|---|
-| `management-repo` | `workspace.yaml` — add `model_pricing`, `rag` sections; add `config.budget_usd` field to feature `status.yaml` template | Config-driven pricing and RAG wiring |
+| `management-repo` | `workspace.yaml` — add `model_pricing` and `rag` sections | Config-driven pricing and RAG wiring |
 | `workflow` | `runtime/executors/claude/src/token-usage.ts` — add model extraction | Capture model from stream-json |
 | `workflow` | `runtime/executors/claude/src/rag-audit.ts` — new file | RAG query event extraction |
 | `workflow` | `runtime/executors/claude/src/index.ts` — emit rag_mcp events; call extractRagQueries | Wires new audit module |
 | `workflow` | `runtime/abi/src/types.ts` — add `model?` to token_usage | ABI additive extension |
 | `workflow` | `runtime/orchestrator/src/adapters/executor/subprocess.ts` — auto-inject MCP_RAG_URL | Reliable RAG wiring |
-| `workflow` | `runtime/orchestrator/src/` — result-processing path + budget gate | Cost persistence + dispatch gate |
+| `workflow` | `runtime/orchestrator/src/` — result-processing path | Cost persistence into task YAML log |
 
 No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
@@ -338,20 +319,18 @@ No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
 - `token-usage.ts` already has unit tests. Extend them to assert `model` is extracted correctly.
 - Add unit tests for `rag-audit.ts`: fixture stream-json with tool_use/tool_result pairs → verify correct `RagQueryEvent` output.
-- Orchestrator integration test: mock result with `token_usage + model` → verify task YAML log entry contains `cost_usd`.
-- Orchestrator integration test: mock feature with `config.budget_usd: 0.01` → verify dispatch is paused after first expensive task.
+- Orchestrator integration test: mock result with `token_usage + model` → verify task YAML log entry contains `cost_usd` at correct value.
 
 ### Migration / config impact
 
 - `workspace.yaml` additions are additive. Orchestrators reading a `workspace.yaml` without `model_pricing` or `rag` fall back gracefully (no cost calculation, no auto-injection).
-- `status.yaml` `config.budget_usd` is optional — absence means no budget gate.
 - `ExecutorResult` ABI extension is additive (`model?` is optional) — existing executors without model capture still produce valid results.
 
 ### Backward compatibility
 
 - All changes are additive. No existing fields are removed or renamed.
-- `BUDGET_TOKENS` post-hoc detection continues to work unchanged. Neither `BUDGET_TOKENS` nor per-run `budget_usd` can interrupt an in-flight Claude session — both detect overrun after the run exits. The only real enforcement point is the per-feature `budget_usd` gate (T5), which prevents dispatching the **next** task when cumulative spend is over the cap.
+- `BUDGET_TOKENS` post-hoc detection continues to work unchanged. Budget enforcement is deferred — this feature only adds accurate accounting (tokens + cost persisted to task YAML). A follow-on feature will add the dispatch gate once the accounting data is trusted.
 
 ### Rollout
 
-No deployment ordering constraint. T1 (`workspace.yaml`) can merge and be live before any code changes ship — the orchestrator simply reads the new config fields when it next starts. T2–T5 can be deployed together or incrementally; each is independently useful.
+No deployment ordering constraint. T1 (`workspace.yaml`) can merge and be live before any code changes ship — the orchestrator simply reads the new config fields when it next starts. T2–T4 can be deployed together or incrementally; each is independently useful.
