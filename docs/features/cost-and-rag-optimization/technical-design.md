@@ -174,9 +174,13 @@ In `index.ts`, after building the MCP config, emit one of:
 { "type": "rag_mcp_unavailable", "reason": "MCP_RAG_URL not set" }
 ```
 
-#### 4.4 Executor — self-configure RAG from `workspace.yaml`
+#### 4.4 Executor — self-configure RAG from `workspace.yaml` (enables mid-execution queries)
 
-The orchestrator does not need to know about MCP configuration. The executor is self-contained: it already has `WORKSPACE_ROOT` in its env and reads `workspace.yaml` for other purposes. The fix is to have the executor resolve `mcpRagUrl` from `workspace.yaml` directly, falling back to `MCP_RAG_URL` env var for backward compatibility:
+When `--mcp-config` is passed to `claude -p`, the registered MCP tools are available **for the entire session** — not just the first turn. This is how mid-execution RAG queries work: Claude can call `mcp__rag-server__rag_query` at any turn, not only from context that was pre-injected into the briefing before the session started. The pre-run `rag-context` skill injection and mid-run MCP queries are complementary, not alternatives.
+
+The current gap is that `--mcp-config` is only added when `MCP_RAG_URL` is in the executor's env. If it is unset, Claude gets no RAG MCP at all and is limited to the briefing blob for the full session.
+
+The fix is to have the executor resolve `mcpRagUrl` from `workspace.yaml` directly, falling back to `MCP_RAG_URL` env var for backward compatibility:
 
 ```ts
 // In index.ts, before building mcpConfig:
