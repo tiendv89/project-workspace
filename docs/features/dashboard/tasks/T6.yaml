@@ -1,15 +1,15 @@
 id: T6
 title: Task detail sheet
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T6
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-06T16:50:56+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T09:52:28.897Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/24
   status: open
@@ -41,6 +41,10 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-06T16:50:56+0700
     note: Human requested reset from in_review to ready for redesign.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T09:52:28.897Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/110
   status: open
