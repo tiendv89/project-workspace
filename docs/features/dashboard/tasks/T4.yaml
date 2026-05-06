@@ -1,19 +1,24 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: todo
-depends_on: [T3]
+status: ready
+depends_on:
+  - T3
 blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: "2026-05-05T14:45:00+0700"
+  last_updated_at: 2026-05-05T14:45:00+0700
 pr:
   url: null
   status: null
 log:
   - action: created
     by: matthew@swellnetwork.io
-    at: "2026-05-05T14:45:00+0700"
+    at: 2026-05-05T14:45:00+0700
     note: Task created from tech-lead Phase 2 (frontend-only alpha design).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:17:26.970Z
+    note: Task activated — dependency T3 merged and marked done.
