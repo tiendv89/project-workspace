@@ -28,7 +28,7 @@ Files to change:
 
 ### Required skills
 
-- typescript-node
+- typescript-best-practices
 
 ### Subtasks
 
@@ -66,7 +66,7 @@ Files to change:
 
 ### Required skills
 
-- typescript-node
+- typescript-best-practices
 
 ### Subtasks
 

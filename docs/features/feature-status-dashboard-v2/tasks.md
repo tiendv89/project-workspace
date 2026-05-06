@@ -39,7 +39,7 @@ Sequence:
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `typescript-best-practices`
 
 ### Subtasks
@@ -64,7 +64,7 @@ Implements all server-side data access and write-back logic: workspace discovery
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `typescript-best-practices`
 
 ### Subtasks
@@ -89,7 +89,7 @@ Implements the root layout shell: sidebar navigation, top header bar, WorkspaceC
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -117,7 +117,7 @@ Implements the Workspace Picker — the full-page grid that renders on first vis
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -143,7 +143,7 @@ Implements the main Dashboard: workspace-level stat cards (total features, in_pr
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -169,7 +169,7 @@ Implements the `/features` page: a filterable table of all features in the activ
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -196,7 +196,7 @@ Implements the `/features/[featureId]` page: a stage stepper showing current lif
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -224,7 +224,7 @@ Implements the New Feature modal: a form for feature name, auto-generated ID slu
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
@@ -251,7 +251,7 @@ Implements the `/tasks` page: a Kanban board with one column per task status (to
 
 ### Required skills
 - frontend-engineer
-- `nextjs-best-practices`
+- nextjs-best-practices
 - `heroui-react`
 - `typescript-best-practices`
 - `figma-mcp`
