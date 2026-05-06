@@ -135,6 +135,13 @@ log:
     by: pentative@gmail.com
     at: 2026-05-06T11:20:12.445Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T11:20:17.148Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
