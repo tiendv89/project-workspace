@@ -1,14 +1,14 @@
 id: T1
 title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: executor_crashed
+blocked_reason: null
 branch: feature/cost-and-rag-optimization-T1
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-06T11:45:47.117Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-06T18:49:09+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/79
   status: open
@@ -85,6 +85,12 @@ log:
     by: tiendv.52@gmail.com
     note: executor_crashed
     at: 2026-05-06T11:45:47.117Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T18:49:09+0700
+    note: >-
+      Unblocked by human — executor_crashed was a MCP config bug
+      (streamable-http → http), not a task issue. Fix deployed; re-ready to reclaim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/111
   status: open
