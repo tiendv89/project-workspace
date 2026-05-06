@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — persist token_usage + cost_usd to task YAML
 repo: workflow
-status: in_review
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/cost-and-rag-optimization-T2
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-07T00:27:55+0700
+  last_updated_at: 2026-05-07T00:29:56+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/81
   status: open
@@ -47,12 +47,12 @@ log:
     note: >-
       Reset to ready by human — agent hit max_turns_exceeded with PR #81 WIP.
       Re-claiming required to continue implementation on existing branch.
-  - action: in_review
+  - action: ready
     by: matthew@swellnetwork.io
-    at: 2026-05-07T00:27:55+0700
+    at: 2026-05-07T00:29:56+0700
     note: >-
-      Human set to in_review — PR #81 contains implementation (dispatch.ts +
-      124 test additions). Agent terminated mid-run but work is present on branch.
+      Reset to ready — next agent to reclaim and continue implementation on
+      existing branch; PR #81 has partial work (dispatch.ts + tests).
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/116
   status: open
