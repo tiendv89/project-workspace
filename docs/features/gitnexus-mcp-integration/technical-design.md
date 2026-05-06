@@ -89,7 +89,9 @@ The `gitnexus analyze` command writes its index to `~/.gitnexus/` by default. We
 
 ### `gitnexus-server` design
 
-A new Python service inside `rag-service` (`services/gitnexus_server/`), using the same stack as `rag-server`: `FastMCP` from the official `mcp` package, served over SSE via Starlette/uvicorn.
+A new Python service in the dedicated `git-nexus` repo (`services/gitnexus_server/`), using the same stack as `rag-server`: `FastMCP` from the official `mcp` package, served over SSE via Starlette/uvicorn.
+
+The `git-nexus` repo is separate from `rag-service` because both `gitnexus-indexer` and `gitnexus-server` require **Node.js** in their containers (to run `npx gitnexus@latest`), which is foreign to the pure-Python `rag-service` base image. A dedicated repo gets its own `node:lts`-based Dockerfile with a Python layer on top.
 
 `FastMCP` supports proxying an existing MCP stdio server directly — it connects to the subprocess and re-exposes its tools over SSE with no manual JSON-RPC wiring:
 
@@ -104,13 +106,15 @@ mcp_server = FastMCP.as_proxy(
 
 On each tool call, FastMCP spawns `gitnexus mcp` (with `HOME=/gitnexus-data` so it reads the shared index volume), forwards the call, and returns the result. The service is stateless — it owns no index data.
 
-Same Dockerfile base image, same `requirements.txt`, same docker-compose service shape as `rag-server`. Exposes on `:8002`.
+Exposes on `:8002`. Docker image: `node:lts` base with Python + `mcp` package installed on top.
 
 ### Startup ordering
 ```
-gitnexus-indexer  (runs analyze on all repos, writes to gitnexus-data volume)
+gitnexus-indexer  (git-nexus repo — runs analyze on all workspace repos,
+                   writes index to named volume: gitnexus-data at /gitnexus-data)
        ↓
-gitnexus-server   (starts once index exists, depends_on: gitnexus-indexer)
+gitnexus-server   (git-nexus repo — FastMCP SSE proxy, mounts gitnexus-data,
+                   depends_on: gitnexus-indexer)
        ↓
 agents            (connect via GITNEXUS_MCP_URL=http://gitnexus-server:8002)
 ```
@@ -136,8 +140,9 @@ No per-task indexing. No `GITNEXUS_ENABLED` flag needed — presence of `GITNEXU
 
 | Repo | Change |
 |---|---|
-| `rag-service` | Remove `source_code` from `source_mapper._PATTERNS` + dead code cleanup in `chunker.py`; add `gitnexus-indexer` and `gitnexus-server` services under `services/` |
-| `workflow` | Add `GITNEXUS_MCP_URL` to executor `index.ts` MCP config; add env var and new services to docker-compose template and `.env.example` |
+| `rag-service` | Remove `source_code` from `source_mapper._PATTERNS` + dead code cleanup in `chunker.py` |
+| `git-nexus` | New repo — `gitnexus-indexer` service (Node.js, periodic `gitnexus analyze`) + `gitnexus-server` service (Python/FastMCP, SSE proxy); Dockerfile, docker-compose service definitions |
+| `workflow` | Add `GITNEXUS_MCP_URL` to executor `index.ts` MCP config; add env var and `git-nexus` services to docker-compose template and `.env.example` |
 
 ## Dependency Analysis
 - Part 1 (RAG cleanup) has no dependencies. Can ship independently.
