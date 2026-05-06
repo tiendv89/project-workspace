@@ -9,7 +9,7 @@ branch: feature/dashboard-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-06T10:11:22.683Z
+  last_updated_at: 2026-05-06T10:11:29.337Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/22
   status: open
@@ -55,6 +55,10 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Left task tracking panel dashboard
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: max_turns_exceeded
+    at: 2026-05-06T10:11:29.337Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
