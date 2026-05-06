@@ -29,3 +29,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T10:22:01.854Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T10:22:16.460Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: services/indexer/__init__.py,
+      services/indexer/main.py, docs/features/agent-rag-mcp/technical-design.md"
+    rag_query: Build gitnexus-indexer service gitnexus-mcp-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
