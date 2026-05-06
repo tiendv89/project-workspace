@@ -55,6 +55,17 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T17:32:11.857Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T17:32:18.419Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Orchestrator — persist token_usage + cost_usd to task YAML
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/116
   status: open
