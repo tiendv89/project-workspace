@@ -1,21 +1,17 @@
 id: T1
-title: "Executor — model capture + cost_usd + RAG audit + .env fix"
+title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-
 branch: feature/cost-and-rag-optimization-T1
-
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-06T14:18:27+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T16:33:10.380Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/79
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -25,3 +21,181 @@ log:
     by: matthew@liquid-labs.xyz
     at: 2026-05-06T07:21:37Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:53:48.347Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:54:01.933Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/product-spec.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T08:32:57+0000
+    note: Implementation started by agent runtime.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-06T11:07:03.720Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T11:07:09.968Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: max_turns_exceeded
+    at: 2026-05-06T11:23:04.434Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T18:27:36+0700
+    note: Reset to ready by human — last agent hit max_turns_exceeded and did not
+      deliver. PR may be incomplete; re-claiming required.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T11:43:41.965Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T11:43:48.851Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/product-spec.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: executor_crashed
+    at: 2026-05-06T11:45:47.117Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T18:49:09+0700
+    note: Unblocked by human — executor_crashed was a MCP config bug
+      (streamable-http → http), not a task issue. Fix deployed; re-ready to
+      reclaim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T11:50:30.224Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T11:50:36.590Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/product-spec.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T19:01:22+0700
+    note: Reset to ready by human — container not yet rebuilt with pinned
+      claude-code@2.1.131. Rebuild before agents reclaim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:03:39.841Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:03:46.471Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/product-spec.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: executor_crashed
+    at: 2026-05-06T12:05:41.882Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T19:08:50+0700
+    note: Unblocked — MCP reverted to SSE, container rebuilding.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:10:09.078Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:10:15.796Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/cost-and-rag-optimization/technical-design.md,
+      docs/features/cost-and-rag-optimization/product-spec.md,
+      docs/features/cost-and-rag-optimization/technical-design.md"
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/79"
+    at: 2026-05-06T12:20:09.336Z
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:21:55.173Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:25:53+0000
+    note: Resolved 1 inline review thread (gitignore was missing node_modules;
+      vitest cache file from a prior wip commit was removed from tracking and
+      node_modules/, dist/, .vite/ added to .gitignore). PR converted to
+      ready-for-review.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:28:13.364Z
+    note: Review dispatch claimed.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-06T12:28:35.960Z
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:38:10+0000
+    note: "Resolved 1 inline review thread (CI failure on
+      handle-merged-prs.test.ts). Verified failures are pre-existing on
+      origin/main from commit 412fb64 (added unconditional spawnSync rebase
+      --abort without updating test mocks); 21/30 tests fail identically on
+      origin/main with no T1 changes applied. Posted reply on PR #79 explaining
+      the diagnosis and recommending a separate follow-up task to repair mock
+      chains. PR converted to ready-for-review."
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-06T12:41:12.016Z
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T23:31:04+0700
+    note: "Human unblock — PR #79 merged. Test suite fixed separately (21 mock-chain
+      failures resolved in same PR). Moving to in_review for orchestrator
+      close-out."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T16:33:10.380Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/111
+  status: open
