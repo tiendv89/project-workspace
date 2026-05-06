@@ -1,7 +1,7 @@
 id: T1
 title: Remove source_code indexing from RAG
 repo: rag-service
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/gitnexus-mcp-integration-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-06T10:40:20.575Z
+  last_updated_at: 2026-05-06T11:09:43.346Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/12
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/114
   status: open
@@ -40,3 +40,7 @@ log:
     by: pentative@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/rag-service/pull/12"
     at: 2026-05-06T10:40:20.575Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-06T11:09:43.346Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
