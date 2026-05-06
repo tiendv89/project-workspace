@@ -73,39 +73,31 @@ log:
 
 ## 3. Options Considered
 
-### Option A — Persist cost in executor (write directly to task YAML from executor)
+### Option A — Compute cost in executor, write `cost_usd` to `result.json` (chosen)
 
-**What it is:** The executor, after writing `result.json`, also directly updates the task YAML log entry with `token_usage`, `model`, and `cost_usd`.
+**What it is:** The executor already has the model name (from stream-json) and token counts. It computes `cost_usd` using a hardcoded pricing table and writes it into `result.json` alongside `token_usage`. The orchestrator reads `cost_usd` from the result and persists it to the task YAML — no pricing knowledge anywhere else.
 
-**Pros:** Simple — cost is written in the same process that has token data.
+**Pros:** Pricing is co-located with the only process that has all the inputs. The orchestrator stays dumb — it reads and persists, nothing more. No config ceremony. Anthropic's pricing is public and stable; a code deploy for a pricing update is acceptable.
 
-**Cons:** Violates the ABI boundary. The executor is not supposed to own workflow-state writes — the orchestrator owns those (per `agent-runtime-split` design). The executor already has `TASK_ID` and `WORKSPACE_ROOT` in its env and does write to task YAML during execution (claim, status updates) via the `start-implementation` flow — but the result-processing path is explicitly owned by the orchestrator. Mixing this breaks the ownership contract.
-
-**Verdict:** Rejected.
-
----
-
-### Option B — Persist cost in orchestrator result-processing path (chosen)
-
-**What it is:** After the broker delivers a completed result, the orchestrator's result-processing step reads `token_usage` + `model` from `result.json`, computes `cost_usd` using `model_pricing` from `workspace.yaml`, and writes all three into the task YAML log entry.
-
-**Pros:** Respects the orchestrator/executor ownership split. Cost calculation lives in one place. `workspace.yaml` is already read by the orchestrator at startup. Additive — no ABI schema breakage.
-
-**Cons:** Requires two `workspace.yaml` additions (`model_pricing`, `rag`). If `model` is missing from `result.json` (executor didn't capture it), cost falls back to a default pricing tier.
+**Cons:** Pricing changes require a code deploy to the executor image.
 
 **Verdict:** Chosen.
 
 ---
 
-### Option C — Store pricing outside workspace.yaml (e.g. hardcoded defaults table in orchestrator)
+### Option B — Compute cost in orchestrator with `model_pricing` in `workspace.yaml`
 
-**What it is:** Hardcode Anthropic's public pricing table in the orchestrator; no `workspace.yaml` change needed.
+**What it is:** Orchestrator reads `model_pricing` from `workspace.yaml` and computes `cost_usd` when processing the result.
 
-**Pros:** No config ceremony.
+**Pros:** Operator-configurable pricing without a code deploy.
 
-**Cons:** Pricing changes require a code deploy. Doesn't support custom model endpoints with different pricing. Operators can't override pricing without a code change.
+**Cons:** Spreads pricing logic across two components. Adds config ceremony. The orchestrator now needs to know about model pricing, which is executor-domain knowledge. `workspace.yaml` carries data it has no business owning.
 
-**Verdict:** Rejected. `workspace.yaml` is the right place for operator-configured pricing. A hardcoded defaults table is acceptable as a fallback when a model is not in `model_pricing`, but should not be the primary mechanism.
+**Verdict:** Rejected.
+
+---
+
+### Option C — RAG audit via rag-service middleware (server-side logging)
 
 ---
 
@@ -125,87 +117,61 @@ log:
 
 ### Track 1 — Cost accounting
 
-#### 4.1 workspace.yaml additions
+#### 4.1 Executor — model capture + cost calculation
 
-Add `model_pricing` to `workspace.yaml`:
-
-```yaml
-model_pricing:
-  claude-sonnet-4-6:
-    input_per_mtok: 3.00
-    output_per_mtok: 15.00
-  claude-opus-4-7:
-    input_per_mtok: 15.00
-    output_per_mtok: 75.00
-  claude-haiku-4-5-20251001:
-    input_per_mtok: 0.80
-    output_per_mtok: 4.00
-```
-
-Uses MTok (million token) pricing matching Anthropic's public API rates. The orchestrator applies a hardcoded fallback (`claude-sonnet-4-6` rates) if a model is not in the table. No `rag` section needed — `MCP_RAG_URL` is handled by the compose stack.
-
-#### 4.2 Executor — model capture
-
-Extend `token-usage.ts` to also extract `model` from `assistant` events:
+Extend `token-usage.ts` to extract `model` from `assistant` events (same events already parsed for token counts) and compute `cost_usd` using a hardcoded pricing table:
 
 ```ts
-// assistant event shape:
-// { type: "assistant", message: { model: "claude-sonnet-4-6", usage: { input_tokens, output_tokens } } }
-export function extractTokenUsage(stdout: string): 
-  { input: number; output: number; model?: string } | undefined
+const PRICING: Record<string, { input_per_mtok: number; output_per_mtok: number }> = {
+  'claude-sonnet-4-6':         { input_per_mtok: 3.00,  output_per_mtok: 15.00 },
+  'claude-opus-4-7':           { input_per_mtok: 15.00, output_per_mtok: 75.00 },
+  'claude-haiku-4-5-20251001': { input_per_mtok: 0.80,  output_per_mtok: 4.00  },
+};
+
+export function extractTokenUsage(stdout: string):
+  { input: number; output: number; model: string; cost_usd: number } | undefined
 ```
 
-The last non-null `model` value seen across all turns is used (model doesn't change mid-run). Returned in the result object alongside `{ input, output }`.
+The last non-null `model` seen across all turns is used (model doesn't change mid-run). If the model isn't in the table, fall back to Sonnet rates and emit a `pricing_fallback` log event. `cost_usd` is computed as:
 
-Extend `ExecutorResult` ABI (additive):
+```
+(input / 1_000_000 * input_per_mtok) + (output / 1_000_000 * output_per_mtok)
+```
+
+#### 4.2 ABI — extend `ExecutorResult`
+
+Add `cost_usd` to the result schema (additive):
+
 ```ts
-token_usage?: { input: number; output: number; model?: string }
+token_usage?: { input: number; output: number; model: string }
+cost_usd?: number
 ```
+
+The executor writes both fields to `result.json`. The orchestrator reads them as opaque values and persists them — no pricing logic outside the executor.
 
 #### 4.3 Executor — `rag_mcp_registered` / `rag_mcp_unavailable` events
 
 In `index.ts`, after building the MCP config, emit one of:
 ```json
-{ "type": "rag_mcp_registered", "url": "http://localhost:8001" }
+{ "type": "rag_mcp_registered", "url": "http://rag-server:8000" }
 { "type": "rag_mcp_unavailable", "reason": "MCP_RAG_URL not set" }
 ```
 
-#### 4.4 Template `.env` — uncomment `MCP_RAG_URL` default (enables reliable mid-execution queries)
+#### 4.4 Template `.env` — uncomment `MCP_RAG_URL` default
 
-When `--mcp-config` is passed to `claude -p`, the registered MCP tools are available **for the entire session** — not just the first turn. Claude can call `mcp__rag-server__rag_query` at any turn throughout execution. The pre-run `rag-context` skill injection and mid-run MCP queries are complementary, not alternatives.
+When `--mcp-config` is passed to `claude -p`, the registered MCP tools are available **for the entire session** — Claude can call `mcp__rag-server__rag_query` at any turn, not only from pre-injected briefing context.
 
-The executor already reads `process.env.MCP_RAG_URL` — this is correct and does not need to change. The Docker Compose template already sets:
-
+The executor already reads `process.env.MCP_RAG_URL` correctly. The Docker Compose template already provides the default:
 ```yaml
 MCP_RAG_URL: "${MCP_RAG_URL:-http://rag-server:8000}"
 ```
 
-so `MCP_RAG_URL` is always present in the executor's env when running in the compose stack (always port 8000 — same internal network). The gap is in `templates/.projects/workspace/.env` where `MCP_RAG_URL=http://rag-server:8000` is commented out, making operators think they must set it manually.
+The only fix needed: uncomment `MCP_RAG_URL=http://rag-server:8000` in `templates/.projects/workspace/.env` so operators don't think they must set it manually.
 
-The fix is to uncomment it in the template:
+#### 4.5 Orchestrator — persist `token_usage` + `cost_usd` to task YAML
 
-```
-# RAG server URL passed to agents for MCP context injection.
-# Defaults to the companion rag-server in this compose file.
-# Set to empty (MCP_RAG_URL=) to disable RAG context injection.
-MCP_RAG_URL=http://rag-server:8000
-```
+The orchestrator's result-processing path reads `token_usage` and `cost_usd` from `result.json` and writes them into the task YAML log entry. No pricing logic — the values arrive pre-computed from the executor.
 
-No executor code changes required for MCP wiring.
-
-#### 4.5 Orchestrator — cost calculation + task YAML persistence
-
-In the result-processing path, after receiving a completed result from the broker:
-
-```ts
-function computeCost(tokenUsage: { input: number; output: number; model?: string }, pricing: ModelPricing): number {
-  const rates = pricing[tokenUsage.model ?? 'claude-sonnet-4-6'] ?? pricing['claude-sonnet-4-6'];
-  return (tokenUsage.input / 1_000_000 * rates.input_per_mtok)
-       + (tokenUsage.output / 1_000_000 * rates.output_per_mtok);
-}
-```
-
-Write to task YAML log entry:
 ```yaml
 - action: run_completed
   by: agent@runtime
@@ -264,12 +230,11 @@ Emit each as a structured log event after the Claude run completes:
 
 | Dependency | On what | Unblocked by |
 |---|---|---|
-| T3 (cost calculation) | T1 — needs `model_pricing` in `workspace.yaml` | Human completes T1 |
-| T3 (cost calculation) | T2 — needs `model` field in `result.json` | T2 ships to `workflow` |
+| T2 (orchestrator persistence) | T1 — needs `cost_usd` in `result.json` ABI | T1 ships to `workflow` |
 
 ### External dependencies
 
-None. All changes are within the `workflow` and `management-repo` repos. No third-party API or tooling changes.
+None. All changes are within the `workflow` repo only. No `management-repo` changes required.
 
 ### Unresolved decisions
 
@@ -283,20 +248,14 @@ Budget enforcement (`budget_usd` dispatch gate) is deferred to a follow-on featu
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: workspace.yaml — add model_pricing     [management-repo]
+T1: Executor — model capture + cost_usd calculation + rag_mcp events + RAG audit + template .env fix     [workflow]
   └── Can begin now — no blockers
-  └── Human task; short config edit
 
-T2: Executor — model capture + rag_mcp events + RAG audit; template .env fix     [workflow]
-  └── Can begin now — no blockers
-  └── T1 and T2 run in parallel
-
-  T3: Orchestrator — cost calculation + persist token_usage/cost_usd to task YAML     [workflow]
-        └── BLOCKED on T1 (model_pricing must exist in workspace.yaml)
-        └── BLOCKED on T2 (model field must be in result.json before orchestrator can use it)
+  T2: Orchestrator — persist token_usage + cost_usd from result.json to task YAML     [workflow]
+        └── BLOCKED on T1 (cost_usd + model must be present in result.json / ABI before orchestrator can persist them)
 ```
 
-T1 and T2 start immediately in parallel. T3 unblocks when both are done. Maximum depth is 2 steps (T1/T2 → T3).
+T1 starts immediately. T2 unblocks when T1 is merged. Maximum depth is 2 steps (T1 → T2). Both tasks touch only the `workflow` repo.
 
 ---
 
@@ -304,13 +263,12 @@ T1 and T2 start immediately in parallel. T3 unblocks when both are done. Maximum
 
 | Repo | Changes | Why |
 |---|---|---|
-| `management-repo` | `workspace.yaml` — add `model_pricing` section | Config-driven pricing |
-| `workflow` | `runtime/executors/claude/src/token-usage.ts` — add model extraction | Capture model from stream-json |
+| `workflow` | `runtime/executors/claude/src/token-usage.ts` — add model extraction + cost calculation | Capture model + compute cost_usd |
 | `workflow` | `runtime/executors/claude/src/rag-audit.ts` — new file | RAG query event extraction |
-| `workflow` | `runtime/executors/claude/src/index.ts` — emit rag_mcp events; call extractRagQueries | RAG audit |
+| `workflow` | `runtime/executors/claude/src/index.ts` — emit rag_mcp events; call extractRagQueries; write cost_usd to result.json | Wire audit + cost |
 | `workflow` | `runtime/orchestrator/templates/.projects/workspace/.env` — uncomment `MCP_RAG_URL` default | Make compose default visible |
-| `workflow` | `runtime/abi/src/types.ts` — add `model?` to token_usage | ABI additive extension |
-| `workflow` | `runtime/orchestrator/src/` — result-processing path only | Cost persistence into task YAML log |
+| `workflow` | `runtime/abi/src/schema.ts` — add `model` to token_usage, add `cost_usd` | ABI additive extension |
+| `workflow` | `runtime/orchestrator/src/` — result-processing path: persist token_usage + cost_usd | Cost persistence into task YAML log |
 
 No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
@@ -320,14 +278,13 @@ No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
 ### Testing expectations
 
-- `token-usage.ts` already has unit tests. Extend them to assert `model` is extracted correctly.
+- `token-usage.ts` already has unit tests. Extend them to assert `model` is extracted and `cost_usd` is computed correctly for known models and falls back gracefully for unknown ones.
 - Add unit tests for `rag-audit.ts`: fixture stream-json with tool_use/tool_result pairs → verify correct `RagQueryEvent` output.
-- Orchestrator integration test: mock result with `token_usage + model` → verify task YAML log entry contains `cost_usd` at correct value.
+- Orchestrator integration test: mock result.json with `token_usage + cost_usd` → verify task YAML log entry persists both values unchanged.
 
 ### Migration / config impact
 
-- `workspace.yaml` additions are additive. Orchestrators reading a `workspace.yaml` without `model_pricing` or `rag` fall back gracefully (no cost calculation, no auto-injection).
-- `ExecutorResult` ABI extension is additive (`model?` is optional) — existing executors without model capture still produce valid results.
+- `ExecutorResult` ABI extension is additive (`cost_usd` and `model` are optional) — existing executors that don't compute cost still produce valid results; the orchestrator just skips persisting those fields if absent.
 
 ### Backward compatibility
 
@@ -336,4 +293,4 @@ No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
 ### Rollout
 
-No deployment ordering constraint. T1 (`workspace.yaml`) can merge and be live before any code changes ship — the orchestrator simply reads the new config fields when it next starts. T2–T4 can be deployed together or incrementally; each is independently useful.
+T1 (executor) can ship and be tested independently — `cost_usd` appears in `result.json` immediately. T2 (orchestrator persistence) can follow once T1 is merged; until then cost data exists in result.json but isn't yet written to task YAML logs.
