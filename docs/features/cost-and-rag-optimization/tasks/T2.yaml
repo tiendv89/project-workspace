@@ -1,0 +1,23 @@
+id: T2
+title: "Orchestrator — persist token_usage + cost_usd to task YAML"
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+
+branch: feature/cost-and-rag-optimization-T2
+
+execution:
+  actor_type: agent
+  last_updated_by: matthew@liquid-labs.xyz
+  last_updated_at: 2026-05-06T14:18:27+0700
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-06T14:18:27+0700
+    note: Task created from approved technical design.

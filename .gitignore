@@ -5,3 +5,5 @@
 .claude/settings.local.json
 .idea
 .vscode
+.cursor
+.mcp.json
