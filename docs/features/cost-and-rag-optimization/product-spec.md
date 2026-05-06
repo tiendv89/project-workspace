@@ -14,6 +14,9 @@ Each agent run consumes tokens but the platform has no record of how many tokens
 **Gap 2 — RAG is only available as a pre-run injection.**
 The `rag-context` skill injects RAG-retrieved context into the briefing once, before Claude starts. During a long multi-turn execution, if Claude encounters a question that requires additional context lookups, it cannot query the RAG server again — the MCP is either not wired or not reliably available. Agents fall back to reading files directly, burning tokens on context they already have indexed.
 
+**Gap 3 — RAG usage is not auditable.**
+The current executor log emits "received N chunks" but records nothing useful: no query text, no relevance scores, no indication of whether the agent acted on the result or fell back to a direct file read. Operators cannot tell whether RAG is helping or being ignored.
+
 ## Goals
 
 1. Token usage (input + output) is persisted per task run in the task YAML log.
@@ -21,6 +24,8 @@ The `rag-context` skill injects RAG-retrieved context into the briefing once, be
 3. The handoff document includes a cost summary: per-task cost and feature total.
 4. An optional `budget_usd` config field lets operators set a spend cap per feature; the orchestrator alerts (and optionally blocks) when the cap is approached or exceeded.
 5. The RAG MCP is reliably wired into every executor run so Claude can query RAG at any point during execution — not only from a pre-injected briefing context blob.
+6. Agents follow a RAG-first read rule: query RAG before opening a file to look up code, falling back to direct file reads only when RAG returns no relevant results.
+7. Each RAG query is logged with query text, relevance scores, chunk count, and whether the agent used the result (hit) or fell back to a file read (miss) — replacing the current "received N chunks" non-signal.
 
 ## Non-goals
 
@@ -36,6 +41,10 @@ The `rag-context` skill injects RAG-retrieved context into the briefing once, be
 **As an operator**, I want to set a `budget_usd` on a feature and receive an alert if execution is trending over it, so I can intervene before costs get out of hand.
 
 **As an agent**, during a long implementation run I want to be able to call `mcp__rag-server__rag_query` at any point, not just rely on context that was pre-injected before I started.
+
+**As an agent**, I want a rule that tells me to look up code via RAG before opening files, so I naturally save tokens on every lookup without needing to remember to do it.
+
+**As an operator**, I want RAG query logs that show what was searched, how relevant the results were, and whether the agent used them — not just a count of returned chunks.
 
 ## Cost Accounting Design
 
@@ -105,7 +114,45 @@ The `rag-context` skill pre-queries RAG and injects a context blob into the brie
 1. `MCP_RAG_URL` must be reliably propagated to the executor — the orchestrator must pass it from workspace config if not already in the executor env.
 2. The RAG MCP must always be registered when a RAG server is configured for the workspace, regardless of how the executor was invoked.
 3. Claude agents must be able to call `mcp__rag-server__rag_query` at any turn during execution, not only during the first turn from pre-injected context.
-4. The executor should emit a structured log event (`rag_mcp_registered` / `rag_mcp_unavailable`) so operators can verify RAG wiring without reading raw executor logs.
+4. The executor must emit a structured log event (`rag_mcp_registered` / `rag_mcp_unavailable`) so operators can verify RAG wiring without reading raw executor logs.
+
+### RAG-first read rule
+
+Agents must follow this lookup order when searching for code or context:
+
+1. **Query RAG first** via `mcp__rag-server__rag_query`
+2. If RAG returns relevant results (score above threshold), use them — do not open the file
+3. Fall back to a direct `Read` only when RAG returns no results or low-confidence results
+
+This rule is enforced via a shared workflow rule in `CLAUDE.md` so every agent honours it without the briefing needing to repeat it.
+
+**Exceptions** (direct read is acceptable without a prior RAG query):
+- The file path is already known and a targeted line-range read is needed to make an edit
+- The file is a config file or lock file unlikely to be in the RAG index
+- RAG MCP is unavailable for this run
+
+### RAG audit log
+
+Each RAG query must emit a structured log entry that replaces the current "received N chunks" line:
+
+```json
+{
+  "type": "rag_query",
+  "at": "2026-05-06T10:01:23+0700",
+  "query": "how does the executor write result.json",
+  "chunks_returned": 3,
+  "top_score": 0.87,
+  "scores": [0.87, 0.81, 0.74],
+  "outcome": "hit"
+}
+```
+
+`outcome` values:
+- `hit` — agent used the RAG result and did not fall back to a file read
+- `miss` — RAG returned results but agent opened the file anyway (wasted query)
+- `no_results` — RAG returned nothing; direct read was appropriate
+
+This audit data is aggregated per run and included in the handoff document alongside cost data.
 
 ### Configuration
 

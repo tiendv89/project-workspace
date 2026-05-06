@@ -481,6 +481,22 @@ For third-party runtime authors and operators, the authoritative references are:
 - **Portability spec**: `runtime/portability-spec.md` — every port, adapter, profile, runner env contract, broker protocol fixtures, and how to add a new profile
 - **ABI spec**: `runtime/abi/docs/abi-spec.md` — executor-facing inputs, outputs, side-effects, lifecycle, examples
 - **Operator guide**: `runtime/orchestrator/docs/OPERATOR-GUIDE.md` — deployment, Docker Compose entry point, environment variables, common issues
+
+## RAG-first read rule
+
+When the RAG MCP tool (`mcp__rag-server__rag_query`) is available, agents must query RAG before opening a file to look up code or context.
+
+**Lookup order:**
+1. Query RAG first via `mcp__rag-server__rag_query`
+2. If results are relevant (high confidence), use them — do not open the file
+3. Fall back to a direct `Read` only when RAG returns no results or low-confidence results
+
+**Exceptions** — direct read without a prior RAG query is acceptable when:
+- The file path is already known and a targeted line-range edit is the goal (not a lookup)
+- The file is a config, lock, or generated file unlikely to be indexed
+- The RAG MCP is unavailable for this run
+
+This rule applies in both interactive sessions and agent runtime. Its purpose is to avoid loading entire files into context when the indexed corpus already contains the relevant excerpt.
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
