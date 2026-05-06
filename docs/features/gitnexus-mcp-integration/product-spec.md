@@ -11,7 +11,7 @@ The current RAG stack (Qdrant + rag-server) provides good context retrieval for 
 - Remove source code file indexing from the RAG stack unconditionally — RAG never surfaces code in practice and indexing it is dead weight. RAG is scoped to prose, YAML, and documentation only.
 - Wire [GitNexus](https://github.com/abhigyanpatwari/GitNexus) as a second MCP server alongside the existing `rag-server`, scoped to implementation repos only.
 - Give agents access to code-graph tools: symbol lookup, call graph traversal, impact analysis, and change detection.
-- Keep GitNexus opt-in per deployment (`GITNEXUS_ENABLED=1`) — `gitnexus analyze` adds meaningful startup time per task and is not always needed.
+- Keep GitNexus opt-in per deployment (`GITNEXUS_ENABLED=1`) — `gitnexus analyze` performs a full repo re-analysis (Tree-sitter AST parsing, call graph resolution, embedding index) on every task start because GitNexus has no incremental indexing. This adds 30–120s of fixed startup cost per task regardless of what the task actually does, so it should not be paid unconditionally.
 
 ## Non-goals
 - Replacing the existing Qdrant/RAG stack — this is additive; RAG continues to serve non-code content.
