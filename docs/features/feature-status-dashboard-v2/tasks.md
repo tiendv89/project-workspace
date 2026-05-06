@@ -40,7 +40,7 @@ Sequence:
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Create and push `v1-archive` branch from current main
@@ -65,7 +65,7 @@ Implements all server-side data access and write-back logic: workspace discovery
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] `types/workspace.ts` — WorkspaceConfig, WorkspaceSummary
@@ -90,8 +90,8 @@ Implements the root layout shell: sidebar navigation, top header bar, WorkspaceC
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -118,8 +118,8 @@ Implements the Workspace Picker — the full-page grid that renders on first vis
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -144,8 +144,8 @@ Implements the main Dashboard: workspace-level stat cards (total features, in_pr
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -170,8 +170,8 @@ Implements the `/features` page: a filterable table of all features in the activ
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -197,8 +197,8 @@ Implements the `/features/[featureId]` page: a stage stepper showing current lif
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -225,8 +225,8 @@ Implements the New Feature modal: a form for feature name, auto-generated ID slu
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
@@ -252,8 +252,8 @@ Implements the `/tasks` page: a Kanban board with one column per task status (to
 ### Required skills
 - frontend-engineer
 - nextjs-best-practices
-- `heroui-react`
-- `typescript-best-practices`
+- heroui-react
+- typescript-best-practices
 - `figma-mcp`
 - `figma:figma-implement-design`
 
