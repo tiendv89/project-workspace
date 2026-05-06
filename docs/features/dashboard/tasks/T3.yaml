@@ -44,11 +44,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T06:45:56.169Z
     note: Review dispatch claimed.
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/106
-  status: open
   - action: comments_addressed
     by: tiendv.52@gmail.com
     at: 2026-05-06T06:56:01+0000
     note: >-
       Resolved 1 inline review thread (UTF-8 base64 decode + skip malformed status.yaml); PR converted to ready-for-review.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/106
+  status: open
