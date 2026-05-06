@@ -48,7 +48,7 @@ Specific deliverables:
 
 ### Figma
 
-- Connect / import screen: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3198&t=dBztH5XSYbZ9jPyR-0
+- Connect / import screen: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=62-3198&m=dev
 
 ### Required skills
 
@@ -189,7 +189,7 @@ Deliverables:
 
 ### Figma
 
-- Workspace detail Kanban board: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-85&t=xHuTHtgkwgQhVAcT-0
+- Workspace detail Kanban board: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=98-2&m=dev
 
 ### Required skills
 
@@ -237,7 +237,7 @@ Deliverables:
 
 ### Figma
 
-- Left-side task tracking panel: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=71-2&t=xHuTHtgkwgQhVAcT-0
+- Left-side task tracking panel: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=71-2&m=dev
 
 ### Required skills
 
@@ -279,7 +279,7 @@ Deliverables:
 
 ### Figma
 
-- Task detail sheet: https://www.figma.com/design/hEMJ8kLThTC8zlHyQxG1f3/Dashboard-Workflow-UI?node-id=62-3276&t=dBztH5XSYbZ9jPyR-0
+- Task detail sheet: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=62-3449&m=dev
 
 ### Required skills
 
