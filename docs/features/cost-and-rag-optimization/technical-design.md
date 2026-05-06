@@ -13,7 +13,7 @@
 - `token-usage.ts` — already parses per-turn `assistant` events from `stream-json` stdout and sums `input_tokens` + `output_tokens`. Result is `{ input, output } | undefined`.
 - `index.ts` — attaches `token_usage` to `result.json` before writing it. Checks `BUDGET_TOKENS` env var **after the run exits** — if total tokens exceeded the limit, writes `blocked_reason: "budget_exceeded"`. This is post-hoc detection, not enforcement: Claude has already consumed the tokens before the check runs. There is no mechanism to interrupt a `claude -p` subprocess mid-turn based on token count without killing the process (which would leave no `result.json`).
 - The `assistant` event in stream-json also carries a `model` field (e.g. `"claude-sonnet-4-6"`) — **this is currently ignored and discarded**.
-- RAG MCP is conditionally wired via `--mcp-config` only when `MCP_RAG_URL` is present in the executor's env. There is no mechanism that guarantees it will be set — the orchestrator passes it only if the operator has manually added it to the executor env.
+- RAG MCP is conditionally wired via `--mcp-config` only when `MCP_RAG_URL` is present in the executor's own env. The executor already has `WORKSPACE_ROOT` in env but does not currently read `workspace.yaml` to self-configure the RAG URL — it relies entirely on the caller having set `MCP_RAG_URL` manually.
 - The executor emits a `budget_audit` structured log event but **no** `rag_mcp_registered` / `rag_mcp_unavailable` events.
 - RAG tool_use and tool_result events appear in the stream-json stdout but are **not currently parsed** — neither query text, relevance scores, nor chunk count are captured anywhere.
 
@@ -174,16 +174,22 @@ In `index.ts`, after building the MCP config, emit one of:
 { "type": "rag_mcp_unavailable", "reason": "MCP_RAG_URL not set" }
 ```
 
-#### 4.4 Orchestrator — auto-inject `MCP_RAG_URL`
+#### 4.4 Executor — self-configure RAG from `workspace.yaml`
 
-In `SubProcessAdapter.submit()`, after reading workspace config:
+The orchestrator does not need to know about MCP configuration. The executor is self-contained: it already has `WORKSPACE_ROOT` in its env and reads `workspace.yaml` for other purposes. The fix is to have the executor resolve `mcpRagUrl` from `workspace.yaml` directly, falling back to `MCP_RAG_URL` env var for backward compatibility:
+
 ```ts
-if (workspaceConfig.rag?.enabled && workspaceConfig.rag?.url && !input.extraEnv?.MCP_RAG_URL) {
-  input.extraEnv = { ...input.extraEnv, MCP_RAG_URL: workspaceConfig.rag.url };
+// In index.ts, before building mcpConfig:
+let mcpRagUrl = process.env.MCP_RAG_URL;
+if (!mcpRagUrl && workspaceRoot) {
+  const wsConfig = readWorkspaceConfig(workspaceRoot);  // already parsed for other uses
+  if (wsConfig?.rag?.enabled && wsConfig?.rag?.url) {
+    mcpRagUrl = wsConfig.rag.url;
+  }
 }
 ```
 
-This ensures RAG MCP is always wired for any run in a workspace where `rag.enabled: true`, without requiring operators to set `MCP_RAG_URL` manually per deployment.
+This preserves the `local-subprocess` contract: the orchestrator passes `WORKSPACE_ROOT` (which it already does), and the executor self-configures everything else. The orchestrator has no knowledge of MCP internals.
 
 #### 4.5 Orchestrator — cost calculation + task YAML persistence
 
@@ -256,9 +262,9 @@ Emit each as a structured log event after the Claude run completes:
 
 | Dependency | On what | Unblocked by |
 |---|---|---|
-| T3 (orchestrator MCP injection) | T1 — needs `rag` config schema in `workspace.yaml` | Human completes T1 |
-| T4 (cost calculation) | T1 — needs `model_pricing` in `workspace.yaml` | Human completes T1 |
-| T4 (cost calculation) | T2 — needs `model` field in `result.json` | T2 ships to `workflow` |
+| T2 (executor self-config + audit) | T1 — needs `rag` section in `workspace.yaml` to read at runtime | Human completes T1 |
+| T3 (cost calculation) | T1 — needs `model_pricing` in `workspace.yaml` | Human completes T1 |
+| T3 (cost calculation) | T2 — needs `model` field in `result.json` | T2 ships to `workflow` |
 
 ### External dependencies
 
@@ -280,20 +286,15 @@ T1: workspace.yaml — add model_pricing + rag config     [management-repo]
   └── Can begin now — no blockers
   └── Human task; short config edit
 
-T2: Executor — model capture + rag_mcp events + RAG audit extraction     [workflow]
-  └── Can begin now — no blockers
-  └── T1 and T2 run in parallel
+  T2: Executor — model capture + self-configure RAG from workspace.yaml + rag_mcp events + RAG audit     [workflow]
+      └── BLOCKED on T1 (executor reads rag.url from workspace.yaml at runtime — section must exist)
 
-  T3: Orchestrator — auto-inject MCP_RAG_URL from workspace.yaml rag config     [workflow]
-      └── BLOCKED on T1 (rag config schema must exist in workspace.yaml before orchestrator reads it)
-
-  T4: Orchestrator — cost calculation + persist token_usage/cost_usd to task YAML     [workflow]
-      └── BLOCKED on T1 (model_pricing table must exist in workspace.yaml)
-      └── BLOCKED on T2 (model field must be present in result.json)
-      └── T3 and T4 run in parallel once T1 and T2 are done
+      T3: Orchestrator — cost calculation + persist token_usage/cost_usd to task YAML     [workflow]
+            └── BLOCKED on T1 (model_pricing table must exist in workspace.yaml)
+            └── BLOCKED on T2 (model field must be in result.json before orchestrator can persist it)
 ```
 
-T1 and T2 start immediately in parallel. T3 and T4 unblock when T1 and T2 are done respectively. Maximum depth is 2 steps (T1/T2 → T3/T4).
+T1 is the only wave-1 task. T2 unblocks on T1. T3 unblocks on T1 + T2. Maximum depth is 3 steps (T1 → T2 → T3). Note: T2's dep on T1 is a runtime dep (executor reads workspace.yaml when it runs), not a compile-time dep — T2 can be coded and merged before T1 ships, but must not be tested end-to-end until T1 is in place.
 
 ---
 
@@ -304,10 +305,9 @@ T1 and T2 start immediately in parallel. T3 and T4 unblock when T1 and T2 are do
 | `management-repo` | `workspace.yaml` — add `model_pricing` and `rag` sections | Config-driven pricing and RAG wiring |
 | `workflow` | `runtime/executors/claude/src/token-usage.ts` — add model extraction | Capture model from stream-json |
 | `workflow` | `runtime/executors/claude/src/rag-audit.ts` — new file | RAG query event extraction |
-| `workflow` | `runtime/executors/claude/src/index.ts` — emit rag_mcp events; call extractRagQueries | Wires new audit module |
+| `workflow` | `runtime/executors/claude/src/index.ts` — self-configure RAG from workspace.yaml; emit rag_mcp events; call extractRagQueries | Self-contained RAG wiring + audit |
 | `workflow` | `runtime/abi/src/types.ts` — add `model?` to token_usage | ABI additive extension |
-| `workflow` | `runtime/orchestrator/src/adapters/executor/subprocess.ts` — auto-inject MCP_RAG_URL | Reliable RAG wiring |
-| `workflow` | `runtime/orchestrator/src/` — result-processing path | Cost persistence into task YAML log |
+| `workflow` | `runtime/orchestrator/src/` — result-processing path only | Cost persistence into task YAML log |
 
 No changes to `rag-service`, `digital-factory-ui`, or `workflow-backend`.
 
