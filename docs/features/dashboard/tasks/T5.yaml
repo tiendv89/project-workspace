@@ -26,6 +26,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T07:19:59.205Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:20:11.408Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-status-dashboard/product-spec.md,
+      docs/features/feature-status-dashboard-v2/product-spec.md,
+      docs/features/feature-status-dashboard-v2/product-spec.md"
+    rag_query: Left task tracking panel dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
