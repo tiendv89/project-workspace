@@ -15,10 +15,11 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 ## Goals
 
 1. After a technical design is approved, the orchestrator executes all tasks in the feature's dependency graph without requiring per-task human intervention.
-2. A quality gate (CI pass + reviewer agent sign-off) replaces per-task human PR review for the common case.
-3. Humans are notified only for genuine exceptions: blocked tasks, repeated CI failures, or low-confidence reviewer verdicts.
-4. One final feature-level human review occurs before the feature is marked `done` — not one per task.
-5. All existing workflow rules (branch management, management repo governance, auto-ready cascade, rebase-before-PR) are respected by the orchestrator.
+2. The orchestrator creates a feature branch (`feature/{feature_id}`) at start; task PRs target this branch, not the base branch directly.
+3. A quality gate (CI pass + reviewer agent sign-off) replaces per-task human PR review for the common case.
+4. Humans are notified only for genuine exceptions: blocked tasks, repeated CI failures, or low-confidence reviewer verdicts.
+5. When all tasks complete, the orchestrator auto-generates a handoff document and opens a feature-level PR (feature branch → base branch) for human review.
+6. All existing workflow rules (branch management, management repo governance, auto-ready cascade, rebase-before-PR) are respected by the orchestrator.
 
 ## Non-goals
 
@@ -27,6 +28,7 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 - Cross-feature orchestration — this feature orchestrates one feature's task graph at a time.
 - Replacing the existing task YAML state machine — the orchestrator reads and writes task YAMLs using the existing schema.
 - Building a new agent runtime — executor agents continue to use the existing `start-implementation` skill.
+- Drift detection for in-handoff features — that responsibility belongs to `autonomous-feature-reviewer`.
 
 ## User Stories
 
@@ -40,11 +42,14 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 
 ### Orchestrator
 
+- Creates a feature branch (`feature/{feature_id}`) from the base branch at start, if it does not already exist.
 - Polls the feature's task YAML files at a configurable interval (default: 30 seconds).
 - Identifies tasks in `ready` state whose `depends_on` list is fully `done`.
 - Dispatches an executor agent for each eligible task, respecting the existing `start-implementation` contract.
+- Configures task PRs to target `feature/{feature_id}`, not the base branch.
 - Tracks which agent owns which task to prevent double-dispatch.
 - Runs the auto-ready cascade when a task transitions to `done`.
+- When all tasks are `done`: auto-generates a handoff document, opens a feature-level PR (feature branch → base branch), and transitions the feature to `in_handoff`.
 
 ### Quality Gate
 
@@ -66,6 +71,18 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 - Triggers on: task `blocked` after max retries, CI failing consistently, reviewer `flag` or `fail`, confidence below threshold.
 - Delivers a notification with task ID, reason, and a direct link to the PR or task YAML.
 - Escalation channel is configurable per feature (default: Slack webhook).
+
+### Per-task Human Review Override
+
+Individual tasks can opt out of auto-merge by setting `requires_human_review: true` in their execution block:
+
+```yaml
+execution:
+  actor_type: agent
+  requires_human_review: true
+```
+
+When set, the orchestrator skips the auto-merge path for that task's PR and routes it to a human regardless of quality gate results. Useful for tasks touching security-sensitive code, infra changes, or anything requiring explicit sign-off.
 
 ### Actor Type Extension
 
@@ -94,8 +111,13 @@ orchestrator:
 - Escalation rate: < 20% of tasks require human escalation in steady state.
 - Time from technical design approval to feature-level review is reduced by at least 60% compared to manual task-by-task flow.
 
+## Dependencies
+
+- `autonomous-feature-reviewer` extends the orchestrator's output: it watches features the orchestrator moves to `in_handoff` and handles drift detection while the human reviews the feature PR.
+- These two features should be built and deployed together.
+
 ## Open Questions
 
-1. Should the feature-level review be a generated summary PR or a manual human step triggered by notification?
-2. What is the right confidence threshold for the reviewer agent out of the box?
-3. Should the orchestrator support partial features (run orchestrator on a subset of tasks, leave others manual)?
+1. ~~Should the feature-level review be a generated summary PR or a manual human step triggered by notification?~~ Resolved: orchestrator opens a feature branch PR and generates a handoff document. Human reviews the PR.
+2. What is the right confidence threshold for the reviewer agent out of the box? (Default: 0.85)
+3. ~~Should the orchestrator support partial features?~~ Resolved: yes, via `requires_human_review: true` on individual tasks.
