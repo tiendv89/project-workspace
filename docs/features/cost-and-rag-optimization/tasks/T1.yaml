@@ -1,14 +1,14 @@
 id: T1
 title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/cost-and-rag-optimization-T1
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-06T11:50:30.224Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-06T19:01:22+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/79
   status: open
@@ -106,6 +106,12 @@ log:
     rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
       cost-and-rag-optimization
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-06T19:01:22+0700
+    note: >-
+      Reset to ready by human — container not yet rebuilt with pinned
+      claude-code@2.1.131. Rebuild before agents reclaim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/111
   status: open
