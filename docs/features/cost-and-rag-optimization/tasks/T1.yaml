@@ -1,7 +1,7 @@
 id: T1
 title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/cost-and-rag-optimization-T1
