@@ -2,8 +2,8 @@ feature_id: cost-and-rag-optimization
 title: Cost Accounting & RAG Runtime Optimization
 
 feature_status: in_design
-current_stage: technical_design
-next_action: Produce technical-design.md using the tech-lead skill (Phase 1).
+current_stage: tasks
+next_action: Produce tasks.md and task YAML files using the tech-lead skill (Phase 2).
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         at: 2026-05-06T06:43:10Z
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-06T07:15:33Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: 2026-05-06T07:15:33Z
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -39,6 +43,9 @@ history:
   - event: product_spec_approved
     by: matthew@liquid-labs.xyz
     at: 2026-05-06T06:43:10Z
+  - event: technical_design_approved
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-06T07:15:33Z
 
 revalidation:
   product_spec_required: false
