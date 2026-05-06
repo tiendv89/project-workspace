@@ -4,60 +4,138 @@
 - Feature ID: `gitnexus-mcp-integration`
 - Title: GitNexus Code-Graph MCP Integration
 
+---
+
 ## Current State
-The executor (`runtime/executors/claude/src/index.ts`) builds an MCP config from up to two sources:
-- `rag-server` — SSE transport, enabled via `MCP_RAG_URL` env var
-- `figma` — stdio transport, enabled via `FIGMA_PERSONAL_ACCESS_TOKEN` env var
 
-GitNexus is not yet wired.
+### RAG stack
+The RAG stack has three services that run as long-lived Docker containers:
+- `qdrant` — vector database, persistent named volume
+- `rag-server` — MCP server over SSE, agents connect via `MCP_RAG_URL`
+- `indexer` — reads `workspace.yaml`, clones all repos, watches for changes, upserts chunks into Qdrant
 
-## Constraints
-- GitNexus has no incremental indexing — `gitnexus analyze` must rerun on every task start.
-- `gitnexus analyze` takes 30–120s depending on repo size; must not fail the task if it times out or errors.
-- GitNexus license is PolyForm Noncommercial — acceptable for internal/platform use; must be noted for enterprise customers.
-- The executor image must have Node.js available (already true) to run `npx gitnexus@latest`.
+The indexer classifies files via `services/indexer/source_mapper.py`. It currently indexes source code under the `source_code` type (`.py`, `.ts`, `.tsx`, `.js`, `.go`) using Tree-sitter to chunk by function/class boundaries.
 
-## Options Considered
+### Executor MCP config
+`runtime/executors/claude/src/index.ts` builds an MCP config and passes it to `claude --mcp-config`. Currently supports:
+- `rag-server` — SSE transport, `MCP_RAG_URL` env var
+- `figma` — stdio transport, `FIGMA_PERSONAL_ACCESS_TOKEN` env var
 
-### Option A — npx on demand (no image change)
-Run `npx -y gitnexus@latest analyze <taskRepoPath>` each task start; start the MCP server via `npx -y gitnexus@latest mcp` as a stdio process.
+### Gap
+Agents have no structural code intelligence. RAG chunks code by syntax node but retrieval is semantic — it cannot answer "what calls X", trace an execution path, or compute blast radius of a change. In practice, code chunks score poorly against natural-language task queries and almost never surface in results.
 
-- Pros: zero image changes; always latest GitNexus version.
-- Cons: npx download on cold start adds latency; network dependency at runtime.
+---
 
-### Option B — pre-install in executor image
-Add `gitnexus` to the executor Dockerfile `RUN npm install -g gitnexus`.
+## Part 1 — Remove Source Code from RAG
 
-- Pros: faster cold start; no network dependency.
-- Cons: image rebuild required on GitNexus updates; ties executor image version to GitNexus version.
+### Change
+Single line removal in `rag-service/services/indexer/source_mapper.py`:
 
-### Option C — sidecar container
-Run GitNexus as a separate Docker service (like rag-server), exposed over HTTP/SSE.
+```python
+# Remove this line from _PATTERNS:
+(re.compile(r"\.(py|ts|tsx|js|go)$"), "source_code", None),
+```
 
-- Pros: clean separation; could support multi-repo graphs.
-- Cons: significant complexity; GitNexus MCP is stdio-native, not HTTP-first; overkill for v1.
+The `_EXT_TO_LANGUAGE` table and Tree-sitter chunking logic in `chunker.py` become unreachable — they can be removed in the same PR as dead code cleanup, but are not required for correctness.
 
-## Chosen Design
-**Option A** for v1. Simple, no image changes, opt-in via `GITNEXUS_ENABLED=1`. If startup latency proves problematic, migrate to Option B.
+### Effect
+- The indexer stops ingesting source code on the next poll cycle.
+- Existing `source_code` chunks in Qdrant are **not automatically deleted** — a one-time re-index or Qdrant collection wipe is needed to clean stale vectors. This can be done by restarting the indexer with `FORCE_REINDEX=1` if that flag exists, or by dropping and recreating the Qdrant collection.
+- No changes to `rag-server`, `qdrant`, or the executor.
 
-## Implementation Plan
+### Risk
+Low. If code was never surfacing in RAG results it was never influencing agent behaviour. The only risk is the cleanup of stale vectors, which is operational not functional.
 
-### 1. Executor changes (`workflow` repo — `runtime/executors/claude/src/index.ts`)
-- Read `GITNEXUS_ENABLED` env var.
-- After step 1 (repo materialization), if enabled: run `npx -y gitnexus@latest analyze <taskRepoPath>` (timeout 120s, stdio: pipe). Emit `gitnexus_indexing_start` / `gitnexus_indexing_done` / `gitnexus_indexing_failed` events. On failure: log and continue without GitNexus (non-fatal).
-- In step 5 (MCP config), if `gitnexusReady`: add `gitnexus` stdio server entry (`npx -y gitnexus@latest mcp`).
-- Update condition from `if (mcpRagUrl || figmaToken)` → `if (mcpRagUrl || figmaToken || gitnexusReady)`.
+---
 
-### 2. Env/config templates (`workflow` repo — `runtime/orchestrator/templates/`)
-- `.projects/.env.example`: add `# GITNEXUS_ENABLED=` with comment.
-- `docker-compose.yml`: add `GITNEXUS_ENABLED: "${GITNEXUS_ENABLED:-}"` to base anchor and all three agent overrides.
+## Part 2 — GitNexus as a Persistent Sidecar
 
-### 3. Executor header comment update
-- Add `GITNEXUS_ENABLED` to the "Day-1 single-container extras" block comment in `index.ts`.
+### The problem with per-task execution
+Running `gitnexus analyze <repo>` inside the executor on every task start would cost 30–120s of full re-analysis on every task regardless of how much changed. GitNexus has no incremental indexing, so even a one-line commit triggers a full re-parse. This is the same mistake the RAG stack would make if it re-indexed everything on every task rather than watching for changes.
+
+### Architecture: two new services in `docker-compose.yml`
+
+Following the same pattern as `qdrant` + `rag-server` + `indexer`:
+
+```
+gitnexus-indexer   — clones/pulls all workspace repos, runs gitnexus analyze
+                     on startup and on a polling interval, writes index to a
+                     named volume: gitnexus-data
+
+gitnexus-server    — wraps `gitnexus mcp` (stdio) in an HTTP/SSE transport,
+                     reads the pre-built index from the same named volume,
+                     exposes MCP tools over SSE at :8002
+```
+
+Agents connect via a new env var `GITNEXUS_MCP_URL` — same pattern as `MCP_RAG_URL`.
+
+### Why HTTP/SSE wrapper rather than mounting the volume into executors
+
+The executor could mount `gitnexus-data` and run `gitnexus mcp` as a local stdio process. This would work, but:
+- Every executor container needs the volume mounted — docker-compose change and complexity on every new executor config.
+- Multiple concurrent agents each spawn their own stdio process against the same volume — no coordination.
+- Inconsistent with how `rag-server` works; agents would need different MCP config logic for "SSE servers" vs "stdio servers with pre-mounted volumes".
+
+An HTTP/SSE wrapper keeps the pattern uniform: all MCP servers are SSE endpoints, all agents connect the same way, the executor needs no volume mounts.
+
+### `gitnexus-indexer` design
+
+Reads `workspace.yaml` to discover repos (same as the RAG indexer). For each repo:
+1. Clone or pull to a local working directory (e.g. `/gitnexus-index/repos/<repo_id>`)
+2. Run `npx gitnexus@latest analyze /gitnexus-index/repos/<repo_id>`
+3. Repeat on a configurable poll interval (default: same as `INDEXER_POLL_INTERVAL_SECONDS`)
+
+The `gitnexus analyze` command writes its index to `~/.gitnexus/` by default. We set `HOME=/gitnexus-data` in the container so the index lands on the named volume instead of the container's ephemeral filesystem.
+
+### `gitnexus-server` design
+
+A small Node.js service (new directory in `rag-service` or standalone):
+1. On startup: set `HOME=/gitnexus-data` so `gitnexus mcp` reads the shared index.
+2. Spawn `gitnexus mcp` as a child process (stdio).
+3. Bridge MCP stdio ↔ SSE using `@modelcontextprotocol/sdk` (`StdioClientTransport` → `SSEServerTransport`).
+4. Expose on `:8002`.
+
+The bridge is ~50 lines using the SDK. It is stateless — the index is owned by `gitnexus-indexer`; `gitnexus-server` just serves it.
+
+### Startup ordering
+```
+gitnexus-indexer  (runs analyze on all repos, writes to gitnexus-data volume)
+       ↓
+gitnexus-server   (starts once index exists, depends_on: gitnexus-indexer)
+       ↓
+agents            (connect via GITNEXUS_MCP_URL=http://gitnexus-server:8002)
+```
+
+`gitnexus-server` should health-check whether the index exists before starting, and retry with backoff if `gitnexus-indexer` hasn't finished yet.
+
+### Executor changes
+Add `GITNEXUS_MCP_URL` alongside `MCP_RAG_URL` in `index.ts`:
+
+```typescript
+const gitnexusMcpUrl = process.env.GITNEXUS_MCP_URL;
+// ...
+if (gitnexusMcpUrl) {
+  mcpConfig.mcpServers["gitnexus"] = { type: "sse", url: `${gitnexusMcpUrl}/sse` };
+}
+```
+
+No per-task indexing. No `GITNEXUS_ENABLED` flag needed — presence of `GITNEXUS_MCP_URL` enables it, absence disables it. Same pattern as `MCP_RAG_URL`.
+
+---
+
+## Affected Repos
+
+| Repo | Change |
+|---|---|
+| `rag-service` | Remove `source_code` from `source_mapper._PATTERNS` + dead code cleanup in `chunker.py`; add `gitnexus-indexer` and `gitnexus-server` services |
+| `workflow` | Add `GITNEXUS_MCP_URL` to executor `index.ts` MCP config; add env var to docker-compose template and `.env.example` |
 
 ## Dependency Analysis
-- No dependencies on other in-flight features.
-- Depends on GitNexus npm package availability (`gitnexus@latest` on npmjs.com).
+- Part 1 (RAG cleanup) has no dependencies. Can ship independently.
+- Part 2 (GitNexus services) depends on Part 1 being complete only for clean separation; technically independent.
+- The `gitnexus-server` bridge depends on `@modelcontextprotocol/sdk` being available in the new service.
 
 ## Parallelization / Blocking Analysis
-All three changes are in the same repo (`workflow`) and can land in a single PR from a single task. No parallel tasks needed.
+- Part 1 (rag-service change): single task, one PR.
+- Part 2 (gitnexus-indexer + gitnexus-server): can be one task (same service repo) or split if the services are developed independently.
+- Executor change (workflow repo): unblocked, can run in parallel with Part 2.
