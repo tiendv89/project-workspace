@@ -1,23 +1,171 @@
 id: T2
 title: GitHub Contents API client and YAML parser
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/dashboard-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: "2026-05-05T14:45:00+0700"
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T06:02:33.994Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/20
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
-    at: "2026-05-05T14:45:00+0700"
+    at: 2026-05-05T14:45:00+0700
     note: Task created from tech-lead Phase 2 (frontend-only alpha design).
   - action: ready
     by: minhkienn203@gmail.com
-    at: "2026-05-05T08:16:56Z"
+    at: 2026-05-05T08:16:56Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T08:41:54.999Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T08:42:08.602Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/task-branch-lifecycle/technical-design.md,
+      agent-runtime/src/main.ts, docs/features/dashboard/technical-design.md"
+    rag_query: GitHub Contents API client and YAML parser dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/18"
+    at: 2026-05-05T08:53:05.914Z
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:14:13.788Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:29:30+0000
+    note: "Resolved 1 inline review thread: separated workspace_pr from pr as a
+      top-level field in ParsedTask and RawTask types; PR converted to
+      ready-for-review."
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:30:27.342Z
+    note: Review dispatch claimed.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:32:20.875Z
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-05T09:32:36.971Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:35:00+0000
+    note: Resolved 1 inline review thread (workspace_pr as top-level in RawTask); PR
+      converted to ready-for-review.
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-05T09:36:54.679Z
+    note: Review dispatch claimed.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:37:19.510Z
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-05T09:38:08+0000
+    note: Resolved 1 unresolved inline review thread (PRRT_kwDOSF7HBs5_mOPM) —
+      workspace_pr as top-level sibling of pr in RawTask already addressed in
+      prior commits; PR converted to ready-for-review.
+  - action: in_review
+    by: pentative@gmail.com
+    at: 2026-05-05T09:38:08+0000
+    note: Status reset from blocked to in_review — PR url set, review comments
+      addressed.
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-05T09:39:48.042Z
+    note: Review dispatch claimed.
+  - action: blocked
+    by: pentative@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:41:28.773Z
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:41:46.618Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-05T09:47:00+0000
+    note: "Resolved 2 inline review threads: added last_updated_by and
+      last_updated_at fields to execution type in ParsedTask and RawTask; PR
+      converted to ready-for-review."
+  - action: blocked
+    by: pentative@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:50:00.526Z
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-05T09:52:36+0000
+    note: Resolved 2 unresolved inline review threads (PRRT_kwDOSF7HBs5_mhoq,
+      PRRT_kwDOSF7HBs5_mhwc) — execution field already updated with
+      last_updated_by and last_updated_at in prior commit d766af3; PR confirmed
+      ready-for-review. Status reset from blocked to in_review.
+  - action: blocked
+    by: pentative@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:54:26.791Z
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-05T09:55:47.800Z
+  - action: in_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T04:32:32Z
+    note: Manual reset from blocked to in_review. Implementation PR and workspace PR
+      remain open for review.
+  - action: review_started
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T04:36:18.899Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T04:41:03+0000
+    note: Resolved 1 inline review thread (PRRT_kwDOSF7HBs5_2Qxb) — removed
+      HeroUIProvider from AppProviders.tsx (@heroui/react v3 does not export
+      this provider); PR converted to ready-for-review.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: result_not_written
+    at: 2026-05-06T04:45:44.916Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T04:51:34Z
+    note: Manual reset from blocked to ready. Cleared result_not_written blocker for
+      re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T04:56:52.617Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T04:56:59.533Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: docs/features/dashboard/product-spec.md,
+      docs/features/dashboard/technical-design.md,
+      docs/features/dashboard/product-spec.md"
+    rag_query: GitHub Contents API client and YAML parser dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/20"
+    at: 2026-05-06T05:03:16.276Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T06:02:33.994Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/102
+  status: open
