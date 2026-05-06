@@ -150,6 +150,22 @@ No per-task indexing. No `GITNEXUS_ENABLED` flag needed — presence of `GITNEXU
 - The `gitnexus-server` bridge depends on `@modelcontextprotocol/sdk` being available in the new service.
 
 ## Parallelization / Blocking Analysis
-- Part 1 (rag-service change): single task, one PR.
-- Part 2 (gitnexus-indexer + gitnexus-server): can be one task (same service repo) or split if the services are developed independently.
-- Executor change (workflow repo): unblocked, can run in parallel with Part 2.
+
+```
+T1: Remove source_code indexing from RAG   (rag-service)
+  └── Can begin now — no blockers
+
+T2: Build gitnexus-indexer service         (git-nexus)
+  └── Can begin now — no blockers
+
+T1 and T2 run in parallel.
+
+  T3: Build gitnexus-server service        (git-nexus)
+      └── BLOCKED on T2 (gitnexus-server reads the volume path and
+          registry format established by gitnexus-indexer; same repo,
+          must not have concurrent branch writes)
+
+    T4: Wire GITNEXUS_MCP_URL into executor and docker-compose  (workflow)
+        └── BLOCKED on T3 (SSE endpoint path /sse and port 8002
+            must be confirmed in the server before wiring the URL)
+```

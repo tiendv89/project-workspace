@@ -1,0 +1,25 @@
+id: T1
+title: Remove source_code indexing from RAG
+repo: rag-service
+status: todo
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/gitnexus-mcp-integration-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tech_lead
+    at: "2026-05-06T08:51:15Z"
+    note: Task created from approved task breakdown.
