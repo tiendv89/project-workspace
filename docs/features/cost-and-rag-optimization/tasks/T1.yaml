@@ -1,14 +1,14 @@
 id: T1
 title: Executor — model capture + cost_usd + RAG audit + .env fix
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/cost-and-rag-optimization-T1
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-06T18:27:36+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T11:43:41.965Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/79
   status: open
@@ -64,9 +64,12 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-06T18:27:36+0700
-    note: >-
-      Reset to ready by human — last agent hit max_turns_exceeded and did not
+    note: Reset to ready by human — last agent hit max_turns_exceeded and did not
       deliver. PR may be incomplete; re-claiming required.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T11:43:41.965Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/111
   status: open
