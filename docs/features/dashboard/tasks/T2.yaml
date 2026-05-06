@@ -1,14 +1,14 @@
 id: T2
 title: GitHub Contents API client and YAML parser
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/dashboard-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-06T04:51:34Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T04:56:52.617Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/20
   status: open
@@ -143,7 +143,12 @@ log:
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-06T04:51:34Z
-    note: Manual reset from blocked to ready. Cleared result_not_written blocker for re-claim.
+    note: Manual reset from blocked to ready. Cleared result_not_written blocker for
+      re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T04:56:52.617Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/102
   status: open
