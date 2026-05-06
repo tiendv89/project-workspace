@@ -49,6 +49,14 @@ log:
     by: pentative@gmail.com
     at: 2026-05-06T11:07:03.720Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T11:07:09.968Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Executor — model capture + cost_usd + RAG audit + .env fix
+      cost-and-rag-optimization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/111
   status: open
