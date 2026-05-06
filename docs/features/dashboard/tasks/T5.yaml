@@ -1,15 +1,15 @@
 id: T5
 title: Left task tracking panel
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-06T09:48:09.499Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-06T09:50:35.820Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/22
   status: open
@@ -44,6 +44,10 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-06T09:48:09.499Z
     note: Human requested reset to ready for redesign.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-06T09:50:35.820Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
