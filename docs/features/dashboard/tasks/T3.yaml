@@ -1,16 +1,16 @@
 id: T3
 title: Board data loading hook, BoardProvider, and sync
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on:
   - T1
   - T2
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/dashboard-T3
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-06T06:58:13.458Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-06T14:00:48+0700
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/21
   status: open
@@ -53,6 +53,10 @@ log:
     by: tiendv.52@gmail.com
     note: result_not_written
     at: 2026-05-06T06:58:13.458Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T14:00:48+0700
+    note: Human requested reset to ready after result_not_written block.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/106
   status: open
