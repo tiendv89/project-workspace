@@ -89,13 +89,27 @@ The `gitnexus analyze` command writes its index to `~/.gitnexus/` by default. We
 
 ### `gitnexus-server` design
 
-A small Node.js service (new directory in `rag-service` or standalone):
-1. On startup: set `HOME=/gitnexus-data` so `gitnexus mcp` reads the shared index.
-2. Spawn `gitnexus mcp` as a child process (stdio).
-3. Bridge MCP stdio ↔ SSE using `@modelcontextprotocol/sdk` (`StdioClientTransport` → `SSEServerTransport`).
-4. Expose on `:8002`.
+A small Go service (new directory `runtime/gitnexus-server/`, alongside the existing `runtime/broker/`).
 
-The bridge is ~50 lines using the SDK. It is stateless — the index is owned by `gitnexus-indexer`; `gitnexus-server` just serves it.
+MCP is JSON-RPC 2.0. The SSE transport is just SSE carrying those JSON-RPC messages. No MCP SDK is required — the bridge is a straightforward goroutine pair per connection:
+
+```
+agent (SSE client)
+    ↕  JSON-RPC over SSE
+gitnexus-server (Go, :8002)
+    ↕  JSON-RPC over stdin/stdout
+gitnexus mcp  (Node.js subprocess, one per SSE connection)
+    ↕  reads pre-built index from /gitnexus-data volume
+```
+
+On each incoming SSE connection the Go server:
+1. Sets `HOME=/gitnexus-data` and spawns `npx gitnexus@latest mcp` as a subprocess.
+2. Starts two goroutines: one reads subprocess stdout and writes to the SSE stream; the other reads SSE POST bodies and writes to subprocess stdin.
+3. Cleans up the subprocess when the SSE connection closes.
+
+One subprocess per connection. Since the index on the named volume is read-only, concurrent agents each get their own `gitnexus mcp` process with no coordination needed. The subprocess starts in milliseconds — all the expensive work was done by `gitnexus-indexer`.
+
+The service is stateless. It owns no index data; it is a pure proxy between SSE and the subprocess stdio.
 
 ### Startup ordering
 ```
@@ -127,8 +141,8 @@ No per-task indexing. No `GITNEXUS_ENABLED` flag needed — presence of `GITNEXU
 
 | Repo | Change |
 |---|---|
-| `rag-service` | Remove `source_code` from `source_mapper._PATTERNS` + dead code cleanup in `chunker.py`; add `gitnexus-indexer` and `gitnexus-server` services |
-| `workflow` | Add `GITNEXUS_MCP_URL` to executor `index.ts` MCP config; add env var to docker-compose template and `.env.example` |
+| `rag-service` | Remove `source_code` from `source_mapper._PATTERNS` + dead code cleanup in `chunker.py`; add `gitnexus-indexer` service |
+| `workflow` | Add `gitnexus-server` Go service under `runtime/gitnexus-server/`; add `GITNEXUS_MCP_URL` to executor `index.ts` MCP config; add env var and new services to docker-compose template and `.env.example` |
 
 ## Dependency Analysis
 - Part 1 (RAG cleanup) has no dependencies. Can ship independently.
