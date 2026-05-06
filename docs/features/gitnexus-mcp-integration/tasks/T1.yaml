@@ -1,7 +1,7 @@
 id: T1
 title: Remove source_code indexing from RAG
 repo: rag-service
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: tech_lead
     at: "2026-05-06T08:51:15Z"
     note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-06T08:52:02Z"
+    note: Task activated on tasks-stage approval — dependencies met.
