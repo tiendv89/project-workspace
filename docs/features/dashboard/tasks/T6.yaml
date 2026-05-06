@@ -1,7 +1,7 @@
 id: T6
 title: Task detail sheet
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T3
 blocked_reason: null
