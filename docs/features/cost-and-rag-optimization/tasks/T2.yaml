@@ -1,15 +1,15 @@
 id: T2
 title: Orchestrator — persist token_usage + cost_usd to task YAML
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/cost-and-rag-optimization-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@liquid-labs.xyz
-  last_updated_at: 2026-05-06T14:18:27+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-06T16:35:00.993Z
 pr:
   url: null
   status: null
@@ -22,3 +22,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T16:33:10.458Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T16:35:00.993Z
+    note: Claimed via git-based claim protocol.
