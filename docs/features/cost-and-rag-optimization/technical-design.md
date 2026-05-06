@@ -13,7 +13,7 @@
 - `token-usage.ts` — already parses per-turn `assistant` events from `stream-json` stdout and sums `input_tokens` + `output_tokens`. Result is `{ input, output } | undefined`.
 - `index.ts` — attaches `token_usage` to `result.json` before writing it. Checks `BUDGET_TOKENS` env var **after the run exits** — if total tokens exceeded the limit, writes `blocked_reason: "budget_exceeded"`. This is post-hoc detection, not enforcement: Claude has already consumed the tokens before the check runs. There is no mechanism to interrupt a `claude -p` subprocess mid-turn based on token count without killing the process (which would leave no `result.json`).
 - The `assistant` event in stream-json also carries a `model` field (e.g. `"claude-sonnet-4-6"`) — **this is currently ignored and discarded**.
-- RAG MCP is conditionally wired via `--mcp-config` only when `MCP_RAG_URL` is present in the executor's own env. The executor already has `WORKSPACE_ROOT` in env but does not currently read `workspace.yaml` to self-configure the RAG URL — it relies entirely on the caller having set `MCP_RAG_URL` manually.
+- RAG MCP is conditionally wired via `--mcp-config` only when `MCP_RAG_URL` is present in the executor's env. In the Docker Compose stack, `docker-compose.yml` already sets `MCP_RAG_URL: "${MCP_RAG_URL:-http://rag-server:8000}"` — so the executor always gets it when running in the stack. The gap is that the template `.env` has `MCP_RAG_URL=http://rag-server:8000` commented out, making operators think they must set it manually when in fact the compose default already handles it.
 - The executor emits a `budget_audit` structured log event but **no** `rag_mcp_registered` / `rag_mcp_unavailable` events.
 - RAG tool_use and tool_result events appear in the stream-json stdout but are **not currently parsed** — neither query text, relevance scores, nor chunk count are captured anywhere.
 
@@ -52,7 +52,7 @@ log:
 ### Must change
 1. `token_usage` and `model` must survive past `result.json` and land in the task YAML log.
 2. USD cost must be computed and stored per run.
-3. `MCP_RAG_URL` must be auto-injected when `rag.enabled: true` in `workspace.yaml` — not rely on manual env configuration.
+3. The template `.env` must uncomment `MCP_RAG_URL=http://rag-server:8000` so the default is visible — the compose stack already provides it but the comment implies manual setup is required.
 4. The executor must emit `rag_mcp_registered` / `rag_mcp_unavailable` so operators can audit wiring.
 5. RAG query events from stream-json stdout must be parsed and emitted as structured log events (query text, scores, chunk count).
 6. Model name must be extracted from stream-json and carried through to `result.json` and task YAML.
@@ -127,7 +127,7 @@ log:
 
 #### 4.1 workspace.yaml additions
 
-Add two new sections:
+Add `model_pricing` to `workspace.yaml`:
 
 ```yaml
 model_pricing:
@@ -140,13 +140,9 @@ model_pricing:
   claude-haiku-4-5-20251001:
     input_per_mtok: 0.80
     output_per_mtok: 4.00
-
-rag:
-  url: http://localhost:8001
-  enabled: true
 ```
 
-`model_pricing` uses MTok (million token) pricing matching Anthropic's public API rates. The orchestrator applies a hardcoded fallback (`claude-sonnet-4-6` rates) if a model is not in the table.
+Uses MTok (million token) pricing matching Anthropic's public API rates. The orchestrator applies a hardcoded fallback (`claude-sonnet-4-6` rates) if a model is not in the table. No `rag` section needed — `MCP_RAG_URL` is handled by the compose stack.
 
 #### 4.2 Executor — model capture
 
@@ -174,26 +170,28 @@ In `index.ts`, after building the MCP config, emit one of:
 { "type": "rag_mcp_unavailable", "reason": "MCP_RAG_URL not set" }
 ```
 
-#### 4.4 Executor — self-configure RAG from `workspace.yaml` (enables mid-execution queries)
+#### 4.4 Template `.env` — uncomment `MCP_RAG_URL` default (enables reliable mid-execution queries)
 
-When `--mcp-config` is passed to `claude -p`, the registered MCP tools are available **for the entire session** — not just the first turn. This is how mid-execution RAG queries work: Claude can call `mcp__rag-server__rag_query` at any turn, not only from context that was pre-injected into the briefing before the session started. The pre-run `rag-context` skill injection and mid-run MCP queries are complementary, not alternatives.
+When `--mcp-config` is passed to `claude -p`, the registered MCP tools are available **for the entire session** — not just the first turn. Claude can call `mcp__rag-server__rag_query` at any turn throughout execution. The pre-run `rag-context` skill injection and mid-run MCP queries are complementary, not alternatives.
 
-The current gap is that `--mcp-config` is only added when `MCP_RAG_URL` is in the executor's env. If it is unset, Claude gets no RAG MCP at all and is limited to the briefing blob for the full session.
+The executor already reads `process.env.MCP_RAG_URL` — this is correct and does not need to change. The Docker Compose template already sets:
 
-The fix is to have the executor resolve `mcpRagUrl` from `workspace.yaml` directly, falling back to `MCP_RAG_URL` env var for backward compatibility:
-
-```ts
-// In index.ts, before building mcpConfig:
-let mcpRagUrl = process.env.MCP_RAG_URL;
-if (!mcpRagUrl && workspaceRoot) {
-  const wsConfig = readWorkspaceConfig(workspaceRoot);  // already parsed for other uses
-  if (wsConfig?.rag?.enabled && wsConfig?.rag?.url) {
-    mcpRagUrl = wsConfig.rag.url;
-  }
-}
+```yaml
+MCP_RAG_URL: "${MCP_RAG_URL:-http://rag-server:8000}"
 ```
 
-This preserves the `local-subprocess` contract: the orchestrator passes `WORKSPACE_ROOT` (which it already does), and the executor self-configures everything else. The orchestrator has no knowledge of MCP internals.
+so `MCP_RAG_URL` is always present in the executor's env when running in the compose stack (always port 8000 — same internal network). The gap is in `templates/.projects/workspace/.env` where `MCP_RAG_URL=http://rag-server:8000` is commented out, making operators think they must set it manually.
+
+The fix is to uncomment it in the template:
+
+```
+# RAG server URL passed to agents for MCP context injection.
+# Defaults to the companion rag-server in this compose file.
+# Set to empty (MCP_RAG_URL=) to disable RAG context injection.
+MCP_RAG_URL=http://rag-server:8000
+```
+
+No executor code changes required for MCP wiring.
 
 #### 4.5 Orchestrator — cost calculation + task YAML persistence
 
@@ -266,7 +264,6 @@ Emit each as a structured log event after the Claude run completes:
 
 | Dependency | On what | Unblocked by |
 |---|---|---|
-| T2 (executor self-config + audit) | T1 — needs `rag` section in `workspace.yaml` to read at runtime | Human completes T1 |
 | T3 (cost calculation) | T1 — needs `model_pricing` in `workspace.yaml` | Human completes T1 |
 | T3 (cost calculation) | T2 — needs `model` field in `result.json` | T2 ships to `workflow` |
 
@@ -286,19 +283,20 @@ Budget enforcement (`budget_usd` dispatch gate) is deferred to a follow-on featu
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: workspace.yaml — add model_pricing + rag config     [management-repo]
+T1: workspace.yaml — add model_pricing     [management-repo]
   └── Can begin now — no blockers
   └── Human task; short config edit
 
-  T2: Executor — model capture + self-configure RAG from workspace.yaml + rag_mcp events + RAG audit     [workflow]
-      └── BLOCKED on T1 (executor reads rag.url from workspace.yaml at runtime — section must exist)
+T2: Executor — model capture + rag_mcp events + RAG audit; template .env fix     [workflow]
+  └── Can begin now — no blockers
+  └── T1 and T2 run in parallel
 
-      T3: Orchestrator — cost calculation + persist token_usage/cost_usd to task YAML     [workflow]
-            └── BLOCKED on T1 (model_pricing table must exist in workspace.yaml)
-            └── BLOCKED on T2 (model field must be in result.json before orchestrator can persist it)
+  T3: Orchestrator — cost calculation + persist token_usage/cost_usd to task YAML     [workflow]
+        └── BLOCKED on T1 (model_pricing must exist in workspace.yaml)
+        └── BLOCKED on T2 (model field must be in result.json before orchestrator can use it)
 ```
 
-T1 is the only wave-1 task. T2 unblocks on T1. T3 unblocks on T1 + T2. Maximum depth is 3 steps (T1 → T2 → T3). Note: T2's dep on T1 is a runtime dep (executor reads workspace.yaml when it runs), not a compile-time dep — T2 can be coded and merged before T1 ships, but must not be tested end-to-end until T1 is in place.
+T1 and T2 start immediately in parallel. T3 unblocks when both are done. Maximum depth is 2 steps (T1/T2 → T3).
 
 ---
 
@@ -306,10 +304,11 @@ T1 is the only wave-1 task. T2 unblocks on T1. T3 unblocks on T1 + T2. Maximum d
 
 | Repo | Changes | Why |
 |---|---|---|
-| `management-repo` | `workspace.yaml` — add `model_pricing` and `rag` sections | Config-driven pricing and RAG wiring |
+| `management-repo` | `workspace.yaml` — add `model_pricing` section | Config-driven pricing |
 | `workflow` | `runtime/executors/claude/src/token-usage.ts` — add model extraction | Capture model from stream-json |
 | `workflow` | `runtime/executors/claude/src/rag-audit.ts` — new file | RAG query event extraction |
-| `workflow` | `runtime/executors/claude/src/index.ts` — self-configure RAG from workspace.yaml; emit rag_mcp events; call extractRagQueries | Self-contained RAG wiring + audit |
+| `workflow` | `runtime/executors/claude/src/index.ts` — emit rag_mcp events; call extractRagQueries | RAG audit |
+| `workflow` | `runtime/orchestrator/templates/.projects/workspace/.env` — uncomment `MCP_RAG_URL` default | Make compose default visible |
 | `workflow` | `runtime/abi/src/types.ts` — add `model?` to token_usage | ABI additive extension |
 | `workflow` | `runtime/orchestrator/src/` — result-processing path only | Cost persistence into task YAML log |
 
