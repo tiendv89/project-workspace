@@ -64,12 +64,29 @@ Feature Reviewer Daemon (new)
 ### Feature Branch Lifecycle Manager (orchestrator extension)
 
 **On orchestrator start for a feature:**
+
+The orchestrator must be idempotent — the branch may already exist if the orchestrator was restarted or the branch was created manually.
+
 ```
-git checkout main && git pull origin main
-git checkout -b feature/{feature_id}
-git push -u origin feature/{feature_id}
+git fetch origin
+
+if origin/feature/{feature_id} exists:
+    # Branch already exists — resume, do not reset
+    git checkout feature/{feature_id}
+    git pull origin feature/{feature_id}
+    # If status.yaml already has feature_branch_base_sha set, keep it (do not overwrite)
+    # If feature_branch_base_sha is unset, compute the merge-base and record it:
+    #   BASE_SHA=$(git merge-base feature/{feature_id} origin/{base_branch})
+else:
+    # Branch does not exist — create from base branch tip
+    git checkout {base_branch} && git pull origin {base_branch}
+    BASE_SHA=$(git rev-parse HEAD)
+    git checkout -b feature/{feature_id}
+    git push -u origin feature/{feature_id}
+    # Record BASE_SHA in status.yaml as feature_branch_base_sha
 ```
-Record the base branch tip SHA at creation time in the feature's `status.yaml` — used later by the drift detector as the comparison baseline.
+
+`feature_branch_base_sha` is the merge-base of the feature branch and the base branch at the moment the feature branch was first created. The drift detector uses this SHA as its comparison baseline — "what was on main when this feature started." It must never be overwritten on restart.
 
 **Task PR target change:**
 The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API (instead of the repo's default base branch). No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
