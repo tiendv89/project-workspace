@@ -1,9 +1,9 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
-feature_status: in_tdd
-current_stage: tasks
-next_action: Run tech-lead Phase 2 to generate task breakdown, then approve tasks.
+feature_status: in_design
+current_stage: product_spec
+next_action: Review and re-approve product-spec.md, then proceed to technical design.
 
 stages:
   product_spec:
@@ -17,10 +17,10 @@ stages:
         at: "2026-05-07T10:07:24Z"
         comment: null
   technical_design:
-    review_status: approved
-    reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-07T10:07:24Z"
-    review_comment: null
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: "Revalidation required — stage reset to product_spec on 2026-05-08T01:13:42+0700"
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
@@ -30,7 +30,7 @@ stages:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
-    review_comment: null
+    review_comment: "Revalidation required — stage reset to product_spec on 2026-05-08T01:13:42+0700"
     review_history: []
   handoff:
     review_status: draft
@@ -48,9 +48,14 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: "2026-05-07T10:07:24Z"
+  - stage: product_spec
+    action: reset
+    by: matthew@swellnetwork.io
+    at: "2026-05-08T01:13:42+0700"
+    note: Stage reset to product_spec; technical_design and tasks flagged for revalidation.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
+  technical_design_required: true
+  tasks_required: true
   deployment_checklist_required: false
