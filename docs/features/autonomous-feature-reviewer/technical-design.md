@@ -65,7 +65,7 @@ Feature Reviewer Daemon (new)
 
 **On orchestrator start for a feature:**
 ```
-git checkout main && git pull origin main
+git checkout main && git pull --rebase origin main
 git checkout -b feature/{feature_id}
 git push -u origin feature/{feature_id}
 ```
