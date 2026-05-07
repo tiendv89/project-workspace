@@ -1,15 +1,15 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on:
   - T3
-blocked_reason: executor_crashed
+blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-06T12:06:03.933Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-07T10:07:10+0700
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/25
   status: open
@@ -163,6 +163,10 @@ log:
     by: tiendv.52@gmail.com
     note: executor_crashed
     at: 2026-05-06T12:06:03.933Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T10:07:10+0700
+    note: Reset task to ready after executor_crashed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
