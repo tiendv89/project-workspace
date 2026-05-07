@@ -1,23 +1,31 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: tasks
+next_action: Run tech-lead Phase 2 to generate task breakdown, then approve tasks.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-05-07T10:07:24Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-07T10:07:24Z"
+        comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-05-07T10:07:24Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-07T10:07:24Z"
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -31,7 +39,15 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - stage: product_spec
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T10:07:24Z"
+  - stage: technical_design
+    action: approved
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T10:07:24Z"
 
 revalidation:
   product_spec_required: false
