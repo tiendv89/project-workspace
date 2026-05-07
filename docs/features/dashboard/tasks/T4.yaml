@@ -1,18 +1,18 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: ready
+status: in_review
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-05T14:45:00+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-07T07:39:03.060Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/26
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -22,3 +22,266 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-05-06T07:17:26.970Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:19:24.431Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T07:19:37.358Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: docs/features/dashboard/technical-design.md,
+      src/app/tasks/tasks-content.tsx,
+      docs/features/feature-status-dashboard-v2/product-spec.md"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/23"
+    at: 2026-05-06T07:34:59.442Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T15:41:52+0700
+    note: Rework according to the new design.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T08:55:26.897Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T08:55:34.653Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: src/features/board/index.ts,
+      src/features/board/components/KanbanBoard/index.tsx,
+      docs/features/dashboard/technical-design.md"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T09:01:29+0000
+    note: "Re-implementation run. Reworking Kanban board components per new design.
+      Improving TaskCard with richer metadata: PR link, dep count, actor icons.
+      FIGMA_PERSONAL_ACCESS_TOKEN not set; implementing from spec + dev-branch
+      design patterns."
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T09:16:20+0000
+    note: Redesign requested; reset task for another implementation pass.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T09:19:13.524Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T09:19:21.644Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: src/features/board/index.ts,
+      src/features/board/components/KanbanBoard/index.tsx,
+      docs/features/dashboard/technical-design.md"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T09:41:28Z
+    note: Reset task to ready for another implementation pass.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-06T09:43:22.190Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T09:43:29.517Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: max_turns_exceeded
+    at: 2026-05-06T10:04:20.102Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T10:49:35Z
+    note: Reset task to ready after max_turns_exceeded.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-06T10:51:23.097Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T10:51:30.447Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: in_review
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/23"
+    at: 2026-05-06T11:06:32.286Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T18:17:44+0700
+    note: Reset task to ready for rework.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T18:19:01+0700
+    note: Reset implementation repo PR metadata for rework.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-06T11:20:12.445Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-06T11:20:17.148Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-06T18:59:29+0700
+    note: Reset task to ready for rework.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:04:03.709Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-06T12:04:09.686Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: src/features/board/index.ts,
+      src/features/board/components/KanbanBoard/index.tsx,
+      docs/features/dashboard/technical-design.md"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: executor_crashed
+    at: 2026-05-06T12:06:03.933Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T10:07:10+0700
+    note: Reset task to ready after executor_crashed.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-07T03:09:02.635Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-07T03:09:07.144Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: executor_crashed
+    at: 2026-05-07T03:10:46.934Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T10:34:36+0700
+    note: Reset task to ready after executor_crashed.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-07T03:36:42.326Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-05-07T03:36:49.399Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: src/features/board/index.ts,
+      src/features/board/components/KanbanBoard/index.tsx,
+      docs/features/dashboard/technical-design.md"
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T10:38:33+0700
+    note: Reset task to ready for rework.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-07T03:40:19.126Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-07T03:40:24.580Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: max_turns_exceeded
+    token_usage:
+      input: 353
+      output: 53759
+    at: 2026-05-07T03:56:28.222Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T10:58:02+0700
+    note: Reset task to ready and cleared implementation PR metadata for rework.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-07T03:59:06.153Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-07T03:59:12.797Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Kanban board compound components dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/26"
+    token_usage:
+      input: 345
+      output: 49811
+      model: claude-sonnet-4-6
+    cost_usd: 0.7482
+    at: 2026-05-07T04:15:18.713Z
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-07T06:11:47.499Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-07T06:21:01+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Fixed segment bar tooltip to show human-readable status labels and added
+      next-action hint to feature row summary per Figma design spec.
+  - action: blocked
+    by: pentative@gmail.com
+    note: result_not_written
+    token_usage:
+      input: 229
+      output: 40880
+    at: 2026-05-07T06:25:29.039Z
+  - action: in_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T06:36:19Z
+    note: Manually aligned task state to in_review after implementation PR
+      https://github.com/tiendv89/digital-factory-ui/pull/26 was ready for
+      review.
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-07T06:40:45.336Z
+    note: Review dispatch claimed.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-07T06:51:26+0000
+    note: "Resolved 1 inline review thread — made Kanban board columns proportional
+      to screen width using flex-1 layout instead of fixed 200px per column. PR
+      #26 confirmed ready-for-review."
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-07T07:39:03.060Z
+    note: Review dispatch claimed.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/108
+  status: open
