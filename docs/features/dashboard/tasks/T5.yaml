@@ -1,18 +1,18 @@
 id: T5
 title: Left task tracking panel
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on:
   - T3
-blocked_reason: max_turns_exceeded
+blocked_reason: null
 branch: feature/dashboard-T5
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-06T10:11:29.337Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-07T04:34:44Z
 pr:
-  url: https://github.com/tiendv89/digital-factory-ui/pull/22
-  status: open
+  url: null
+  status: null
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -59,6 +59,10 @@ log:
     by: pentative@gmail.com
     note: max_turns_exceeded
     at: 2026-05-06T10:11:29.337Z
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T04:34:44Z
+    note: Manual reset from blocked to ready. Cleared max_turns_exceeded blocker and reset implementation PR metadata for re-claim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
