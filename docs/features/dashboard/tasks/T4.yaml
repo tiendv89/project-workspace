@@ -9,7 +9,7 @@ branch: feature/dashboard-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-07T03:56:20.530Z
+  last_updated_at: 2026-05-07T03:56:28.222Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/25
   status: open
@@ -214,6 +214,13 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Kanban board compound components dashboard
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pentative@gmail.com
+    note: max_turns_exceeded
+    token_usage:
+      input: 353
+      output: 53759
+    at: 2026-05-07T03:56:28.222Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
