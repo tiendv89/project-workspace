@@ -1,9 +1,9 @@
 feature_id: cost-and-rag-optimization
 title: Cost Accounting & RAG Runtime Optimization
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Tasks approved. T1 is ready for implementation. T2 activates when T1 is done.
+feature_status: in_handoff
+current_stage: handoff
+next_action: Handoff document written. Awaiting human review and approval to close the feature.
 
 stages:
   product_spec:
@@ -37,7 +37,7 @@ stages:
         at: 2026-05-06T07:21:37Z
         comment: null
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -53,6 +53,9 @@ history:
   - event: tasks_approved
     by: matthew@liquid-labs.xyz
     at: 2026-05-06T07:21:37Z
+  - event: in_handoff
+    by: matthew@swellnetwork.io
+    at: 2026-05-07T11:29:05+0700
 
 revalidation:
   product_spec_required: false
