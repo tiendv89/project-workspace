@@ -1,7 +1,7 @@
 id: T5
 title: Add gitnexus-mcp skill, shared usage rule, and query audit
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,20 +9,19 @@ blocked_context: null
 branch: feature/gitnexus-mcp-integration-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-07T14:56:00+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-07T09:30:21.164Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/84
+  status: merged
 workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/120
+  url: https://github.com/tiendv89/project-workspace/pull/121
   status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-07T14:56:00+0700
-    note: >-
-      Task added post-implementation — agents have gitnexus MCP wired but no
+    note: Task added post-implementation — agents have gitnexus MCP wired but no
       instruction to use it. Without this task the feature delivers
       infrastructure with no behavioural effect.
   - action: ready
@@ -32,10 +31,37 @@ log:
   - action: workspace_pr_opened
     by: matthew@swellnetwork.io
     at: 2026-05-07T14:59:17+0700
-    note: Workspace PR opened — https://github.com/tiendv89/project-workspace/pull/120
+    note: Workspace PR opened —
+      https://github.com/tiendv89/project-workspace/pull/120
   - action: scope_updated
     by: matthew@swellnetwork.io
     at: 2026-05-07T15:00:59+0700
-    note: >-
-      Added gitnexus query audit to scope — gitnexus-audit.ts mirroring
+    note: Added gitnexus query audit to scope — gitnexus-audit.ts mirroring
       rag-audit.ts, wired into index.ts to emit gitnexus_query events.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-07T08:05:07.461Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-07T08:05:20.760Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/gitnexus-mcp-integration/product-spec.md,
+      docs/features/gitnexus-mcp-integration/technical-design.md, README.md"
+    rag_query: Add gitnexus-mcp skill, shared usage rule, and query audit
+      gitnexus-mcp-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/84"
+    token_usage:
+      input: 310
+      output: 35529
+      model: claude-sonnet-4-6
+    cost_usd: 0.5338649999999999
+    at: 2026-05-07T08:19:15.979Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-07T09:30:21.164Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
