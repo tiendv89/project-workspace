@@ -1,14 +1,14 @@
 id: T6
 title: Task detail sheet
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on:
   - T3
 branch: feature/dashboard-T6
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-07T11:15:46.868Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-07T11:21:30.000Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/29
   status: open
@@ -97,7 +97,10 @@ log:
       input: 357
       output: 78566
     at: 2026-05-07T11:15:46.868Z
+  - action: in_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T11:21:30.000Z
+    note: Status set to in_review via automation.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/110
   status: open
-blocked_reason: max_turns_exceeded
