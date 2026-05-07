@@ -1,0 +1,19 @@
+id: T4
+title: Fix agent briefing + dispatch
+repo: workflow
+status: todo
+depends_on: [T2]
+blocked_reason: null
+branch: feature/autonomous-task-orchestrator-T4
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: null
+  status: not_created
+log:
+  - action: created
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-08T00:58:33+0700"
+    note: Task created during tech-lead Phase 2 task breakdown.
