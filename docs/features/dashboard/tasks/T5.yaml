@@ -1,15 +1,17 @@
 id: T5
 title: Left task tracking panel
 repo: digital-factory-ui
-status: in_review
+status: blocked
 depends_on:
   - T3
-blocked_reason: null
+blocked_reason: pr_conflict
 branch: feature/dashboard-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-07T07:47:15.800Z
+  last_updated_at: 2026-05-07T07:49:26.614Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/27
   status: open
@@ -87,12 +89,22 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.36414599999999997
     at: 2026-05-07T04:47:01.440Z
+  - action: blocked
+    by: norepy@tiendv.dev
+    at: 2026-05-07T07:49:26.614Z
+    note: "Unresolvable merge conflicts in: src/app/board/page.tsx;
+      src/features/board/index.ts. Manual resolution required."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
-conflict_state: resolving
+conflict_state: resolved
 rebase_log:
   - at: 2026-05-07T07:47:15.800Z
     action: rebase_started
     by: norepy@tiendv.dev
     note: Rebase claimed; targeting origin/main.
+  - at: 2026-05-07T07:49:26.614Z
+    action: rebase_blocked
+    by: norepy@tiendv.dev
+    note: "Unresolvable merge conflicts in: src/app/board/page.tsx;
+      src/features/board/index.ts. Manual resolution required."
