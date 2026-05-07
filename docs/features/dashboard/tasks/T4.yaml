@@ -272,9 +272,6 @@ log:
     by: pentative@gmail.com
     at: 2026-05-07T06:40:45.336Z
     note: Review dispatch claimed.
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/108
-  status: open
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-05-07T06:51:26+0000
@@ -282,3 +279,6 @@ workspace_pr:
       Resolved 1 inline review thread — made Kanban board columns proportional
       to screen width using flex-1 layout instead of fixed 200px per column.
       PR #26 confirmed ready-for-review.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/108
+  status: open
