@@ -62,6 +62,15 @@ log:
     rag_query: Schema — change_requested status + CLAUDE.md transitions
       autonomous-task-orchestrator
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-07T19:33:31+0000
+    note: Executor begun — implementing CLAUDE.md and .env.template schema changes for T1.
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/130
   status: open
