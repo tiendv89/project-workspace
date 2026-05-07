@@ -8,27 +8,22 @@
 
 Tasks currently open PRs targeting the base branch (`main`) directly. There is no feature branch. The human review surface is per-task. There is no mechanism to detect when base branch changes affect an in-progress feature.
 
-The `autonomous-task-orchestrator` feature introduces a quality gate and auto-done transition for tasks. This feature builds on top of that: it changes where task PRs land (feature branch instead of base branch), adds a handoff generation step, and introduces a drift detection agent for in-handoff features.
+The `autonomous-task-orchestrator` feature introduces: feature branch creation, task PR routing to the feature branch, quality gate, auto-done writer, handoff document generation, and the `in_handoff` transition. This feature builds on top of that: it adds a drift detection daemon that watches features the orchestrator has moved to `in_handoff`, and acts when new commits on the base branch may conflict with the in-progress feature.
 
 ## Constraints
 
-- The orchestrator (from `autonomous-task-orchestrator`) owns task PR creation — it must be updated to target the feature branch, not the base branch.
-- Feature branches must follow the existing branch naming convention extended with feature scope: `feature/{feature_id}`.
+- Feature branches and handoff documents are created by the `autonomous-task-orchestrator` — this feature does not create them.
+- Feature branches follow the naming convention: `feature/{feature_id}`.
 - Task branches continue to follow: `feature/{feature_id}-T{n}`.
 - All existing CLAUDE.md branch rules apply within the feature branch scope.
 - The feature reviewer agent must not mutate task YAMLs for tasks it does not own.
-- The feature branch PR (feature → base) is the canonical human review surface; task PRs are internal to the feature and auto-merged by the orchestrator.
+- The feature branch PR (feature → base) is opened by the orchestrator; the reviewer agent monitors it but does not create it.
 
 ## Chosen Design
 
-Two components built on top of the orchestrator:
+One new daemon, activated after the orchestrator transitions a feature to `in_handoff`:
 
-**Component 1 — Feature branch lifecycle manager** (extension to orchestrator):
-- Creates `feature/{feature_id}` from base branch at orchestrator start.
-- Configures executor agents to open task PRs targeting `feature/{feature_id}`.
-- When all tasks are `done`: generates handoff document, opens feature branch PR, transitions feature status to `in_handoff`.
-
-**Component 2 — Feature reviewer agent** (new daemon):
+**Feature reviewer daemon** (new):
 - Polls all features in `in_handoff` status.
 - On each poll, checks for new commits on the base branch since the feature branch was created.
 - Classifies impact (task-level vs feature-level) using file overlap + semantic analysis against `technical-design.md`.
@@ -37,16 +32,11 @@ Two components built on top of the orchestrator:
 ## Architecture
 
 ```
-Orchestrator (existing, extended)
+Orchestrator (from autonomous-task-orchestrator)
   │
-  ├── on start: create feature/{feature_id} from base branch
-  ├── task PRs target: feature/{feature_id}  (not main)
-  ├── on all tasks done:
-  │     generate handoff doc
-  │     open feature PR → base branch
-  │     set feature status: in_handoff
-  │
-Feature Reviewer Daemon (new)
+  └── on all tasks done: generates handoff doc, opens feature PR, sets in_handoff
+
+Feature Reviewer Daemon (this feature)
   │
   ├── poll: features with status in_handoff  (every 10 min)
   ├── for each: compare feature branch with base branch tip
@@ -61,63 +51,12 @@ Feature Reviewer Daemon (new)
 
 ## Component Designs
 
-### Feature Branch Lifecycle Manager (orchestrator extension)
-
-**On orchestrator start for a feature:**
-```
-git checkout main && git pull origin main
-git checkout -b feature/{feature_id}
-git push -u origin feature/{feature_id}
-```
-Record the base branch tip SHA at creation time in the feature's `status.yaml` — used later by the drift detector as the comparison baseline.
-
-**Task PR target change:**
-The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API (instead of the repo's default base branch). No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
-
-**Handoff trigger (all tasks done):**
-1. Generate `handoffs/handoff.md` in the management repo (see structure below).
-2. Open a PR: `feature/{feature_id}` → `{base_branch}` via GitHub API.
-3. Write the PR URL into `status.yaml` under `stages.handoff`.
-4. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`.
-5. Commit and push management repo changes on the feature branch.
-6. Notify operator via escalation channel.
-
-### Handoff Document Structure
-
-```markdown
-# Handoff — {feature_title}
-
-## Summary
-{1-3 sentence summary derived from product spec goals}
-
-## Tasks Completed
-| Task | PR | Reviewer Notes |
-|---|---|---|
-| T1 — {title} | {pr_url} | {reviewer_agent_notes} |
-...
-
-## Deviations from Technical Design
-{list of any deviations noted by executor agents or reviewer agent}
-
-## Files Changed
-{aggregate file list across all task PRs}
-
-## Follow-up Items
-{open risks or flagged items from reviewer agent notes}
-
-## Audit Trail
-| Action | Actor | Timestamp |
-|---|---|---|
-| Task T1 done | orchestrator | {ts} |
-...
-```
-
 ### Feature Reviewer Agent
 
 **Poll loop (every 10 minutes):**
 1. Read all `status.yaml` files — collect features with `feature_status: in_handoff`.
-2. For each, resolve the feature branch and base branch.
-3. Call GitHub API: `GET /repos/{owner}/{repo}/compare/{feature_branch}...{base_branch}` — get commits on base branch not yet in feature branch.
+2. For each, resolve `feature_branch`, `feature_branch_base_sha`, and base branch from `status.yaml`.
+3. Call GitHub API: `GET /repos/{owner}/{repo}/compare/{base_branch}...{feature_branch}` reversed — get commits on base branch not yet in feature branch since `feature_branch_base_sha`.
 4. If no new commits: skip.
 5. If new commits: run classification.
 
@@ -148,28 +87,26 @@ git push --force-with-lease origin feature/{feature_id}
 Notify operator: "Feature branch rebased onto new base (no design conflicts detected)."
 
 **Escalation path:**
-Generate structured report (see product spec format). Send to Slack webhook. Do not rebase. Mark feature with `drift_detected: true` and `drift_reason` in `status.yaml`. Wait for human to resolve before next poll cycle.
+Generate structured report (see product spec format). Send to Slack webhook. Do not rebase. Write `drift_detected: true` and `drift_reason` into `status.yaml` on the feature branch. Wait for human to resolve before next poll cycle.
 
 ### status.yaml additions
 
+Drift fields are written by this feature's daemon. The `feature_branch`, `feature_branch_base_sha`, and `handoff_pr_url` fields are written by the orchestrator and read (never overwritten) by this daemon.
+
 ```yaml
-feature_branch: feature/{feature_id}
-feature_branch_base_sha: abc1234   # base branch tip at feature branch creation
-handoff_pr_url: null               # set when feature PR is opened
 drift_detected: false
 drift_reason: null
 ```
 
 ## Dependency Analysis
 
-- **Depends on `autonomous-task-orchestrator`**: the feature branch lifecycle manager is an extension of the orchestrator. The reviewer daemon operates on features the orchestrator manages.
-- **GitHub API**: compare endpoint for drift detection, PR creation for feature PR. Uses existing `GITHUB_TOKEN`.
-- **Claude API**: semantic analysis call in the reviewer agent. Uses existing `ANTHROPIC_API_KEY`.
+- **Depends on `autonomous-task-orchestrator`**: the reviewer daemon only activates on features the orchestrator has moved to `in_handoff`. Feature branch creation, task PR routing, handoff document generation, and feature PR opening are all owned by the orchestrator.
+- **GitHub API**: compare endpoint for drift detection. Uses existing `GITHUB_TOKEN`.
+- **Claude API**: semantic analysis call. Uses existing `ANTHROPIC_API_KEY`.
 - **Slack webhook**: escalation. Uses `SLACK_WEBHOOK_URL`.
-- **Management repo write access**: handoff doc commit, status.yaml updates. Uses existing SSH key.
+- **Management repo write access**: `status.yaml` drift field updates. Uses existing SSH key.
 
 ## Parallelization / Blocking Analysis
 
-- Feature branch lifecycle manager (orchestrator extension) must be built before the reviewer daemon — the daemon assumes the feature branch model is in place.
-- Handoff document generation and feature PR opening can be built in parallel with the drift detection logic.
-- `status.yaml` schema additions (new fields) should be done first as T1 — both components depend on them.
+- Hard dependency on `autonomous-task-orchestrator` — the reviewer daemon cannot be tested end-to-end until the orchestrator is producing `in_handoff` features.
+- Within this feature: classification logic, auto-rebase path, and escalation path are independent code paths and can be developed in parallel. Integration testing requires the orchestrator to be in place.

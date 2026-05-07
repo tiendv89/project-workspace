@@ -1,17 +1,33 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design, then produce task breakdown.
+
+feature_branch: feature/autonomous-feature-reviewer
+feature_branch_base_sha: 8b7926b8eaeedbde4a381adcf1834a7fa9c01e65
+handoff_pr_url: null
+drift_detected: false
+drift_reason: null
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-05-07T23:33:35+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-07T23:20:52+0700"
+        comment: null
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-07T23:33:35+0700"
+        comment: >-
+          Feature focuses on feature-level review only. Task-level review is
+          handled by autonomous-task-orchestrator.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,10 +47,33 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - action: feature_branch_created
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T23:20:52+0700"
+    note: Feature branch created from main at SHA 8b7926b8eaeedbde4a381adcf1834a7fa9c01e65.
+  - action: approved
+    stage: product_spec
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T23:20:52+0700"
+    note: Product spec approved. Feature advances to technical design review.
+  - action: stage_reset
+    stage: product_spec
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T23:30:43+0700"
+    note: >-
+      Stage reset to product_spec from technical_design. technical_design artifact
+      preserved and flagged for revalidation.
+  - action: approved
+    stage: product_spec
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-07T23:33:35+0700"
+    note: >-
+      Product spec re-approved. Scope confirmed: feature covers feature-level review
+      only; task-level review is owned by autonomous-task-orchestrator.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: false
+  technical_design_required: true
   tasks_required: false
   deployment_checklist_required: false
