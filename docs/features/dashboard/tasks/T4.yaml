@@ -9,7 +9,7 @@ branch: feature/dashboard-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-07T06:11:47.499Z
+  last_updated_at: 2026-05-07T06:21:01+0000
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/26
   status: open
@@ -192,7 +192,7 @@ log:
     note: Claimed via git-based claim protocol.
   - action: rag_pre_flight
     by: tiendv.52@gmail.com
-    at: 2026-05-07T03:36:49.389Z
+    at: 2026-05-07T03:36:49.399Z
     rag_context_injected: true
     rag_summary: "Retrieved 5 chunks: src/features/board/index.ts,
       src/features/board/components/KanbanBoard/index.tsx,
@@ -249,6 +249,13 @@ log:
     by: pentative@gmail.com
     at: 2026-05-07T06:11:47.499Z
     note: Review dispatch claimed.
+  - action: comments_addressed
+    by: pentative@gmail.com
+    at: 2026-05-07T06:21:01+0000
+    note: >-
+      Resolved 1 inline review thread(s); PR converted to ready-for-review.
+      Fixed segment bar tooltip to show human-readable status labels and added
+      next-action hint to feature row summary per Figma design spec.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
