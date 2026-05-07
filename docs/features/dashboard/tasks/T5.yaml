@@ -1,15 +1,15 @@
 id: T5
 title: Left task tracking panel
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-07T04:34:44Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-05-07T04:36:57.633Z
 pr:
   url: null
   status: null
@@ -62,7 +62,12 @@ log:
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-07T04:34:44Z
-    note: Manual reset from blocked to ready. Cleared max_turns_exceeded blocker and reset implementation PR metadata for re-claim.
+    note: Manual reset from blocked to ready. Cleared max_turns_exceeded blocker and
+      reset implementation PR metadata for re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-05-07T04:36:57.633Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
