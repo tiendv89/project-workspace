@@ -73,7 +73,11 @@ git fetch origin
 if origin/feature/{feature_id} exists:
     # Branch already exists — resume, do not reset
     git checkout feature/{feature_id}
-    git pull origin feature/{feature_id}
+    if git pull origin feature/{feature_id} fails (non-fast-forward / force-pushed):
+        # Remote was force-pushed; discard stale local branch and re-checkout clean
+        git checkout {base_branch}
+        git branch -D feature/{feature_id}
+        git checkout -b feature/{feature_id} origin/feature/{feature_id}
     # If status.yaml already has feature_branch_base_sha set, keep it (do not overwrite)
     # If feature_branch_base_sha is unset, compute the merge-base and record it:
     #   BASE_SHA=$(git merge-base feature/{feature_id} origin/{base_branch})
