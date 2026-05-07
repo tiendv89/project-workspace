@@ -1,17 +1,17 @@
 id: T1
 title: Schema — change_requested status + CLAUDE.md transitions
 repo: management-repo
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-07T19:27:12.204Z
+  last_updated_at: 2026-05-07T19:38:09.620Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/project-workspace/pull/130
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -65,12 +65,13 @@ log:
   - action: started
     by: norepy@tiendv.dev
     at: 2026-05-07T19:33:31+0000
-    note: Executor begun — implementing CLAUDE.md and .env.template schema changes for T1.
+    note: Executor begun — implementing CLAUDE.md and .env.template schema changes
+      for T1.
     tokens:
       input: 0
       output: 0
       total: 0
-      cost_usd: 0.000
+      cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/130
   status: open
