@@ -1,15 +1,15 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on:
   - T3
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-07T06:25:29.039Z
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-07T06:36:19Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/26
   status: open
@@ -262,6 +262,11 @@ log:
       input: 229
       output: 40880
     at: 2026-05-07T06:25:29.039Z
+  - action: in_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-07T06:36:19Z
+    note: Manually aligned task state to in_review after implementation PR
+      https://github.com/tiendv89/digital-factory-ui/pull/26 was ready for review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
