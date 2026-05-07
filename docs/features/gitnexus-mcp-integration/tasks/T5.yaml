@@ -1,5 +1,5 @@
 id: T5
-title: Add gitnexus-mcp technical skill and shared usage rule
+title: Add gitnexus-mcp skill, shared usage rule, and query audit
 repo: workflow
 status: ready
 depends_on:
@@ -33,3 +33,9 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-07T14:59:17+0700
     note: Workspace PR opened — https://github.com/tiendv89/project-workspace/pull/120
+  - action: scope_updated
+    by: matthew@swellnetwork.io
+    at: 2026-05-07T15:00:59+0700
+    note: >-
+      Added gitnexus query audit to scope — gitnexus-audit.ts mirroring
+      rag-audit.ts, wired into index.ts to emit gitnexus_query events.
