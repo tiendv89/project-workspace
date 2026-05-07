@@ -1,9 +1,9 @@
 feature_id: gitnexus-mcp-integration
 title: GitNexus Code-Graph MCP Integration
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Tasks approved — T1 and T2 are ready for implementation.
+feature_status: in_handoff
+current_stage: handoff
+next_action: Handoff document written — awaiting human approval to close feature.
 
 stages:
   product_spec:
@@ -37,7 +37,7 @@ stages:
         at: "2026-05-06T08:52:02Z"
         comment: null
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -56,6 +56,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: "2026-05-06T08:52:02Z"
+  - stage: handoff
+    action: submitted
+    by: matthew@swellnetwork.io
+    at: "2026-05-07T16:42:39+0700"
 
 revalidation:
   product_spec_required: false
