@@ -9,7 +9,7 @@ branch: feature/dashboard-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-07T06:40:45.336Z
+  last_updated_at: 2026-05-07T07:39:03.060Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/26
   status: open
@@ -275,10 +275,13 @@ log:
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-05-07T06:51:26+0000
-    note: >-
-      Resolved 1 inline review thread — made Kanban board columns proportional
-      to screen width using flex-1 layout instead of fixed 200px per column.
-      PR #26 confirmed ready-for-review.
+    note: "Resolved 1 inline review thread — made Kanban board columns proportional
+      to screen width using flex-1 layout instead of fixed 200px per column. PR
+      #26 confirmed ready-for-review."
+  - action: review_started
+    by: pentative@gmail.com
+    at: 2026-05-07T07:39:03.060Z
+    note: Review dispatch claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
