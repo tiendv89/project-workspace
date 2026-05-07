@@ -50,6 +50,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-07T19:27:35.982Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-07T19:27:41.830Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-task-orchestrator/technical-design.md,
+      runtime/orchestrator/src/eligibility/match.ts,
+      docs/features/autonomous-task-orchestrator/product-spec.md"
+    rag_query: Orchestrator config in workspace.yaml autonomous-task-orchestrator
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/129
   status: open
