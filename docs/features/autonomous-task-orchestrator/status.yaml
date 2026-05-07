@@ -1,9 +1,11 @@
 feature_id: autonomous-task-orchestrator
 title: Autonomous Task Orchestrator
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown in tasks.md and tasks/T<n>.yaml files, then submit for approval.
+next_action: >-
+  Tasks approved. T1 and T7 are ready for agents to pick up.
+  T2 and T3 unblock once T1 is done. T4, T5, T6 unblock once T2 is done.
 
 feature_branch: feature/autonomous-task-orchestrator
 feature_branch_base_sha: 8b7926b8eaeedbde4a381adcf1834a7fa9c01e65
@@ -33,11 +35,15 @@ stages:
         at: "2026-05-08T00:56:24+0700"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: "2026-05-08T01:01:34+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@liquid-labs.xyz
+        at: "2026-05-08T01:01:34+0700"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -60,6 +66,11 @@ history:
     by: matthew@liquid-labs.xyz
     at: "2026-05-08T00:56:24+0700"
     note: Technical design approved. Feature advances to task breakdown.
+  - action: approved
+    stage: tasks
+    by: matthew@liquid-labs.xyz
+    at: "2026-05-08T01:01:34+0700"
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 and T7 activated.
 
 revalidation:
   product_spec_required: false
