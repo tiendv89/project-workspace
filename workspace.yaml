@@ -39,6 +39,9 @@ model_policy:
   suggested_next_step:
     allowed: [claude-haiku-4-5-20251001]
     default: claude-haiku-4-5-20251001
+  conflict_resolution:
+    allowed: [claude-sonnet-4-6]
+    default: claude-sonnet-4-6
 
 automation:
   enabled: false
