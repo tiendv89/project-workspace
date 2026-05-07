@@ -1,15 +1,15 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: in_review
+status: blocked
 depends_on:
   - T3
-blocked_reason: null
+blocked_reason: result_not_written
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-07T06:21:01+0000
+  last_updated_at: 2026-05-07T06:25:21.987Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/26
   status: open
@@ -252,8 +252,7 @@ log:
   - action: comments_addressed
     by: pentative@gmail.com
     at: 2026-05-07T06:21:01+0000
-    note: >-
-      Resolved 1 inline review thread(s); PR converted to ready-for-review.
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
       Fixed segment bar tooltip to show human-readable status labels and added
       next-action hint to feature row summary per Figma design spec.
 workspace_pr:
