@@ -52,6 +52,12 @@ The orchestrator will be implemented as a Node.js or Python daemon invoked by th
 ┌─────────────────────────────────────────────────────────┐
 │                    Orchestrator Daemon                   │
 │                                                          │
+│  ┌──────────────────────────────────────────────────┐   │
+│  │  Feature Branch Lifecycle Manager                │   │
+│  │  (on start: create/sync feature/{feature_id},    │   │
+│  │   record base SHA in status.yaml)                │   │
+│  └──────────────────────────────────────────────────┘   │
+│                                                          │
 │  ┌──────────────┐    ┌───────────────┐                  │
 │  │  Task Graph   │    │  Dispatch     │                  │
 │  │  Poller       │───▶│  Controller   │──▶ executor agent│
@@ -69,6 +75,12 @@ The orchestrator will be implemented as a Node.js or Python daemon invoked by th
 │                    │  Auto-Done       │                   │
 │                    │  Writer          │                   │
 │                    │  (mgmt repo)     │                   │
+│                    └─────────┬────────┘                  │
+│                    ┌─────────▼────────┐                  │
+│                    │  Handoff Trigger │                   │
+│                    │  (all tasks done)│                   │
+│                    │  handoff.md +    │                   │
+│                    │  feature PR open │                   │
 │                    └─────────┬────────┘                  │
 │                              │ escalate                  │
 │                    ┌─────────▼────────┐                  │
@@ -126,6 +138,80 @@ When the quality gate passes:
 - Marks task `blocked` in the YAML with `blocked_reason` and `blocked_suggestion`.
 - The human resolves the block and the orchestrator resumes on the next poll.
 
+### Feature Branch Lifecycle Manager
+
+Runs at orchestrator start, before the main dispatch loop.
+
+The orchestrator must be idempotent — the branch may already exist if the orchestrator was restarted or the branch was created manually.
+
+```
+git fetch origin
+
+if origin/feature/{feature_id} exists:
+    # Branch already exists — resume, do not reset
+    git checkout feature/{feature_id}
+    if git pull origin feature/{feature_id} fails (non-fast-forward / force-pushed):
+        # Remote was force-pushed; discard stale local branch and re-checkout clean
+        git checkout {base_branch}
+        git branch -D feature/{feature_id}
+        git checkout -b feature/{feature_id} origin/feature/{feature_id}
+    # If status.yaml already has feature_branch_base_sha set, keep it (do not overwrite)
+    # If feature_branch_base_sha is unset, compute the merge-base and record it:
+    #   BASE_SHA=$(git merge-base feature/{feature_id} origin/{base_branch})
+else:
+    # Branch does not exist — create from base branch tip
+    git checkout {base_branch} && git pull origin {base_branch}
+    BASE_SHA=$(git rev-parse HEAD)
+    git checkout -b feature/{feature_id}
+    git push -u origin feature/{feature_id}
+    # Record BASE_SHA in status.yaml as feature_branch_base_sha
+```
+
+`feature_branch_base_sha` is the merge-base of the feature branch and the base branch at first creation. The drift detector (from `autonomous-feature-reviewer`) uses this SHA as its comparison baseline — "what was on main when this feature started." It must never be overwritten on restart.
+
+**Task PR target:** The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API. No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
+
+### Handoff Trigger
+
+Activates when the Auto-Done Writer transitions the last task to `done`.
+
+1. Generate `handoffs/handoff.md` in the management repo (see structure below).
+2. Open a PR: `feature/{feature_id}` → `{base_branch}` via GitHub API.
+3. Write the PR URL into `status.yaml` under `stages.handoff` and `handoff_pr_url`.
+4. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`.
+5. Commit and push management repo changes on the feature branch.
+6. Notify operator via escalation channel.
+
+### Handoff Document Structure
+
+```markdown
+# Handoff — {feature_title}
+
+## Summary
+{1-3 sentence summary derived from product spec goals}
+
+## Tasks Completed
+| Task | PR | Reviewer Notes |
+|---|---|---|
+| T1 — {title} | {pr_url} | {reviewer_agent_notes} |
+...
+
+## Deviations from Technical Design
+{list of any deviations noted by executor agents or reviewer agent}
+
+## Files Changed
+{aggregate file list across all task PRs}
+
+## Follow-up Items
+{open risks or flagged items from reviewer agent notes}
+
+## Audit Trail
+| Action | Actor | Timestamp |
+|---|---|---|
+| Task T1 done | orchestrator | {ts} |
+...
+```
+
 ## Task YAML Schema Changes
 
 Add `orchestrator` as a valid actor in `execution.actor_type`:
@@ -144,10 +230,12 @@ No other schema changes.
 ## Dependency Analysis
 
 - Depends on existing task YAML schema (stable, no changes required beyond actor type).
-- Depends on GitHub API for CI status and PR diff (no new auth required — uses existing `GITHUB_TOKEN`).
-- Depends on Claude API for reviewer agent (uses existing `ANTHROPIC_API_KEY`).
-- Depends on Slack webhook for escalation (new config value: `SLACK_WEBHOOK_URL`).
+- Depends on GitHub API for CI status, PR diff, PR creation (feature branch PR), and branch compare. Uses existing `GITHUB_TOKEN`.
+- Depends on Claude API for reviewer agent. Uses existing `ANTHROPIC_API_KEY`.
+- Depends on Slack webhook for escalation. New config value: `SLACK_WEBHOOK_URL`.
+- Depends on management repo SSH write access for feature branch creation, status.yaml updates, and handoff doc commit. Uses existing `SSH_KEY_PATH`.
 - Executor agents are unchanged.
+- `autonomous-feature-reviewer` is a downstream consumer — it activates on features this orchestrator moves to `in_handoff`. No build dependency; both can be built in parallel.
 
 ## Parallelization / Blocking Analysis
 
@@ -155,4 +243,6 @@ Tasks T1 (poller + dispatch), T2 (quality gate), T3 (reviewer agent), and T4 (au
 
 T5 (escalation handler) can be built in parallel with T2–T4 — it only requires the dispatch controller interface from T1.
 
-T6 (schema + CLAUDE.md update) and T7 (orchestrator config in workspace.yaml) are independent and can be done in parallel with T1.
+T6 (feature branch lifecycle manager + handoff trigger) depends on T4 (auto-done writer) for the handoff trigger, but branch creation logic can be built in parallel with T1.
+
+T7 (schema + CLAUDE.md update) and T8 (orchestrator config in workspace.yaml) are independent and can be done in parallel with T1.
