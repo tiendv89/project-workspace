@@ -1,15 +1,15 @@
 id: T4
 title: Kanban board compound components
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
 branch: feature/dashboard-T4
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-07T10:58:02+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-07T03:59:06.153Z
 pr:
   url: null
   status: null
@@ -225,6 +225,10 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-07T10:58:02+0700
     note: Reset task to ready and cleared implementation PR metadata for rework.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-07T03:59:06.153Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/108
   status: open
