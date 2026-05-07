@@ -51,14 +51,19 @@ The orchestrator reads task YAMLs and dispatches agents based purely on task sta
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│          Orchestrator — new concerns added to runOneCycle         │
-│          Task YAML status is the only dispatch signal             │
+│                    Orchestrator Daemon                             │
 │                                                                   │
-│  Each poll cycle:                                                 │
+│  On start (once):                                                 │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │  Feature Branch Lifecycle Manager                          │  │
+│  │  create/sync feature/{feature_id}, record base SHA         │  │
+│  └────────────────────────────────────────────────────────────┘  │
 │                                                                   │
-│  status=ready           ──▶ impl agent    (kind=impl)             │
-│  status=change_requested ──▶ fix agent    (kind=impl)             │
-│  status=in_review        ──▶ reviewer     (kind=review)           │
+│  Each poll cycle (30s):                                           │
+│                                                                   │
+│  status=ready            ──▶ impl agent    (kind=impl)            │
+│  status=change_requested ──▶ fix agent     (kind=impl)            │
+│  status=in_review        ──▶ reviewer      (kind=review)          │
 │                                │                                  │
 │                          reap loop                                │
 │                                │                                  │
@@ -74,13 +79,54 @@ The orchestrator reads task YAMLs and dispatches agents based purely on task sta
 │             │            │ Writer     │     │ Handler   │       │
 │             │            │ done +     │     │ Slack +   │       │
 │             │            │ cascade    │     │ blocked   │       │
-│             │            └────────────┘     └───────────┘       │
+│             │            └─────┬──────┘     └───────────┘       │
+│             │                  │ all tasks done                  │
+│             │            ┌─────▼──────┐                          │
+│             │            │  Handoff   │                          │
+│             │            │  Trigger   │                          │
+│             │            │  handoff.md│                          │
+│             │            │  + feature │                          │
+│             │            │  PR open   │                          │
+│             │            └────────────┘                          │
 │             │                                                     │
 │             └──▶ next cycle picks up change_requested             │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Designs
+
+### Feature Branch Lifecycle Manager
+
+Runs at orchestrator start, before the main dispatch loop.
+
+The orchestrator must be idempotent — the branch may already exist if the orchestrator was restarted or the branch was created manually.
+
+```
+git fetch origin
+
+if origin/feature/{feature_id} exists:
+    # Branch already exists — resume, do not reset
+    git checkout feature/{feature_id}
+    if git pull origin feature/{feature_id} fails (non-fast-forward / force-pushed):
+        # Remote was force-pushed; discard stale local branch and re-checkout clean
+        git checkout {base_branch}
+        git branch -D feature/{feature_id}
+        git checkout -b feature/{feature_id} origin/feature/{feature_id}
+    # If status.yaml already has feature_branch_base_sha set, keep it (do not overwrite)
+    # If feature_branch_base_sha is unset, compute the merge-base and record it:
+    #   BASE_SHA=$(git merge-base feature/{feature_id} origin/{base_branch})
+else:
+    # Branch does not exist — create from base branch tip
+    git checkout {base_branch} && git pull origin {base_branch}
+    BASE_SHA=$(git rev-parse HEAD)
+    git checkout -b feature/{feature_id}
+    git push -u origin feature/{feature_id}
+    # Record BASE_SHA in status.yaml as feature_branch_base_sha
+```
+
+`feature_branch_base_sha` is the merge-base of the feature branch and the base branch at first creation. The drift detector (`autonomous-feature-reviewer`) uses this SHA as its comparison baseline — "what was on main when this feature started." It must never be overwritten on restart.
+
+**Task PR target:** The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API. No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
 
 ### Task Graph Poller
 Reads all `tasks/*.yaml` files each cycle and routes by status:
@@ -195,6 +241,48 @@ When the quality gate passes:
 2. Writes `done` log entry to the task YAML (`actor: orchestrator`, real timestamp).
 3. Runs auto-ready cascade: finds tasks whose `depends_on` are now all `done`, transitions them `todo → ready`, appends log entries.
 4. Commits all changes and pushes to the feature branch.
+5. After committing, checks if all tasks for the feature are now `done` — if so, triggers the Handoff Trigger.
+
+### Handoff Trigger
+
+Activates when the Auto-Done Writer transitions the **last** task to `done`.
+
+1. Generate `handoffs/handoff.md` in the management repo (see structure below).
+2. Open a PR: `feature/{feature_id}` → `{base_branch}` via GitHub API.
+3. Write the PR URL into `status.yaml` under `stages.handoff` and `handoff_pr_url`.
+4. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`.
+5. Commit and push management repo changes on the feature branch.
+6. Notify operator via escalation channel.
+
+### Handoff Document Structure
+
+```markdown
+# Handoff — {feature_title}
+
+## Summary
+{1-3 sentence summary derived from product spec goals}
+
+## Tasks Completed
+| Task | PR | Reviewer Notes |
+|---|---|---|
+| T1 — {title} | {pr_url} | {reviewer_agent_notes} |
+...
+
+## Deviations from Technical Design
+{list of any deviations noted by executor agents or reviewer agent}
+
+## Files Changed
+{aggregate file list across all task PRs}
+
+## Follow-up Items
+{open risks or flagged items from reviewer agent notes}
+
+## Audit Trail
+| Action | Actor | Timestamp |
+|---|---|---|
+| Task T1 done | orchestrator | {ts} |
+...
+```
 
 ### Escalation Handler
 - Sends a Slack webhook message with: feature ID, task ID, reason, PR URL, suggested action.
@@ -244,30 +332,48 @@ in_review → done               (human, or reviewer agent when CI + rubric pass
 change_requested → in_progress (fix agent — same first-push-wins claim as ready → in_progress)
 ```
 
+### status.yaml additions
+
+These fields are written by the orchestrator and read (never overwritten) by the `autonomous-feature-reviewer` drift daemon:
+
+```yaml
+feature_branch: feature/{feature_id}
+feature_branch_base_sha: abc1234   # base branch tip at feature branch creation — never overwritten on restart
+handoff_pr_url: null               # set by Handoff Trigger when feature PR is opened
+drift_detected: false              # written by autonomous-feature-reviewer
+drift_reason: null                 # written by autonomous-feature-reviewer
+```
+
 ## Dependency Analysis
 
 - Depends on existing task YAML schema — adds `change_requested` status and new log actions.
 - Requires a new `review-pr` skill (`workflow/technical_skills/review-pr/`) with `references/review_criteria.md` carrying the full evaluation rubric.
 - `handleDraftReviews` (`dispatch-draft-review.ts`) is **removed** by this feature.
-- GitHub API (CI checks, PR reviews) is called by the reviewer executor, not the orchestrator — no new orchestrator-level auth required.
+- GitHub API (CI checks, PR reviews, PR creation for feature branch PR, branch compare) is used by the reviewer executor and Handoff Trigger. Uses existing `GITHUB_TOKEN`.
 - Depends on Claude API for the reviewer executor (uses existing `ANTHROPIC_API_KEY`).
 - Depends on Slack webhook for escalation (new config value: `SLACK_WEBHOOK_URL`).
+- Depends on management repo SSH write access for feature branch creation, `status.yaml` updates, and handoff doc commit. Uses existing `SSH_KEY_PATH`.
 - `REVIEWER_MAX_CYCLES` — optional env var controlling the review loop limit (default `3`). Must be documented in `.env.template`.
 - `EXECUTOR_MAX_RETRIES` — optional env var controlling the max-turns retry limit (default `3`). Must be documented in `.env.template`.
 - Impl executor agents are unchanged; fix agents reuse the same `kind=impl` result contract with a different briefing.
+- `autonomous-feature-reviewer` is a downstream consumer — it activates on features this orchestrator moves to `in_handoff`. No build dependency; both can be built in parallel.
 
 ## Parallelization / Blocking Analysis
 
 External dependencies: none blocking. `ANTHROPIC_API_KEY` and `GITHUB_TOKEN` are already assumed present; Slack webhook is optional until T6.
 
 ```
-T1: Schema + CLAUDE.md — add `change_requested` status, new log actions
-    (`reviewer_started`, `fix_started`, `retried`), new transitions,
-    `.env.template` entries for REVIEWER_MAX_CYCLES / EXECUTOR_MAX_RETRIES /
-    SLACK_WEBHOOK_URL. Remove handleDraftReviews from orchestrator.
+T1: Schema + CLAUDE.md + status.yaml fields — add `change_requested` status,
+    new log actions (`reviewer_started`, `fix_started`, `retried`), new
+    transitions, document status.yaml feature-branch fields
+    (feature_branch, feature_branch_base_sha, handoff_pr_url,
+    drift_detected, drift_reason), .env.template entries for
+    REVIEWER_MAX_CYCLES / EXECUTOR_MAX_RETRIES / SLACK_WEBHOOK_URL.
+    Remove handleDraftReviews from orchestrator.
   └── Can begin now — no blockers
 
-T7: Orchestrator config — workspace.yaml entries for the new env vars above
+T7: Orchestrator config — workspace.yaml orchestrator block with
+    poll_interval, reviewer_max_cycles, executor_max_retries, escalation
   └── Can begin now — no blockers
   └── T1 and T7 run in parallel
 
@@ -278,13 +384,19 @@ T7: Orchestrator config — workspace.yaml entries for the new env vars above
       └── BLOCKED on T1 (change_requested status and log actions must be
           frozen before the routing table and claim entries are implemented)
 
+  T8: Feature Branch Lifecycle Manager — pre-loop step: idempotent
+      create/sync of feature/{feature_id}, records feature_branch_base_sha
+      in status.yaml (never overwrites), sets task PR base to feature branch
+      └── BLOCKED on T1 (status.yaml field schema must be settled first)
+      └── Can run in parallel with T2 once T1 is done
+
     T3: review-pr skill — create workflow/technical_skills/review-pr/ with
         references/review_criteria.md, CI check logic, rubric evaluation,
         GitHub APPROVE / REQUEST_CHANGES posting, cycle limit via
         MAX_REVIEW_CYCLES env var, writes result.json
         └── BLOCKED on T1 (reviewer_started log action and result schema
             must be settled)
-        └── Can run in parallel with T2 once T1 is done
+        └── Can run in parallel with T2 and T8 once T1 is done
 
     T4: Fix agent — briefing template for fix-agent executor, dispatch from
         change_requested status, reads REQUEST_CHANGES review URL from task
@@ -293,7 +405,8 @@ T7: Orchestrator config — workspace.yaml entries for the new env vars above
             and claim protocol)
 
     T5: Auto-done writer — on dispatchReviewResult terminal_status=passed:
-        write done log entry + auto-ready cascade + push to feature branch
+        write done log entry + auto-ready cascade + push to feature branch;
+        exposes all-tasks-done hook for T9 to attach the Handoff Trigger
         └── BLOCKED on T2 (dispatchReviewResult skeleton must exist)
         └── Can run in parallel with T4
 
@@ -301,4 +414,10 @@ T7: Orchestrator config — workspace.yaml entries for the new env vars above
         Slack webhook message + mutate task to blocked + blocked_reason
         └── BLOCKED on T2 (dispatchReviewResult skeleton must exist)
         └── Can run in parallel with T4 and T5
+
+      T9: Handoff Trigger + document generation — fires after Auto-Done Writer
+          detects all tasks done: generate handoff.md, open feature PR,
+          write handoff_pr_url, transition feature_status to in_handoff
+          └── BLOCKED on T5 (all-tasks-done hook must exist)
+          └── BLOCKED on T8 (feature branch must exist to open the PR against)
 ```

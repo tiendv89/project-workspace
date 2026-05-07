@@ -1,0 +1,21 @@
+id: T8
+title: Feature Branch Lifecycle Manager
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+branch: feature/autonomous-task-orchestrator-T8
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: null
+  status: not_created
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: "2026-05-08T01:33:39+0700"
+    note: >-
+      Task added during task breakdown revision to cover Feature Branch
+      Lifecycle Manager — missing from original T1–T7 breakdown.

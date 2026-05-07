@@ -7,20 +7,22 @@
 
 | ID | Wave | Title | Repo | Depends on |
 |---|---|---|---|---|
-| T1 | 1 | Schema — `change_requested` status + CLAUDE.md transitions | management-repo | — |
+| T1 | 1 | Schema — `change_requested` status + CLAUDE.md transitions + status.yaml fields | management-repo | — |
 | T7 | 1 | Orchestrator config in workspace.yaml | management-repo | — |
 | T2 | 2 | Orchestrator dispatch controller | workflow | T1 |
 | T3 | 2 | `review-pr` skill | workflow | T1 |
+| T8 | 2 | Feature Branch Lifecycle Manager | workflow | T1 |
 | T4 | 3 | Fix agent briefing + dispatch | workflow | T2 |
 | T5 | 3 | Auto-done writer | workflow | T2 |
 | T6 | 3 | Escalation handler | workflow | T2 |
+| T9 | 4 | Handoff Trigger + document generation | workflow | T5, T8 |
 
 ---
 
-## T1 — Schema: `change_requested` status + CLAUDE.md transitions
+## T1 — Schema: `change_requested` status + CLAUDE.md transitions + status.yaml fields
 
 ### Description
-Adds the `change_requested` task status and all supporting schema changes to the management repo. This is the foundation that T2 and T3 depend on — both need the status enum and log actions to be settled before writing orchestrator code that reads and writes them.
+Adds the `change_requested` task status, all supporting schema changes, and the new `status.yaml` feature-branch fields to the management repo. This is the foundation that T2, T3, and T8 depend on — all need the status enum, log actions, and status.yaml schema settled before writing orchestrator code that reads and writes them.
 
 Changes are confined to `CLAUDE.md` and `.env.template` in the management repo. No code changes.
 
@@ -33,6 +35,12 @@ Changes are confined to `CLAUDE.md` and `.env.template` in the management repo. 
   - `in_review → done` (human, or reviewer agent when CI + rubric pass)
   - `change_requested → in_progress` (fix agent — same first-push-wins claim as `ready → in_progress`)
 - [ ] Add `reviewer_started`, `fix_started`, `retried` to the task log actions vocabulary in CLAUDE.md
+- [ ] Document the new `status.yaml` feature-branch fields in CLAUDE.md (schema reference section):
+  - `feature_branch: feature/{feature_id}` — written by orchestrator at start; read by drift daemon
+  - `feature_branch_base_sha: <sha>` — merge-base at branch creation; never overwritten on restart
+  - `handoff_pr_url: null` — written by Handoff Trigger when feature PR is opened
+  - `drift_detected: false` — written by `autonomous-feature-reviewer` daemon
+  - `drift_reason: null` — written by `autonomous-feature-reviewer` daemon
 - [ ] Add entries to `.env.template`:
   - `REVIEWER_MAX_CYCLES=3` — max review+fix cycles before escalation
   - `EXECUTOR_MAX_RETRIES=3` — max max-turns retries before blocking
@@ -161,6 +169,34 @@ Implements the `terminal_status: passed` branch of `dispatchReviewResult` (the s
 
 ---
 
+## T8 — Feature Branch Lifecycle Manager
+
+### Description
+Implements the pre-loop orchestrator step that creates or syncs the feature branch before any task dispatch begins. The orchestrator must be idempotent — the branch may already exist from a previous run or manual creation.
+
+On first run: checks out the base branch, records the tip SHA as `feature_branch_base_sha` in `status.yaml`, creates `feature/{feature_id}`, pushes to origin. On subsequent runs: re-checks out the existing branch; handles the force-push recovery case (remote diverged) by saving local work, resetting, and re-applying only missing changes.
+
+Also configures the orchestrator to pass `base: feature/{feature_id}` when creating task PRs via the GitHub API — task branches merge into the feature branch, not directly into main.
+
+`feature_branch_base_sha` is the baseline the `autonomous-feature-reviewer` drift daemon uses to detect base-branch divergence. It must never be overwritten on restart.
+
+### Required skills
+- typescript-best-practices
+- backend-engineer
+
+### Subtasks
+- [ ] Create `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts`:
+  - `git fetch origin`
+  - If `origin/feature/{feature_id}` exists: checkout, pull; on non-fast-forward: save patch, reset to origin branch, re-apply only missing changes
+  - If `origin/feature/{feature_id}` does not exist: checkout base branch, pull, capture `BASE_SHA=$(git rev-parse HEAD)`, create and push feature branch
+  - Read `status.yaml`; if `feature_branch_base_sha` is unset, compute via `git merge-base` and write it; never overwrite if already set
+  - Write `feature_branch: feature/{feature_id}` into `status.yaml` if unset; commit and push to feature branch
+- [ ] Call `lifecycle-manager` at orchestrator start in `main.ts`, before `runOneCycle` begins
+- [ ] Update PR creation in the dispatch controller to pass `base: feature/{feature_id}` instead of the repo's default base branch
+- [ ] Add tests: fresh start (branch doesn't exist); restart (branch exists, clean); restart after force-push (branch diverged)
+
+---
+
 ## T6 — Escalation handler
 
 ### Description
@@ -178,3 +214,37 @@ Implements the `terminal_status: escalate` branch of `dispatchReviewResult`. Pos
   - Commit and push to the task's feature branch
 - [ ] Emit `task_escalated` event
 - [ ] Add tests: escalation with Slack configured; escalation with Slack URL absent (graceful skip)
+
+---
+
+## T9 — Handoff Trigger + document generation
+
+### Description
+Implements the final step of the orchestrator lifecycle: when the Auto-Done Writer (T5) marks the last task `done`, the orchestrator generates a handoff document, opens the feature branch PR, and transitions the feature to `in_handoff`.
+
+Depends on T8 (feature branch must exist) and T5 (all-tasks-done detection must be in place). Activates inside the Auto-Done Writer after the auto-ready cascade — if no tasks remain in a non-terminal state, the Handoff Trigger fires.
+
+### Required skills
+- typescript-best-practices
+- backend-engineer
+
+### Subtasks
+- [ ] Add all-tasks-done detection in `dispatch-review-result.ts` (passed branch, after auto-ready cascade):
+  - After committing the cascade, re-read all task YAMLs for the feature
+  - If every task is `done` or `cancelled` (and at least one is `done`): invoke Handoff Trigger
+- [ ] Create `runtime/orchestrator/src/handoff/handoff-trigger.ts`:
+  - Generate `docs/features/{feature_id}/handoffs/handoff.md` from the template in the technical design:
+    - Summary (from product-spec.md goals)
+    - Tasks Completed table (task ID, title, PR URL, reviewer notes from task log)
+    - Deviations from Technical Design (from reviewer notes)
+    - Files Changed (aggregate from all task PRs via GitHub API)
+    - Follow-up Items
+    - Audit Trail (from task YAML logs)
+  - Commit `handoff.md` to the feature branch; push to management repo
+  - Open PR via GitHub API: `feature/{feature_id}` → `{base_branch}`; use `GITHUB_TOKEN`
+  - Write `handoff_pr_url` into `status.yaml` under `stages.handoff.pr_url` and top-level `handoff_pr_url`
+  - Transition `feature_status: in_handoff`, `current_stage: handoff` in `status.yaml`
+  - Commit and push `status.yaml` changes to feature branch
+  - Notify operator via `SLACK_WEBHOOK_URL` (if set): feature ID, handoff PR URL, summary
+- [ ] Emit `feature_handoff_triggered` and `handoff_pr_opened` events
+- [ ] Add tests: all tasks done triggers handoff; some tasks cancelled + rest done still triggers; one task still in_progress does not trigger

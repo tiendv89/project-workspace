@@ -1,0 +1,21 @@
+id: T9
+title: Handoff Trigger + document generation
+repo: workflow
+status: todo
+depends_on: [T5, T8]
+blocked_reason: null
+branch: feature/autonomous-task-orchestrator-T9
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: null
+  status: not_created
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: "2026-05-08T01:33:39+0700"
+    note: >-
+      Task added during task breakdown revision to cover Handoff Trigger
+      and handoff document generation — missing from original T1–T7 breakdown.
