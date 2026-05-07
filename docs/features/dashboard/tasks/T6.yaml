@@ -80,6 +80,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-07T10:52:23.812Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-07T10:52:31.252Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-status-dashboard-v2/product-spec.md,
+      docs/features/feature-status-dashboard/product-spec.md,
+      docs/features/dashboard/product-spec.md"
+    rag_query: Task detail sheet dashboard
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/110
   status: open
