@@ -497,6 +497,23 @@ When the RAG MCP tool (`mcp__rag-server__rag_query`) is available, agents must q
 - The RAG MCP is unavailable for this run
 
 This rule applies in both interactive sessions and agent runtime. Its purpose is to avoid loading entire files into context when the indexed corpus already contains the relevant excerpt.
+
+## GitNexus-first code search rule
+
+When `mcp__gitnexus__*` tools are available, use them for structural code lookups before opening files or running grep.
+
+**Lookup order:**
+1. Use `mcp__gitnexus__query` or `mcp__gitnexus__context` first for any structural question: finding symbol definitions, tracing callers/callees, or discovering cross-file dependencies.
+2. Use `mcp__gitnexus__impact` before any refactor or deletion to compute blast radius.
+3. Fall back to `grep` or `Read` only when gitnexus returns no results or the MCP is unavailable for the run.
+4. Never open an entire file just to find a symbol when gitnexus can answer it directly.
+
+**Exceptions** — direct grep or file read without a prior gitnexus query is acceptable when:
+- The exact file path and line range are already known and a targeted edit is the goal (not a lookup).
+- The file is a config, lock, or generated file that is unlikely to be in the code graph.
+- The `mcp__gitnexus__*` tools are not present in the current tool list (indexer not yet ready).
+
+This rule applies in both interactive sessions and agent runtime. Its purpose is to leverage the pre-built AST + call-graph index for structural questions rather than doing expensive full-file reads or grep scans.
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
