@@ -15,8 +15,8 @@ pr:
   url: null
   status: null
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/120
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -29,3 +29,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-07T14:56:00+0700
     note: Dependency T4 is done — task is immediately ready.
+  - action: workspace_pr_opened
+    by: matthew@swellnetwork.io
+    at: 2026-05-07T14:59:17+0700
+    note: Workspace PR opened — https://github.com/tiendv89/project-workspace/pull/120
