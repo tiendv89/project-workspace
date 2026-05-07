@@ -169,3 +169,18 @@ T1 and T2 run in parallel.
         └── BLOCKED on T3 (SSE endpoint path /sse and port 8002
             must be confirmed in the server before wiring the URL)
 ```
+
+---
+
+## Amendments
+
+### T5 scope expansion — GitNexus query audit
+
+After the original task breakdown was approved, T5 scope was expanded to include a third change in the `workflow` repo: a `gitnexus-audit.ts` module mirroring the existing `rag-audit.ts` pattern. This module parses stream-json stdout for `mcp__gitnexus__*` tool_use/tool_result pairs and emits structured `gitnexus_query` events into the task run log, giving the orchestrator visibility into which code-graph tools agents invoke and what they return.
+
+The expansion was added before the agent claimed the task; the agent implemented all three changes together in the same PR.
+
+| Artifact | Reference |
+|---|---|
+| Implementation PR (workflow repo) | [agent-workflow#84](https://github.com/tiendv89/agent-workflow/pull/84) — merged |
+| Workspace management PR | [project-workspace#121](https://github.com/tiendv89/project-workspace/pull/121) — merged |
