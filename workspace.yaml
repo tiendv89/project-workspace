@@ -46,6 +46,14 @@ model_policy:
 automation:
   enabled: false
 
+orchestrator:
+  poll_interval_seconds: 30
+  reviewer_max_cycles: $REVIEWER_MAX_CYCLES   # default 3
+  executor_max_retries: $EXECUTOR_MAX_RETRIES # default 3
+  escalation:
+    channel: slack
+    webhook_url: $SLACK_WEBHOOK_URL
+
 management_repo: management-repo
 
 repos:
