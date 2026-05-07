@@ -1,10 +1,9 @@
 id: T1
 title: Schema — change_requested status + CLAUDE.md transitions
 repo: management-repo
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: "executor_failed:repo_materialization_failed: Error: EACCES:
-  permission denied, mkdir '/Users/matthew/workspace'"
+blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T1
 execution:
   actor_type: agent
@@ -42,6 +41,12 @@ log:
     note: "repo_materialization_failed: Error: EACCES: permission denied, mkdir
       '/Users/matthew/workspace'"
     at: 2026-05-07T18:58:10.353Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T02:25:38+0700
+    note: >-
+      Unblocked — root cause was bootstrap not overriding WORKSPACE_MGMT_LOCAL_PATH
+      for watched repos. Fixed in agent-workflow main (7d1c965). Reset to ready.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/130
   status: open
