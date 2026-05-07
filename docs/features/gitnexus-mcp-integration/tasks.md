@@ -12,6 +12,7 @@
 | T2 | 1 | Build gitnexus-indexer service | — |
 | T3 | 2 | Build gitnexus-server service | T2 |
 | T4 | 3 | Wire GITNEXUS_MCP_URL into executor and docker-compose | T3 |
+| T5 | 4 | Add gitnexus-mcp technical skill and shared usage rule | T4 |
 
 ---
 
@@ -125,3 +126,80 @@ No `GITNEXUS_ENABLED` flag — presence of `GITNEXUS_MCP_URL` enables it, absenc
 - [ ] Add `GITNEXUS_MCP_URL` to base anchor and agent-1/2/3 environment blocks in `docker-compose.yml`
 - [ ] Add commented `GITNEXUS_MCP_URL` entry to `.env.example` with description
 - [ ] Run TypeScript type-check and existing tests
+
+---
+
+## T5 — Add gitnexus-mcp technical skill, shared usage rule, and query audit
+
+### Description
+The gitnexus infrastructure (indexer + server + executor wiring) is fully deployed by T4, but agents receive no instruction to use the MCP tools it exposes, and the orchestrator has no visibility into which tools agents invoke or what they return. Without this task the feature delivers working infrastructure that has zero behavioural effect and zero observability.
+
+Three changes are required, all in the `workflow` repo:
+
+**1. New technical skill: `technical_skills/gitnexus-mcp/SKILL.md`**
+
+Document the 16 tools exposed by `mcp__gitnexus__*` and define when agents should reach for each:
+
+| Tool | When to use |
+|---|---|
+| `query` | Finding where a symbol, function, or pattern is defined or used |
+| `context` | Full 360° view of a symbol — callers, callees, type refs, process participation |
+| `impact` | Blast-radius analysis before a refactor or deletion |
+| `detect_changes` | Map a git diff to the symbols and processes it affects |
+| `list_repos` | Discover which repos are indexed |
+| `group_query` | Cross-repo execution flow tracing |
+
+Lookup priority rule (mirrors the RAG-first pattern):
+1. Use `mcp__gitnexus__query` or `mcp__gitnexus__context` first for structural code lookups
+2. Fall back to `grep`/`Read` only when gitnexus returns no results or the MCP is unavailable
+3. Never open an entire file just to find a symbol when gitnexus can answer it directly
+
+**2. Common rule in `CLAUDE.shared.md`**
+
+Add a "GitNexus-first code search rule" block alongside the existing RAG-first read rule:
+
+- When `mcp__gitnexus__*` tools are available, use them for structural code lookups (find references, trace calls, get symbol definitions, compute blast radius) before opening files
+- Exceptions: targeted line-range edits where the exact path is already known; config/lock/generated files; when the gitnexus MCP is unavailable for the run
+
+After editing `CLAUDE.shared.md`, run `sync-workspace-rules` to propagate the change into `CLAUDE.md`.
+
+**3. GitNexus query audit — `runtime/executors/claude/src/gitnexus-audit.ts`**
+
+Mirror the existing `rag-audit.ts` pattern exactly. Parse stream-json stdout to extract every `mcp__gitnexus__*` tool_use/tool_result pair and return structured audit events.
+
+```typescript
+export interface GitNexusQueryEvent {
+  tool: string;        // e.g. "query", "context", "impact"
+  arguments: Record<string, unknown>;
+  result_summary: string;  // first 200 chars of the text result, for log readability
+  result_length: number;   // total character length of the returned content
+}
+```
+
+Wire it into `index.ts` after the existing RAG audit block:
+
+```typescript
+// ── 7b. GitNexus query audit
+if (spawnResult.stdout) {
+  for (const gq of extractGitNexusQueries(spawnResult.stdout)) {
+    emit({ type: "gitnexus_query", ...gq });
+  }
+}
+```
+
+The emitted `gitnexus_query` events land in the task run log (same as `rag_query`), making gitnexus usage visible to the orchestrator and enabling future cost/usage analysis across tasks.
+
+Write tests for `gitnexus-audit.ts` following the pattern of the existing `rag-audit` tests.
+
+### Required skills
+- typescript-best-practices
+
+### Subtasks
+- [ ] Create `technical_skills/gitnexus-mcp/SKILL.md` with tool reference table and lookup priority rule
+- [ ] Add "GitNexus-first code search rule" block to `CLAUDE.shared.md`
+- [ ] Run `sync-workspace-rules` to propagate into `CLAUDE.md`
+- [ ] Verify `CLAUDE.md` contains the new rule after sync
+- [ ] Implement `runtime/executors/claude/src/gitnexus-audit.ts` — parse stream-json for `mcp__gitnexus__*` tool_use/tool_result pairs, return `GitNexusQueryEvent[]`
+- [ ] Wire `extractGitNexusQueries` into `index.ts` after the RAG audit block, emit `gitnexus_query` events
+- [ ] Write tests for `gitnexus-audit.ts` mirroring the existing RAG audit test structure
+- [ ] Run full test suite — all tests pass
