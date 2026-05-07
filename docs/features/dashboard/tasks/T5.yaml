@@ -8,8 +8,8 @@ blocked_reason: null
 branch: feature/dashboard-T5
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-05-07T04:47:01.440Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-07T07:47:15.800Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/27
   status: open
@@ -90,3 +90,9 @@ log:
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/109
   status: open
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-07T07:47:15.800Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/main.
