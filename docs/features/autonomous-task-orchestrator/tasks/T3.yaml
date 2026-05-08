@@ -1,19 +1,19 @@
 id: T3
 title: review-pr skill
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: max_turns_exceeded
 branch: feature/autonomous-task-orchestrator-T3
 execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T05:30:19.938Z
+  last_updated_at: 2026-05-08T05:46:11.682Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/93
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -40,7 +40,8 @@ log:
   - action: started
     by: norepy@tiendv.dev
     at: 2026-05-08T05:35:45+0000
-    note: Executor work phase begun — implementing review-pr skill and reviewer-briefing.ts.
+    note: Executor work phase begun — implementing review-pr skill and
+      reviewer-briefing.ts.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/137
   status: open
