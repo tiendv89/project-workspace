@@ -1,7 +1,7 @@
 id: T3
 title: review-pr skill
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-08T06:42:56.088Z
+  last_updated_at: 2026-05-08T07:08:19.304Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/93
   status: open
