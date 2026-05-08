@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T08:37:39.179Z
+  last_updated_at: 2026-05-08T08:55:43.890Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/96
+  status: open
 log:
   - action: created
     by: matthew@liquid-labs.xyz
