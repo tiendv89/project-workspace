@@ -1,12 +1,9 @@
 feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
-feature_status: in_handoff
+feature_status: done
 current_stage: handoff
-next_action: >-
-  Handoff document written covering 7-task arc, revised D5, termination
-  safety, and CLAUDE_AGENT_RUNTIME guard pattern. Awaiting human approval
-  to advance feature to done.
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -144,10 +141,13 @@ stages:
           transitions todo → ready. T1–T5 remain done. An agent can
           now run start-implementation against T6.
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-09T01:19:31+0700
+    review_comment: >-
+      Approved. Handoff covers the full 7-task arc, revised D5 PR ownership
+      split, termination safety layers, and CLAUDE_AGENT_RUNTIME guard pattern.
+      Feature is done.
     review_history:
       - at: 2026-05-09T01:17:22+0700
         by: matthew@swellnetwork.io
@@ -157,6 +157,11 @@ stages:
           (PR ownership split), termination safety (Layers 1/2/3), and
           CLAUDE_AGENT_RUNTIME guard pattern. All tasks done, all workspace
           PRs merged. Submitted for human approval.
+      - at: 2026-05-09T01:19:31+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Approved. Feature advanced to done.
 
 history:
   - at: 2026-05-01T18:57:22+0700
@@ -267,6 +272,11 @@ history:
       T6 and T7 workspace_pr fields updated to merged. Feature advanced
       from in_implementation to in_handoff. Handoff stage set to
       awaiting_approval.
+  - at: 2026-05-09T01:19:31+0700
+    by: matthew@liquid-labs.xyz
+    action: handoff_approved
+    note: >-
+      Handoff approved. Feature advanced from in_handoff to done.
 
 revalidation:
   product_spec_required: false
