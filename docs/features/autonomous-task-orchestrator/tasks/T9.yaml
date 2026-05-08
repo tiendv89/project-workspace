@@ -53,6 +53,14 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 1.9318769999999998
     at: 2026-05-08T12:03:22.763Z
+  - action: work_phase_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T21:24:29+0700
+    note: >-
+      Task PR draft lifecycle implemented: curlJson PATCH draft→false on
+      in_review in dispatch.ts; PATCH draft→true on change_requested in
+      dispatch-review-result.ts; pr-create skill updated to open PRs as draft.
+      Tests added for both promote and demote paths. Pushed to PR #102.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/147
   status: open
