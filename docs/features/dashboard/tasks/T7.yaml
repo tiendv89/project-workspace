@@ -1,7 +1,7 @@
 id: T7
 title: Error states, empty states, and end-to-end QA
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T4
   - T5
@@ -10,8 +10,8 @@ blocked_reason: null
 branch: feature/dashboard-T7
 execution:
   actor_type: agent
-  last_updated_by: human
-  last_updated_at: 2026-05-08T10:43:17+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T04:55:01.572Z
 pr:
   url: null
   status: null
@@ -45,6 +45,10 @@ log:
     by: human
     at: 2026-05-08T10:43:17+0700
     note: Reset task to ready after missing_tool.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T04:55:01.572Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/134
   status: open
