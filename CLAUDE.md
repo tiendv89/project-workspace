@@ -122,6 +122,7 @@ The following `action` values are defined for task log entries:
 | `blocked` | agent | task set to `blocked` with reason |
 | `reviewer_started` | reviewer agent | reviewer executor dispatched for a task in `in_review` |
 | `fix_started` | fix agent | fix executor dispatched; status set back to `in_progress` |
+| `reviewer_complete` | reviewer agent | reviewer requested changes — task mutated to `change_requested` |
 | `retried` | orchestrator | max-turns block reset to `ready` for retry |
 | `done` | human or reviewer agent | task work accepted |
 | `cancelled` | human | task cancelled |

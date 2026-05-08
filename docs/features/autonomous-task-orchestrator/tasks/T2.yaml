@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,11 +9,11 @@ branch: feature/autonomous-task-orchestrator-T2
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T09:56:02.929Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/96
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -23,3 +23,85 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-08T05:09:37.044Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T05:29:59.953Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-08T05:30:13.204Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-task-orchestrator/technical-design.md,
+      docs/features/autonomous-task-orchestrator/product-spec.md,
+      docs/features/autonomous-task-orchestrator/product-spec.md"
+    rag_query: Orchestrator dispatch controller autonomous-task-orchestrator
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: max_turns_exceeded
+    token_usage:
+      input: 4993
+      output: 95562
+    at: 2026-05-08T05:58:12.540Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T13:39:37+0700
+    note: Reset from blocked (max_turns_exceeded) to ready for agent retry.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-08T06:40:59.292Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-08T06:41:04.357Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Orchestrator dispatch controller autonomous-task-orchestrator
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T08:37:39.179Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-08T08:37:46.011Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-task-orchestrator/technical-design.md,
+      docs/features/autonomous-task-orchestrator/product-spec.md,
+      docs/features/autonomous-task-orchestrator/product-spec.md"
+    rag_query: Orchestrator dispatch controller autonomous-task-orchestrator
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/96"
+    token_usage:
+      input: 316
+      output: 38915
+      model: claude-sonnet-4-6
+    cost_usd: 0.5846729999999999
+    at: 2026-05-08T08:55:52.469Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T09:56:02.929Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/136
+  status: open
+conflict_state: resolved
+rebase_log:
+  - at: 2026-05-08T08:57:33.211Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/main.
+  - at: 2026-05-08T08:58:11.769Z
+    action: rebase_resolved_by_agent
+    by: norepy@tiendv.dev
+    note: "Claude resolved conflict markers in:
+      runtime/orchestrator/src/adapters/executor/subprocess.ts over 1 round(s);
+      rebase continued cleanly."
+  - at: 2026-05-08T08:58:16.225Z
+    action: rebase_completed
+    by: norepy@tiendv.dev
+    note: Rebase completed cleanly; impl branch force-pushed.

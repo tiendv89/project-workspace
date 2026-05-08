@@ -1,8 +1,9 @@
 id: T6
 title: Escalation handler
 repo: workflow
-status: todo
-depends_on: [T2]
+status: ready
+depends_on:
+  - T2
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T6
 execution:
@@ -16,5 +17,9 @@ pr:
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-05-08T00:58:33+0700"
+    at: 2026-05-08T00:58:33+0700
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-08T09:56:03.408Z
+    note: Task activated — dependency T2 merged and marked done.
