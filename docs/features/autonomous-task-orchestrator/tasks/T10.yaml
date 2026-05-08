@@ -1,7 +1,7 @@
 id: T10
 title: Fix self-review failure in reviewer agent
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T10
@@ -18,6 +18,10 @@ log:
     note: >-
       Added as part of Appendix A gap analysis — bot account opens and reviews
       its own PRs; GitHub 422 causes both comment and review event to be lost.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-08T23:21:59+0700
+    note: Task activated on tasks-stage approval — dependencies met.
 workspace_pr:
   url: null
   status: null

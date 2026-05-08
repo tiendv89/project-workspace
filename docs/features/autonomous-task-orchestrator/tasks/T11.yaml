@@ -1,7 +1,7 @@
 id: T11
 title: Write workspace PR status back after successful merge
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T11
@@ -19,6 +19,10 @@ log:
       Added as part of Appendix A gap analysis — handleMergedPrs does not write
       workspace_pr.status=merged back to task YAML after successful merge, causing
       repeated noisy retries from handleWorkspacePrRecoveries on every subsequent cycle.
+  - action: ready
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-08T23:21:59+0700
+    note: Task activated on tasks-stage approval — dependencies met.
 workspace_pr:
   url: null
   status: null
