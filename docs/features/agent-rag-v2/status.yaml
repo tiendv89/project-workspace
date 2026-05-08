@@ -1,9 +1,9 @@
 feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
-feature_status: in_handoff
+feature_status: done
 current_stage: handoff
-next_action: Review and approve the handoff document at docs/features/agent-rag-v2/handoffs/handoff.md to close the feature.
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -49,15 +49,19 @@ stages:
         at: 2026-04-22T08:57:52Z
         comment: T4 and T5 approved — T4 activated, T5 pending T4 completion.
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
+    review_status: approved
+    reviewed_by: tiendv.2703@gmail.com
+    reviewed_at: 2026-05-08T18:04:52Z
+    review_comment: Handoff approved. All 5 tasks delivered, T1–T5 PRs merged.
     review_history:
       - status: awaiting_approval
         by: matthew@swellnetwork.io
         at: 2026-04-22T10:39:59Z
         comment: Handoff document written — all 5 tasks done, T1–T5 PRs merged.
+      - status: approved
+        by: tiendv.2703@gmail.com
+        at: 2026-05-08T18:04:52Z
+        comment: Handoff approved. All 5 tasks delivered, T1–T5 PRs merged.
 
 history:
   - stage: product_spec
@@ -100,6 +104,11 @@ history:
     by: matthew@swellnetwork.io
     at: 2026-04-22T10:39:59Z
     note: Handoff document written at docs/features/agent-rag-v2/handoffs/handoff.md. All 5 tasks done.
+  - stage: handoff
+    action: approved
+    by: tiendv.2703@gmail.com
+    at: 2026-05-08T18:04:52Z
+    note: Handoff approved. Feature advanced to done.
 
 revalidation:
   product_spec_required: false
