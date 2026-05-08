@@ -1,16 +1,16 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T1
-blocked_reason: max_turns_exceeded
+blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T2
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T05:58:12.540Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-08T13:39:37+0700
 pr:
   url: null
   status: not_created
@@ -44,6 +44,10 @@ log:
       input: 4993
       output: 95562
     at: 2026-05-08T05:58:12.540Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T13:39:37+0700
+    note: Reset from blocked (max_turns_exceeded) to ready for agent retry.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/136
   status: open
