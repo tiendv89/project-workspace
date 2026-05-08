@@ -1,29 +1,41 @@
 feature_id: ui-interaction-updates
 title: UI Interaction Updates
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Fill in the affected functions and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design, then approve the task breakdown before implementation.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-08T08:38:23Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: unknown@local
+        at: 2026-05-08T08:38:23Z
+        comment: null
   technical_design:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
-    review_history: []
+    review_history:
+      - status: awaiting_approval
+        by: unknown@local
+        at: 2026-05-08T08:46:47Z
+        comment: Technical design drafted for sidebar layout, 60 second refresh, feature rows, and default filters.
   tasks:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
-    review_history: []
+    review_history:
+      - status: draft
+        by: unknown@local
+        at: 2026-05-08T08:46:47Z
+        comment: Task breakdown drafted from technical design. Tasks remain todo until stage approvals.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -36,6 +48,26 @@ history:
     action: created
     by: unknown@local
     at: 2026-05-08T14:41:19+07:00
+  - stage: product_spec
+    action: approved
+    by: unknown@local
+    at: 2026-05-08T08:38:23Z
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: product_spec
+    action: clarified
+    by: unknown@local
+    at: 2026-05-08T08:46:47Z
+    note: Sidebar product spec clarified with 15% / 85% layout target and 60 second refresh for the 3 status rows.
+  - stage: technical_design
+    action: submitted
+    by: unknown@local
+    at: 2026-05-08T08:46:47Z
+    note: Technical design submitted for review.
+  - stage: tasks
+    action: drafted
+    by: unknown@local
+    at: 2026-05-08T08:46:47Z
+    note: Task breakdown drafted. Tasks require technical design and tasks approval before activation.
 
 revalidation:
   product_spec_required: false

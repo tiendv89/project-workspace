@@ -28,6 +28,10 @@ Overall layout:
 
 The sidebar should feel like a stable companion panel for the Kanban Board, not a separate page or a replacement for the board.
 
+On desktop-sized workspace screens, the sidebar should take approximately 15% of the available content width, and the Kanban Board should take the remaining approximately 85%.
+
+The 15% / 85% split is the target layout ratio for the main workspace area below the header. The implementation may use sensible minimum and maximum widths so the sidebar remains readable and the Kanban Board remains usable on narrower screens.
+
 The sidebar should take enough space for users to scan important task groups, while the Kanban Board remains the primary workspace on the right.
 
 The sidebar and Kanban Board should stay visually separated so users can clearly understand which tasks are being shown in the sidebar and which tasks belong to the full board view.
@@ -129,6 +133,26 @@ When the section is expanded and has no tasks, show the empty state:
 `No tasks.`
 
 Do not hide a status section just because it has no tasks.
+
+### 2.8 Data Refresh
+
+The 3 sidebar status rows must refresh automatically every 60 seconds.
+
+The refresh updates the task list and task counts for:
+
+- `IN PROGRESS`
+- `IN REVIEW`
+- `READY`
+
+The automatic refresh should not reset:
+
+- Collapse/expand state.
+- Search text.
+- Status filter state.
+- The currently open task detail modal.
+- The current Kanban Board scroll position, when possible.
+
+Manual sync still refreshes immediately when the user clicks the sync action.
 
 ## 3. User Journey When Interacting with the Sidebar
 
@@ -259,6 +283,7 @@ If the user opens the task detail modal and then closes it, the sidebar collapse
 ## 5. Acceptance Criteria
 
 - The sidebar is displayed on the left side of the Kanban Board.
+- On desktop-sized workspace screens, the sidebar uses approximately 15% width and the Kanban Board uses approximately 85% width.
 - The sidebar displays exactly 3 statuses: `IN PROGRESS`, `IN REVIEW`, `READY`.
 - Each status can be collapsed/expanded.
 - All 3 status sections are expanded by default when opening a workspace.
@@ -269,6 +294,7 @@ If the user opens the task detail modal and then closes it, the sidebar collapse
 - The Kanban Board on the right always remains visible.
 - Search updates the task list in the sidebar.
 - Filter updates the task list in the sidebar.
+- The 3 sidebar status rows refresh automatically every 60 seconds.
 - A section with no tasks displays `No tasks.` when expanded.
 
 # Kanban Board Product Spec
