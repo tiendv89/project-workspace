@@ -1,7 +1,7 @@
 id: T1
 title: Reviewer Identity injection
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T1
@@ -9,7 +9,7 @@ execution:
   actor_type: agent
   requires_human_review: false
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-08T19:09:02Z
+  last_updated_at: 2026-05-08T19:11:21Z
 pr:
   url: null
   status: null
@@ -19,3 +19,7 @@ log:
     at: 2026-05-08T19:09:02Z
     note: >-
       Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T19:11:21Z
+    note: Task activated on tasks-stage approval — dependencies met.

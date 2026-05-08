@@ -1,13 +1,12 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
 next_action: >-
-  Technical design approved. Tech lead can now produce task breakdown:
-  tasks.md and tasks/T1–T4.yaml. Four tasks in workflow repo — T1 (Reviewer
-  Identity), T2 (Handoff Trigger extension), T3 (Feature Done Watcher), T4
-  (Feature Reviewer Daemon). Dependency chain: T1 ∥ (T2 → T3 → T4).
+  Tasks approved. T1 (Reviewer Identity injection) and T2 (Lifecycle Manager
+  wiring + Handoff Trigger extension) are ready for agent execution in parallel.
+  T3 and T4 activate automatically when their dependencies complete.
 
 feature_branch: feature/autonomous-feature-reviewer
 
@@ -56,11 +55,22 @@ stages:
           .env.template, .env.example, and OPERATOR-GUIDE.md during review.
           Feature advances to task planning stage.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-08T19:11:21Z
+    review_comment: >-
+      Approved. Four tasks covering reviewer identity injection, handoff
+      trigger extension, feature done watcher, and feature reviewer daemon.
+      T1 and T2 start in parallel; T3 blocked on T2; T4 blocked on T3 to
+      avoid main.ts poll loop merge conflict.
+    review_history:
+      - at: 2026-05-08T19:11:21Z
+        by: matthew@swellnetwork.io
+        action: approved
+        note: >-
+          Tasks approved. T1 and T2 activated as ready. T3 and T4 remain
+          todo pending dependency completion. Feature advances to
+          ready_for_implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -91,6 +101,13 @@ history:
       Technical design approved. Four tasks identified (T1–T4, all workflow
       repo). Dependency chain: T1 ∥ (T2 → T3 → T4). Feature advances to
       task planning.
+  - action: approved
+    stage: tasks
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T19:11:21Z
+    note: >-
+      Tasks approved. T1 and T2 activated as ready. Feature advances to
+      ready_for_implementation.
 
 revalidation:
   product_spec_required: false
