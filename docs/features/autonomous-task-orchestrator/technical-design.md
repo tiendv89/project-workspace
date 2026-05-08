@@ -56,7 +56,8 @@ The orchestrator reads task YAMLs and dispatches agents based purely on task sta
 │  On start (once):                                                 │
 │  ┌────────────────────────────────────────────────────────────┐  │
 │  │  Feature Branch Lifecycle Manager                          │  │
-│  │  create/sync feature/{feature_id}, record base SHA         │  │
+│  │  create/sync feature/{feature_id}, record base SHA,        │  │
+│  │  open draft PR on first creation                           │  │
 │  └────────────────────────────────────────────────────────────┘  │
 │                                                                   │
 │  Each poll cycle (30s):                                           │
@@ -122,9 +123,17 @@ else:
     git checkout -b feature/{feature_id}
     git push -u origin feature/{feature_id}
     # Record BASE_SHA in status.yaml as feature_branch_base_sha
+
+# Open draft PR — idempotent (skip if handoff_pr_url already set in status.yaml):
+if status.yaml.handoff_pr_url is null:
+    POST /repos/{owner}/{repo}/pulls { title, body, head: feature/{feature_id}, base: {base_branch}, draft: true }
+    Write handoff_pr_url into status.yaml
+    Commit and push status.yaml to feature branch
 ```
 
 `feature_branch_base_sha` is the merge-base of the feature branch and the base branch at first creation. The drift detector (`autonomous-feature-reviewer`) uses this SHA as its comparison baseline — "what was on main when this feature started." It must never be overwritten on restart.
+
+Opening the draft PR at branch creation time gives stakeholders visibility into the feature branch throughout the entire implementation lifecycle, not just at handoff. The PR accumulates commits as tasks complete; at handoff it is converted from draft to ready-for-review (see Handoff Trigger below).
 
 **Task PR target:** The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API. No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
 
@@ -235,6 +244,33 @@ Dispatched when task status is `change_requested`. Submitted with `kind=impl` (s
 
 The task returns to `in_review` and the reviewer runs again on the next cycle. If the reviewer finds the fixes acceptable, it approves and the task reaches `done`. If not, it posts a new `REQUEST_CHANGES` — and when the cycle counter reaches `MAX_REVIEW_CYCLES` the next reviewer dispatch will escalate instead.
 
+### Task PR Draft Lifecycle
+
+Task PRs mirror task state — draft while the agent is working, ready-for-review only when a reviewer should act. The orchestrator owns all draft/ready transitions; the agent only opens the PR.
+
+**Opening as draft (`pr-create` skill):**
+The `/pr-create` skill adds `"draft": true` to the GitHub API PR creation payload. This is the only change to the agent side — all subsequent state transitions are orchestrator-driven.
+
+**Promoting to ready (`dispatchExecutorResult`, `terminal_status: in_review`):**
+When the orchestrator processes a result with `terminal_status: in_review` and a `pr_url` is present:
+```
+PATCH /repos/{owner}/{repo}/pulls/{pr_number}
+body: { "draft": false }
+```
+Non-fatal: if the PATCH fails, emit a `task_pr_promote_failed` event and continue — the task still enters `in_review`.
+
+**Demoting to draft (`dispatchReviewResult`, `change_requested` branch):**
+When the reviewer posts REQUEST_CHANGES and the orchestrator mutates the task to `change_requested`:
+```
+PATCH /repos/{owner}/{repo}/pulls/{pr_number}
+body: { "draft": true }
+```
+Non-fatal: if the PATCH fails, emit a `task_pr_demote_failed` event and continue — the task still enters `change_requested`.
+
+**Owner/repo derivation:** Both dispatch functions receive `githubToken`, `repoOwner`, and `repoName` from the orchestrator configuration (already resolved at startup). The PR number is extracted from the stored `task.pr.url` via regex `/\/pull\/(\d+)$/`.
+
+**Fix agent path:** The fix agent pushes commits to the existing branch; the PR stays draft. When it reports `terminal_status: in_review`, the same promotion path fires — PATCH `draft: false` again (idempotent if somehow already ready).
+
 ### Auto-Done Writer
 When the quality gate passes:
 1. Follows branch checkout + sync protocol on the management repo.
@@ -248,11 +284,10 @@ When the quality gate passes:
 Activates when the Auto-Done Writer transitions the **last** task to `done`.
 
 1. Generate `handoffs/handoff.md` in the management repo (see structure below).
-2. Open a PR: `feature/{feature_id}` → `{base_branch}` via GitHub API.
-3. Write the PR URL into `status.yaml` under `stages.handoff` and `handoff_pr_url`.
-4. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`.
-5. Commit and push management repo changes on the feature branch.
-6. Notify operator via escalation channel.
+2. Convert the draft PR to ready-for-review: read `handoff_pr_url` from `status.yaml`, extract the PR number, call `PATCH /repos/{owner}/{repo}/pulls/{number}` with `{"draft": false}`. Safety net: if `handoff_pr_url` is null or the PR no longer exists, create a fresh non-draft PR and write the URL into `status.yaml`.
+3. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`, and record `stages.handoff.pr_url`.
+4. Commit and push management repo changes on the feature branch.
+5. Notify operator via escalation channel.
 
 ### Handoff Document Structure
 

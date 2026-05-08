@@ -20,6 +20,7 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 4. Humans are notified only for genuine exceptions: blocked tasks, repeated CI failures, or low-confidence reviewer verdicts.
 5. When all tasks complete, the orchestrator auto-generates a handoff document and opens a feature-level PR (feature branch → base branch) for human review.
 6. All existing workflow rules (branch management, management repo governance, auto-ready cascade, rebase-before-PR) are respected by the orchestrator.
+7. PR state reflects task state at all times: task PRs are **draft** while work is in progress and **ready-for-review** only when a reviewer should act — preventing premature review noise and making WIP state visible to the whole team.
 
 ## Non-goals
 
@@ -51,13 +52,28 @@ The goal is to shift the human role from **per-task reviewer** to **feature-leve
 - Runs the auto-ready cascade when a task transitions to `done`.
 - When all tasks are `done`: auto-generates a handoff document, opens a feature-level PR (feature branch → base branch), and transitions the feature to `in_handoff`.
 
+### PR Draft Lifecycle
+
+Task PRs and the feature-branch PR follow the same draft/ready convention — PR state mirrors task state:
+
+| Task state | PR state | Trigger |
+|---|---|---|
+| `in_progress` | **draft** | `pr-create` skill always opens as draft |
+| `in_review` | **ready-for-review** | Orchestrator promotes draft → ready when executor reports `terminal_status: in_review` |
+| `change_requested` | **draft** | Orchestrator demotes ready → draft when reviewer posts REQUEST_CHANGES |
+| `in_progress` (fix) | **draft** (already) | Fix agent pushes to the existing draft PR; no state change needed |
+| `in_review` (fix) | **ready-for-review** | Orchestrator promotes draft → ready again when fix agent reports `in_review` |
+| `done` | merged | PR merged as part of auto-done writer flow |
+
+Feature-branch PR follows the same pattern: opened as draft when the feature branch is created; converted to ready-for-review at handoff.
+
 ### Quality Gate
 
-- After an executor agent sets a task to `in_review` (PR opened), the quality gate activates.
+- After an executor agent sets a task to `in_review` (PR opened), the orchestrator promotes the PR from draft to ready-for-review, then the quality gate activates.
 - Polls CI status on the PR until it resolves (pass or fail).
 - Invokes the reviewer agent to evaluate the PR against the task spec and technical design.
 - On gate pass (CI pass + reviewer `pass`): auto-merges the PR, writes a `done` log entry (actor: `orchestrator`), and commits the state change to the management repo.
-- On gate fail: retries up to a configurable limit, then escalates to human.
+- On gate fail: demotes the PR back to draft, retries up to a configurable limit, then escalates to human.
 
 ### Reviewer Agent
 
