@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -62,12 +62,3 @@ log:
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/136
   status: open
-  - action: started
-    by: pentative@gmail.com
-    at: "2026-05-08T08:18:03+0000"
-    note: T2 dispatch controller implementation complete.
-    tokens:
-      input: 0
-      output: 0
-      total: 0
-      cost_usd: 0.000
