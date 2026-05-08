@@ -1,9 +1,12 @@
 feature_id: ui-interaction-updates
 title: UI Interaction Updates
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: T1, T2, and T3 are ready to claim. T4 waits for T1, T2, and T3 to complete.
+feature_status: in_handoff
+current_stage: handoff
+next_action: >-
+  All 4 tasks done and merged. Handoff document written at
+  handoffs/handoff.md. Awaiting human review and approval to advance
+  to done.
 
 stages:
   product_spec:
@@ -49,7 +52,7 @@ stages:
         at: 2026-05-08T09:30:22Z
         comment: Task breakdown approved. T1, T2, and T3 activated.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -95,6 +98,15 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-05-08T09:30:22Z
     note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, and T3 activated.
+  - action: advanced_to_handoff
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T02:29:36+0700
+    note: >-
+      All 4 tasks done and merged. Feature manually advanced from
+      ready_for_implementation to in_handoff. Handoff document written
+      at handoffs/handoff.md. Orchestrator stuck_handoff invariant
+      resolved — feature branch was never created (all work landed on
+      per-task branches pre-dating Feature Branch Lifecycle Manager).
 
 revalidation:
   product_spec_required: false
