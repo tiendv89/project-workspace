@@ -4,172 +4,193 @@
 - Feature ID: `autonomous-feature-reviewer`
 - Title: Autonomous Feature Reviewer
 
-## Current State
+---
 
-Tasks currently open PRs targeting the base branch (`main`) directly. There is no feature branch. The human review surface is per-task. There is no mechanism to detect when base branch changes affect an in-progress feature.
+## 1. Current State
 
-The `autonomous-task-orchestrator` feature introduces a quality gate and auto-done transition for tasks. This feature builds on top of that: it changes where task PRs land (feature branch instead of base branch), adds a handoff generation step, and introduces a drift detection agent for in-handoff features.
+The `autonomous-task-orchestrator` feature shipped the following components that this feature builds on top of:
 
-## Constraints
-
-- The orchestrator (from `autonomous-task-orchestrator`) owns task PR creation — it must be updated to target the feature branch, not the base branch.
-- Feature branches must follow the existing branch naming convention extended with feature scope: `feature/{feature_id}`.
-- Task branches continue to follow: `feature/{feature_id}-T{n}`.
-- All existing CLAUDE.md branch rules apply within the feature branch scope.
-- The feature reviewer agent must not mutate task YAMLs for tasks it does not own.
-- The feature branch PR (feature → base) is the canonical human review surface; task PRs are internal to the feature and auto-merged by the orchestrator.
-
-## Chosen Design
-
-Two components built on top of the orchestrator:
-
-**Component 1 — Feature branch lifecycle manager** (extension to orchestrator):
-- Creates `feature/{feature_id}` from base branch at orchestrator start.
-- Configures executor agents to open task PRs targeting `feature/{feature_id}`.
-- When all tasks are `done`: generates handoff document, opens feature branch PR, transitions feature status to `in_handoff`.
-
-**Component 2 — Feature reviewer agent** (new daemon):
-- Polls all features in `in_handoff` status.
-- On each poll, checks for new commits on the base branch since the feature branch was created.
-- Classifies impact (task-level vs feature-level) using file overlap + semantic analysis against `technical-design.md`.
-- Acts: auto-rebase (task-level) or escalate with structured report (feature-level).
-
-## Architecture
-
-```
-Orchestrator (existing, extended)
-  │
-  ├── on start: create feature/{feature_id} from base branch
-  ├── task PRs target: feature/{feature_id}  (not main)
-  ├── on all tasks done:
-  │     generate handoff doc
-  │     open feature PR → base branch
-  │     set feature status: in_handoff
-  │
-Feature Reviewer Daemon (new)
-  │
-  ├── poll: features with status in_handoff  (every 10 min)
-  ├── for each: compare feature branch with base branch tip
-  │     → no new commits: skip
-  │     → new commits: classify
-  │           file overlap check (git diff)
-  │           semantic analysis (reviewer agent → Claude API)
-  │     → task-level: rebase feature branch, notify
-  │     → feature-level: escalate with structured report
-  └── stop watching: when feature branch PR is merged
-```
-
-## Component Designs
-
-### Feature Branch Lifecycle Manager (orchestrator extension)
-
-**On orchestrator start for a feature:**
-```
-git checkout main && git pull origin main
-git checkout -b feature/{feature_id}
-git push -u origin feature/{feature_id}
-```
-Record the base branch tip SHA at creation time in the feature's `status.yaml` — used later by the drift detector as the comparison baseline.
-
-**Task PR target change:**
-The orchestrator passes `base: feature/{feature_id}` when creating task PRs via the GitHub API (instead of the repo's default base branch). No change to executor agents — they open PRs as today; the orchestrator controls the PR target.
-
-**Handoff trigger (all tasks done):**
-1. Generate `handoffs/handoff.md` in the management repo (see structure below).
-2. Open a PR: `feature/{feature_id}` → `{base_branch}` via GitHub API.
-3. Write the PR URL into `status.yaml` under `stages.handoff`.
-4. Transition `feature_status` to `in_handoff`, `current_stage` to `handoff`.
-5. Commit and push management repo changes on the feature branch.
-6. Notify operator via escalation channel.
-
-### Handoff Document Structure
-
-```markdown
-# Handoff — {feature_title}
-
-## Summary
-{1-3 sentence summary derived from product spec goals}
-
-## Tasks Completed
-| Task | PR | Reviewer Notes |
+| Component | Status | Location |
 |---|---|---|
-| T1 — {title} | {pr_url} | {reviewer_agent_notes} |
-...
+| Feature Branch Lifecycle Manager | **shipped** (T8) | `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts` |
+| Handoff Trigger + handoff.md generation | **shipped** (T9) | `runtime/orchestrator/src/handoff/handoff-trigger.ts` |
+| Task PRs target `feature/{feature_id}` | **shipped** (T8/T9) | `runtime/orchestrator/src/side-effects/dispatch.ts` |
+| Draft management repo feature PR on branch creation | **shipped** (T9) | `lifecycle-manager.ts` — `handoff_pr_url` written to `status.yaml` |
+| Reviewer agent dispatch + `review-pr` skill | **shipped** (T2/T3) | `runtime/orchestrator/`, `workflow_skills/review-pr/` |
 
-## Deviations from Technical Design
-{list of any deviations noted by executor agents or reviewer agent}
+What the orchestrator does **not** yet do:
 
-## Files Changed
-{aggregate file list across all task PRs}
+1. **Reviewer identity**: the reviewer agent authenticates as the same bot account that opens implementation PRs. GitHub returns HTTP 422 on self-reviews. The T10 workaround (two-call pattern) retains the issue comment but drops the structured review event. A dedicated reviewer GitHub account eliminates the root cause.
 
-## Follow-up Items
-{open risks or flagged items from reviewer agent notes}
+2. **Implementation repo feature PRs**: when all tasks are done, the Handoff Trigger promotes the management repo draft PR to ready-for-review but does **not** open a feature branch PR in the implementation repo (e.g. `workflow`). The human has no single PR to review in the actual implementation repo.
 
-## Audit Trail
-| Action | Actor | Timestamp |
+3. **`impl_feature_prs` tracking**: no field in `status.yaml` records implementation repo feature PRs. The orchestrator has no way to detect when those PRs are merged.
+
+4. **Feature Done Watcher**: `feature_status` never transitions to `done` automatically. The human or a manual script currently does this (as demonstrated by this workspace's `approve-feature` skill). No daemon watches for all feature PRs to merge.
+
+5. **Feature Reviewer Daemon**: no drift detection exists. If commits land on `main` while a feature is `in_handoff`, agents continue working against a potentially stale technical design.
+
+---
+
+## 2. Problem Framing
+
+Five concrete gaps to close:
+
+| Gap | Effect |
+|---|---|
+| Same bot reviews its own PRs | Structured `APPROVE`/`REQUEST_CHANGES` event lost on HTTP 422 |
+| Impl repo has no feature-level PR | Human must diff across 10 merged task commits; no single review surface |
+| `impl_feature_prs` not tracked | Done detection impossible without manual intervention |
+| No Feature Done Watcher | `feature_status` stuck at `in_handoff` indefinitely |
+| No drift detection | Stale technical designs go undetected until merge-time conflict |
+
+**What must remain stable:**
+- Existing task-level PR lifecycle (draft → promote → demote) is unchanged.
+- The `handoff_pr_url` field (management repo PR) remains the primary orchestrator-side status field — `impl_feature_prs` is additive.
+- All CLAUDE.md branch, rebase, and management repo write rules continue to apply.
+- The `feature_branch_base_sha` field (written by T8) is the baseline for drift detection — never overwritten.
+
+---
+
+## 3. Options Considered
+
+### Option A — Feature Reviewer Daemon as separate process
+
+Run a dedicated Node.js process alongside the orchestrator that polls GitHub for drift.
+
+- Pros: clean separation of concerns; can be scaled independently; failure does not affect orchestrator
+- Cons: new process to deploy and monitor; shared file-system access to management repo workspace requires coordination; adds operational complexity
+
+### Option B — Feature Reviewer Daemon integrated into orchestrator poll loop (chosen)
+
+Add a `runFeatureReviewCycle()` step to the existing orchestrator poll loop, similar to how `handleMergedPrs` and `runStateInvariantCheck` run today.
+
+- Pros: single process to deploy; shares existing management repo workspace path and GitHub token plumbing; consistent with how all other feature-level side effects are handled
+- Cons: drift classification involves a Claude API call, which adds latency to the poll cycle — mitigated by running the classification step with a separate configurable interval
+
+**Decision: Option B.** The orchestrator is already the correct home for all feature lifecycle management. Adding feature review as a cycle step is consistent with the existing pattern.
+
+### Option C — Reviewer identity via GitHub App instead of second PAT
+
+Use a GitHub App installation token for the reviewer identity, avoiding the need to create and manage a second personal account.
+
+- Pros: cleaner GitHub security model; tokens auto-rotate
+- Cons: requires GitHub App setup, installation, and token exchange logic — meaningfully more complexity than a second PAT for an alpha-stage system
+- Decision: deferred. Second PAT is sufficient for now.
+
+---
+
+## 4. Chosen Design
+
+Five components, built in waves:
+
+**Wave 1 — Schema and environment (T1, management-repo):**
+Add `impl_feature_prs` schema to `CLAUDE.md` status.yaml table and add the three reviewer identity env vars to `.env.template`. No code changes.
+
+**Wave 2 — Reviewer Identity injection (T2, workflow):**
+Update orchestrator reviewer executor dispatch to inject `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` into the reviewer subprocess environment. Update the `review-pr` skill to prefer `REVIEWER_GITHUB_TOKEN` over `GITHUB_TOKEN` when posting GitHub review events — both API calls (issue comment and review event) now succeed without 422. The `reviewer_self_review_skipped` fallback is retained as a safety net.
+
+**Wave 2 — Handoff Trigger extension (T3, workflow):**
+Extend `handoff-trigger.ts` to open a feature branch PR in each implementation repo that the feature touched, and write the results into `impl_feature_prs` in `status.yaml`. The management repo PR (`handoff_pr_url`) continues to be opened by the existing Lifecycle Manager draft PR mechanism.
+
+**Wave 3 — Feature Done Watcher (T4, workflow):**
+New orchestrator poll step `handleFeatureDone` that checks all `in_handoff` features. For each, it reads `handoff_pr_url` and `impl_feature_prs` from `status.yaml`, queries the GitHub API for each PR's merge state, and when all are merged transitions `feature_status` to `done`, commits, and pushes the management repo `status.yaml`.
+
+**Wave 3 — Feature Reviewer Daemon (T5, workflow):**
+New orchestrator poll step `runFeatureReviewCycle` that runs every `FEATURE_REVIEW_INTERVAL` cycles (default 20, ~10 min at 30s poll). For each `in_handoff` feature: compares feature branch to base branch via GitHub compare API; if no new commits, skips; if new commits, runs classification (file overlap check → optional Claude API semantic analysis); on task-level drift, auto-rebases the feature branch; on feature-level drift, escalates via Slack and sets `drift_detected: true` in `status.yaml`.
+
+---
+
+## 5. Dependency Analysis
+
+### Internal dependencies
+
+| Dependency | Required by | Notes |
 |---|---|---|
-| Task T1 done | orchestrator | {ts} |
-...
+| `autonomous-task-orchestrator` shipped | Everything | T8 (lifecycle-manager), T9 (handoff-trigger) must be in place. **Already shipped.** |
+| `impl_feature_prs` in CLAUDE.md (T1) | T3, T4 | Schema must be documented before code that populates/reads it |
+| Handoff Trigger extended (T3) | T4 | Done Watcher checks `impl_feature_prs`, which T3 populates |
+| Reviewer identity env vars (T1) | T2 | Env var names must be agreed before code references them |
+
+### External dependencies
+
+| Dependency | Required by | Notes |
+|---|---|---|
+| Second GitHub reviewer account created | T2, T5 | `REVIEWER_GITHUB_TOKEN` must be set in `.env`. Account needs `write` access on all impl repos |
+| `ANTHROPIC_API_KEY` | T5 (semantic analysis step) | Already present in env for existing agent runs |
+| `SLACK_WEBHOOK_URL` | T5 (escalation) | Optional; graceful skip if unset |
+
+### Unresolved decisions
+
+None. All open questions from the product spec were resolved at approval.
+
+---
+
+## 6. Parallelization / Blocking Analysis
+
+```
+T1: Schema + env template additions (management-repo)
+  └── Can begin now — no blockers
+
+T2: Reviewer Identity injection (workflow)
+T3: Handoff Trigger extension — impl repo feature PRs (workflow)
+T5: Feature Reviewer Daemon (workflow)
+  └── T2, T3, T5 run in parallel
+  └── Can begin now (T1 is documentation-only; code can proceed against agreed env var names)
+  │
+  T4: Feature Done Watcher (workflow)
+    └── BLOCKED on T3 (impl_feature_prs must be populated by the extended Handoff Trigger before the watcher can check merge state)
 ```
 
-### Feature Reviewer Agent
+Note: T2 and T5 are both independent of T3/T4 and of each other. The reviewer identity (T2) has no bearing on drift detection (T5). T4 is the only task with a hard dependency.
 
-**Poll loop (every 10 minutes):**
-1. Read all `status.yaml` files — collect features with `feature_status: in_handoff`.
-2. For each, resolve the feature branch and base branch.
-3. Call GitHub API: `GET /repos/{owner}/{repo}/compare/{feature_branch}...{base_branch}` — get commits on base branch not yet in feature branch.
-4. If no new commits: skip.
-5. If new commits: run classification.
+---
 
-**Classification:**
+## 7. Repository Impact
 
-Step 1 — File overlap check:
-```
-files_changed_on_base = [files in new base commits]
-files_changed_by_feature = [union of files across all task PRs for this feature]
-overlap = intersection(files_changed_on_base, files_changed_by_feature)
-```
-If `overlap` is empty: likely task-level. Proceed to rebase.
-If `overlap` is non-empty: run semantic analysis before deciding.
+| Repo | Tasks | Changes |
+|---|---|---|
+| `management-repo` | T1 | `CLAUDE.md` — add `impl_feature_prs` to `status.yaml` fields table; `.env.template` — add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` |
+| `workflow` | T2, T3, T4, T5 | Orchestrator and skill changes — see per-task detail below |
 
-Step 2 — Semantic analysis (Claude API call):
-- Input: incoming diff, feature `technical-design.md`, list of overlapping files.
-- Prompt: "Does the incoming change conflict with or invalidate the design assumptions in this technical design? Return JSON: `{ level: 'task' | 'feature', confidence: float, reason: string }`."
-- If `level == 'task'` and `confidence >= threshold`: auto-rebase.
-- If `level == 'feature'` or `confidence < threshold`: escalate.
+### `workflow` repo — affected files
 
-**Auto-rebase path:**
-```
-git fetch origin
-git checkout feature/{feature_id}
-git rebase origin/{base_branch}
-git push --force-with-lease origin feature/{feature_id}
-```
-Notify operator: "Feature branch rebased onto new base (no design conflicts detected)."
+| File | Tasks | Change |
+|---|---|---|
+| `runtime/orchestrator/src/briefing/reviewer-briefing.ts` | T2 | Inject `REVIEWER_*` env vars into reviewer subprocess env |
+| `workflow/technical_skills/review-pr/SKILL.md` | T2 | Prefer `REVIEWER_GITHUB_TOKEN`; both API calls (issue comment + review event) use reviewer identity |
+| `runtime/orchestrator/src/handoff/handoff-trigger.ts` | T3 | Open impl repo feature branch PRs; write `impl_feature_prs` into `status.yaml` |
+| `runtime/orchestrator/src/poll/handle-feature-done.ts` | T4 | New file — Feature Done Watcher |
+| `runtime/orchestrator/src/main.ts` | T4, T5 | Wire new poll steps into cycle |
+| `runtime/orchestrator/src/poll/feature-review-cycle.ts` | T5 | New file — Feature Reviewer Daemon cycle step |
+| `.env.template` (workflow repo copy, if present) | T2 | Add reviewer identity vars |
 
-**Escalation path:**
-Generate structured report (see product spec format). Send to Slack webhook. Do not rebase. Mark feature with `drift_detected: true` and `drift_reason` in `status.yaml`. Wait for human to resolve before next poll cycle.
+---
 
-### status.yaml additions
+## 8. Validation and Release Impact
 
-```yaml
-feature_branch: feature/{feature_id}
-feature_branch_base_sha: abc1234   # base branch tip at feature branch creation
-handoff_pr_url: null               # set when feature PR is opened
-drift_detected: false
-drift_reason: null
-```
+### Testing expectations
 
-## Dependency Analysis
+- **T2**: unit test that reviewer executor env contains `REVIEWER_GITHUB_TOKEN`; integration test that `review-pr` skill posts both calls successfully when reviewer token differs from impl token
+- **T3**: unit test handoff-trigger populates `impl_feature_prs` with correct repo/url/status fields; test idempotency (already set → skip)
+- **T4**: seam tests — all PRs merged → `feature_status: done` written and pushed; one PR still open → no-op; GitHub API error → non-fatal
+- **T5**: unit tests for file-overlap classification; mock Claude API for semantic analysis; escalation path with Slack configured; auto-rebase path with clean rebase; rebase conflict → escalate fallback
 
-- **Depends on `autonomous-task-orchestrator`**: the feature branch lifecycle manager is an extension of the orchestrator. The reviewer daemon operates on features the orchestrator manages.
-- **GitHub API**: compare endpoint for drift detection, PR creation for feature PR. Uses existing `GITHUB_TOKEN`.
-- **Claude API**: semantic analysis call in the reviewer agent. Uses existing `ANTHROPIC_API_KEY`.
-- **Slack webhook**: escalation. Uses `SLACK_WEBHOOK_URL`.
-- **Management repo write access**: handoff doc commit, status.yaml updates. Uses existing SSH key.
+### Migration / config impact
 
-## Parallelization / Blocking Analysis
+- Operators must create a second GitHub account, generate a PAT, and add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` to `.env` before T2/T5 behaviour takes effect.
+- If these vars are absent, the existing T10 two-call workaround continues to operate — no hard failure. The `reviewer_self_review_skipped` event remains a valid operational state until the second account is provisioned.
+- New `FEATURE_REVIEW_INTERVAL` env var (default `20` cycles) controls how often the drift daemon runs. Add to `.env.template`.
 
-- Feature branch lifecycle manager (orchestrator extension) must be built before the reviewer daemon — the daemon assumes the feature branch model is in place.
-- Handoff document generation and feature PR opening can be built in parallel with the drift detection logic.
-- `status.yaml` schema additions (new fields) should be done first as T1 — both components depend on them.
+### Backward compatibility
+
+- Features already `in_handoff` at deploy time have no `impl_feature_prs` in their `status.yaml`. The Feature Done Watcher must handle the missing field gracefully: if `impl_feature_prs` is absent or empty, only check `handoff_pr_url`. Emit a `impl_feature_prs_missing` event and continue.
+- Features that transitioned to `done` manually (before this feature ships) are unaffected — the watcher only acts on `in_handoff` features.
+
+### Handoff document location
+
+Committed to `docs/features/{feature_id}/handoffs/handoff.md` in the management repo feature branch — consistent with all prior features. Not a PR description.
+
+### Rollout
+
+No flag needed. All new code paths are additive. The Feature Done Watcher and Feature Reviewer Daemon activate only for features in `in_handoff` — features in earlier stages are unaffected.
