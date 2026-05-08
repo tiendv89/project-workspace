@@ -1,12 +1,12 @@
 id: T7
 title: Error states, empty states, and end-to-end QA
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on:
   - T4
   - T5
   - T6
-blocked_reason: missing_tool
+blocked_reason: null
 branch: feature/dashboard-T7
 execution:
   actor_type: agent
@@ -62,7 +62,13 @@ log:
     by: norepy@tiendv.dev
     note: missing_tool
     at: 2026-05-08T04:57:17.463Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T12:25:05+0700
+    note: >-
+      Unblocked — pnpm added to orchestrator-bundled image (agent-workflow db358e3).
+      Rebuild the orchestrator image before the agent re-claims.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/134
   status: open
-blocked_suggestion: "Install missing tools in the executor image: pnpm"
+blocked_suggestion: null
