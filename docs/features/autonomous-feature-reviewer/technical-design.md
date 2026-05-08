@@ -10,36 +10,41 @@
 
 The `autonomous-task-orchestrator` feature shipped the following components that this feature builds on top of:
 
-| Component | Status | Location |
-|---|---|---|
-| Feature Branch Lifecycle Manager | **shipped** (T8) | `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts` |
-| Handoff Trigger + handoff.md generation | **shipped** (T9) | `runtime/orchestrator/src/handoff/handoff-trigger.ts` |
-| Task PRs target `feature/{feature_id}` | **shipped** (T8/T9) | `runtime/orchestrator/src/side-effects/dispatch.ts` |
-| Draft management repo feature PR on branch creation | **shipped** (T9) | `lifecycle-manager.ts` — `handoff_pr_url` written to `status.yaml` |
-| Reviewer agent dispatch + `review-pr` skill | **shipped** (T2/T3) | `runtime/orchestrator/`, `workflow_skills/review-pr/` |
+| Component | Status | Location | Notes |
+|---|---|---|---|
+| Feature Branch Lifecycle Manager | **shipped** (T8) | `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts` | Creates/syncs management repo feature branch; records `feature_branch` + `feature_branch_base_sha` in `status.yaml` |
+| Draft management repo PR on branch creation | **partial** (T9) | `ensureFeatureBranch()` Step 4 | Step 4 is implemented but `runFeatureBranchLifecycle` in `main.ts` is called without `githubToken`/`repoOwner`/`repoName` — draft PR is **never fired** |
+| Handoff Trigger + handoff.md generation | **shipped** (T9) | `runtime/orchestrator/src/handoff/handoff-trigger.ts` | Generates `handoffs/handoff.md`; promotes management repo draft PR → ready-for-review; uses `parseManagementRepoCoords()` — **management repo only** |
+| Task PRs target `feature/{feature_id}` | **shipped** (T8/T9) | `runtime/orchestrator/src/side-effects/dispatch.ts` | Task branch PRs merge into feature branch, not base |
+| Reviewer agent dispatch + `review-pr` skill | **shipped** (T2/T3) | `runtime/orchestrator/`, `workflow_skills/review-pr/` | Reviewer uses same bot token as impl agent |
+
+> **Code-verified:** Both `lifecycle-manager.ts` and `handoff-trigger.ts` were read directly. The `fireHandoffTrigger` call in `dispatch-review-result.ts` passes `parseManagementRepoCoords()` coordinates — the PR it opens is in the **management repo** only. No implementation repo PR is opened anywhere in the current codebase.
 
 What the orchestrator does **not** yet do:
 
-1. **Reviewer identity**: the reviewer agent authenticates as the same bot account that opens implementation PRs. GitHub returns HTTP 422 on self-reviews. The T10 workaround (two-call pattern) retains the issue comment but drops the structured review event. A dedicated reviewer GitHub account eliminates the root cause.
+1. **Management repo draft PR not firing**: `runFeatureBranchLifecycle` in `main.ts` does not pass `githubToken`, `repoOwner`, or `repoName` to `ensureFeatureBranch`. Step 4 (draft PR open) is silently skipped on every orchestrator start. This needs to be wired up.
 
-2. **Implementation repo feature PRs**: when all tasks are done, the Handoff Trigger promotes the management repo draft PR to ready-for-review but does **not** open a feature branch PR in the implementation repo (e.g. `workflow`). The human has no single PR to review in the actual implementation repo.
+2. **Reviewer identity**: the reviewer agent authenticates as the same bot account that opens implementation PRs. GitHub returns HTTP 422 on self-reviews. The T10 workaround (two-call pattern) retains the issue comment but drops the structured review event. A dedicated reviewer GitHub account eliminates the root cause.
 
-3. **`impl_feature_prs` tracking**: no field in `status.yaml` records implementation repo feature PRs. The orchestrator has no way to detect when those PRs are merged.
+3. **Implementation repo feature PRs**: the Handoff Trigger promotes the management repo draft PR to ready-for-review but does **not** open a feature branch PR in the implementation repo (e.g. `workflow`). The human has no single PR to review in the actual implementation repo.
 
-4. **Feature Done Watcher**: `feature_status` never transitions to `done` automatically. The human or a manual script currently does this (as demonstrated by this workspace's `approve-feature` skill). No daemon watches for all feature PRs to merge.
+4. **`impl_feature_prs` tracking**: no field in `status.yaml` records implementation repo feature PRs. The orchestrator has no way to detect when those PRs are merged.
 
-5. **Feature Reviewer Daemon**: no drift detection exists. If commits land on `main` while a feature is `in_handoff`, agents continue working against a potentially stale technical design.
+5. **Feature Done Watcher**: `feature_status` never transitions to `done` automatically. The human or a manual script currently does this. No daemon watches for all feature PRs to merge.
+
+6. **Feature Reviewer Daemon**: no drift detection exists. If commits land on `main` while a feature is `in_handoff`, agents continue working against a potentially stale technical design.
 
 ---
 
 ## 2. Problem Framing
 
-Five concrete gaps to close:
+Six concrete gaps to close:
 
 | Gap | Effect |
 |---|---|
+| `runFeatureBranchLifecycle` never passes GitHub credentials | Management repo draft PR (Step 4 of `ensureFeatureBranch`) silently skipped on every orchestrator start |
 | Same bot reviews its own PRs | Structured `APPROVE`/`REQUEST_CHANGES` event lost on HTTP 422 |
-| Impl repo has no feature-level PR | Human must diff across 10 merged task commits; no single review surface |
+| Impl repo has no feature-level PR | Human must diff across task commits; no single PR to review in the implementation repo |
 | `impl_feature_prs` not tracked | Done detection impossible without manual intervention |
 | No Feature Done Watcher | `feature_status` stuck at `in_handoff` indefinitely |
 | No drift detection | Stale technical designs go undetected until merge-time conflict |
@@ -90,8 +95,8 @@ Add `impl_feature_prs` schema to `CLAUDE.md` status.yaml table and add the three
 **Wave 2 — Reviewer Identity injection (T2, workflow):**
 Update orchestrator reviewer executor dispatch to inject `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` into the reviewer subprocess environment. Update the `review-pr` skill to prefer `REVIEWER_GITHUB_TOKEN` over `GITHUB_TOKEN` when posting GitHub review events — both API calls (issue comment and review event) now succeed without 422. The `reviewer_self_review_skipped` fallback is retained as a safety net.
 
-**Wave 2 — Handoff Trigger extension (T3, workflow):**
-Extend `handoff-trigger.ts` to open a feature branch PR in each implementation repo that the feature touched, and write the results into `impl_feature_prs` in `status.yaml`. The management repo PR (`handoff_pr_url`) continues to be opened by the existing Lifecycle Manager draft PR mechanism.
+**Wave 2 — Lifecycle Manager draft PR wiring + Handoff Trigger extension (T3, workflow):**
+Fix `runFeatureBranchLifecycle` in `main.ts` to pass `githubToken`, `repoOwner`, and `repoName` (management repo coordinates) so the management repo draft PR step in `ensureFeatureBranch` actually fires. Then extend `handoff-trigger.ts` to open a feature branch PR in each implementation repo that the feature touched, and write the results into `impl_feature_prs` in `status.yaml`.
 
 **Wave 3 — Feature Done Watcher (T4, workflow):**
 New orchestrator poll step `handleFeatureDone` that checks all `in_handoff` features. For each, it reads `handoff_pr_url` and `impl_feature_prs` from `status.yaml`, queries the GitHub API for each PR's merge state, and when all are merged transitions `feature_status` to `done`, commits, and pushes the management repo `status.yaml`.
@@ -159,6 +164,7 @@ Note: T2 and T5 are both independent of T3/T4 and of each other. The reviewer id
 |---|---|---|
 | `runtime/orchestrator/src/briefing/reviewer-briefing.ts` | T2 | Inject `REVIEWER_*` env vars into reviewer subprocess env |
 | `workflow/technical_skills/review-pr/SKILL.md` | T2 | Prefer `REVIEWER_GITHUB_TOKEN`; both API calls (issue comment + review event) use reviewer identity |
+| `runtime/orchestrator/src/main.ts` | T3 | Pass `githubToken`, `repoOwner`, `repoName` to `runFeatureBranchLifecycle` so management repo draft PR actually fires |
 | `runtime/orchestrator/src/handoff/handoff-trigger.ts` | T3 | Open impl repo feature branch PRs; write `impl_feature_prs` into `status.yaml` |
 | `runtime/orchestrator/src/poll/handle-feature-done.ts` | T4 | New file — Feature Done Watcher |
 | `runtime/orchestrator/src/main.ts` | T4, T5 | Wire new poll steps into cycle |
