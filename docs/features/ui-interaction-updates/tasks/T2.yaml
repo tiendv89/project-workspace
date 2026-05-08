@@ -1,14 +1,14 @@
 id: T2
 title: Sidebar companion panel and 15/85 board layout
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/ui-interaction-updates-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-08T09:30:22Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T09:35:12.558Z
 pr:
   url: null
   status: null
@@ -16,8 +16,13 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-08T08:46:47Z
-    note: Task created from tech-lead planning for the sidebar companion panel and board layout.
+    note: Task created from tech-lead planning for the sidebar companion panel and
+      board layout.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-08T09:30:22Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T09:35:12.558Z
+    note: Claimed via git-based claim protocol.
