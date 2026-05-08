@@ -1,7 +1,7 @@
 id: T3
 title: review-pr skill
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ branch: feature/autonomous-task-orchestrator-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-08T13:39:37+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-08T06:42:56.088Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/93
   status: open
@@ -52,10 +52,13 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-08T13:39:37+0700
-    note: >-
-      Reset from blocked (max_turns_exceeded) to ready for agent retry.
-      WIP PR https://github.com/tiendv89/agent-workflow/pull/93 exists — agent
-      should continue on the existing branch and push to that PR.
+    note: Reset from blocked (max_turns_exceeded) to ready for agent retry. WIP PR
+      https://github.com/tiendv89/agent-workflow/pull/93 exists — agent should
+      continue on the existing branch and push to that PR.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-08T06:42:56.088Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/137
   status: open
