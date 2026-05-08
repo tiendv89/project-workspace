@@ -1,7 +1,7 @@
 id: T9
 title: Handoff Trigger + document generation
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T5
   - T8
@@ -10,8 +10,8 @@ branch: feature/autonomous-task-orchestrator-T9
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T10:55:55.926Z
 pr:
   url: null
   status: not_created
@@ -25,3 +25,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-08T10:52:48.724Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T10:55:55.926Z
+    note: Claimed via git-based claim protocol.
