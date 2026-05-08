@@ -132,7 +132,7 @@ history:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T11:13:32Z
     note: All 11 tasks done (T1–T11, PRs merged). Handoff document created at
-      handoffs/distributed-agent-team.md. Feature advanced to in_handoff.
+      docs/features/distributed-agent-team/handoffs/handoff.md. Feature advanced to in_handoff.
   - action: handoff_approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T11:19:56Z

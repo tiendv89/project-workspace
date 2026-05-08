@@ -111,7 +111,7 @@ history:
     at: 2026-04-15T17:59:40+0700
     note: >
       All 7 tasks done (T1–T7). Handoff document written at
-      handoffs/task-branch-lifecycle.md. Feature advanced to in_handoff.
+      docs/features/task-branch-lifecycle/handoffs/handoff.md. Feature advanced to in_handoff.
   - action: handoff_approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-15T18:00:05+0700

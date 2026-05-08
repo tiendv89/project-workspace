@@ -3,7 +3,7 @@ title: Agent RAG v2 — Source Code + Docs Indexing
 
 feature_status: in_handoff
 current_stage: handoff
-next_action: Review and approve the handoff document at handoffs/agent-rag-v2.md to close the feature.
+next_action: Review and approve the handoff document at docs/features/agent-rag-v2/handoffs/handoff.md to close the feature.
 
 stages:
   product_spec:
@@ -99,7 +99,7 @@ history:
     action: submitted
     by: matthew@swellnetwork.io
     at: 2026-04-22T10:39:59Z
-    note: Handoff document written at handoffs/agent-rag-v2.md. All 5 tasks done.
+    note: Handoff document written at docs/features/agent-rag-v2/handoffs/handoff.md. All 5 tasks done.
 
 revalidation:
   product_spec_required: false
