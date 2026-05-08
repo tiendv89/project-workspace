@@ -1,15 +1,12 @@
 feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
 
-feature_status: ready_for_implementation
-current_stage: implementation
+feature_status: in_handoff
+current_stage: handoff
 next_action: >-
-  Tasks approved. Wave 1 task T1 is now ready and may be claimed by
-  any agent. Follow the rollout cadence in tasks.md to keep the running
-  local-subprocess stack alive: T1-T4 redeploy at will; T5+T6 must
-  ship together with a graceful drain; T7-T8 redeploy at will; T9
-  introduces local-docker as an opt-in profile. The handoff stage is
-  drafted and reviewed only after all tasks reach done.
+  All 10 tasks done and merged. Handoff document written at
+  handoffs/handoff.md. Awaiting human review and approval to advance
+  to done.
 
 stages:
   product_spec:
@@ -67,7 +64,7 @@ stages:
           the rollout cadence so agents keep running through the
           implementation.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -121,6 +118,16 @@ history:
       from todo to ready. T2-T10 remain todo until their dependencies
       reach done. The handoff stage will be drafted once all tasks are
       done and reviewed at that point.
+
+  - at: 2026-05-09T02:23:46+0700
+    by: matthew@swellnetwork.io
+    action: advanced_to_handoff
+    note: >-
+      All 10 tasks done and merged. Feature manually advanced from
+      ready_for_implementation to in_handoff. Handoff document written
+      at handoffs/handoff.md. Orchestrator stuck_handoff invariant
+      resolved — feature branch was never created (all work landed on
+      per-task branches pre-dating Feature Branch Lifecycle Manager).
 
 revalidation:
   product_spec_required: false
