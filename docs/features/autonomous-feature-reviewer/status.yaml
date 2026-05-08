@@ -2,13 +2,12 @@ feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
 feature_status: in_tdd
-current_stage: technical_design
+current_stage: tasks
 next_action: >-
-  Product spec approved. Tech lead can now produce technical-design.md.
-  Note: a draft technical-design.md already exists and must be revised to
-  incorporate the Reviewer Identity section, Feature Merge Process, Feature
-  Done Watcher, impl_feature_prs status.yaml fields, and resolved open
-  questions before the technical design stage can be approved.
+  Technical design approved. Tech lead can now produce task breakdown:
+  tasks.md and tasks/T1–T4.yaml. Four tasks in workflow repo — T1 (Reviewer
+  Identity), T2 (Handoff Trigger extension), T3 (Feature Done Watcher), T4
+  (Feature Reviewer Daemon). Dependency chain: T1 ∥ (T2 → T3 → T4).
 
 feature_branch: feature/autonomous-feature-reviewer
 
@@ -36,11 +35,26 @@ stages:
           and resolving open questions on reviewer scope and handoff document
           location. Feature advances from in_design to in_tdd.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-08T19:07:04Z
+    review_comment: >-
+      Approved. Design revised to incorporate all product spec requirements:
+      dedicated reviewer identity (REVIEWER_GITHUB_TOKEN/NAME/EMAIL),
+      impl_feature_prs schema (defined in design, propagated to CLAUDE.md and
+      .env.template), Feature Done Watcher, Feature Reviewer Daemon, lifecycle
+      manager credential fix, and Handoff Trigger extension. Old T1
+      (schema/env) executed inline; remaining four tasks renumbered T1–T4.
+      Dependency chain corrected: T1 ∥ (T2 → T3 → T4) with T3→T4 blocker
+      added to prevent main.ts poll loop merge conflict.
+    review_history:
+      - at: 2026-05-08T19:07:04Z
+        by: matthew@swellnetwork.io
+        action: approved
+        note: >-
+          Technical design approved. Schema and env vars applied to CLAUDE.md,
+          .env.template, .env.example, and OPERATOR-GUIDE.md during review.
+          Feature advances to task planning stage.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -69,6 +83,14 @@ history:
       Product spec approved. Feature advances to in_tdd. Tech lead to revise
       existing technical-design.md to incorporate Reviewer Identity, Feature
       Done Watcher, impl_feature_prs, and resolved open questions.
+  - action: approved
+    stage: technical_design
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T19:07:04Z
+    note: >-
+      Technical design approved. Four tasks identified (T1–T4, all workflow
+      repo). Dependency chain: T1 ∥ (T2 → T3 → T4). Feature advances to
+      task planning.
 
 revalidation:
   product_spec_required: false

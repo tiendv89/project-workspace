@@ -87,22 +87,53 @@ Use a GitHub App installation token for the reviewer identity, avoiding the need
 
 ## 4. Chosen Design
 
-Five components, built in waves:
+Four components, all in the `workflow` repo. Schema and env vars are already applied to `CLAUDE.md` and `.env.template` (done).
 
-**Wave 1 — Schema and environment (T1, management-repo):**
-Add `impl_feature_prs` schema to `CLAUDE.md` status.yaml table and add the three reviewer identity env vars to `.env.template`. No code changes.
-
-**Wave 2 — Reviewer Identity injection (T2, workflow):**
+**Wave 1 — Reviewer Identity injection (T1, workflow):**
 Update orchestrator reviewer executor dispatch to inject `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` into the reviewer subprocess environment. Update the `review-pr` skill to prefer `REVIEWER_GITHUB_TOKEN` over `GITHUB_TOKEN` when posting GitHub review events — both API calls (issue comment and review event) now succeed without 422. The `reviewer_self_review_skipped` fallback is retained as a safety net.
 
-**Wave 2 — Lifecycle Manager draft PR wiring + Handoff Trigger extension (T3, workflow):**
+**Wave 1 — Lifecycle Manager draft PR wiring + Handoff Trigger extension (T2, workflow):**
 Fix `runFeatureBranchLifecycle` in `main.ts` to pass `githubToken`, `repoOwner`, and `repoName` (management repo coordinates) so the management repo draft PR step in `ensureFeatureBranch` actually fires. Then extend `handoff-trigger.ts` to open a feature branch PR in each implementation repo that the feature touched, and write the results into `impl_feature_prs` in `status.yaml`.
 
-**Wave 3 — Feature Done Watcher (T4, workflow):**
+**Wave 2 — Feature Done Watcher (T3, workflow):**
 New orchestrator poll step `handleFeatureDone` that checks all `in_handoff` features. For each, it reads `handoff_pr_url` and `impl_feature_prs` from `status.yaml`, queries the GitHub API for each PR's merge state, and when all are merged transitions `feature_status` to `done`, commits, and pushes the management repo `status.yaml`.
 
-**Wave 3 — Feature Reviewer Daemon (T5, workflow):**
+**Wave 2 — Feature Reviewer Daemon (T4, workflow):**
 New orchestrator poll step `runFeatureReviewCycle` that runs every `FEATURE_REVIEW_INTERVAL` cycles (default 20, ~10 min at 30s poll). For each `in_handoff` feature: compares feature branch to base branch via GitHub compare API; if no new commits, skips; if new commits, runs classification (file overlap check → optional Claude API semantic analysis); on task-level drift, auto-rebases the feature branch; on feature-level drift, escalates via Slack and sets `drift_detected: true` in `status.yaml`.
+
+### `impl_feature_prs` schema
+
+The following schema is authoritative. T2 writes it; T3 reads it. Already added to `CLAUDE.md` and `.env.template`.
+
+```yaml
+impl_feature_prs:           # set by Handoff Trigger (T2) when all tasks done
+  - repo: workflow          # matches workspace.yaml repos[].id
+    url: https://github.com/org/agent-workflow/pull/123
+    status: open            # "open" | "merged"
+```
+
+| Field | Type | Notes |
+|---|---|---|
+| `repo` | string | Must match `workspace.yaml -> repos[].id` for the implementation repo |
+| `url` | string | Full GitHub PR URL for the feature branch PR (`feature/{feature_id}` → base branch) in the impl repo |
+| `status` | `"open"` \| `"merged"` | Polled and updated by Feature Done Watcher (T3) |
+
+**Lifecycle:** written once by the Handoff Trigger (T2) at handoff time with `status: "open"` for each impl repo the feature touched. The Feature Done Watcher (T3) polls each URL and updates `status` to `"merged"` as PRs close. When all entries plus `handoff_pr_url` are `"merged"`, `feature_status` transitions to `done`.
+
+**Idempotency:** if `impl_feature_prs` is already present in `status.yaml` when the Handoff Trigger runs, it skips — does not overwrite or duplicate.
+
+**Backward compatibility:** if `impl_feature_prs` is absent or empty (features already `in_handoff` before this ships), the Feature Done Watcher checks only `handoff_pr_url` and emits `impl_feature_prs_missing` — no hard failure.
+
+### Environment variables
+
+Added to `CLAUDE.md` and `.env.template`. Referenced by T1 and T4.
+
+| Variable | Required by | Notes |
+|---|---|---|
+| `REVIEWER_GITHUB_TOKEN` | T1, T4 | PAT for dedicated reviewer GitHub account (`repo` scope) |
+| `REVIEWER_GIT_AUTHOR_NAME` | T1 | Display name for reviewer commits/reviews |
+| `REVIEWER_GIT_AUTHOR_EMAIL` | T1 | Email for reviewer commits/reviews |
+| `FEATURE_REVIEW_INTERVAL` | T4 | Poll cycles between drift checks; default `20` (~10 min at 30s poll) |
 
 ---
 
@@ -113,17 +144,16 @@ New orchestrator poll step `runFeatureReviewCycle` that runs every `FEATURE_REVI
 | Dependency | Required by | Notes |
 |---|---|---|
 | `autonomous-task-orchestrator` shipped | Everything | T8 (lifecycle-manager), T9 (handoff-trigger) must be in place. **Already shipped.** |
-| `impl_feature_prs` in CLAUDE.md (T1) | T3, T4 | Schema must be documented before code that populates/reads it |
-| Handoff Trigger extended (T3) | T4 | Done Watcher checks `impl_feature_prs`, which T3 populates |
-| Reviewer identity env vars (T1) | T2 | Env var names must be agreed before code references them |
+| Handoff Trigger extended (T2) | T3 | Done Watcher checks `impl_feature_prs`, which T2 populates |
+| Feature Done Watcher merged (T3) | T4 | Both T3 and T4 add steps to the `main.ts` poll loop — sequential execution required to avoid merge conflict |
 
 ### External dependencies
 
 | Dependency | Required by | Notes |
 |---|---|---|
-| Second GitHub reviewer account created | T2, T5 | `REVIEWER_GITHUB_TOKEN` must be set in `.env`. Account needs `write` access on all impl repos |
-| `ANTHROPIC_API_KEY` | T5 (semantic analysis step) | Already present in env for existing agent runs |
-| `SLACK_WEBHOOK_URL` | T5 (escalation) | Optional; graceful skip if unset |
+| Second GitHub reviewer account created | T1, T4 | `REVIEWER_GITHUB_TOKEN` must be set in `.env`. Account needs `write` access on all impl repos |
+| `ANTHROPIC_API_KEY` | T4 (semantic analysis step) | Already present in env for existing agent runs |
+| `SLACK_WEBHOOK_URL` | T4 (escalation) | Optional; graceful skip if unset |
 
 ### Unresolved decisions
 
@@ -134,20 +164,18 @@ None. All open questions from the product spec were resolved at approval.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Schema + env template additions (management-repo)
-  └── Can begin now — no blockers
-
-T2: Reviewer Identity injection (workflow)
-T3: Handoff Trigger extension — impl repo feature PRs (workflow)
-T5: Feature Reviewer Daemon (workflow)
-  └── T2, T3, T5 run in parallel
-  └── Can begin now (T1 is documentation-only; code can proceed against agreed env var names)
+T1: Reviewer Identity injection (workflow)
+T2: Lifecycle Manager draft PR wiring + Handoff Trigger extension (workflow)
+  └── T1, T2 run in parallel — can both begin now, no blockers
   │
-  T4: Feature Done Watcher (workflow)
-    └── BLOCKED on T3 (impl_feature_prs must be populated by the extended Handoff Trigger before the watcher can check merge state)
+  T3: Feature Done Watcher (workflow)
+    └── BLOCKED on T2 (impl_feature_prs must be populated by the extended Handoff Trigger before the watcher can check merge state)
+    │
+    T4: Feature Reviewer Daemon (workflow)
+      └── BLOCKED on T3 (both T3 and T4 wire into the main.ts poll loop — sequential execution avoids merge conflict on that section)
 ```
 
-Note: T2 and T5 are both independent of T3/T4 and of each other. The reviewer identity (T2) has no bearing on drift detection (T5). T4 is the only task with a hard dependency.
+Note: T1 runs fully in parallel with the T2 → T3 → T4 chain. T1 and T2 both touch `main.ts` but at different call sites (reviewer dispatch vs lifecycle manager startup) — rebase resolves this cleanly. T3 and T4 both add steps to the same poll loop block in `main.ts`, so they must run sequentially.
 
 ---
 
@@ -155,21 +183,23 @@ Note: T2 and T5 are both independent of T3/T4 and of each other. The reviewer id
 
 | Repo | Tasks | Changes |
 |---|---|---|
-| `management-repo` | T1 | `CLAUDE.md` — add `impl_feature_prs` to `status.yaml` fields table; `.env.template` — add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` |
-| `workflow` | T2, T3, T4, T5 | Orchestrator and skill changes — see per-task detail below |
+| `workflow` | T1, T2, T3, T4 | Orchestrator and skill changes — see per-task detail below |
 
 ### `workflow` repo — affected files
 
 | File | Tasks | Change |
 |---|---|---|
-| `runtime/orchestrator/src/briefing/reviewer-briefing.ts` | T2 | Inject `REVIEWER_*` env vars into reviewer subprocess env |
-| `workflow/technical_skills/review-pr/SKILL.md` | T2 | Prefer `REVIEWER_GITHUB_TOKEN`; both API calls (issue comment + review event) use reviewer identity |
-| `runtime/orchestrator/src/main.ts` | T3 | Pass `githubToken`, `repoOwner`, `repoName` to `runFeatureBranchLifecycle` so management repo draft PR actually fires |
-| `runtime/orchestrator/src/handoff/handoff-trigger.ts` | T3 | Open impl repo feature branch PRs; write `impl_feature_prs` into `status.yaml` |
-| `runtime/orchestrator/src/poll/handle-feature-done.ts` | T4 | New file — Feature Done Watcher |
-| `runtime/orchestrator/src/main.ts` | T4, T5 | Wire new poll steps into cycle |
-| `runtime/orchestrator/src/poll/feature-review-cycle.ts` | T5 | New file — Feature Reviewer Daemon cycle step |
-| `.env.template` (workflow repo copy, if present) | T2 | Add reviewer identity vars |
+| `runtime/orchestrator/src/pr-response/dispatch-reviewer.ts` | T1 | Add `reviewerGithubToken?`, `reviewerGitAuthorName?`, `reviewerGitAuthorEmail?` to opts; inject into `extraEnv` overriding `GITHUB_TOKEN` and `GIT_AUTHOR_*` when set |
+| `runtime/orchestrator/src/main.ts` | T1 | Read `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` from `process.env`; forward to `dispatchReviewer()` |
+| `workflow/technical_skills/review-pr/SKILL.md` | T1 | Prefer `REVIEWER_GITHUB_TOKEN` over `GITHUB_TOKEN`; both API calls (issue comment + review event) use reviewer identity |
+| `runtime/orchestrator/src/main.ts` | T2 | Pass `githubToken`, `repoOwner`, `repoName` to `runFeatureBranchLifecycle` so management repo draft PR actually fires |
+| `runtime/orchestrator/src/handoff/handoff-trigger.ts` | T2 | Open impl repo feature branch PRs; write `impl_feature_prs` into `status.yaml` |
+| `runtime/orchestrator/src/poll/handle-feature-done.ts` | T3 | New file — Feature Done Watcher |
+| `runtime/orchestrator/src/main.ts` | T3, T4 | Wire new poll steps into cycle; read `FEATURE_REVIEW_INTERVAL` from `process.env` for T4 |
+| `runtime/orchestrator/src/poll/feature-review-cycle.ts` | T4 | New file — Feature Reviewer Daemon cycle step |
+| `.env.template` (workflow repo) | T1, T4 | Add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL`, `FEATURE_REVIEW_INTERVAL` |
+| `runtime/orchestrator/templates/.projects/.env.example` | T1, T4 | Add reviewer identity + `FEATURE_REVIEW_INTERVAL` vars with setup comments |
+| `runtime/orchestrator/docs/OPERATOR-GUIDE.md` | T1, T4 | Add reviewer identity setup section; add feature reviewer tuning table |
 
 ---
 
@@ -177,16 +207,16 @@ Note: T2 and T5 are both independent of T3/T4 and of each other. The reviewer id
 
 ### Testing expectations
 
-- **T2**: unit test that reviewer executor env contains `REVIEWER_GITHUB_TOKEN`; integration test that `review-pr` skill posts both calls successfully when reviewer token differs from impl token
-- **T3**: unit test handoff-trigger populates `impl_feature_prs` with correct repo/url/status fields; test idempotency (already set → skip)
-- **T4**: seam tests — all PRs merged → `feature_status: done` written and pushed; one PR still open → no-op; GitHub API error → non-fatal
-- **T5**: unit tests for file-overlap classification; mock Claude API for semantic analysis; escalation path with Slack configured; auto-rebase path with clean rebase; rebase conflict → escalate fallback
+- **T1**: unit test that reviewer executor env contains `REVIEWER_GITHUB_TOKEN`; integration test that `review-pr` skill posts both calls successfully when reviewer token differs from impl token
+- **T2**: unit test handoff-trigger populates `impl_feature_prs` with correct repo/url/status fields; test idempotency (already set → skip)
+- **T3**: seam tests — all PRs merged → `feature_status: done` written and pushed; one PR still open → no-op; GitHub API error → non-fatal
+- **T4**: unit tests for file-overlap classification; mock Claude API for semantic analysis; escalation path with Slack configured; auto-rebase path with clean rebase; rebase conflict → escalate fallback
 
 ### Migration / config impact
 
-- Operators must create a second GitHub account, generate a PAT, and add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` to `.env` before T2/T5 behaviour takes effect.
+- Operators must create a second GitHub account, generate a PAT, and add `REVIEWER_GITHUB_TOKEN`, `REVIEWER_GIT_AUTHOR_NAME`, `REVIEWER_GIT_AUTHOR_EMAIL` to `.env` before T1/T4 behaviour takes effect.
 - If these vars are absent, the existing T10 two-call workaround continues to operate — no hard failure. The `reviewer_self_review_skipped` event remains a valid operational state until the second account is provisioned.
-- New `FEATURE_REVIEW_INTERVAL` env var (default `20` cycles) controls how often the drift daemon runs. Add to `.env.template`.
+- `FEATURE_REVIEW_INTERVAL` env var (default `20` cycles) controls how often the drift daemon runs. Already added to `.env.template`.
 
 ### Backward compatibility
 
