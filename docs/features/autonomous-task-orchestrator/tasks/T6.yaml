@@ -1,7 +1,7 @@
 id: T6
 title: Escalation handler
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T10:53:48.382Z
+  last_updated_at: 2026-05-08T10:57:37.517Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/100
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -50,6 +50,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.49190700000000004
     at: 2026-05-08T10:37:38.012Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T10:57:37.517Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/146
   status: open
