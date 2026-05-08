@@ -1,7 +1,7 @@
 id: T12
 title: Handoff trigger symmetry + state invariant checker
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T12
@@ -9,10 +9,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T17:12:28.492Z
+  last_updated_at: 2026-05-08T17:19:09.224Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/106
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -56,6 +56,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.7611509999999999
     at: 2026-05-08T17:01:33.056Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T17:19:09.224Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/150
   status: open
