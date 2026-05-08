@@ -1,9 +1,9 @@
 feature_id: feature-status-dashboard-v2
 title: Feature Status Dashboard v2
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Teams execute tasks in their implementation repos. T1 is ready to claim.
+feature_status: done
+current_stage: handoff
+next_action: Feature complete.
 
 stages:
   product_spec:
@@ -37,11 +37,21 @@ stages:
         at: "2026-04-27T15:40:27+0700"
         comment: null
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.2703@gmail.com
+    reviewed_at: 2026-05-08T18:13:05Z
+    review_comment: Handoff approved. All 10 tasks delivered (T1–T10), PRs merged across digital-factory-ui and workflow repos.
+    review_history:
+      - status: awaiting_approval
+        by: tiendv.2703@gmail.com
+        at: 2026-05-08T18:10:00Z
+        comment: >-
+          Handoff document written — all 10 tasks done, T1–T10 PRs merged.
+          Full v2 rewrite of Feature Status Dashboard in Next.js 16.
+      - status: approved
+        by: tiendv.2703@gmail.com
+        at: 2026-05-08T18:13:05Z
+        comment: Handoff approved. All 10 tasks delivered (T1–T10), PRs merged across digital-factory-ui and workflow repos.
 
 history:
   - action: approved
@@ -59,6 +69,25 @@ history:
     by: pentative@gmail.com
     at: "2026-04-27T15:40:27+0700"
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: handoff
+    action: entered
+    by: tiendv.2703@gmail.com
+    at: 2026-05-08T18:10:00Z
+    note: >-
+      All 10 tasks done (T1–T10). Handoff document written at
+      docs/features/feature-status-dashboard-v2/handoffs/handoff.md. Feature advanced to in_handoff.
+  - stage: handoff
+    action: submitted
+    by: tiendv.2703@gmail.com
+    at: 2026-05-08T18:10:00Z
+    note: >-
+      Handoff document written — all 10 tasks done, T1–T10 PRs merged.
+      Full v2 rewrite in Next.js 16, React 19, Tailwind v4, HeroUI v3.
+  - stage: handoff
+    action: approved
+    by: tiendv.2703@gmail.com
+    at: 2026-05-08T18:13:05Z
+    note: Handoff approved. Feature advanced to done.
 
 revalidation:
   product_spec_required: false
