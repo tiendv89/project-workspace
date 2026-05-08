@@ -1,76 +1,74 @@
 feature_id: feature-status-dashboard
 title: Feature & Task Status Visualization Dashboard
-
 feature_status: done
 current_stage: handoff
 next_action: null
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-04-18T08:19:24Z"
+    reviewed_at: 2026-04-18T08:19:24Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-04-18T08:19:24Z"
+        at: 2026-04-18T08:19:24Z
         comment: null
   technical_design:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-04-18T08:29:11Z"
+    reviewed_at: 2026-04-18T08:29:11Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-04-18T08:29:11Z"
+        at: 2026-04-18T08:29:11Z
         comment: null
   tasks:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-04-18T08:29:11Z"
+    reviewed_at: 2026-04-18T08:29:11Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-04-18T08:29:11Z"
+        at: 2026-04-18T08:29:11Z
         comment: null
   handoff:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-04-19T00:58:04+0700"
+    reviewed_at: 2026-04-19T00:58:04+0700
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-04-19T00:58:04+0700"
+        at: 2026-04-19T00:58:04+0700
         comment: null
-
 history:
   - stage: product_spec
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T08:19:24Z"
+    at: 2026-04-18T08:19:24Z
     note: Product spec approved. Feature advances to in_tdd.
   - stage: technical_design
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T08:29:11Z"
+    at: 2026-04-18T08:29:11Z
     note: Technical design approved. Feature advances to task planning.
   - stage: tasks
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-04-18T08:29:11Z"
+    at: 2026-04-18T08:29:11Z
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
   - stage: handoff
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-04-19T00:58:04+0700"
+    at: 2026-04-19T00:58:04+0700
     note: All 6 tasks done. Dashboard deployed to GitHub Pages. Feature marked done.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/feature-status-dashboard
+feature_branch_base_sha: e0e2c75d81f9e02573116d737c4eb134f1f15f18
