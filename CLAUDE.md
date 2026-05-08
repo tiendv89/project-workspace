@@ -38,6 +38,7 @@ Features follow this lifecycle:
 - in_progress
 - blocked
 - in_review
+- change_requested
 - done
 - cancelled
 
@@ -73,20 +74,23 @@ Features follow this lifecycle:
 Valid transitions only — skipping a step is a rule violation:
 
 ```
-todo → ready        (auto-ready rule, applied by whoever marks the last dependency done)
-ready → in_progress (start-implementation only)
-in_progress → in_review  (agent or human, after work is complete)
-in_progress → blocked    (agent, when blocked)
-in_review → done    (human only)
-in_review → ready   (human, when rejecting for rework)
-blocked → ready     (human, after resolving the block — only if pr.url is null)
-blocked → in_review (human, after resolving the block — when pr.url is already set)
-any → cancelled     (human only)
+todo → ready                  (auto-ready rule, applied by whoever marks the last dependency done)
+ready → in_progress           (start-implementation only)
+in_progress → in_review       (agent or human, after work is complete)
+in_progress → blocked         (agent, when blocked)
+in_review → done              (human, or reviewer agent when CI + rubric pass)
+in_review → change_requested  (reviewer agent, when REQUEST_CHANGES posted)
+in_review → ready             (human, when rejecting for rework)
+change_requested → in_progress  (fix agent — same first-push-wins claim as ready → in_progress)
+blocked → ready               (human, after resolving the block — only if pr.url is null)
+blocked → in_review           (human, after resolving the block — when pr.url is already set)
+any → cancelled               (human only)
 ```
 
 - `todo → in_progress` is **never valid** — a task must pass through `ready` first.
 - `start-implementation` must hard-stop if the task status is not `ready`.
 - **Unblock target rule**: when a human resolves a block, the target status depends on how far the task had progressed. If `pr.url` is set, reset to `in_review` — the PR already exists and the agent should resume review work. If `pr.url` is null, reset to `ready` — the task has not yet produced a PR and must be re-claimed. Never reset a task to `ready` once a PR has been opened.
+- **Change-requested claim rule**: `change_requested → in_progress` uses the same first-push-wins claim protocol as `ready → in_progress`. The fix agent commits the claim to the management repo task branch before beginning implementation. If the push is rejected (non-fast-forward), the agent must stop — another fix agent won the claim.
 
 ![Task Status Workflow](docs/task-workflow.png)
 
@@ -102,6 +106,25 @@ any → cancelled     (human only)
     First sentence. Second sentence that would be long.
     Continuation is safe here because >- folds lines into spaces.
   ```
+
+### Valid task log action names
+
+The following `action` values are defined for task log entries:
+
+| Action | Set by | Meaning |
+|---|---|---|
+| `created` | human / tech-lead | task file created during breakdown |
+| `ready` | auto-ready rule | task eligible for execution |
+| `claimed` | agent / runtime | status set to `in_progress`, claim commit pushed |
+| `rag_pre_flight` | runtime | RAG context injected before executor spawn |
+| `started` | agent | executor work phase begun |
+| `work_phase_complete` | agent | intermediate work phase finished |
+| `blocked` | agent | task set to `blocked` with reason |
+| `reviewer_started` | reviewer agent | reviewer executor dispatched for a task in `in_review` |
+| `fix_started` | fix agent | fix executor dispatched; status set back to `in_progress` |
+| `retried` | orchestrator | max-turns block reset to `ready` for retry |
+| `done` | human or reviewer agent | task work accepted |
+| `cancelled` | human | task cancelled |
 
 ## Task file scope
 
@@ -134,9 +157,10 @@ execution:
 ## Review boundary
 
 - Agents may move work to `in_review`
-- Humans review, validate, and decide whether work becomes `done`
+- Humans review, validate, and decide whether work becomes `done`; reviewer agents may also mark `done` when CI and the quality rubric both pass
+- Reviewer agents may set `change_requested` when posting a `REQUEST_CHANGES` GitHub review
 - Agents do not approve stages
-- Agents do not mark tasks `done`
+- Agents do not mark tasks `done` for tasks with `execution.requires_human_review: true`
 
 ## Commit-before-block rule
 
@@ -521,6 +545,20 @@ When the GitNexus MCP tools (`mcp__gitnexus__*`) are available, agents must use 
 **Never open an entire file** just to find a symbol when GitNexus can answer it directly. **Never skip GitNexus** when the tools are available and the question is structural.
 
 The `mcp__gitnexus__*` tools appear when `GITNEXUS_MCP_URL` is set in the executor environment. TypeScript and Python are the primary indexed languages; for other languages verify coverage with grep if results seem incomplete. This rule applies in both interactive sessions and agent runtime. Its purpose is to leverage the pre-built AST + call-graph index for structural questions rather than doing expensive full-file reads or grep scans.
+## status.yaml — feature-branch fields
+
+The `status.yaml` file in each feature directory tracks both stage-level review state and
+orchestrator-managed branch/drift metadata. The following fields are written and read by the
+orchestrator; they are not present in hand-authored status files until the orchestrator creates them.
+
+| Field | Type | Written by | Description |
+|---|---|---|---|
+| `feature_branch` | string | orchestrator (Feature Branch Lifecycle Manager, T8) | Branch name for the feature, e.g. `feature/{feature_id}`. Written once on first orchestrator run; never overwritten. |
+| `feature_branch_base_sha` | string | orchestrator (Feature Branch Lifecycle Manager, T8) | `git merge-base` SHA at the time the feature branch was created from the base branch. Used by the drift daemon to detect base-branch divergence. Never overwritten after initial write. |
+| `handoff_pr_url` | string or null | orchestrator (Handoff Trigger, T9) | URL of the PR that merges `feature/{feature_id}` into the base branch. Set when the Handoff Trigger fires; `null` until then. |
+| `drift_detected` | boolean | autonomous-feature-reviewer daemon | `true` when the drift daemon detects that the base branch has advanced past `feature_branch_base_sha`. Reset to `false` once the feature branch is rebased. |
+| `drift_reason` | string or null | autonomous-feature-reviewer daemon | Human-readable description of the detected drift (e.g. conflicting commit SHA and summary). `null` when `drift_detected` is `false`. |
+
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
