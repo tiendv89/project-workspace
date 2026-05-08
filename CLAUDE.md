@@ -555,7 +555,8 @@ orchestrator; they are not present in hand-authored status files until the orche
 |---|---|---|---|
 | `feature_branch` | string | orchestrator (Feature Branch Lifecycle Manager, T8) | Branch name for the feature, e.g. `feature/{feature_id}`. Written once on first orchestrator run; never overwritten. |
 | `feature_branch_base_sha` | string | orchestrator (Feature Branch Lifecycle Manager, T8) | `git merge-base` SHA at the time the feature branch was created from the base branch. Used by the drift daemon to detect base-branch divergence. Never overwritten after initial write. |
-| `handoff_pr_url` | string or null | orchestrator (Handoff Trigger, T9) | URL of the PR that merges `feature/{feature_id}` into the base branch. Set when the Handoff Trigger fires; `null` until then. |
+| `handoff_pr_url` | string or null | orchestrator (Handoff Trigger) | URL of the management repo feature branch PR (`feature/{feature_id}` → `main`). Set when the Handoff Trigger fires; `null` until then. |
+| `impl_feature_prs` | list | orchestrator (Handoff Trigger, autonomous-feature-reviewer T2) | Implementation repo feature branch PRs opened by the Handoff Trigger. Each entry: `repo` (matches `workspace.yaml repos[].id`), `url` (GitHub PR URL), `status` (`"open"` \| `"merged"`). Absent until handoff; if absent, Feature Done Watcher checks only `handoff_pr_url`. |
 | `drift_detected` | boolean | autonomous-feature-reviewer daemon | `true` when the drift daemon detects that the base branch has advanced past `feature_branch_base_sha`. Reset to `false` once the feature branch is rebased. |
 | `drift_reason` | string or null | autonomous-feature-reviewer daemon | Human-readable description of the detected drift (e.g. conflicting commit SHA and summary). `null` when `drift_detected` is `false`. |
 
