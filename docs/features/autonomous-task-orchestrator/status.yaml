@@ -4,9 +4,9 @@ title: Autonomous Task Orchestrator
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: >-
-  Tasks re-approved (T8 + T9 added). T1 and T7 are ready for agents to pick up.
-  T2, T3, T8 unblock once T1 is done. T4, T5, T6 unblock once T2 is done.
-  T9 unblocks once T5 and T8 are both done.
+  T10, T11, T12 added (Appendix A gap analysis). All three have no dependencies
+  and can begin immediately once the task breakdown is re-approved. Re-approve
+  the tasks stage to activate them.
 
 feature_branch: feature/autonomous-task-orchestrator
 feature_branch_base_sha: 8b7926b8eaeedbde4a381adcf1834a7fa9c01e65
@@ -36,13 +36,11 @@ stages:
         at: "2026-05-08T00:56:24+0700"
         comment: null
   tasks:
-    review_status: approved
-    reviewed_by: matthew@swellnetwork.io
-    reviewed_at: "2026-05-08T01:37:59+0700"
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
     review_comment: >-
-      Re-approved after adding T8 (Feature Branch Lifecycle Manager) and T9
-      (Handoff Trigger + document generation). Technical design updated with
-      combined scope from autonomous-feature-reviewer PR #127.
+      T10, T11, T12 added (Appendix A gap analysis). Awaiting re-approval.
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
@@ -95,5 +93,5 @@ history:
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: false
+  tasks_required: true
   deployment_checklist_required: false

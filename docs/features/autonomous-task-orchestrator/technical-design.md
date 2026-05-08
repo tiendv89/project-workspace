@@ -456,3 +456,58 @@ T7: Orchestrator config — workspace.yaml orchestrator block with
           └── BLOCKED on T5 (all-tasks-done hook must exist)
           └── BLOCKED on T8 (feature branch must exist to open the PR against)
 ```
+
+---
+
+## Appendix A — Post-implementation Gap Analysis
+
+Discovered after T1–T9 merged by running the orchestrator end-to-end on this feature.
+
+### Gap 1 — Self-review failure in reviewer agent
+
+**Observed:** The bot GitHub account that opens implementation PRs (via `pr-create`) is the same account the reviewer agent uses. GitHub returns HTTP 422 when a user attempts to post a formal `APPROVE` or `REQUEST_CHANGES` review on their own PR. The `review-pr` skill uses a single `POST /pulls/{n}/reviews` call that bundles the comment body and the review event. On 422, both are lost — no comment lands on the PR, and the executor fails.
+
+**Root cause:** The self-review restriction applies to `POST /repos/{owner}/{repo}/pulls/{n}/reviews`. It does not apply to `POST /repos/{owner}/{repo}/issues/{n}/comments`.
+
+**Fix (T10):** Split the review post into two separate calls:
+
+1. **Comment body** — `POST /repos/{owner}/{repo}/issues/{n}/comments`. Always succeeds regardless of PR authorship. Posts the full review narrative, findings, and recommendations as a regular comment.
+2. **Review event** — `POST /repos/{owner}/{repo}/pulls/{n}/reviews` with `event: "APPROVE"` or `"REQUEST_CHANGES"`. Attempt after posting the comment. On HTTP 422, emit `reviewer_self_review_skipped` and continue without failing the executor.
+
+The task YAML mutation (`passed` or `change_requested`) proceeds regardless of whether the formal review event was accepted by GitHub. The comment provides the human-readable record.
+
+New event: `reviewer_self_review_skipped` (`task_id`, `feature_id`, `pr_number`).
+
+### Gap 2 — Workspace PR status not written back after successful merge
+
+**Observed:** In `handleMergedPrs`, after `mergeWorkspacePrViaApi` succeeds, the function emits `workspace_pr_merged` but does not write `task.workspace_pr.status = "merged"` back to the task YAML. The task YAML retains `workspace_pr.status: open`. On the next poll cycle, `handleWorkspacePrRecoveries` sees the open status, calls the GitHub API, receives a 404 or 422 (already merged), and produces noisy events. The same issue affects the fast path (task already `done` but workspace PR still open).
+
+**Root cause:** The workspace PR merge (step 6 in `handleMergedPrs`) runs after the task YAML has already been committed and pushed (step 5). The merged status is never written back.
+
+**Fix (T11):** After `mergeWorkspacePrViaApi` succeeds in both paths, write `task.workspace_pr.status = "merged"` to the task YAML, commit with message `chore(TN): record workspace PR merged`, and push to the task branch. On push failure, fetch + rebase + retry once; if still failing, emit `workspace_pr_status_write_failed` (non-fatal — the PR is already merged on GitHub; the stale `open` status will be retried next cycle).
+
+### Gap 3 — Handoff trigger asymmetry + state invariant checker
+
+**Observed:** Two code paths can mark a task `done`, but only one fires the handoff:
+
+| Path | Marks task `done` | Calls `checkAllTasksDone` | Fires handoff |
+|---|---|---|---|
+| Reviewer agent (`kind=review`) → `dispatchReviewResult` | Yes | Yes | **Yes** |
+| Impl PR merged on GitHub → `handleMergedPrs` | Yes | No | **No** |
+
+When the last task reaches `done` via the pr-merge loop (impl PR merged without going through the reviewer agent), the handoff trigger never fires. Additionally, auto-ready cascade failures in `handleMergedPrs` (push rejected after rebase conflict) leave dependent tasks stuck in `todo` with no automatic recovery.
+
+**Fix — part 1: Inline symmetry (T12)**
+
+Add `checkAllTasksDone` + `fireHandoffTrigger` to `handleMergedPrs` immediately after the task YAML push succeeds, symmetric with `dispatchReviewResult`. The handoff fires regardless of which "done" path the last task takes.
+
+**Fix — part 2: State invariant checker (T12)**
+
+A lightweight checker that runs inside the existing poll cycle every N cycles (default 5, controlled by `STATE_INVARIANT_CHECK_INTERVAL`) as a safety net. Not a new loop — a single function called after `handleMergedPrs` on the same cycle. Scans all task YAMLs for two invariant violations:
+
+1. **Stuck dependent** — task is `done` but a sibling task is `todo` with all its `depends_on` entries satisfied → apply `todo → ready`, append `ready` log entry.
+2. **Stuck handoff** — all tasks are `done`/`cancelled` (at least one `done`), `feature_status` is not `in_handoff`, `handoff_pr_url` is null → re-invoke `fireHandoffTrigger`.
+
+The checker is a recovery mechanism for failures in the primary path, not the primary path itself. Emits `state_invariant_violation` for each correction applied.
+
+**Design rationale:** The system stays event-driven for the normal path. The invariant checker is a single scan function called at most once per 5 cycles inside the existing poll loop — not a new timer or process. The primary inline dispatch + handoff path handles the normal case; the checker is the fallback.

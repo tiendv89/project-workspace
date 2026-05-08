@@ -1,0 +1,24 @@
+id: T12
+title: Handoff trigger symmetry + state invariant checker
+repo: workflow
+status: todo
+depends_on: []
+blocked_reason: null
+branch: feature/autonomous-task-orchestrator-T12
+execution:
+  actor_type: agent
+  requires_human_review: true
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-08T23:15:44+0700
+    note: >-
+      Added as part of Appendix A gap analysis — handleMergedPrs does not call
+      fireHandoffTrigger; state invariant checker added as safety net for missed
+      auto-ready and missed handoff transitions.
+workspace_pr:
+  url: null
+  status: null

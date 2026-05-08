@@ -16,6 +16,9 @@
 | T5 | 3 | Auto-done writer | workflow | T2 |
 | T6 | 3 | Escalation handler | workflow | T2 |
 | T9 | 4 | Handoff Trigger + document generation | workflow | T5, T8 |
+| T10 | 5 | Fix self-review failure in reviewer agent | workflow | — |
+| T11 | 5 | Write workspace PR status back after successful merge | workflow | — |
+| T12 | 5 | Handoff trigger symmetry + state invariant checker | workflow | — |
 
 ---
 
@@ -269,3 +272,73 @@ Depends on T8 (feature branch must exist) and T5 (all-tasks-done detection must 
   - Notify operator via `SLACK_WEBHOOK_URL` (if set): feature ID, handoff PR URL, summary
 - [ ] Emit `feature_handoff_triggered`, `handoff_pr_opened`, `draft_pr_skipped`, `task_pr_promote_failed`, and `task_pr_demote_failed` events
 - [ ] Add tests: all tasks done triggers handoff; some tasks cancelled + rest done still triggers; one task still in_progress does not trigger; draft PR created on first branch setup; draft PR skipped on restart when handoff_pr_url already set
+
+---
+
+## T10 — Fix self-review failure in reviewer agent
+
+### Description
+The bot account that opens implementation PRs (via `pr-create`) is the same account the reviewer agent authenticates as. GitHub returns HTTP 422 when a user posts a formal `APPROVE` or `REQUEST_CHANGES` review on their own PR, causing both the comment body and the review event to be lost.
+
+Fix: split the review post into two separate API calls. The comment body (`POST /issues/{n}/comments`) is not subject to the self-review restriction and must always be posted. The review event (`POST /pulls/{n}/reviews`) is attempted separately; on 422, emit `reviewer_self_review_skipped` and continue. The task YAML mutation (`passed` or `change_requested`) proceeds regardless.
+
+### Required skills
+- backend-engineer
+
+### Subtasks
+- [ ] Update `workflow/technical_skills/review-pr/SKILL.md`:
+  - Add a "Self-review handling" section explaining the two-call pattern
+  - Step 1: `POST /repos/{owner}/{repo}/issues/{pr_number}/comments` with the full review narrative — always execute, no error suppression
+  - Step 2: `POST /repos/{owner}/{repo}/pulls/{pr_number}/reviews` with `event` and `body` — attempt after step 1; on HTTP 422 log `reviewer_self_review_skipped` and skip; all other errors are fatal
+  - Ensure `result.json` is written with the correct `terminal_status` regardless of whether step 2 succeeded
+- [ ] Add `reviewer_self_review_skipped` to the valid event vocabulary (emit from the executor via the event log or stdout)
+- [ ] Add test: reviewer posts comment successfully but review event returns 422 → comment is visible, result.json terminal_status is correct, `reviewer_self_review_skipped` emitted
+
+---
+
+## T11 — Write workspace PR status back after successful merge
+
+### Description
+`handleMergedPrs` in the orchestrator emits `workspace_pr_merged` after a successful `mergeWorkspacePrViaApi` call but never writes `task.workspace_pr.status = "merged"` back to the task YAML. On the next poll cycle, `handleWorkspacePrRecoveries` sees `status: open`, calls the GitHub API, and receives 404 or 422 (already merged). This produces noisy events and wasted API calls on every subsequent cycle until the PR URL is cleaned up manually.
+
+The same gap exists in the fast path (task already `done`, workspace PR still open).
+
+### Required skills
+- typescript-best-practices
+- backend-engineer
+
+### Subtasks
+- [ ] In `runtime/orchestrator/src/poll/handle-merged-prs.ts`, main done path: after `mergeApiResult.success`, write `task.workspace_pr = { ...task.workspace_pr, status: "merged" }`, call `writeFileSync`, commit with `chore(${taskId}): record workspace PR merged`, push to task branch; on push failure (non-fast-forward), fetch + rebase + retry once; if still failing, emit `workspace_pr_status_write_failed` and continue (non-fatal)
+- [ ] Apply the same write-back in the fast path (task already `done` guard block around line 282): after `fastMergeResult.success`, checkout the task branch, write the merged status, commit, and push with the same retry-once logic
+- [ ] Add tests: successful merge followed by YAML write-back and push; push failure emits `workspace_pr_status_write_failed` and does not throw; next cycle sees `status: merged` and skips the recovery path
+
+---
+
+## T12 — Handoff trigger symmetry + state invariant checker
+
+### Description
+Two gaps addressed together:
+
+1. **Handoff trigger asymmetry**: `handleMergedPrs` marks tasks `done` (when an implementation PR merges on GitHub) but never calls `fireHandoffTrigger`. The handoff only fires via `dispatchReviewResult`. If the last task reaches `done` through the pr-merge loop, the handoff is silently skipped.
+
+2. **No automatic recovery for missed transitions**: auto-ready cascade failures and missed handoff triggers currently require manual intervention. A lightweight state invariant checker running on the existing poll cycle recovers these without adding a new loop.
+
+### Required skills
+- typescript-best-practices
+- backend-engineer
+
+### Subtasks
+
+#### Part 1 — Inline handoff trigger in handleMergedPrs
+- [ ] In `runtime/orchestrator/src/poll/handle-merged-prs.ts`, after a task YAML push succeeds (after `emit({ type: "task_marked_done" })`), call `checkAllTasksDone(workspaceRoot, featureId, taskId)`; if `true`, call `fireHandoffTrigger` with the same options passed to the existing call in `dispatchReviewResult` (resolve `owner`, `repo`, `baseBranch` via `parseManagementRepoCoords`); errors are non-fatal (emit `handoff_trigger_failed`)
+- [ ] Add tests: last task done via pr-merge loop triggers handoff; non-last task done does not trigger
+
+#### Part 2 — State invariant checker
+- [ ] Create `runtime/orchestrator/src/poll/state-invariant-checker.ts`:
+  - Export `runStateInvariantCheck(opts)` — scans all task YAMLs for the two invariant violations below
+  - **Stuck dependent**: for each `done` task, check each sibling whose `status === "todo"` and whose entire `depends_on` list is now `done` → transition to `ready`, append `ready` log entry, write YAML, commit, push; emit `state_invariant_violation` with `kind: "stuck_dependent"`
+  - **Stuck handoff**: if all tasks are `done`/`cancelled` (at least one `done`) and `status.yaml.feature_status !== "in_handoff"` and `handoff_pr_url` is null → call `fireHandoffTrigger`; emit `state_invariant_violation` with `kind: "stuck_handoff"`
+  - Each violation is processed independently — one failure does not block others
+- [ ] In `runtime/orchestrator/src/main.ts`, add a cycle counter; every `STATE_INVARIANT_CHECK_INTERVAL` cycles (env var, default `5`), call `runStateInvariantCheck` after `handleMergedPrs`
+- [ ] Add `STATE_INVARIANT_CHECK_INTERVAL` to `.env.template` (default `5`)
+- [ ] Add tests: stuck dependent is readied; stuck handoff triggers handoff; partial failure (one violation fails) does not block others; check skips when interval not reached
