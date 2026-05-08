@@ -1,17 +1,17 @@
 id: T7
 title: Orchestrator config in workspace.yaml
 repo: management-repo
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-07T19:35:31.230Z
+  last_updated_at: 2026-05-08T05:12:54.184Z
 pr:
   url: https://github.com/tiendv89/project-workspace/pull/129
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -79,6 +79,11 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.300447
     at: 2026-05-07T19:35:31.230Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T05:12:54.184Z
+    note: Implementation PR merged — automated close-out after orphaned-branch
+      recovery.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/129
-  status: open
+  status: merged
