@@ -1,76 +1,74 @@
 feature_id: gitnexus-mcp-integration
 title: GitNexus Code-Graph MCP Integration
-
 feature_status: done
 current_stage: handoff
 next_action: Feature complete.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-06T08:49:01Z"
+    reviewed_at: 2026-05-06T08:49:01Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-05-06T08:49:01Z"
+        at: 2026-05-06T08:49:01Z
         comment: null
   technical_design:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-06T08:49:01Z"
+    reviewed_at: 2026-05-06T08:49:01Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-05-06T08:49:01Z"
+        at: 2026-05-06T08:49:01Z
         comment: null
   tasks:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-06T08:52:02Z"
+    reviewed_at: 2026-05-06T08:52:02Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-05-06T08:52:02Z"
+        at: 2026-05-06T08:52:02Z
         comment: null
   handoff:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
-    reviewed_at: "2026-05-07T09:53:56Z"
+    reviewed_at: 2026-05-07T09:53:56Z
     review_comment: null
     review_history:
       - status: approved
         by: matthew@liquid-labs.xyz
-        at: "2026-05-07T09:53:56Z"
+        at: 2026-05-07T09:53:56Z
         comment: null
-
 history:
   - stage: product_spec
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-05-06T08:49:01Z"
+    at: 2026-05-06T08:49:01Z
   - stage: technical_design
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-05-06T08:49:01Z"
+    at: 2026-05-06T08:49:01Z
   - stage: tasks
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-05-06T08:52:02Z"
+    at: 2026-05-06T08:52:02Z
   - stage: handoff
     action: submitted
     by: matthew@swellnetwork.io
-    at: "2026-05-07T16:42:39+0700"
+    at: 2026-05-07T16:42:39+0700
   - stage: handoff
     action: approved
     by: matthew@liquid-labs.xyz
-    at: "2026-05-07T09:53:56Z"
-
+    at: 2026-05-07T09:53:56Z
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/gitnexus-mcp-integration
+feature_branch_base_sha: e0e2c75d81f9e02573116d737c4eb134f1f15f18
