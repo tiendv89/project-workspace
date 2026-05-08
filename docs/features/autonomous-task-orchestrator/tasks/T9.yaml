@@ -1,7 +1,7 @@
 id: T9
 title: Handoff Trigger + document generation
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T5
   - T8
@@ -11,10 +11,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T12:03:22.763Z
+  last_updated_at: 2026-05-08T14:33:29.857Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/102
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -56,11 +56,14 @@ log:
   - action: work_phase_complete
     by: matthew@swellnetwork.io
     at: 2026-05-08T21:24:29+0700
-    note: >-
-      Task PR draft lifecycle implemented: curlJson PATCH draft→false on
+    note: "Task PR draft lifecycle implemented: curlJson PATCH draft→false on
       in_review in dispatch.ts; PATCH draft→true on change_requested in
       dispatch-review-result.ts; pr-create skill updated to open PRs as draft.
-      Tests added for both promote and demote paths. Pushed to PR #102.
+      Tests added for both promote and demote paths. Pushed to PR #102."
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T14:33:29.857Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/147
   status: open
