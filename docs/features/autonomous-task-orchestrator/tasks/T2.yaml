@@ -8,6 +8,7 @@ blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T2
 execution:
   actor_type: agent
+  requires_human_review: true
   last_updated_by: null
   last_updated_at: null
 pr:
