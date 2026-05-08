@@ -1,8 +1,9 @@
 id: T3
 title: review-pr skill
 repo: workflow
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T3
 execution:
@@ -15,5 +16,9 @@ pr:
 log:
   - action: created
     by: matthew@liquid-labs.xyz
-    at: "2026-05-08T00:58:33+0700"
+    at: 2026-05-08T00:58:33+0700
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-08T05:09:37.046Z
+    note: Task activated — dependency T1 merged and marked done.

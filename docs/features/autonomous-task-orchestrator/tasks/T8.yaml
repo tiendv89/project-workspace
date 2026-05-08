@@ -1,8 +1,9 @@
 id: T8
 title: Feature Branch Lifecycle Manager
 repo: workflow
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T8
 execution:
@@ -15,7 +16,10 @@ pr:
 log:
   - action: created
     by: matthew@swellnetwork.io
-    at: "2026-05-08T01:33:39+0700"
-    note: >-
-      Task added during task breakdown revision to cover Feature Branch
+    at: 2026-05-08T01:33:39+0700
+    note: Task added during task breakdown revision to cover Feature Branch
       Lifecycle Manager — missing from original T1–T7 breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-08T05:09:37.051Z
+    note: Task activated — dependency T1 merged and marked done.
