@@ -208,7 +208,6 @@ Typical required values:
 - `GIT_AUTHOR_NAME`
 - `GIT_AUTHOR_EMAIL`
 - `GITHUB_ACCOUNT`
-- `SSH_KEY_PATH`
 
 ## Figma link propagation rule
 
@@ -334,10 +333,9 @@ This protocol applies to:
 
 ## Git / SSH rules
 
-- Repository operations must use the SSH key configured in project `.env` through `SSH_KEY_PATH`
-- Do not assume the default SSH key is correct
-- If `SSH_KEY_PATH` is missing, require the user to provide it
-- If a repo requires SSH auth, the workflow should use the resolved `SSH_KEY_PATH` explicitly
+- SSH authentication is handled by the runtime: the executor sets `GIT_SSH_COMMAND` via `SSH_PRIVATE_KEY` before spawning agents; in interactive sessions git uses the local SSH agent / `~/.ssh/config`
+- Agents must not attempt to configure SSH keys manually — `GIT_SSH_COMMAND` is already set
+- `SSH_KEY_PATH` is not a workflow env var — do not reference or require it
 
 ## Git hard-reset safety rule
 
@@ -398,8 +396,8 @@ Rules:
 
 ## SSH rule
 
-- SSH-based git access must use `SSH_KEY_PATH` resolved through `resolve-project-env`
-- Do not assume the default SSH key is correct
+- SSH authentication is transparent — the executor sets `GIT_SSH_COMMAND` before spawning agents; interactive sessions rely on the local SSH agent / `~/.ssh/config`
+- Agents must not attempt to read or configure SSH keys; `SSH_KEY_PATH` is not a required or valid workflow variable
 
 ## Per-task required skills
 
@@ -545,6 +543,7 @@ When the GitNexus MCP tools (`mcp__gitnexus__*`) are available, agents must use 
 **Never open an entire file** just to find a symbol when GitNexus can answer it directly. **Never skip GitNexus** when the tools are available and the question is structural.
 
 The `mcp__gitnexus__*` tools appear when `GITNEXUS_MCP_URL` is set in the executor environment. TypeScript and Python are the primary indexed languages; for other languages verify coverage with grep if results seem incomplete. This rule applies in both interactive sessions and agent runtime. Its purpose is to leverage the pre-built AST + call-graph index for structural questions rather than doing expensive full-file reads or grep scans.
+
 ## status.yaml — feature-branch fields
 
 The `status.yaml` file in each feature directory tracks both stage-level review state and
