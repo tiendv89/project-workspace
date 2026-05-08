@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T08:58:16.225Z
+  last_updated_at: 2026-05-08T09:56:02.929Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/96
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@liquid-labs.xyz
@@ -82,6 +82,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.5846729999999999
     at: 2026-05-08T08:55:52.469Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T09:56:02.929Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/136
   status: open
