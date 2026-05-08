@@ -108,6 +108,26 @@ Auto-generated when all tasks transition to `done`. Contents:
 - Open risks or follow-up items flagged during execution
 - Timestamp and actor audit trail
 
+## Reviewer Identity
+
+The GitHub account that opens implementation PRs (the executor bot) cannot post a formal `APPROVE` or `REQUEST_CHANGES` review on its own PRs — GitHub returns HTTP 422 for self-reviews. The two-call workaround introduced in `autonomous-task-orchestrator` T10 (issue comment always posts; review event 422 is swallowed) is a partial fix that loses the structured review event.
+
+The clean fix is a dedicated reviewer identity: a second GitHub account whose PAT is used exclusively by the reviewer agent when posting GitHub reviews. This account never opens PRs, so self-review can never occur.
+
+**Requirements:**
+
+- A dedicated GitHub reviewer account must be created (e.g. `zbotdev-reviewer`) and added as a collaborator to each implementation repo with `write` access (minimum to post reviews).
+- The following env vars must be set:
+  - `REVIEWER_GITHUB_TOKEN` — PAT for the reviewer account, scoped to `repo`
+  - `REVIEWER_GIT_AUTHOR_NAME` — display name for the reviewer account
+  - `REVIEWER_GIT_AUTHOR_EMAIL` — email for the reviewer account
+- The orchestrator's reviewer agent dispatch must inject these three vars into the reviewer executor's environment instead of the standard `GITHUB_TOKEN` / `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL`.
+- The feature reviewer daemon (drift detection) must also use `REVIEWER_GITHUB_TOKEN` when posting feature-level PR comments or reviews.
+- The impl executor continues to use `GITHUB_TOKEN` / `GIT_AUTHOR_NAME` / `GIT_AUTHOR_EMAIL` — its identity is unchanged.
+
+**Effect on T10 workaround:**
+Once the reviewer identity is in place, the two-call workaround in `review-pr` skill can be simplified: both the issue comment and the review event use the reviewer PAT and will succeed without 422. The `reviewer_self_review_skipped` fallback should be retained as a safety net but should no longer fire in normal operation.
+
 ## Per-task Human Review Override
 
 Individual tasks can opt out of auto-merge by setting:
@@ -130,22 +150,76 @@ feature_reviewer:
   escalation:
     channel: slack
     webhook_url: $SLACK_WEBHOOK_URL
+  reviewer_identity:
+    github_token: $REVIEWER_GITHUB_TOKEN
+    git_author_name: $REVIEWER_GIT_AUTHOR_NAME
+    git_author_email: $REVIEWER_GIT_AUTHOR_EMAIL
 ```
+
+`.env.template` additions:
+```
+REVIEWER_GITHUB_TOKEN=      # PAT for dedicated reviewer GitHub account
+REVIEWER_GIT_AUTHOR_NAME=   # e.g. "ZBot Reviewer"
+REVIEWER_GIT_AUTHOR_EMAIL=  # e.g. "reviewer@example.com"
+```
+
+## Feature Merge Process and Done Detection
+
+A feature is only truly `done` when **all** of the following PRs are merged:
+
+1. **Each implementation repo's feature branch PR** — `feature/{feature_id}` → `{base_branch}` in each repo that the feature touched. These are opened by the Handoff Trigger (from `autonomous-task-orchestrator` T9) when all tasks are done.
+2. **The management repo's feature branch PR** — `feature/{feature_id}` → `main` in the management repo. This is the PR that contains the handoff document, all task YAML final states, and the final `status.yaml` with `feature_status: in_handoff`.
+
+The human reviews and merges these PRs to approve the feature. A dedicated **Feature Done Watcher** daemon detects when all feature PRs are merged and transitions `feature_status` from `in_handoff` to `done`.
+
+### Feature Done Watcher
+
+Analogous to the task-level `handleMergedPrs` loop, this daemon:
+
+1. Polls all features with `feature_status: in_handoff`.
+2. For each, reads the list of feature PRs from `status.yaml` — the `handoff_pr_url` field covers the management repo PR; implementation repo feature PRs are tracked in a new `impl_feature_prs` list in `status.yaml` (see below).
+3. Calls the GitHub API to check the merge state of each PR.
+4. When **all** PRs in the list are merged: transitions `feature_status` to `done`, commits the updated `status.yaml` to the management repo `main` branch, and emits `feature_done`.
+
+### status.yaml additions for feature merge tracking
+
+```yaml
+handoff_pr_url: null          # management repo feature branch PR (set by Handoff Trigger)
+impl_feature_prs:             # implementation repo feature branch PRs (set by Handoff Trigger)
+  - repo: workflow
+    url: https://github.com/org/agent-workflow/pull/123
+    status: open              # open | merged
+feature_status: in_handoff    # transitions to done when all above are merged
+```
+
+The Handoff Trigger (already built in `autonomous-task-orchestrator` T9) must be updated to populate `impl_feature_prs` at the time it opens the implementation repo feature branch PR.
+
+### Handoff document
+
+The handoff document is committed to the management repo at `docs/features/{feature_id}/handoffs/handoff.md` — the same location used by all previous features (consistent with the management repo as the authoritative record). It is committed as part of the management repo feature branch, and is visible in the management repo feature branch PR for human review alongside the final task state.
+
+The handoff document is **not** used as the GitHub PR description — the PR description is a short summary; the full handoff document lives in the repo file.
+
+### Feature reviewer agent scope
+
+The feature reviewer agent's responsibility **ends when the feature branch PR is merged**. It does not continue watching after merge. Post-merge regression detection is out of scope for this feature and would be addressed by a separate monitoring layer if needed.
 
 ## Dependencies
 
 - Depends on `autonomous-task-orchestrator` being in place — the feature reviewer agent acts on features the orchestrator manages.
-- The orchestrator is responsible for creating the feature branch and opening the feature PR at handoff.
-- The feature reviewer agent is a separate daemon that watches existing in_handoff features.
+- The Handoff Trigger (from `autonomous-task-orchestrator` T9) must be extended to open implementation repo feature branch PRs and populate `impl_feature_prs` in `status.yaml`.
+- The Feature Done Watcher is a new daemon introduced by this feature.
+- The feature reviewer agent is a separate daemon that watches existing `in_handoff` features for base-branch drift.
 
 ## Success Metrics
 
-- Human reviews one PR per feature, not one per task.
+- Human reviews one PR per feature per repo, not one per task.
 - Drift is detected within one poll cycle of landing on main.
 - Task-level drift is resolved automatically with no human action in ≥ 80% of cases.
 - Escalation messages contain enough context for the human to act without reading full diffs.
+- Feature transitions to `done` automatically when all feature PRs are merged — no manual status update required.
 
-## Open Questions
+## Decisions
 
-1. Should the feature reviewer agent continue watching after the human merges the feature branch (to detect post-merge regressions), or does its responsibility end at merge?
-2. Should the handoff document be committed to the management repo as a file, or generated as a GitHub PR description?
+1. **Feature reviewer scope**: ends at merge. No post-merge regression detection.
+2. **Handoff document location**: committed to `docs/features/{feature_id}/handoffs/handoff.md` in the management repo, consistent with all prior features.

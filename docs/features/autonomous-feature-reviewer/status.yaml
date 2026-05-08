@@ -1,17 +1,40 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: >-
+  Product spec approved. Tech lead can now produce technical-design.md.
+  Note: a draft technical-design.md already exists and must be revised to
+  incorporate the Reviewer Identity section, Feature Merge Process, Feature
+  Done Watcher, impl_feature_prs status.yaml fields, and resolved open
+  questions before the technical design stage can be approved.
+
+feature_branch: feature/autonomous-feature-reviewer
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@liquid-labs.xyz
+    reviewed_at: 2026-05-09T01:34:52+0700
+    review_comment: >-
+      Approved. Spec updated to add Reviewer Identity section (dedicated
+      REVIEWER_GITHUB_TOKEN + author identity for the reviewer agent),
+      Feature Merge Process and Done Detection section (Feature Done Watcher
+      daemon, impl_feature_prs tracking in status.yaml, Handoff Trigger
+      extension), and resolved both open questions: reviewer scope ends at
+      merge; handoff document committed to
+      docs/features/{feature_id}/handoffs/handoff.md.
+    review_history:
+      - at: 2026-05-09T01:34:52+0700
+        by: matthew@liquid-labs.xyz
+        action: approved
+        note: >-
+          Product spec approved after adding Reviewer Identity (dedicated
+          reviewer GitHub account + PAT), Feature Done Watcher (analogous
+          to handleMergedPrs at feature level), impl_feature_prs tracking,
+          and resolving open questions on reviewer scope and handoff document
+          location. Feature advances from in_design to in_tdd.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +54,21 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - action: feature_branch_created
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-09T01:34:52+0700
+    note: >-
+      Feature branch feature/autonomous-feature-reviewer created from main
+      at product spec approval.
+  - action: approved
+    stage: product_spec
+    by: matthew@liquid-labs.xyz
+    at: 2026-05-09T01:34:52+0700
+    note: >-
+      Product spec approved. Feature advances to in_tdd. Tech lead to revise
+      existing technical-design.md to incorporate Reviewer Identity, Feature
+      Done Watcher, impl_feature_prs, and resolved open questions.
 
 revalidation:
   product_spec_required: false
