@@ -1,7 +1,7 @@
 id: T7
 title: Error states, empty states, and end-to-end QA
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T4
   - T5
@@ -11,10 +11,10 @@ branch: feature/dashboard-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-08T05:30:45.744Z
+  last_updated_at: 2026-05-08T06:30:42.265Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/30
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
