@@ -244,6 +244,33 @@ Dispatched when task status is `change_requested`. Submitted with `kind=impl` (s
 
 The task returns to `in_review` and the reviewer runs again on the next cycle. If the reviewer finds the fixes acceptable, it approves and the task reaches `done`. If not, it posts a new `REQUEST_CHANGES` — and when the cycle counter reaches `MAX_REVIEW_CYCLES` the next reviewer dispatch will escalate instead.
 
+### Task PR Draft Lifecycle
+
+Task PRs mirror task state — draft while the agent is working, ready-for-review only when a reviewer should act. The orchestrator owns all draft/ready transitions; the agent only opens the PR.
+
+**Opening as draft (`pr-create` skill):**
+The `/pr-create` skill adds `"draft": true` to the GitHub API PR creation payload. This is the only change to the agent side — all subsequent state transitions are orchestrator-driven.
+
+**Promoting to ready (`dispatchExecutorResult`, `terminal_status: in_review`):**
+When the orchestrator processes a result with `terminal_status: in_review` and a `pr_url` is present:
+```
+PATCH /repos/{owner}/{repo}/pulls/{pr_number}
+body: { "draft": false }
+```
+Non-fatal: if the PATCH fails, emit a `task_pr_promote_failed` event and continue — the task still enters `in_review`.
+
+**Demoting to draft (`dispatchReviewResult`, `change_requested` branch):**
+When the reviewer posts REQUEST_CHANGES and the orchestrator mutates the task to `change_requested`:
+```
+PATCH /repos/{owner}/{repo}/pulls/{pr_number}
+body: { "draft": true }
+```
+Non-fatal: if the PATCH fails, emit a `task_pr_demote_failed` event and continue — the task still enters `change_requested`.
+
+**Owner/repo derivation:** Both dispatch functions receive `githubToken`, `repoOwner`, and `repoName` from the orchestrator configuration (already resolved at startup). The PR number is extracted from the stored `task.pr.url` via regex `/\/pull\/(\d+)$/`.
+
+**Fix agent path:** The fix agent pushes commits to the existing branch; the PR stays draft. When it reports `terminal_status: in_review`, the same promotion path fires — PATCH `draft: false` again (idempotent if somehow already ready).
+
 ### Auto-Done Writer
 When the quality gate passes:
 1. Follows branch checkout + sync protocol on the management repo.
