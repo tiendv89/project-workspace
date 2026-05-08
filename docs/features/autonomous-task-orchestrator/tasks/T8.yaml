@@ -35,6 +35,15 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Feature Branch Lifecycle Manager autonomous-task-orchestrator
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-08T05:35:50+0000
+    note: Executor started — implementing Feature Branch Lifecycle Manager (T8).
+    tokens:
+      input: 0
+      output: 0
+      total: 0
+      cost_usd: 0.000
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/138
   status: open
