@@ -10,13 +10,13 @@ blocked_reason: null
 branch: feature/ui-interaction-updates-T4
 execution:
   actor_type: agent
-  last_updated_by: unknown@local
+  last_updated_by: minhkienn203@gmail.com
   last_updated_at: 2026-05-08T08:46:47Z
 pr:
   url: null
   status: null
 log:
   - action: created
-    by: unknown@local
+    by: minhkienn203@gmail.com
     at: 2026-05-08T08:46:47Z
     note: Task created from tech-lead planning for integration testing and browser QA.
