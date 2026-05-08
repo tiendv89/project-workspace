@@ -1,7 +1,7 @@
 id: T4
 title: Integration tests and browser QA
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -19,4 +19,9 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-08T08:46:47Z
-    note: Task created from tech-lead planning for integration testing and browser QA.
+    note: Task created from tech-lead planning for integration testing and browser
+      QA.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-08T10:59:07.334Z
+    note: Task activated — dependency T3 merged and marked done.
