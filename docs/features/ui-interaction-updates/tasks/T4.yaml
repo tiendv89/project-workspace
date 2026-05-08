@@ -1,7 +1,7 @@
 id: T4
 title: Integration tests and browser QA
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/ui-interaction-updates-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T12:15:59.504Z
+  last_updated_at: 2026-05-08T13:52:59.783Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/34
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -52,6 +52,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.5012490000000001
     at: 2026-05-08T12:15:59.504Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-08T13:52:59.783Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/148
   status: open
