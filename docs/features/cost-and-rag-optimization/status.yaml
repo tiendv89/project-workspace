@@ -1,10 +1,8 @@
 feature_id: cost-and-rag-optimization
 title: Cost Accounting & RAG Runtime Optimization
-
 feature_status: done
 current_stage: handoff
 next_action: Feature complete.
-
 stages:
   product_spec:
     review_status: approved
@@ -46,7 +44,6 @@ stages:
         by: matthew@liquid-labs.xyz
         at: 2026-05-07T04:37:34Z
         comment: null
-
 history:
   - event: product_spec_approved
     by: matthew@liquid-labs.xyz
@@ -66,9 +63,10 @@ history:
   - event: done
     by: matthew@liquid-labs.xyz
     at: 2026-05-07T04:37:34Z
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/cost-and-rag-optimization
+feature_branch_base_sha: 65f6837ad65f3cf29603ec80de853daf3a7eb60c
