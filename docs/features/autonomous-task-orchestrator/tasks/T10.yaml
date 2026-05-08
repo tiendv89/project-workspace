@@ -27,6 +27,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-08T16:28:03.711Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-08T16:28:11.632Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-task-orchestrator/product-spec.md,
+      docs/features/autonomous-feature-reviewer/product-spec.md,
+      docs/features/agent-pr-response/product-spec.md"
+    rag_query: Fix self-review failure in reviewer agent autonomous-task-orchestrator
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: null
   status: null
