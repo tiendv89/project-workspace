@@ -1,23 +1,30 @@
 id: T7
 title: Error states, empty states, and end-to-end QA
 repo: digital-factory-ui
-status: ready
-depends_on: [T4, T5, T6]
+status: in_progress
+depends_on:
+  - T4
+  - T5
+  - T6
 blocked_reason: null
 branch: feature/dashboard-T7
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: "2026-05-08T10:32:25+0700"
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T03:37:04.696Z
 pr:
   url: null
   status: null
 log:
   - action: created
     by: matthew@swellnetwork.io
-    at: "2026-05-05T14:45:00+0700"
+    at: 2026-05-05T14:45:00+0700
     note: Task created from tech-lead Phase 2 (frontend-only alpha design).
   - action: ready
     by: minhkienn203@gmail.com
-    at: "2026-05-08T10:32:25+0700"
+    at: 2026-05-08T10:32:25+0700
     note: Dependencies satisfied; task marked ready for implementation.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T03:37:04.696Z
+    note: Claimed via git-based claim protocol.
