@@ -3,6 +3,7 @@ title: Task branch lifecycle — claim, execution, and blocked recovery
 feature_status: done
 current_stage: handoff
 next_action: Feature complete.
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/160
 stages:
   product_spec:
     review_status: approved
