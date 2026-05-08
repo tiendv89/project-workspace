@@ -26,3 +26,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-08T19:33:55.754Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-08T19:34:02.128Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-task-orchestrator/handoffs/handoff.md,
+      docs/features/autonomous-feature-reviewer/product-spec.md,
+      docs/features/autonomous-feature-reviewer/product-spec.md"
+    rag_query: Lifecycle Manager wiring + Handoff Trigger extension
+      autonomous-feature-reviewer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
