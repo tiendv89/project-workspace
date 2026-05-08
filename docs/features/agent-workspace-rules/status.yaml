@@ -3,7 +3,9 @@ title: Inject workspace rules and skills into agent containers at task-claim tim
 
 feature_status: in_handoff
 current_stage: handoff
-next_action: Review and approve handoff to mark feature done.
+next_action: >-
+  Review and approve the handoff document at
+  docs/features/agent-workspace-rules/handoffs/handoff.md to close the feature.
 
 stages:
   product_spec:
@@ -37,11 +39,17 @@ stages:
         at: 2026-04-21T14:33:04+0700
         comment: null
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
-    review_history: []
+    review_history:
+      - status: awaiting_approval
+        by: tiendv.2703@gmail.com
+        at: 2026-05-08T18:07:01Z
+        comment: >-
+          Handoff document written — T1 done, PR #46 merged. All changes in
+          src/loop/run-claude.ts.
 
 history:
   - stage: product_spec
@@ -60,6 +68,13 @@ history:
     action: T1_done
     by: matthew@liquid-labs.xyz
     at: 2026-04-21T14:52:06+0700
+  - stage: handoff
+    action: submitted
+    by: tiendv.2703@gmail.com
+    at: 2026-05-08T18:07:01Z
+    note: >-
+      Handoff document written at docs/features/agent-workspace-rules/handoffs/handoff.md.
+      T1 done, PR #46 merged.
 
 revalidation:
   product_spec_required: false
