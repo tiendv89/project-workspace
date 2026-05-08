@@ -1,16 +1,16 @@
 id: T2
 title: Orchestrator dispatch controller
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: max_turns_exceeded
 branch: feature/autonomous-task-orchestrator-T2
 execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T05:29:59.953Z
+  last_updated_at: 2026-05-08T05:58:03.232Z
 pr:
   url: null
   status: not_created
