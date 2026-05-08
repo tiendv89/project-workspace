@@ -1,7 +1,7 @@
 id: T11
 title: Write workspace PR status back after successful merge
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T11
@@ -9,10 +9,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T16:34:04+0000
+  last_updated_at: 2026-05-08T16:42:16.283Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/103
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
