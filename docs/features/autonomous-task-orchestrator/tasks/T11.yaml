@@ -1,13 +1,15 @@
 id: T11
 title: Write workspace PR status back after successful merge
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-task-orchestrator-T11
 execution:
   actor_type: agent
   requires_human_review: true
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-08T16:28:24.795Z
 pr:
   url: null
   status: null
@@ -15,14 +17,18 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-08T23:15:44+0700
-    note: >-
-      Added as part of Appendix A gap analysis — handleMergedPrs does not write
-      workspace_pr.status=merged back to task YAML after successful merge, causing
-      repeated noisy retries from handleWorkspacePrRecoveries on every subsequent cycle.
+    note: Added as part of Appendix A gap analysis — handleMergedPrs does not write
+      workspace_pr.status=merged back to task YAML after successful merge,
+      causing repeated noisy retries from handleWorkspacePrRecoveries on every
+      subsequent cycle.
   - action: ready
     by: matthew@liquid-labs.xyz
     at: 2026-05-08T23:21:59+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-08T16:28:24.795Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: null
   status: null
