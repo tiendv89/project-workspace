@@ -60,6 +60,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/169
 history:
   - at: 2026-05-03T00:00:00+0700
     by: matthew@swellnetwork.io
@@ -116,3 +117,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/runtime-portable-architecture
 feature_branch_base_sha: f52152454cb1ca82dcd21c7a9b6a9639fbbc9e53
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/169
