@@ -1,17 +1,17 @@
 id: T7
 title: Error states, empty states, and end-to-end QA
 repo: digital-factory-ui
-status: in_progress
+status: blocked
 depends_on:
   - T4
   - T5
   - T6
-blocked_reason: null
+blocked_reason: missing_tool
 branch: feature/dashboard-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-08T03:37:04.696Z
+  last_updated_at: 2026-05-08T03:39:05.520Z
 pr:
   url: null
   status: null
@@ -40,3 +40,4 @@ log:
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/134
   status: open
+blocked_suggestion: "Install missing tools in the executor image: pnpm"
