@@ -1,14 +1,12 @@
 feature_id: agent-runtime-split
 title: Split agent runtime into orchestration and execution layers
 
-feature_status: in_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: >-
-  All three upstream stages re-approved. T6 auto-readied
-  (depends_on T2 is done). An agent can now run
-  start-implementation against T6. Once T6's PR merges, feature
-  advances to in_handoff and the handoff document is rewritten to
-  reflect the revised D5 model.
+  Handoff document written covering 7-task arc, revised D5, termination
+  safety, and CLAUDE_AGENT_RUNTIME guard pattern. Awaiting human approval
+  to advance feature to done.
 
 stages:
   product_spec:
@@ -146,11 +144,19 @@ stages:
           transitions todo → ready. T1–T5 remain done. An agent can
           now run start-implementation against T6.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-09T01:17:22+0700
+        by: matthew@swellnetwork.io
+        action: submitted
+        note: >-
+          Handoff document written covering 7-task arc (T1–T7), revised D5
+          (PR ownership split), termination safety (Layers 1/2/3), and
+          CLAUDE_AGENT_RUNTIME guard pattern. All tasks done, all workspace
+          PRs merged. Submitted for human approval.
 
 history:
   - at: 2026-05-01T18:57:22+0700
@@ -252,6 +258,15 @@ history:
       Revised tasks stage approved. T6 auto-readied (depends_on T2
       is done). All three upstream stages now re-approved; T6 is the
       only outstanding task. revalidation.tasks_required cleared.
+  - at: 2026-05-09T01:17:22+0700
+    by: matthew@swellnetwork.io
+    action: handoff_submitted
+    note: >-
+      All 7 tasks done and workspace PRs merged. Handoff document
+      written at docs/features/agent-runtime-split/handoffs/handoff.md.
+      T6 and T7 workspace_pr fields updated to merged. Feature advanced
+      from in_implementation to in_handoff. Handoff stage set to
+      awaiting_approval.
 
 revalidation:
   product_spec_required: false
