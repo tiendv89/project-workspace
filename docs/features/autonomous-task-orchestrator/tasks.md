@@ -220,7 +220,9 @@ Implements the `terminal_status: escalate` branch of `dispatchReviewResult`. Pos
 ## T9 — Handoff Trigger + document generation
 
 ### Description
-Implements the final step of the orchestrator lifecycle: when the Auto-Done Writer (T5) marks the last task `done`, the orchestrator generates a handoff document, opens the feature branch PR, and transitions the feature to `in_handoff`.
+Implements the final step of the orchestrator lifecycle: when the Auto-Done Writer (T5) marks the last task `done`, the orchestrator generates a handoff document, promotes the feature branch PR from draft to ready-for-review, and transitions the feature to `in_handoff`.
+
+T9 also extends the Feature Branch Lifecycle Manager (T8) to open a **draft PR** when the feature branch is first created — giving stakeholders visibility throughout the implementation, not just at handoff. T8 is already merged; this task adds the draft PR step as an additive change to `lifecycle-manager.ts`.
 
 Depends on T8 (feature branch must exist) and T5 (all-tasks-done detection must be in place). Activates inside the Auto-Done Writer after the auto-ready cascade — if no tasks remain in a non-terminal state, the Handoff Trigger fires.
 
@@ -229,6 +231,10 @@ Depends on T8 (feature branch must exist) and T5 (all-tasks-done detection must 
 - backend-engineer
 
 ### Subtasks
+- [ ] Extend `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts` to open a draft PR on first branch creation (idempotent — skip if `status.yaml.handoff_pr_url` is already set):
+  - After pushing the feature branch, call `POST /repos/{owner}/{repo}/pulls` with `{ draft: true, head: feature/{feature_id}, base: {base_branch} }`
+  - Write `handoff_pr_url` into `status.yaml`; commit and push to the feature branch
+  - `GITHUB_TOKEN` is required; skip gracefully (emit `draft_pr_skipped` event) if absent
 - [ ] Add all-tasks-done detection in `dispatch-review-result.ts` (passed branch, after auto-ready cascade):
   - After committing the cascade, re-read all task YAMLs for the feature
   - If every task is `done` or `cancelled` (and at least one is `done`): invoke Handoff Trigger
@@ -241,10 +247,9 @@ Depends on T8 (feature branch must exist) and T5 (all-tasks-done detection must 
     - Follow-up Items
     - Audit Trail (from task YAML logs)
   - Commit `handoff.md` to the feature branch; push to management repo
-  - Open PR via GitHub API: `feature/{feature_id}` → `{base_branch}`; use `GITHUB_TOKEN`
-  - Write `handoff_pr_url` into `status.yaml` under `stages.handoff.pr_url` and top-level `handoff_pr_url`
-  - Transition `feature_status: in_handoff`, `current_stage: handoff` in `status.yaml`
+  - Convert draft PR to ready-for-review: read `handoff_pr_url` from `status.yaml`, extract PR number, call `PATCH /repos/{owner}/{repo}/pulls/{number}` with `{"draft": false}`. Safety net: if `handoff_pr_url` is null or the PR no longer exists, create a fresh non-draft PR and write the URL into `status.yaml`
+  - Transition `feature_status: in_handoff`, `current_stage: handoff`, record `stages.handoff.pr_url` in `status.yaml`
   - Commit and push `status.yaml` changes to feature branch
   - Notify operator via `SLACK_WEBHOOK_URL` (if set): feature ID, handoff PR URL, summary
-- [ ] Emit `feature_handoff_triggered` and `handoff_pr_opened` events
-- [ ] Add tests: all tasks done triggers handoff; some tasks cancelled + rest done still triggers; one task still in_progress does not trigger
+- [ ] Emit `feature_handoff_triggered`, `handoff_pr_opened`, and `draft_pr_skipped` events
+- [ ] Add tests: all tasks done triggers handoff; some tasks cancelled + rest done still triggers; one task still in_progress does not trigger; draft PR created on first branch setup; draft PR skipped on restart when handoff_pr_url already set
