@@ -29,5 +29,5 @@ log:
     at: 2026-05-08T16:41:54.187Z
     note: Claimed via git-based claim protocol.
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/150
+  status: open
