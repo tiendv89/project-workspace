@@ -1,10 +1,8 @@
 feature_id: agent-pr-response
 title: Agent PR response
-
 feature_status: done
 current_stage: handoff
 next_action: Feature complete.
-
 stages:
   product_spec:
     review_status: approved
@@ -46,7 +44,6 @@ stages:
         by: matthew@liquid-labs.xyz
         at: 2026-04-20T02:33:41+0700
         comment: null
-
 history:
   - stage: product_spec
     action: approved
@@ -68,9 +65,10 @@ history:
     action: approved
     by: matthew@liquid-labs.xyz
     at: 2026-04-20T02:33:41+0700
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/agent-pr-response
+feature_branch_base_sha: 7945c74c517b881a1f215e1d7eaf48d762dd8404
