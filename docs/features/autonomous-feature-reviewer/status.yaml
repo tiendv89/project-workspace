@@ -1,77 +1,67 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
-
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: >-
-  Tasks approved. T1 (Reviewer Identity injection) and T2 (Lifecycle Manager
-  wiring + Handoff Trigger extension) are ready for agent execution in parallel.
-  T3 and T4 activate automatically when their dependencies complete.
-
+next_action: Tasks approved. T1 (Reviewer Identity injection) and T2 (Lifecycle
+  Manager wiring + Handoff Trigger extension) are ready for agent execution in
+  parallel. T3 and T4 activate automatically when their dependencies complete.
 feature_branch: feature/autonomous-feature-reviewer
 feature_branch_base_sha: 2b676906318fd8bf301a451153aa0c6f3bbfda77
-handoff_pr_url: null
-
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/186
 stages:
   product_spec:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
     reviewed_at: 2026-05-09T01:34:52+0700
-    review_comment: >-
-      Approved. Spec updated to add Reviewer Identity section (dedicated
-      REVIEWER_GITHUB_TOKEN + author identity for the reviewer agent),
-      Feature Merge Process and Done Detection section (Feature Done Watcher
-      daemon, impl_feature_prs tracking in status.yaml, Handoff Trigger
+    review_comment: "Approved. Spec updated to add Reviewer Identity section
+      (dedicated REVIEWER_GITHUB_TOKEN + author identity for the reviewer
+      agent), Feature Merge Process and Done Detection section (Feature Done
+      Watcher daemon, impl_feature_prs tracking in status.yaml, Handoff Trigger
       extension), and resolved both open questions: reviewer scope ends at
       merge; handoff document committed to
-      docs/features/{feature_id}/handoffs/handoff.md.
+      docs/features/{feature_id}/handoffs/handoff.md."
     review_history:
       - at: 2026-05-09T01:34:52+0700
         by: matthew@liquid-labs.xyz
         action: approved
-        note: >-
-          Product spec approved after adding Reviewer Identity (dedicated
-          reviewer GitHub account + PAT), Feature Done Watcher (analogous
-          to handleMergedPrs at feature level), impl_feature_prs tracking,
-          and resolving open questions on reviewer scope and handoff document
+        note: Product spec approved after adding Reviewer Identity (dedicated reviewer
+          GitHub account + PAT), Feature Done Watcher (analogous to
+          handleMergedPrs at feature level), impl_feature_prs tracking, and
+          resolving open questions on reviewer scope and handoff document
           location. Feature advances from in_design to in_tdd.
   technical_design:
     review_status: approved
     reviewed_by: matthew@swellnetwork.io
     reviewed_at: 2026-05-08T19:07:04Z
-    review_comment: >-
-      Approved. Design revised to incorporate all product spec requirements:
-      dedicated reviewer identity (REVIEWER_GITHUB_TOKEN/NAME/EMAIL),
-      impl_feature_prs schema (defined in design, propagated to CLAUDE.md and
-      .env.template), Feature Done Watcher, Feature Reviewer Daemon, lifecycle
-      manager credential fix, and Handoff Trigger extension. Old T1
-      (schema/env) executed inline; remaining four tasks renumbered T1–T4.
-      Dependency chain corrected: T1 ∥ (T2 → T3 → T4) with T3→T4 blocker
-      added to prevent main.ts poll loop merge conflict.
+    review_comment: "Approved. Design revised to incorporate all product spec
+      requirements: dedicated reviewer identity
+      (REVIEWER_GITHUB_TOKEN/NAME/EMAIL), impl_feature_prs schema (defined in
+      design, propagated to CLAUDE.md and .env.template), Feature Done Watcher,
+      Feature Reviewer Daemon, lifecycle manager credential fix, and Handoff
+      Trigger extension. Old T1 (schema/env) executed inline; remaining four
+      tasks renumbered T1–T4. Dependency chain corrected: T1 ∥ (T2 → T3 → T4)
+      with T3→T4 blocker added to prevent main.ts poll loop merge conflict."
     review_history:
       - at: 2026-05-08T19:07:04Z
         by: matthew@swellnetwork.io
         action: approved
-        note: >-
-          Technical design approved. Schema and env vars applied to CLAUDE.md,
+        note: Technical design approved. Schema and env vars applied to CLAUDE.md,
           .env.template, .env.example, and OPERATOR-GUIDE.md during review.
           Feature advances to task planning stage.
   tasks:
     review_status: approved
     reviewed_by: matthew@swellnetwork.io
     reviewed_at: 2026-05-08T19:11:21Z
-    review_comment: >-
-      Approved. Four tasks covering reviewer identity injection, handoff
-      trigger extension, feature done watcher, and feature reviewer daemon.
-      T1 and T2 start in parallel; T3 blocked on T2; T4 blocked on T3 to
+    review_comment: Approved. Four tasks covering reviewer identity injection,
+      handoff trigger extension, feature done watcher, and feature reviewer
+      daemon. T1 and T2 start in parallel; T3 blocked on T2; T4 blocked on T3 to
       avoid main.ts poll loop merge conflict.
     review_history:
       - at: 2026-05-08T19:11:21Z
         by: matthew@swellnetwork.io
         action: approved
-        note: >-
-          Tasks approved. T1 and T2 activated as ready. T3 and T4 remain
-          todo pending dependency completion. Feature advances to
+        note: Tasks approved. T1 and T2 activated as ready. T3 and T4 remain todo
+          pending dependency completion. Feature advances to
           ready_for_implementation.
   handoff:
     review_status: draft
@@ -79,38 +69,32 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - action: feature_branch_created
     by: matthew@liquid-labs.xyz
     at: 2026-05-09T01:34:52+0700
-    note: >-
-      Feature branch feature/autonomous-feature-reviewer created from main
-      at product spec approval.
+    note: Feature branch feature/autonomous-feature-reviewer created from main at
+      product spec approval.
   - action: approved
     stage: product_spec
     by: matthew@liquid-labs.xyz
     at: 2026-05-09T01:34:52+0700
-    note: >-
-      Product spec approved. Feature advances to in_tdd. Tech lead to revise
+    note: Product spec approved. Feature advances to in_tdd. Tech lead to revise
       existing technical-design.md to incorporate Reviewer Identity, Feature
       Done Watcher, impl_feature_prs, and resolved open questions.
   - action: approved
     stage: technical_design
     by: matthew@swellnetwork.io
     at: 2026-05-08T19:07:04Z
-    note: >-
-      Technical design approved. Four tasks identified (T1–T4, all workflow
-      repo). Dependency chain: T1 ∥ (T2 → T3 → T4). Feature advances to
-      task planning.
+    note: "Technical design approved. Four tasks identified (T1–T4, all workflow
+      repo). Dependency chain: T1 ∥ (T2 → T3 → T4). Feature advances to task
+      planning."
   - action: approved
     stage: tasks
     by: matthew@swellnetwork.io
     at: 2026-05-08T19:11:21Z
-    note: >-
-      Tasks approved. T1 and T2 activated as ready. Feature advances to
+    note: Tasks approved. T1 and T2 activated as ready. Feature advances to
       ready_for_implementation.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
