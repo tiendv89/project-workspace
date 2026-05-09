@@ -555,3 +555,4 @@ The user understands that no features match and can adjust or clear the search/f
 
 - Kanban Feature: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=103-2&m=dev
 - Feature Detail: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=103-190&m=dev
+
