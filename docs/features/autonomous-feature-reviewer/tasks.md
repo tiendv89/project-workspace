@@ -34,8 +34,8 @@ When all three are in place, the reviewer account never opens PRs, so self-revie
 
 ### Required skills
 
-- `typescript-best-practices`
-- `review-pr`
+- typescript-best-practices
+- review-pr
 
 ### Subtasks
 
@@ -73,7 +73,7 @@ Idempotency: if `impl_feature_prs` is already populated, skip — do not overwri
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
@@ -104,7 +104,7 @@ This makes the dispatcher branch-aware without changing any existing behaviour.
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
@@ -128,7 +128,7 @@ Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
@@ -157,7 +157,7 @@ With this fix in place, a deleted feature branch is recreated from the base bran
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
@@ -191,7 +191,7 @@ Wired into `main.ts` poll loop alongside the existing `handleMergedPrs` step. T3
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
@@ -229,7 +229,7 @@ T4 is blocked on T3 because both wire into the `main.ts` poll loop — sequentia
 
 ### Required skills
 
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 
