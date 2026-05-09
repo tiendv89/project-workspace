@@ -12,6 +12,7 @@
 | T2 | 1 | Lifecycle Manager wiring + Handoff Trigger extension | — |
 | T5 | 1 | Fix eligibility/match.ts — feature-branch task dispatch | — |
 | T6 | 1 | Fix handle-merged-prs.ts — sibling status map reads feature branch first | — |
+| T7 | 1 | Fix lifecycle manager — run on every poll cycle, not just at startup | — |
 | T3 | 2 | Feature Done Watcher | T2, T5, T6 |
 | T4 | 3 | Feature Reviewer Daemon | T3 |
 
@@ -135,6 +136,35 @@ Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/
 - [ ] Confirm where `feature_branch` is sourced at this call site (likely from the already-loaded `status.yaml` for the feature)
 - [ ] Update the sibling status read: when `feature_branch` is set, try `git show origin/<feature_branch>:<sibRelPath>` first; on error or missing result fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>`
 - [ ] Run tests — sibling with `done` only on feature branch is seen as `done`; fall-back fires when sibling not on feature branch; no change when `feature_branch` unset
+- [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
+
+---
+
+## T7 — Fix lifecycle manager — run on every poll cycle, not just at startup
+
+### Description
+
+`runFeatureBranchLifecycle` is called once at orchestrator startup (`main.ts:~282`, comment reads "Runs once at startup"). If the feature branch is deleted while the orchestrator is running (e.g. a workspace PR is merged mid-session), subsequent claim attempts fail with `workspace_pr_failed` HTTP 422 "invalid base" because the branch no longer exists and the lifecycle manager never re-runs to recreate it.
+
+**Root cause:** the lifecycle manager is startup-only. Any branch-state change that happens while the orchestrator is running (merge + delete, manual deletion, force-push recovery) is never corrected until the orchestrator is restarted.
+
+**Fix:** move `runFeatureBranchLifecycle` from the startup block into the top of every poll cycle so the feature branch is always verified/recreated before claim and dispatch run. The lifecycle manager is designed to be idempotent — if the branch already exists and is up to date, it is a cheap no-op (a `git ls-remote` check + nothing more). Recording `feature_branch` and `feature_branch_base_sha` in `status.yaml` is guarded by "never overwritten after initial write", so repeat calls are safe.
+
+With this fix in place, a deleted feature branch is recreated from the base branch on the very next poll cycle — before any claim or workspace PR creation is attempted.
+
+> **PR target override — merge directly to `main`.**
+> Same rationale as T5/T6: orchestrator core fix. Open the PR against `main`. Documented in technical-design.md §9.
+
+### Required skills
+
+- `typescript-best-practices`
+
+### Subtasks
+
+- [ ] Read `main.ts` around line 282 — locate the startup-only `runFeatureBranchLifecycle` call block and understand its current position relative to the poll loop
+- [ ] Move `runFeatureBranchLifecycle` (or its equivalent per-feature call) to the top of the poll cycle, before eligibility checks and claim; remove it from the one-time startup path
+- [ ] Confirm the lifecycle manager is idempotent when the branch already exists — read `lifecycle-manager.ts` `ensureFeatureBranch` and verify the branch-already-exists path is a no-op
+- [ ] Run tests — branch deleted mid-session → recreated on next poll cycle before claim; branch already present → no-op (no redundant push); `feature_branch_base_sha` not overwritten on repeat calls
 - [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
 
 ---

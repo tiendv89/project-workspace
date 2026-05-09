@@ -304,9 +304,27 @@ T5 and T6 fix the orchestrator's dispatch mechanism itself. The standard feature
 
 After T5 and T6 merge to `main`, the orchestrator will read T3's state from `origin/feature/autonomous-feature-reviewer` (T5's fix) and correctly evaluate the auto-ready sibling map (T6's fix). T3 transitions to `ready` automatically and the rest of the feature proceeds under normal rules.
 
+### Finding 3 — lifecycle manager runs only at startup; deleted feature branches are never recreated
+
+`runFeatureBranchLifecycle` is called once in the orchestrator startup block (`main.ts:~282`). If the feature branch is deleted while the orchestrator is running (e.g. a workspace PR is merged mid-session), subsequent claim attempts fail with `workspace_pr_failed` HTTP 422 because `openWorkspacePr` is passed `featureBranchName(featureId)` as the base and the branch no longer exists.
+
+**Fix (T7):** move `runFeatureBranchLifecycle` from the startup path into the top of every poll cycle. The lifecycle manager is idempotent — branch already exists → no-op. With this fix, a deleted feature branch is recreated on the next poll cycle, before any claim or workspace PR creation is attempted. T7 also merges directly to `main`.
+
+### Updated dependency graph
+
+```
+T1, T2, T5, T6, T7 — Wave 1, all independent
+
+T3 — Wave 2, blocked on T2, T5, T6
+T4 — Wave 3, blocked on T3
+```
+
+T7 has no dependency on T5 or T6 — it can land in any order within Wave 1.
+
 ### Updated repository impact
 
 | File | Task | Change |
 |---|---|---|
 | `runtime/orchestrator/src/eligibility/match.ts` | T5 | `loadFeatureTasks`: use `git show origin/<feature_branch>:<relPath>` when `feature_branch` is set |
 | `runtime/orchestrator/src/poll/handle-merged-prs.ts` | T6 | Sibling status map: try `origin/<feature_branch>` first, fall back to `origin/<mgmtBaseBranch>` |
+| `runtime/orchestrator/src/main.ts` | T7 | Move `runFeatureBranchLifecycle` from startup into the top of every poll cycle |
