@@ -1,7 +1,7 @@
 id: T7
 title: Fix lifecycle manager — run on every poll cycle, not just at startup
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T7
@@ -9,23 +9,61 @@ execution:
   actor_type: agent
   requires_human_review: false
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-09T13:00:27+0700
+  last_updated_at: 2026-05-09T14:10:57+0700
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/114
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
-    note: >-
-      Task created — runFeatureBranchLifecycle runs only at orchestrator startup; if
-      the feature branch is deleted mid-session the next claim attempt fails with
-      workspace_pr_failed 422. Fix: move lifecycle manager call into the poll cycle
-      so the branch is always verified/recreated before claim and dispatch.
+    note: "Task created — runFeatureBranchLifecycle runs only at orchestrator
+      startup; if the feature branch is deleted mid-session the next claim
+      attempt fails with workspace_pr_failed 422. Fix: move lifecycle manager
+      call into the poll cycle so the branch is always verified/recreated before
+      claim and dispatch."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
+    note: "No dependencies — task is immediately ready. PR target override: open PR
+      against main (not feature/autonomous-feature-reviewer). See tasks.md §T7
+      and technical-design.md §9 for rationale."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-09T06:11:05.992Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-09T06:11:15.516Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-polling-loop/product-spec.md,
+      docs/features/autonomous-feature-reviewer/technical-design.md,
+      docs/features/runtime-portable-architecture/discussion-orchestrator-archi\
+      tecture.md"
+    rag_query: Fix lifecycle manager — run on every poll cycle, not just at startup
+      autonomous-feature-reviewer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-09T06:24:12+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/114"
+    token_usage:
+      input: 219
+      output: 22528
+      model: claude-sonnet-4-6
+    cost_usd: 0.338577
+    at: 2026-05-09T06:30:05.934Z
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T14:10:57+0700
     note: >-
-      No dependencies — task is immediately ready. PR target override: open PR against
-      main (not feature/autonomous-feature-reviewer). See tasks.md §T7 and
-      technical-design.md §9 for rationale.
+      Implementation PR #114 merged. Reviewer approved — lifecycle manager now
+      runs every poll cycle. Marking done and opening management repo PR.
