@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -18,5 +18,8 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-08T19:09:02Z
-    note: >-
-      Task created during tech-lead Phase 2 task breakdown.
+    note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-09T09:05:25.137Z
+    note: Task activated — dependency T3 merged and marked done.
