@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: done
+status: in_review
 depends_on:
   - T3
 blocked_reason: result_not_written
@@ -160,7 +160,7 @@ log:
       to local FS — daemon will correctly see in_handoff features in production.
       Three 🟢 nits unaddressed (working tree left on feature branch,
       featureSummary filenames-only, baseBranch env var undocumented) — non-blocking.
-      dispatch.ts GraphQL promotion fix is well-motivated. CI passed. Task marked done.
+      dispatch.ts GraphQL promotion fix is well-motivated. CI passed.
       Review: https://github.com/tiendv89/agent-workflow/pull/118#pullrequestreview-4258265073
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/188
