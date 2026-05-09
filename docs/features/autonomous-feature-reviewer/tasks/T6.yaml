@@ -1,15 +1,15 @@
 id: T6
 title: Fix handle-merged-prs.ts — sibling status map reads feature branch first
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T6
 execution:
   actor_type: agent
   requires_human_review: false
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-09T12:38:27+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-09T05:58:03.832Z
 pr:
   url: null
   status: null
@@ -17,15 +17,18 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-09T12:38:27+0700
-    note: >-
-      Task created — auto-ready sibling status map in handle-merged-prs.ts reads from
-      origin/main only; sibling done states that exist only on the feature branch are
-      invisible, causing downstream tasks to never auto-ready. Fix: try
-      origin/<feature_branch>:<sibRelPath> first, fall back to origin/<mgmtBaseBranch>.
+    note: "Task created — auto-ready sibling status map in handle-merged-prs.ts
+      reads from origin/main only; sibling done states that exist only on the
+      feature branch are invisible, causing downstream tasks to never
+      auto-ready. Fix: try origin/<feature_branch>:<sibRelPath> first, fall back
+      to origin/<mgmtBaseBranch>."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-09T12:38:27+0700
-    note: >-
-      No dependencies — task is immediately ready. PR target override: open PR against
-      main (not feature/autonomous-feature-reviewer). See tasks.md §T6 and
-      technical-design.md §9 for rationale.
+    note: "No dependencies — task is immediately ready. PR target override: open PR
+      against main (not feature/autonomous-feature-reviewer). See tasks.md §T6
+      and technical-design.md §9 for rationale."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-09T05:58:03.832Z
+    note: Claimed via git-based claim protocol.
