@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
@@ -9,8 +9,8 @@ branch: feature/autonomous-feature-reviewer-T4
 execution:
   actor_type: agent
   requires_human_review: false
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-08T19:09:02Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-09T09:25:59.538Z
 pr:
   url: null
   status: null
@@ -23,3 +23,7 @@ log:
     by: pentative@gmail.com
     at: 2026-05-09T09:05:25.137Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-09T09:25:59.538Z
+    note: Claimed via git-based claim protocol.
