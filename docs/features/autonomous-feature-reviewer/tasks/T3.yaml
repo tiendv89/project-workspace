@@ -1,7 +1,7 @@
 id: T3
 title: Feature Done Watcher
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -18,5 +18,8 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-08T19:09:02Z
-    note: >-
-      Task created during tech-lead Phase 2 task breakdown.
+    note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-09T04:27:28.035Z
+    note: Task activated — dependency T2 merged and marked done.
