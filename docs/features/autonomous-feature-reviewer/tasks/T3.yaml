@@ -4,6 +4,8 @@ repo: workflow
 status: todo
 depends_on:
   - T2
+  - T5
+  - T6
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T3
 execution:
@@ -18,5 +20,16 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-08T19:09:02Z
+    note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-09T04:27:28.035Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: blocked
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T12:38:27+0700
     note: >-
-      Task created during tech-lead Phase 2 task breakdown.
+      Status reset to todo — new dependencies T5 and T6 added. findEligibleTasks reads
+      from origin/main after syncRepo, so T3 would never be dispatched until T5 fixes
+      the feature-branch read. T6 ensures the auto-ready sibling check is also
+      branch-aware. See technical-design.md §9 for full analysis.

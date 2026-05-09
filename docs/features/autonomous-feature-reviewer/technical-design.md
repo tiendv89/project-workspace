@@ -13,6 +13,7 @@ The following fixes must be merged into `agent-workflow` **before** T1 or T2 are
 | PR | Repo | Required for | Status |
 |---|---|---|---|
 | [fix(feature-branch-lifecycle): use -B flag + skip dispatch on branch failure](https://github.com/tiendv89/agent-workflow/pull/110) | `agent-workflow` | T1, T2 (and all future tasks) — without this fix, a stale local feature branch prevents `feature/autonomous-feature-reviewer` from being pushed to origin; task claims open workspace PRs against a missing base and get 422 | Awaiting merge |
+| [fix(feature-branch-lifecycle): wire githubToken to draft PR step in multi-feature scan](https://github.com/tiendv89/agent-workflow/pull/111) | `agent-workflow` | All tasks — without this fix, the feature branch → main draft PR is never opened, `handoff_pr_url` stays null, and the orchestrator fires repeated `stuck_handoff` invariant corrections | Awaiting merge |
 
 **Why this blocked T1 and T2 previously:**  
 At orchestrator start, `feature/autonomous-feature-reviewer` existed locally from a prior run but was not on origin. `git checkout -b` fatalled ("branch already exists"), the lifecycle manager emitted `feature_branch_lifecycle_error`, and execution continued. Both agents claimed their tasks and tried to open workspace PRs with `base: feature/autonomous-feature-reviewer` — GitHub returned 422 `base field invalid`. Tasks reached `in_review` on the implementation repo but had no management repo PR.
@@ -243,3 +244,69 @@ Committed to `docs/features/{feature_id}/handoffs/handoff.md` in the management 
 ### Rollout
 
 No flag needed. All new code paths are additive. The Feature Done Watcher and Feature Reviewer Daemon activate only for features in `in_handoff` — features in earlier stages are unaffected.
+
+---
+
+## 9. Bug Fix Amendments — Feature-Branch Dispatch Gap
+
+Discovered during T2 implementation and verified against the live orchestrator codebase.
+
+### Finding 1 — `findEligibleTasks` reads task status from `main`, not the feature branch
+
+When task branches merge into `feature/<id>` (the standard topology), the orchestrator's eligibility check is blind to feature-branch state:
+
+1. Every poll cycle, `syncRepo` in `bootstrap.ts` checks out and hard-resets the management repo workspace to `origin/<baseBranch>` (`origin/main`).
+2. `findEligibleTasks` in `eligibility/match.ts` calls `loadFeatureTasks`, which reads task YAML files from the local filesystem — now reset to `main`.
+3. When T2's task branch merged into `feature/autonomous-feature-reviewer`, the auto-ready rule wrote T3's status to `ready` on that feature branch — not on `main`. `main` still shows T3 as `todo`.
+4. Criterion 1 in `findEligibleTasks` (`task.status !== "ready"`) evaluates against the `main` copy — T3 is never dispatched.
+
+**Root cause:** `loadFeatureTasks` uses `join(featurePath, TASKS_DIR)` on the local FS, which tracks `origin/main` after `syncRepo`. It must read from `origin/<feature_branch>` when the feature has an active feature branch recorded in `status.yaml`.
+
+**Code location:** `runtime/orchestrator/src/eligibility/match.ts` — `loadFeatureTasks` and its caller.
+
+### Finding 2 — Auto-ready sibling status map reads from `origin/main`
+
+In `handle-merged-prs.ts` (~line 619), the auto-ready rule reads sibling task statuses from `origin/<mgmtBaseBranch>` to decide which tasks become `ready` after a done event. In the feature-branch topology, a sibling's terminal state may only exist on the feature branch. A future task (e.g. T4) whose dependency chain runs through T3 would fail to auto-ready: T3's `done` state is on the feature branch, but the sibling map reads `main` and sees `todo`.
+
+**Code location:** `runtime/orchestrator/src/poll/handle-merged-prs.ts` — `git show origin/${mgmtBaseBranch}:${sibRelPath}` call.
+
+### Solution
+
+**Fix 1 (T5) — `eligibility/match.ts`:**
+In `loadFeatureTasks`, when `status.yaml` has a `feature_branch` field set, read each task YAML from the remote feature branch using `git show origin/<feature_branch>:<relPath>`. Fall back to the local FS when `feature_branch` is absent (pre-existing features) or when `git show` returns a non-zero exit for a task not yet on the feature branch.
+
+**Fix 2 (T6) — `handle-merged-prs.ts`:**
+In the auto-ready sibling status map, try `git show origin/<feature_branch>:<sibRelPath>` first when `feature_branch` is set in `status.yaml`. Fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>` when the feature-branch version is not found or `feature_branch` is unset.
+
+### Updated dependency graph
+
+T5 and T6 are new Wave 1 tasks (no dependencies) that must merge before T3 can be safely dispatched. T3's `depends_on` is updated to `[T2, T5, T6]`.
+
+```
+T1: Reviewer Identity injection (workflow)
+T2: Lifecycle Manager wiring + Handoff Trigger extension (workflow)
+T5: Fix eligibility/match.ts — loadFeatureTasks reads from feature branch (workflow)
+T6: Fix handle-merged-prs.ts — sibling status map checks feature branch first (workflow)
+  └── T1, T2, T5, T6 all run in Wave 1 — no dependencies between them
+
+T3: Feature Done Watcher (workflow)
+  └── BLOCKED on T2, T5, T6
+
+T4: Feature Reviewer Daemon (workflow)
+  └── BLOCKED on T3
+```
+
+### Bootstrapping note — T5 and T6 merge directly to `main`
+
+T5 and T6 fix the orchestrator's dispatch mechanism itself. The standard feature-branch topology (task PRs target `feature/autonomous-feature-reviewer`) is **explicitly overridden** for these two tasks: T5 and T6 open their implementation PRs against `main` and merge there directly.
+
+**Rationale:** merging to `main` makes both fixes available to the orchestrator immediately. The orchestrator reads from `origin/main` after `syncRepo` — so once T5 and T6 are on `main`, every subsequent feature-branch task (T3, T4) dispatches and auto-readies correctly without any further manual intervention.
+
+After T5 and T6 merge to `main`, the orchestrator will read T3's state from `origin/feature/autonomous-feature-reviewer` (T5's fix) and correctly evaluate the auto-ready sibling map (T6's fix). T3 transitions to `ready` automatically and the rest of the feature proceeds under normal rules.
+
+### Updated repository impact
+
+| File | Task | Change |
+|---|---|---|
+| `runtime/orchestrator/src/eligibility/match.ts` | T5 | `loadFeatureTasks`: use `git show origin/<feature_branch>:<relPath>` when `feature_branch` is set |
+| `runtime/orchestrator/src/poll/handle-merged-prs.ts` | T6 | Sibling status map: try `origin/<feature_branch>` first, fall back to `origin/<mgmtBaseBranch>` |
