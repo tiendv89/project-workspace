@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -41,6 +41,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-09T09:28:48+0000
     note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T16:53:07+0700
+    note: Human reset to ready — executor crashed before producing a PR.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/188
   status: open
