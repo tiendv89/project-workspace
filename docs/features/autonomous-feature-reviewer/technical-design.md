@@ -296,9 +296,13 @@ T4: Feature Reviewer Daemon (workflow)
   └── BLOCKED on T3
 ```
 
-### Bootstrapping note
+### Bootstrapping note — T5 and T6 merge directly to `main`
 
-T5 and T6 fix the orchestrator's dispatch mechanism itself. Until T5 merges, the orchestrator cannot see `ready` tasks on the feature branch — including T5 and T6 themselves. These two tasks must be dispatched manually (via `start-implementation`) as a one-time bootstrap. After T5 merges to the feature branch and is picked up by the orchestrator, all subsequent feature-branch tasks (T6 if not already done, T3, T4) dispatch automatically.
+T5 and T6 fix the orchestrator's dispatch mechanism itself. The standard feature-branch topology (task PRs target `feature/autonomous-feature-reviewer`) is **explicitly overridden** for these two tasks: T5 and T6 open their implementation PRs against `main` and merge there directly.
+
+**Rationale:** merging to `main` makes both fixes available to the orchestrator immediately. The orchestrator reads from `origin/main` after `syncRepo` — so once T5 and T6 are on `main`, every subsequent feature-branch task (T3, T4) dispatches and auto-readies correctly without any further manual intervention.
+
+After T5 and T6 merge to `main`, the orchestrator will read T3's state from `origin/feature/autonomous-feature-reviewer` (T5's fix) and correctly evaluate the auto-ready sibling map (T6's fix). T3 transitions to `ready` automatically and the rest of the feature proceeds under normal rules.
 
 ### Updated repository impact
 

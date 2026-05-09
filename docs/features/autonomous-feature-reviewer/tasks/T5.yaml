@@ -25,4 +25,7 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-09T12:38:27+0700
-    note: No dependencies — task is immediately ready. Must be dispatched manually (bootstrapping note in tasks.md §T5).
+    note: >-
+      No dependencies — task is immediately ready. PR target override: open PR against
+      main (not feature/autonomous-feature-reviewer). See tasks.md §T5 and
+      technical-design.md §9 for rationale.

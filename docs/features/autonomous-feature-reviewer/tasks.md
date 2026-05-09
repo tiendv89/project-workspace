@@ -98,7 +98,8 @@ Fix: in `loadFeatureTasks`, when `status.yaml` contains a `feature_branch` field
 
 This makes the dispatcher branch-aware without changing any existing behaviour.
 
-**Bootstrapping note:** T5 fixes the dispatch mechanism itself. It must be dispatched manually via `start-implementation` as a one-time bootstrap — the orchestrator cannot auto-dispatch it before this fix lands.
+> **PR target override — merge directly to `main`.**
+> This task fixes the orchestrator dispatch mechanism itself. The standard rule (PRs target `feature/autonomous-feature-reviewer`) is explicitly overridden for T5: open the PR against `main` and merge it there. Merging to `main` makes the fix available to the orchestrator immediately and unblocks T3 dispatch without any additional bootstrapping. This is a deliberate, one-time exception documented in technical-design.md §9.
 
 ### Required skills
 
@@ -109,7 +110,7 @@ This makes the dispatcher branch-aware without changing any existing behaviour.
 - [ ] Read `runtime/orchestrator/src/eligibility/match.ts` — locate `loadFeatureTasks`, confirm how `featurePath` and `TASKS_DIR` are resolved, and confirm where `feature_branch` from `status.yaml` is available
 - [ ] Update `loadFeatureTasks` (or its caller): when `feature_branch` is set in `status.yaml`, use `git show origin/<feature_branch>:<relPath>` to read each task YAML; parse as YAML; fall back to local FS read on non-zero exit or when field is absent
 - [ ] Run tests — task with `status: ready` only on feature branch is dispatched; fall-back to local FS fires when `feature_branch` absent; graceful skip when `git show` fails for a task not yet on the branch
-- [ ] Open PR targeting `feature/autonomous-feature-reviewer`
+- [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
 
 ---
 
@@ -121,7 +122,8 @@ The auto-ready rule in `runtime/orchestrator/src/poll/handle-merged-prs.ts` read
 
 Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/<feature_branch>:<sibRelPath>` first. Use that result if found. Fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>` when the feature-branch version is not found (task not yet written to the feature branch) or when `feature_branch` is unset (pre-existing features).
 
-**Bootstrapping note:** T6 must also be dispatched manually via `start-implementation` for the same reason as T5.
+> **PR target override — merge directly to `main`.**
+> Same rationale as T5: this fix belongs in the orchestrator core. Open the PR against `main` and merge it there. This is a deliberate, one-time exception documented in technical-design.md §9.
 
 ### Required skills
 
@@ -133,7 +135,7 @@ Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/
 - [ ] Confirm where `feature_branch` is sourced at this call site (likely from the already-loaded `status.yaml` for the feature)
 - [ ] Update the sibling status read: when `feature_branch` is set, try `git show origin/<feature_branch>:<sibRelPath>` first; on error or missing result fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>`
 - [ ] Run tests — sibling with `done` only on feature branch is seen as `done`; fall-back fires when sibling not on feature branch; no change when `feature_branch` unset
-- [ ] Open PR targeting `feature/autonomous-feature-reviewer`
+- [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
 
 ---
 
