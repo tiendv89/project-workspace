@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T3
 blocked_reason: result_not_written
@@ -10,7 +10,7 @@ execution:
   actor_type: agent
   requires_human_review: false
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-09T10:04:45.597Z
+  last_updated_at: 2026-05-09T10:12:44.701Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/118
   status: open
