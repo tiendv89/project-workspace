@@ -32,3 +32,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-09T05:58:03.832Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-09T05:58:10.163Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/autonomous-feature-reviewer/technical-design.md,
+      src/actions/init-feature.ts,
+      docs/features/agent-runtime-pr-merge/technical-design.md"
+    rag_query: Fix handle-merged-prs.ts — sibling status map reads feature branch
+      first autonomous-feature-reviewer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
