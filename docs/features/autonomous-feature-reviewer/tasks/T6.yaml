@@ -1,7 +1,7 @@
 id: T6
 title: Fix handle-merged-prs.ts — sibling status map reads feature branch first
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T6
@@ -9,7 +9,7 @@ execution:
   actor_type: agent
   requires_human_review: false
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-09T06:04:56+0000
+  last_updated_at: 2026-05-09T06:09:00.631Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/113
   status: open
