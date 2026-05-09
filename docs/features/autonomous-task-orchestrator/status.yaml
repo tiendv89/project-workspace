@@ -7,7 +7,7 @@ next_action: Feature complete.
 
 feature_branch: feature/autonomous-task-orchestrator
 feature_branch_base_sha: 8b7926b8eaeedbde4a381adcf1834a7fa9c01e65
-handoff_pr_url: null
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/153
 drift_detected: false
 drift_reason: null
 

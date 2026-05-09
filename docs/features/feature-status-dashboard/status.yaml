@@ -72,3 +72,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/feature-status-dashboard
 feature_branch_base_sha: e0e2c75d81f9e02573116d737c4eb134f1f15f18
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/158
