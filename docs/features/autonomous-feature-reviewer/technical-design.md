@@ -13,6 +13,7 @@ The following fixes must be merged into `agent-workflow` **before** T1 or T2 are
 | PR | Repo | Required for | Status |
 |---|---|---|---|
 | [fix(feature-branch-lifecycle): use -B flag + skip dispatch on branch failure](https://github.com/tiendv89/agent-workflow/pull/110) | `agent-workflow` | T1, T2 (and all future tasks) — without this fix, a stale local feature branch prevents `feature/autonomous-feature-reviewer` from being pushed to origin; task claims open workspace PRs against a missing base and get 422 | Awaiting merge |
+| [fix(feature-branch-lifecycle): wire githubToken to draft PR step in multi-feature scan](https://github.com/tiendv89/agent-workflow/pull/111) | `agent-workflow` | All tasks — without this fix, the feature branch → main draft PR is never opened, `handoff_pr_url` stays null, and the orchestrator fires repeated `stuck_handoff` invariant corrections | Awaiting merge |
 
 **Why this blocked T1 and T2 previously:**  
 At orchestrator start, `feature/autonomous-feature-reviewer` existed locally from a prior run but was not on origin. `git checkout -b` fatalled ("branch already exists"), the lifecycle manager emitted `feature_branch_lifecycle_error`, and execution continued. Both agents claimed their tasks and tried to open workspace PRs with `base: feature/autonomous-feature-reviewer` — GitHub returned 422 `base field invalid`. Tasks reached `in_review` on the implementation repo but had no management repo PR.
