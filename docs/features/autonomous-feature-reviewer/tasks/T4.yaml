@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T3
 blocked_reason: result_not_written
@@ -90,13 +90,12 @@ log:
   - action: reviewer_complete
     by: noreply@anthropic.com
     at: 2026-05-09T17:33:32+0700
-    note: "REQUEST_CHANGES posted. One 🟡: runSemanticAnalysis
-      (feature-review-cycle.ts:293-310) missing diff patches and
-      technical-design.md summary as required by T4 subtask. Three 🟢 nits:
-      unused reviewerGithubToken, missing PR URL in Slack escalation,
-      undocumented baseBranch change in main.ts. Review:
-      https://github.com/tiendv89/agent-workflow/pull/118#pullrequestreview-425\
-      7593924"
+    note: >-
+      REQUEST_CHANGES posted. One 🟡: runSemanticAnalysis (feature-review-cycle.ts:293-310)
+      missing diff patches and technical-design.md summary as required by T4 subtask.
+      Three 🟢 nits: unused reviewerGithubToken, missing PR URL in Slack escalation,
+      undocumented baseBranch change in main.ts.
+      Review: https://github.com/tiendv89/agent-workflow/pull/118#pullrequestreview-4257593924
   - action: fix_started
     by: norepy@tiendv.dev
     at: 2026-05-09T17:23:09.076Z
@@ -104,11 +103,12 @@ log:
   - action: comments_addressed
     by: norepy@tiendv.dev
     at: 2026-05-09T17:29:06+0000
-    note: "Resolved 6 inline review threads (3 unique issues, 3 garbled duplicates):
+    note: >-
+      Resolved 6 inline review threads (3 unique issues, 3 garbled duplicates):
       (1) runSemanticAnalysis now includes patch snippets per file and
       technical-design.md excerpt in prompt; (2) reviewerGithubToken wired into
-      PR comment escalation path; (3) Slack escalation message now includes PR
-      URL. PR converted to ready-for-review."
+      PR comment escalation path; (3) Slack escalation message now includes PR URL.
+      PR converted to ready-for-review.
   - action: run_completed
     by: norepy@tiendv.dev
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/118"
@@ -118,6 +118,18 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.29653500000000005
     at: 2026-05-09T17:33:42.983Z
+  - action: reviewer_complete
+    by: zbotdev@anthropic.com
+    at: 2026-05-10T00:49:53+0700
+    note: >-
+      REQUEST_CHANGES posted (cycle 2). Previous 🟡 fixed (patches + technical-design in
+      runSemanticAnalysis). Previous 🟢 nits fixed. New 🔴 blocker: readStatusYaml reads
+      from local FS (origin/main after hard-reset); feature_status in_handoff is only on
+      the feature branch during drift-detection window — daemon never fires in production.
+      Fix: use git show origin/feature/<id>:status.yaml (mirrors T5 fix). Three 🟢 nits:
+      escalateFeatureDrift leaves working tree on feature branch; featureSummary filenames-only;
+      baseBranch override undocumented.
+      Review: https://github.com/tiendv89/agent-workflow/pull/118#pullrequestreview-4258179417
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/188
   status: open
