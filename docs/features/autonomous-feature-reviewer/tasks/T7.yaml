@@ -1,15 +1,15 @@
 id: T7
 title: Fix lifecycle manager — run on every poll cycle, not just at startup
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/autonomous-feature-reviewer-T7
 execution:
   actor_type: agent
   requires_human_review: false
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-09T13:00:27+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-09T06:11:05.992Z
 pr:
   url: null
   status: null
@@ -17,15 +17,18 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
-    note: >-
-      Task created — runFeatureBranchLifecycle runs only at orchestrator startup; if
-      the feature branch is deleted mid-session the next claim attempt fails with
-      workspace_pr_failed 422. Fix: move lifecycle manager call into the poll cycle
-      so the branch is always verified/recreated before claim and dispatch.
+    note: "Task created — runFeatureBranchLifecycle runs only at orchestrator
+      startup; if the feature branch is deleted mid-session the next claim
+      attempt fails with workspace_pr_failed 422. Fix: move lifecycle manager
+      call into the poll cycle so the branch is always verified/recreated before
+      claim and dispatch."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
-    note: >-
-      No dependencies — task is immediately ready. PR target override: open PR against
-      main (not feature/autonomous-feature-reviewer). See tasks.md §T7 and
-      technical-design.md §9 for rationale.
+    note: "No dependencies — task is immediately ready. PR target override: open PR
+      against main (not feature/autonomous-feature-reviewer). See tasks.md §T7
+      and technical-design.md §9 for rationale."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-09T06:11:05.992Z
+    note: Claimed via git-based claim protocol.
