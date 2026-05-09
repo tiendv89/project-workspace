@@ -10,7 +10,9 @@
 |---|---|---|---|
 | T1 | 1 | Reviewer Identity injection | — |
 | T2 | 1 | Lifecycle Manager wiring + Handoff Trigger extension | — |
-| T3 | 2 | Feature Done Watcher | T2 |
+| T5 | 1 | Fix eligibility/match.ts — feature-branch task dispatch | — |
+| T6 | 1 | Fix handle-merged-prs.ts — sibling status map reads feature branch first | — |
+| T3 | 2 | Feature Done Watcher | T2, T5, T6 |
 | T4 | 3 | Feature Reviewer Daemon | T3 |
 
 ---
@@ -84,6 +86,57 @@ Idempotency: if `impl_feature_prs` is already populated, skip — do not overwri
 
 ---
 
+## T5 — Fix eligibility/match.ts — feature-branch task dispatch
+
+### Description
+
+`findEligibleTasks` in `runtime/orchestrator/src/eligibility/match.ts` reads task YAML files from the local filesystem, which `syncRepo` in `bootstrap.ts` resets to `origin/main` on every poll cycle. Tasks whose status was updated on a feature branch (e.g. `feature/autonomous-feature-reviewer`) but not yet on `main` are invisible to the dispatcher — they stay `todo` on `main` and are never dispatched.
+
+Fix: in `loadFeatureTasks`, when `status.yaml` contains a `feature_branch` field, read each task YAML from the remote feature branch using `git show origin/<feature_branch>:<relPath>` instead of the local FS. Fall back to the local FS when:
+- `feature_branch` is not set in `status.yaml` (pre-existing features)
+- `git show` returns a non-zero exit code for a given task (task not yet committed to the feature branch)
+
+This makes the dispatcher branch-aware without changing any existing behaviour.
+
+**Bootstrapping note:** T5 fixes the dispatch mechanism itself. It must be dispatched manually via `start-implementation` as a one-time bootstrap — the orchestrator cannot auto-dispatch it before this fix lands.
+
+### Required skills
+
+- `typescript-best-practices`
+
+### Subtasks
+
+- [ ] Read `runtime/orchestrator/src/eligibility/match.ts` — locate `loadFeatureTasks`, confirm how `featurePath` and `TASKS_DIR` are resolved, and confirm where `feature_branch` from `status.yaml` is available
+- [ ] Update `loadFeatureTasks` (or its caller): when `feature_branch` is set in `status.yaml`, use `git show origin/<feature_branch>:<relPath>` to read each task YAML; parse as YAML; fall back to local FS read on non-zero exit or when field is absent
+- [ ] Run tests — task with `status: ready` only on feature branch is dispatched; fall-back to local FS fires when `feature_branch` absent; graceful skip when `git show` fails for a task not yet on the branch
+- [ ] Open PR targeting `feature/autonomous-feature-reviewer`
+
+---
+
+## T6 — Fix handle-merged-prs.ts — sibling status map reads feature branch first
+
+### Description
+
+The auto-ready rule in `runtime/orchestrator/src/poll/handle-merged-prs.ts` reads sibling task statuses from `origin/<mgmtBaseBranch>` (`origin/main`) when computing which tasks become `ready` after a done event. In the feature-branch topology, a sibling's terminal state may only exist on the feature branch. T4, for example, depends on T3; when T3 is marked `done` on the feature branch, the auto-ready sibling check reads `main` and sees T3 as `todo` — T4 is never transitioned to `ready`.
+
+Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/<feature_branch>:<sibRelPath>` first. Use that result if found. Fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>` when the feature-branch version is not found (task not yet written to the feature branch) or when `feature_branch` is unset (pre-existing features).
+
+**Bootstrapping note:** T6 must also be dispatched manually via `start-implementation` for the same reason as T5.
+
+### Required skills
+
+- `typescript-best-practices`
+
+### Subtasks
+
+- [ ] Read `runtime/orchestrator/src/poll/handle-merged-prs.ts` around lines 615–625 — confirm the `git show origin/${mgmtBaseBranch}:${sibRelPath}` call site and its error-handling pattern
+- [ ] Confirm where `feature_branch` is sourced at this call site (likely from the already-loaded `status.yaml` for the feature)
+- [ ] Update the sibling status read: when `feature_branch` is set, try `git show origin/<feature_branch>:<sibRelPath>` first; on error or missing result fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>`
+- [ ] Run tests — sibling with `done` only on feature branch is seen as `done`; fall-back fires when sibling not on feature branch; no change when `feature_branch` unset
+- [ ] Open PR targeting `feature/autonomous-feature-reviewer`
+
+---
+
 ## T3 — Feature Done Watcher
 
 ### Description
@@ -101,6 +154,8 @@ The watcher:
 **Error handling:** GitHub API errors are non-fatal — emit an event and continue to the next feature.
 
 Wired into `main.ts` poll loop alongside the existing `handleMergedPrs` step. T3 must merge before T4 to avoid a `main.ts` poll loop conflict.
+
+**Additional dependencies (T5, T6):** T3 also depends on T5 and T6. Until T5 merges, the orchestrator reads task status from `origin/main` — T3 would appear `todo` and never be dispatched even when all prior dependencies are done. T6 ensures the auto-ready sibling check sees sibling terminal states that are only on the feature branch. See technical design §9 for full analysis.
 
 ### Required skills
 

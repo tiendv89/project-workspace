@@ -1,0 +1,28 @@
+id: T5
+title: Fix eligibility/match.ts — feature-branch task dispatch
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/autonomous-feature-reviewer-T5
+execution:
+  actor_type: agent
+  requires_human_review: false
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-09T12:38:27+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T12:38:27+0700
+    note: >-
+      Task created — documents feature-branch dispatch gap found during T2 implementation.
+      findEligibleTasks reads from origin/main after syncRepo resets the workspace;
+      tasks updated to ready on the feature branch are never dispatched. Fix: read
+      from git show origin/<feature_branch>:<relPath> when feature_branch is set.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T12:38:27+0700
+    note: No dependencies — task is immediately ready. Must be dispatched manually (bootstrapping note in tasks.md §T5).
