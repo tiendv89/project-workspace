@@ -104,3 +104,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/ui-interaction-updates
 feature_branch_base_sha: 777e8ff47e2b21f2938c9b91e0070bc893707547
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/176
