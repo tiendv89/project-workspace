@@ -13,6 +13,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/108
   status: open
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/173
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
