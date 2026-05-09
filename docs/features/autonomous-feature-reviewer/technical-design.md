@@ -6,6 +6,19 @@
 
 ---
 
+## Pre-dependencies
+
+The following fixes must be merged into `agent-workflow` **before** T1 or T2 are dispatched. The orchestrator will not produce a management repo workspace PR for any task if these issues are present.
+
+| PR | Repo | Required for | Status |
+|---|---|---|---|
+| [fix(feature-branch-lifecycle): use -B flag + skip dispatch on branch failure](https://github.com/tiendv89/agent-workflow/pull/110) | `agent-workflow` | T1, T2 (and all future tasks) — without this fix, a stale local feature branch prevents `feature/autonomous-feature-reviewer` from being pushed to origin; task claims open workspace PRs against a missing base and get 422 | Awaiting merge |
+
+**Why this blocked T1 and T2 previously:**  
+At orchestrator start, `feature/autonomous-feature-reviewer` existed locally from a prior run but was not on origin. `git checkout -b` fatalled ("branch already exists"), the lifecycle manager emitted `feature_branch_lifecycle_error`, and execution continued. Both agents claimed their tasks and tried to open workspace PRs with `base: feature/autonomous-feature-reviewer` — GitHub returned 422 `base field invalid`. Tasks reached `in_review` on the implementation repo but had no management repo PR.
+
+---
+
 ## 1. Current State
 
 The `autonomous-task-orchestrator` feature shipped the following components that this feature builds on top of:
