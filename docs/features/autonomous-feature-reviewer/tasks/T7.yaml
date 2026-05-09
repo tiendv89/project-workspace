@@ -32,3 +32,15 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-09T06:11:05.992Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-09T06:11:15.516Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-polling-loop/product-spec.md,
+      docs/features/autonomous-feature-reviewer/technical-design.md,
+      docs/features/runtime-portable-architecture/discussion-orchestrator-archi\
+      tecture.md"
+    rag_query: Fix lifecycle manager — run on every poll cycle, not just at startup
+      autonomous-feature-reviewer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
