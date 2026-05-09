@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T3
 blocked_reason: result_not_written
@@ -151,6 +151,17 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.40582199999999996
     at: 2026-05-09T18:02:47.057Z
+  - action: reviewer_complete
+    by: zbotdev@anthropic.com
+    at: 2026-05-10T01:18:05+0700
+    note: >-
+      APPROVE posted (cycle 3). Cycle 2 🔴 blocker fixed: readStatusYaml now
+      reads status.yaml from origin/<featureBranch> via git show, falling back
+      to local FS — daemon will correctly see in_handoff features in production.
+      Three 🟢 nits unaddressed (working tree left on feature branch,
+      featureSummary filenames-only, baseBranch env var undocumented) — non-blocking.
+      dispatch.ts GraphQL promotion fix is well-motivated. CI passed. Task marked done.
+      Review: https://github.com/tiendv89/agent-workflow/pull/118#pullrequestreview-4258265073
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/188
   status: open
