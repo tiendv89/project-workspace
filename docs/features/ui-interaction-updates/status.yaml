@@ -1,10 +1,8 @@
 feature_id: ui-interaction-updates
 title: UI Interaction Updates
-
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: T1, T2, and T3 are ready to claim. T4 waits for T1, T2, and T3 to complete.
-
 stages:
   product_spec:
     review_status: approved
@@ -25,7 +23,8 @@ stages:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-08T08:46:47Z
-        comment: Technical design drafted for sidebar layout, 60 second refresh, feature rows, and default filters.
+        comment: Technical design drafted for sidebar layout, 60 second refresh, feature
+          rows, and default filters.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-08T09:23:29Z
@@ -39,7 +38,8 @@ stages:
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-08T08:46:47Z
-        comment: Task breakdown drafted from technical design. Tasks remain todo until stage approvals.
+        comment: Task breakdown drafted from technical design. Tasks remain todo until
+          stage approvals.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-08T09:23:29Z
@@ -54,7 +54,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - stage: product_spec
     action: created
@@ -69,7 +68,8 @@ history:
     action: clarified
     by: minhkienn203@gmail.com
     at: 2026-05-08T08:46:47Z
-    note: Sidebar product spec clarified with 15% / 85% layout target and 60 second refresh for the 3 status rows.
+    note: Sidebar product spec clarified with 15% / 85% layout target and 60 second
+      refresh for the 3 status rows.
   - stage: technical_design
     action: submitted
     by: minhkienn203@gmail.com
@@ -79,7 +79,8 @@ history:
     action: drafted
     by: minhkienn203@gmail.com
     at: 2026-05-08T08:46:47Z
-    note: Task breakdown drafted. Tasks require technical design and tasks approval before activation.
+    note: Task breakdown drafted. Tasks require technical design and tasks approval
+      before activation.
   - stage: technical_design
     action: approved
     by: minhkienn203@gmail.com
@@ -94,10 +95,12 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-08T09:30:22Z
-    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, and T3 activated.
-
+    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, and
+      T3 activated.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/ui-interaction-updates
+feature_branch_base_sha: 777e8ff47e2b21f2938c9b91e0070bc893707547
