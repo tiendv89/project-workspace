@@ -9,6 +9,8 @@ next_action: >-
   T3 and T4 activate automatically when their dependencies complete.
 
 feature_branch: feature/autonomous-feature-reviewer
+feature_branch_base_sha: 777e8ff47e2b21f2938c9b91e0070bc893707547
+handoff_pr_url: null
 
 stages:
   product_spec:
