@@ -1,7 +1,7 @@
 id: T4
 title: Feature Reviewer Daemon
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T3
 blocked_reason: result_not_written
@@ -63,6 +63,10 @@ log:
       input: 114
       output: 9277
     at: 2026-05-09T09:59:57.413Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T17:02:26+0700
+    note: Human reset to ready — result_not_written block, agent to retry.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/188
   status: open
