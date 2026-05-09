@@ -1,7 +1,7 @@
 id: T3
 title: Feature Done Watcher
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T2
   - T5
@@ -12,7 +12,7 @@ execution:
   actor_type: agent
   requires_human_review: false
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-08T19:09:02Z
+  last_updated_at: 2026-05-09T14:24:46+0700
 pr:
   url: null
   status: null
@@ -33,3 +33,9 @@ log:
       from origin/main after syncRepo, so T3 would never be dispatched until T5 fixes
       the feature-branch read. T6 ensures the auto-ready sibling check is also
       branch-aware. See technical-design.md §9 for full analysis.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T14:24:46+0700
+    note: >-
+      Auto-ready rule applied — all dependencies done: T2 (merged #109),
+      T5 (merged #115), T6 (merged #113). T3 is now eligible for agent dispatch.
