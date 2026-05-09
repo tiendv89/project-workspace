@@ -1,7 +1,7 @@
 feature_id: ui-interaction-updates
 title: UI Interaction Updates
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: T1, T2, and T3 are ready to claim. T4 waits for T1, T2, and T3 to complete.
 stages:
   product_spec:
@@ -54,6 +54,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/176
 history:
   - stage: product_spec
     action: created
