@@ -304,9 +304,28 @@ T5 and T6 fix the orchestrator's dispatch mechanism itself. The standard feature
 
 After T5 and T6 merge to `main`, the orchestrator will read T3's state from `origin/feature/autonomous-feature-reviewer` (T5's fix) and correctly evaluate the auto-ready sibling map (T6's fix). T3 transitions to `ready` automatically and the rest of the feature proceeds under normal rules.
 
+### Finding 3 — `openWorkspacePr` has no fallback when the feature branch is absent
+
+`main.ts:501` unconditionally passes `featureBranchName(featureId)` as `baseBranch` to `openWorkspacePr`. When the feature branch has been merged and deleted, the GitHub API returns 422 "invalid base". The error is caught and logged as `workspace_pr_failed`; no workspace PR is created and the orchestrator loses management-repo tracking for the task.
+
+**Fix (T7):** add `fallbackBaseBranch?: string` to `OpenWorkspacePrOpts`. In the PR creation block, if the API returns 422 with `errors[].field === "base"` and `fallbackBaseBranch` is set, retry with `base: fallbackBaseBranch`. At the call site in `main.ts`, pass `fallbackBaseBranch: mgmtCoords.baseBranch`. T7 also merges directly to `main`.
+
+### Updated dependency graph
+
+```
+T1, T2, T5, T6, T7 — Wave 1, all independent
+
+T3 — Wave 2, blocked on T2, T5, T6
+T4 — Wave 3, blocked on T3
+```
+
+T7 has no dependency on T5 or T6 — it can land in any order within Wave 1.
+
 ### Updated repository impact
 
 | File | Task | Change |
 |---|---|---|
 | `runtime/orchestrator/src/eligibility/match.ts` | T5 | `loadFeatureTasks`: use `git show origin/<feature_branch>:<relPath>` when `feature_branch` is set |
 | `runtime/orchestrator/src/poll/handle-merged-prs.ts` | T6 | Sibling status map: try `origin/<feature_branch>` first, fall back to `origin/<mgmtBaseBranch>` |
+| `runtime/orchestrator/src/claim/open-workspace-pr.ts` | T7 | Add `fallbackBaseBranch?`; retry PR creation with fallback on 422 invalid base |
+| `runtime/orchestrator/src/main.ts` | T7 | Pass `fallbackBaseBranch: mgmtCoords.baseBranch` to `openWorkspacePr` |

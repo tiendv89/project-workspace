@@ -12,6 +12,7 @@
 | T2 | 1 | Lifecycle Manager wiring + Handoff Trigger extension | — |
 | T5 | 1 | Fix eligibility/match.ts — feature-branch task dispatch | — |
 | T6 | 1 | Fix handle-merged-prs.ts — sibling status map reads feature branch first | — |
+| T7 | 1 | Fix open-workspace-pr.ts — fall back to base branch when feature branch absent | — |
 | T3 | 2 | Feature Done Watcher | T2, T5, T6 |
 | T4 | 3 | Feature Reviewer Daemon | T3 |
 
@@ -135,6 +136,45 @@ Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/
 - [ ] Confirm where `feature_branch` is sourced at this call site (likely from the already-loaded `status.yaml` for the feature)
 - [ ] Update the sibling status read: when `feature_branch` is set, try `git show origin/<feature_branch>:<sibRelPath>` first; on error or missing result fall back to `git show origin/<mgmtBaseBranch>:<sibRelPath>`
 - [ ] Run tests — sibling with `done` only on feature branch is seen as `done`; fall-back fires when sibling not on feature branch; no change when `feature_branch` unset
+- [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
+
+---
+
+## T7 — Fix open-workspace-pr.ts — fall back to base branch when feature branch absent
+
+### Description
+
+When the management repo feature branch (`feature/{feature_id}`) has been merged to `main` and deleted, `openWorkspacePr` in `runtime/orchestrator/src/claim/open-workspace-pr.ts` fails with HTTP 422 "invalid base" because `main.ts:501` unconditionally passes `featureBranchName(featureId)` as the PR base. The error is caught and logged as `workspace_pr_failed`, but no workspace PR is created — the orchestrator loses management-repo tracking for the task.
+
+**Root cause:** `main.ts:501`:
+```typescript
+baseBranch: featureBranchName(featureId),
+```
+There is no existence check and no fallback.
+
+**Fix — two-part:**
+
+1. **`open-workspace-pr.ts`** — add `fallbackBaseBranch?: string` to `OpenWorkspacePrOpts`. In the PR creation block (`2b`), after the GitHub API returns a 422 response whose `errors` array contains `{ field: "base", code: "invalid" }`, if `fallbackBaseBranch` is set, retry the `POST /pulls` request with `base: fallbackBaseBranch`. On the second attempt, do not retry again — throw on any error. Emit a log line distinguishing the fallback path.
+
+2. **`main.ts`** — at the `openWorkspacePr` call site (currently line ~501), pass `fallbackBaseBranch: mgmtCoords.baseBranch`. Also update the `workspace_pr_opened` emit to include `base_branch` in the payload so it is visible in logs.
+
+This means if the feature branch is gone the workspace PR is opened against `main` with no other changes required.
+
+> **PR target override — merge directly to `main`.**
+> Same rationale as T5/T6: this is an orchestrator core fix. Open the PR against `main`. Documented in technical-design.md §9.
+
+### Required skills
+
+- `typescript-best-practices`
+
+### Subtasks
+
+- [ ] Read `runtime/orchestrator/src/claim/open-workspace-pr.ts` — confirm the PR creation block and current error handling shape
+- [ ] Add `fallbackBaseBranch?: string` to `OpenWorkspacePrOpts`
+- [ ] In the `2b` creation block: after a 422 with `errors[].field === "base"`, if `fallbackBaseBranch` is set, retry with `base: fallbackBaseBranch`; throw on second failure
+- [ ] Read `main.ts` around line 494–514 — confirm the `openWorkspacePr` call site
+- [ ] Pass `fallbackBaseBranch: mgmtCoords.baseBranch` at the call site; update `workspace_pr_opened` emit to include `base_branch`
+- [ ] Run tests — feature branch absent → PR created against `mgmtCoords.baseBranch`; feature branch present → PR created against feature branch (no change); second 422 → throws
 - [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
 
 ---

@@ -1,0 +1,30 @@
+id: T7
+title: Fix open-workspace-pr.ts — fall back to base branch when feature branch absent
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/autonomous-feature-reviewer-T7
+execution:
+  actor_type: agent
+  requires_human_review: false
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-09T13:00:27+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T13:00:27+0700
+    note: >-
+      Task created — openWorkspacePr unconditionally uses featureBranchName(featureId)
+      as the PR base; fails with 422 when the feature branch has been merged+deleted.
+      Fix: add fallbackBaseBranch to OpenWorkspacePrOpts, retry on 422 invalid base.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-09T13:00:27+0700
+    note: >-
+      No dependencies — task is immediately ready. PR target override: open PR against
+      main (not feature/autonomous-feature-reviewer). See tasks.md §T7 and
+      technical-design.md §9 for rationale.
