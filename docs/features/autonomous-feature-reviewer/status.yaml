@@ -1,7 +1,7 @@
 feature_id: autonomous-feature-reviewer
 title: Autonomous Feature Reviewer
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Tasks approved. T1 (Reviewer Identity injection) and T2 (Lifecycle
   Manager wiring + Handoff Trigger extension) are ready for agent execution in
   parallel. T3 and T4 activate automatically when their dependencies complete.
@@ -69,6 +69,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/186
 history:
   - action: feature_branch_created
     by: matthew@liquid-labs.xyz
