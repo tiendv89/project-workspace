@@ -12,7 +12,7 @@
 | T2 | 1 | Lifecycle Manager wiring + Handoff Trigger extension | — |
 | T5 | 1 | Fix eligibility/match.ts — feature-branch task dispatch | — |
 | T6 | 1 | Fix handle-merged-prs.ts — sibling status map reads feature branch first | — |
-| T7 | 1 | Fix open-workspace-pr.ts — fall back to base branch when feature branch absent | — |
+| T7 | 1 | Fix lifecycle manager — run on every poll cycle, not just at startup | — |
 | T3 | 2 | Feature Done Watcher | T2, T5, T6 |
 | T4 | 3 | Feature Reviewer Daemon | T3 |
 
@@ -140,28 +140,20 @@ Fix: when `status.yaml` contains a `feature_branch` field, try `git show origin/
 
 ---
 
-## T7 — Fix open-workspace-pr.ts — fall back to base branch when feature branch absent
+## T7 — Fix lifecycle manager — run on every poll cycle, not just at startup
 
 ### Description
 
-When the management repo feature branch (`feature/{feature_id}`) has been merged to `main` and deleted, `openWorkspacePr` in `runtime/orchestrator/src/claim/open-workspace-pr.ts` fails with HTTP 422 "invalid base" because `main.ts:501` unconditionally passes `featureBranchName(featureId)` as the PR base. The error is caught and logged as `workspace_pr_failed`, but no workspace PR is created — the orchestrator loses management-repo tracking for the task.
+`runFeatureBranchLifecycle` is called once at orchestrator startup (`main.ts:~282`, comment reads "Runs once at startup"). If the feature branch is deleted while the orchestrator is running (e.g. a workspace PR is merged mid-session), subsequent claim attempts fail with `workspace_pr_failed` HTTP 422 "invalid base" because the branch no longer exists and the lifecycle manager never re-runs to recreate it.
 
-**Root cause:** `main.ts:501`:
-```typescript
-baseBranch: featureBranchName(featureId),
-```
-There is no existence check and no fallback.
+**Root cause:** the lifecycle manager is startup-only. Any branch-state change that happens while the orchestrator is running (merge + delete, manual deletion, force-push recovery) is never corrected until the orchestrator is restarted.
 
-**Fix — two-part:**
+**Fix:** move `runFeatureBranchLifecycle` from the startup block into the top of every poll cycle so the feature branch is always verified/recreated before claim and dispatch run. The lifecycle manager is designed to be idempotent — if the branch already exists and is up to date, it is a cheap no-op (a `git ls-remote` check + nothing more). Recording `feature_branch` and `feature_branch_base_sha` in `status.yaml` is guarded by "never overwritten after initial write", so repeat calls are safe.
 
-1. **`open-workspace-pr.ts`** — add `fallbackBaseBranch?: string` to `OpenWorkspacePrOpts`. In the PR creation block (`2b`), after the GitHub API returns a 422 response whose `errors` array contains `{ field: "base", code: "invalid" }`, if `fallbackBaseBranch` is set, retry the `POST /pulls` request with `base: fallbackBaseBranch`. On the second attempt, do not retry again — throw on any error. Emit a log line distinguishing the fallback path.
-
-2. **`main.ts`** — at the `openWorkspacePr` call site (currently line ~501), pass `fallbackBaseBranch: mgmtCoords.baseBranch`. Also update the `workspace_pr_opened` emit to include `base_branch` in the payload so it is visible in logs.
-
-This means if the feature branch is gone the workspace PR is opened against `main` with no other changes required.
+With this fix in place, a deleted feature branch is recreated from the base branch on the very next poll cycle — before any claim or workspace PR creation is attempted.
 
 > **PR target override — merge directly to `main`.**
-> Same rationale as T5/T6: this is an orchestrator core fix. Open the PR against `main`. Documented in technical-design.md §9.
+> Same rationale as T5/T6: orchestrator core fix. Open the PR against `main`. Documented in technical-design.md §9.
 
 ### Required skills
 
@@ -169,12 +161,10 @@ This means if the feature branch is gone the workspace PR is opened against `mai
 
 ### Subtasks
 
-- [ ] Read `runtime/orchestrator/src/claim/open-workspace-pr.ts` — confirm the PR creation block and current error handling shape
-- [ ] Add `fallbackBaseBranch?: string` to `OpenWorkspacePrOpts`
-- [ ] In the `2b` creation block: after a 422 with `errors[].field === "base"`, if `fallbackBaseBranch` is set, retry with `base: fallbackBaseBranch`; throw on second failure
-- [ ] Read `main.ts` around line 494–514 — confirm the `openWorkspacePr` call site
-- [ ] Pass `fallbackBaseBranch: mgmtCoords.baseBranch` at the call site; update `workspace_pr_opened` emit to include `base_branch`
-- [ ] Run tests — feature branch absent → PR created against `mgmtCoords.baseBranch`; feature branch present → PR created against feature branch (no change); second 422 → throws
+- [ ] Read `main.ts` around line 282 — locate the startup-only `runFeatureBranchLifecycle` call block and understand its current position relative to the poll loop
+- [ ] Move `runFeatureBranchLifecycle` (or its equivalent per-feature call) to the top of the poll cycle, before eligibility checks and claim; remove it from the one-time startup path
+- [ ] Confirm the lifecycle manager is idempotent when the branch already exists — read `lifecycle-manager.ts` `ensureFeatureBranch` and verify the branch-already-exists path is a no-op
+- [ ] Run tests — branch deleted mid-session → recreated on next poll cycle before claim; branch already present → no-op (no redundant push); `feature_branch_base_sha` not overwritten on repeat calls
 - [ ] Open PR targeting **`main`** (not `feature/autonomous-feature-reviewer` — see PR target override above)
 
 ---

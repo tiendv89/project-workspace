@@ -1,5 +1,5 @@
 id: T7
-title: Fix open-workspace-pr.ts — fall back to base branch when feature branch absent
+title: Fix lifecycle manager — run on every poll cycle, not just at startup
 repo: workflow
 status: ready
 depends_on: []
@@ -18,9 +18,10 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
     note: >-
-      Task created — openWorkspacePr unconditionally uses featureBranchName(featureId)
-      as the PR base; fails with 422 when the feature branch has been merged+deleted.
-      Fix: add fallbackBaseBranch to OpenWorkspacePrOpts, retry on 422 invalid base.
+      Task created — runFeatureBranchLifecycle runs only at orchestrator startup; if
+      the feature branch is deleted mid-session the next claim attempt fails with
+      workspace_pr_failed 422. Fix: move lifecycle manager call into the poll cycle
+      so the branch is always verified/recreated before claim and dispatch.
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-09T13:00:27+0700
