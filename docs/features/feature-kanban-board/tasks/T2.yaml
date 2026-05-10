@@ -1,7 +1,7 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/feature-kanban-board-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-10T17:45:03.129Z
+  last_updated_at: 2026-05-10T17:49:34.903Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/37
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -99,6 +99,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T17:45:03.129Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:49:34.903Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/196
   status: open
