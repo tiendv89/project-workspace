@@ -174,7 +174,7 @@ No provider is contacted. No schema extensions are written.
 **Mode B — provider import (new)**
 
 ```
-/import-feature <provider> <bet-id>
+/import-feature --provider <provider> <bet-id>
 ```
 
 Single-invocation skill that:
@@ -197,12 +197,14 @@ Single-invocation skill that:
 ```
 args = parse(argv)
 
-if args.length == 1:
-    run_mode_a(feature_id=args[0])       # existing init-feature path — no change
-elif args.length == 2:
-    run_mode_b(provider=args[0], bet_id=args[1])   # new provider import path
+if args.has_flag("--provider"):
+    run_mode_b(provider=args.flag("--provider"), bet_id=args.positional(0))
+elif args.positional(0):
+    run_mode_a(feature_id=args.positional(0))
 else:
-    error("Usage: /import-feature <feature-id>  OR  /import-feature <provider> <bet-id>")
+    error("Usage:")
+    error("  /import-feature <feature-id>")
+    error("  /import-feature --provider <provider> <bet-id>")
 ```
 
 **`/sync-feature <feature-id>`** *(V2 scope, defined here for architecture clarity)*
@@ -263,12 +265,12 @@ behavior becomes Mode A of `/import-feature`; the skill body is moved, not rewri
 | Invocation | Behaviour | Backward compatible? |
 |---|---|---|
 | `/import-feature <feature-id>` | Existing init-feature scaffold, no provider | Yes — identical output |
-| `/import-feature <provider> <bet-id>` | Provider import, fills scaffold from external issues | New |
+| `/import-feature --provider <provider> <bet-id>` | Provider import, fills scaffold from external issues | New |
 
 The internal call chain for Mode B:
 
 ```
-/import-feature linear proj_abc123
+/import-feature --provider linear proj_abc123
   └── resolve-project-env
   └── LinearAdapter.fetchBet(proj_abc123)      → derive feature-id from Bet slug
   └── run_mode_a(feature-id)                   ← existing scaffold creation, unchanged
@@ -319,7 +321,7 @@ Workspace task marked done
 | Add Jira adapter | Implement `WorkItemAdapter` interface; declare in `workspace.yaml` |
 | Add GitHub Projects adapter | Same interface, different MCP/REST calls |
 | Real-time webhook sync | Add `subscribe()` method to interface; V2 sync skill polls or subscribes |
-| Cycle-level import | `/import-cycle linear <cycle-id>` loops over Bets, calls `/import-feature` per Bet |
+| Cycle-level import | `/import-feature --provider linear --cycle <cycle-id>` loops over Bets, calls Mode B per Bet |
 | Status write-back | `writeStatus()` already defined in interface; wired up in V2 |
 | Multi-cycle roadmaps | `ExternalCycle` already in normalized types; `status.yaml` can hold cycle array |
 
@@ -330,7 +332,7 @@ Workspace task marked done
 - [ ] Running `/import-feature <feature-id>` (Mode A) produces output identical to
       the current `/init-feature` — empty scaffold, no `external_ref` or `external_sync`
       blocks, no provider contacted.
-- [ ] Running `/import-feature linear <bet-id>` (Mode B) on a clean workspace creates
+- [ ] Running `/import-feature --provider linear <bet-id>` (Mode B) on a clean workspace creates
       a valid feature scaffold plus populated task YAMLs.
 - [ ] Every task YAML contains an `external_ref` block with provider, ID, URL, and
       import timestamp.
@@ -342,7 +344,7 @@ Workspace task marked done
       `last_synced_at`.
 - [ ] A draft `tasks.md` is generated from issue titles and descriptions.
 - [ ] All files are committed to `feature/<feature-id>` branch and pushed to origin.
-- [ ] Running `/import-feature jira <project-key>` (stub) fails gracefully with
+- [ ] Running `/import-feature --provider jira <project-key>` (stub) fails gracefully with
       "adapter not configured" — confirming the interface boundary is enforced.
 - [ ] The `LinearAdapter` is the only place that references Linear-specific MCP tool
       names — no Linear-specific code leaks into the core import skill.
