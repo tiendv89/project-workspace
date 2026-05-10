@@ -27,3 +27,6 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T17:52:23.952Z
     note: Claimed via git-based claim protocol.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/198
+  status: open
