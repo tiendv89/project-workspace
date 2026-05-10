@@ -1,7 +1,7 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/feature-kanban-board-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-10T17:39:50+0000
+  last_updated_at: 2026-05-10T17:44:01.801Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/37
   status: open
@@ -82,8 +82,7 @@ log:
   - action: comments_addressed
     by: norepy@tiendv.dev
     at: 2026-05-10T17:39:50+0000
-    note: >-
-      Resolved 1 inline review thread; added task-board-view-wiring.test.ts with
+    note: Resolved 1 inline review thread; added task-board-view-wiring.test.ts with
       8 render tests verifying toggleFeature (aria-expanded wiring) and
       setSelectedTask (task card rendering) prop pass-throughs in TaskBoardView.
       PR converted to ready-for-review.
