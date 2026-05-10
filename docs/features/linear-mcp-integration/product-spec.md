@@ -149,10 +149,76 @@ interface ExternalTask {
 ```
 
 The `LinearAdapter` implements this interface using the Linear MCP server:
-- `list_cycles` → `fetchCycles()`
-- `list_projects` + filter by cycle → `fetchBets(cycleId?)`
+- `list_projects` → `fetchBets()`
 - `linear://project/{id}/issues` resource → `fetchTasks(betId)`
 - `update_issue` → `writeStatus(taskId, status)` (for future write-back)
+
+### 2. Authentication
+
+The Linear MCP server (`https://mcp.linear.app/mcp`) uses **OAuth 2.1 with dynamic
+client registration**. There are two authentication paths depending on context:
+
+**Path A — Interactive (human-driven, one-time setup)**
+
+Used when a human runs `/import-feature` locally in Claude Code.
+
+```bash
+# Register the MCP server in Claude Code once:
+claude mcp add --transport http linear-server https://mcp.linear.app/mcp
+
+# Then trigger the OAuth browser flow:
+/mcp
+```
+
+Claude Code stores the OAuth token in `~/.mcp-auth`. Subsequent invocations reuse
+the cached token. If the token is missing or expired, Claude Code will prompt the
+user to re-authenticate.
+
+To clear cached auth: `rm -rf ~/.mcp-auth`
+
+**Path B — Non-interactive (agent runtime)**
+
+Agents in the runtime cannot perform browser-based OAuth. They authenticate via a
+Bearer token passed directly in the `Authorization` header — either a Linear API
+key or a pre-obtained OAuth token.
+
+```
+Authorization: Bearer <LINEAR_API_TOKEN>
+```
+
+The token is read from `LINEAR_API_TOKEN` in the project `.env`. The `LinearAdapter`
+sets this header on every MCP request when `LINEAR_API_TOKEN` is present.
+
+**Pre-flight check in the skill:**
+
+Before making any Linear MCP calls, `/import-feature` must:
+1. Check whether `linear-server` is registered in Claude Code's MCP config.
+2. If running interactively and not registered → print setup instructions and stop.
+3. If running in agent runtime → check `LINEAR_API_TOKEN` in `.env`; if absent,
+   set task to `blocked` with `blocked_reason: "LINEAR_API_TOKEN not set in .env"`.
+
+**`.env` requirement for agent runtime:**
+
+```
+LINEAR_API_TOKEN=lin_api_xxxxxxxxxxxxxxxxxxxx
+```
+
+**`workspace.yaml` — updated `work_item_providers` schema:**
+
+```yaml
+work_item_providers:
+  - id: linear
+    adapter: linear-mcp
+    mcp_server: https://mcp.linear.app/mcp
+    # auth_token_env: token used by agent runtime (Path B)
+    # omit for interactive sessions that use ~/.mcp-auth (Path A)
+    auth_token_env: LINEAR_API_TOKEN
+    default_team: TEAM_ID     # optional — filter projects to this team
+  - id: jira                  # future example
+    adapter: jira-rest
+    base_url: https://org.atlassian.net
+    auth_token_env: JIRA_API_TOKEN
+```
 
 ### 2. Unified `/import-feature` Skill
 
@@ -240,21 +306,6 @@ external_sync:
   last_synced_at: "2026-05-10T13:00:00+0700"
 ```
 
-**`workspace.yaml` — `work_item_providers` block** (new optional block):
-
-```yaml
-work_item_providers:
-  - id: linear
-    adapter: linear-mcp
-    mcp_server: https://mcp.linear.app/mcp
-    auth_env: LINEAR_API_TOKEN
-    default_team: TEAM_ID     # optional filter
-  - id: jira                  # future example
-    adapter: jira-rest
-    base_url: https://org.atlassian.net
-    auth_env: JIRA_API_TOKEN
-```
-
 ### 4. Skill Migration
 
 `/init-feature` is superseded by `/import-feature`. The existing `/init-feature`
@@ -325,6 +376,11 @@ Workspace task marked done
 
 ## Acceptance Criteria
 
+- [ ] Running `/import-feature --provider linear <bet-id>` in agent runtime with no
+      `LINEAR_API_TOKEN` in `.env` sets the task to `blocked` with a clear reason —
+      no MCP call is attempted.
+- [ ] Running `/import-feature --provider linear <bet-id>` interactively with the
+      `linear-server` MCP not registered prints setup instructions and exits cleanly.
 - [ ] Running `/import-feature <feature-id>` (Mode A) produces output identical to
       the current `/init-feature` — empty scaffold, no `external_ref` or `external_sync`
       blocks, no provider contacted.
