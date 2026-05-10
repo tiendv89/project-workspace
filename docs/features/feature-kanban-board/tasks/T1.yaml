@@ -48,7 +48,3 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.46544399999999997
     at: 2026-05-10T05:13:43.098Z
-  - action: reviewer_started
-    by: norepy@tiendv.dev
-    at: 2026-05-10T08:26:28.897Z
-    note: Reviewer dispatch claimed (cycle 1 of 3).
