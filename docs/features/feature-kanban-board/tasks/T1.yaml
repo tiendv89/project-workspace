@@ -12,6 +12,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/35
   status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/193
+  status: merged  
 log:
   - action: created
     by: minhkienn203@gmail.com
