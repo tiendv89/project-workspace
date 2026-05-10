@@ -1,16 +1,18 @@
 id: T4
 title: Feature Mode list view and controls integration
 repo: digital-factory-ui
-status: in_review
+status: blocked
 depends_on:
   - T2
   - T3
-blocked_reason: null
+blocked_reason: pr_conflict
 branch: feature/feature-kanban-board-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-10T18:11:16.349Z
+  last_updated_at: 2026-05-10T18:25:55.949Z
+  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
+    detail, then set status back to in_review.
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/38
   status: open
@@ -50,12 +52,32 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T18:10:22.552Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: blocked
+    by: norepy@tiendv.dev
+    at: 2026-05-10T18:25:55.949Z
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/198
   status: open
-conflict_state: resolving
+conflict_state: resolved
 rebase_log:
   - at: 2026-05-10T18:11:16.349Z
     action: rebase_started
     by: norepy@tiendv.dev
     note: Rebase claimed; targeting origin/feature/feature-kanban-board.
+  - at: 2026-05-10T18:25:55.949Z
+    action: rebase_blocked
+    by: norepy@tiendv.dev
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."
