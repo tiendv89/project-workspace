@@ -1,7 +1,7 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: in_review
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -70,6 +70,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T16:30:03.339Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T00:28:06+0700
+    note: Manual state correction — status set to change_requested per human review of PR #196.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/196
   status: open
