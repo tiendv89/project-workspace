@@ -1,0 +1,90 @@
+feature_id: feature-kanban-board
+title: Feature Kanban Board
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T4.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-09T12:24:39+07:00
+    review_comment: null
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-09T12:24:39+07:00
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-09T06:00:27Z
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-09T12:28:46+07:00
+        comment: Technical design drafted for Feature Mode review.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-09T06:00:27Z
+        comment: Technical design approved. Feature advances to task planning.
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-09T06:02:30Z
+    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-09T12:28:46+07:00
+        comment: Task breakdown drafted from the technical design. Tasks remain todo until tasks-stage approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-09T06:02:30Z
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T10:52:24+07:00
+    note: Feature scaffold created from init-feature.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T12:24:39+07:00
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T12:28:46+07:00
+    note: Technical design submitted for review.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T12:28:46+07:00
+    note: Task breakdown drafted and submitted for approval. Tasks remain todo until the tasks stage is approved.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T06:00:27Z
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-09T06:02:30Z
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
