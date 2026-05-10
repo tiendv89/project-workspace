@@ -1,7 +1,7 @@
 feature_id: distributed-agent-team
 title: Distributed agent team (self-activating agents pulling work from workspace)
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 stages:
   product_spec:

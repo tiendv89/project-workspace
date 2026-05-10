@@ -2,7 +2,7 @@ feature_id: agent-runtime-pr-merge
 title: Agent Runtime PR Merge
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 
 stages:

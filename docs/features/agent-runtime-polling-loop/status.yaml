@@ -2,7 +2,7 @@ feature_id: agent-runtime-polling-loop
 title: Agent Runtime — Continuous Polling Loop
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: null
 
 stages:

@@ -1,7 +1,7 @@
 feature_id: gitnexus-mcp-integration
 title: GitNexus Code-Graph MCP Integration
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 stages:
   product_spec:

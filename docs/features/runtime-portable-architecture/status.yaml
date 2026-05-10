@@ -1,16 +1,9 @@
 feature_id: runtime-portable-architecture
-title: Portable runtime architecture — extract today's bundled orchestrator/executor into ports, adapters, and profiles
-
-feature_status: ready_for_implementation
-current_stage: implementation
-next_action: >-
-  Tasks approved. Wave 1 task T1 is now ready and may be claimed by
-  any agent. Follow the rollout cadence in tasks.md to keep the running
-  local-subprocess stack alive: T1-T4 redeploy at will; T5+T6 must
-  ship together with a graceful drain; T7-T8 redeploy at will; T9
-  introduces local-docker as an opt-in profile. The handoff stage is
-  drafted and reviewed only after all tasks reach done.
-
+title: Portable runtime architecture — extract today's bundled
+  orchestrator/executor into ports, adapters, and profiles
+feature_status: done
+current_stage: done
+next_action: Feature complete. All 10 tasks done and merged. Handoff approved.
 stages:
   product_spec:
     review_status: approved
@@ -26,104 +19,111 @@ stages:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
     reviewed_at: 2026-05-04T01:59:51+0700
-    review_comment: >-
-      Approved. Hexagonal split (D1b), async submit/reap (D2b),
-      runner-callback model (D3c), runtime-selected profiles (D4b),
-      nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and shared
-      completion broker (D7b) all settled. Per-profile submit
-      walk-through documented. Tech lead may proceed to task planning.
+    review_comment: Approved. Hexagonal split (D1b), async submit/reap (D2b),
+      runner-callback model (D3c), runtime-selected profiles (D4b), nonce-only
+      auth (D5a), mount-wrapper-at-runtime (D6c), and shared completion broker
+      (D7b) all settled. Per-profile submit walk-through documented. Tech lead
+      may proceed to task planning.
     review_history:
       - at: 2026-05-04T01:59:51+0700
         by: matthew@liquid-labs.xyz
         action: approved
-        comment: >-
-          Approved. Hexagonal split (D1b), async submit/reap (D2b),
+        comment: Approved. Hexagonal split (D1b), async submit/reap (D2b),
           runner-callback model (D3c), runtime-selected profiles (D4b),
-          nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and
-          shared completion broker (D7b) all settled. Per-profile submit
-          walk-through documented. Tech lead may proceed to task
-          planning.
+          nonce-only auth (D5a), mount-wrapper-at-runtime (D6c), and shared
+          completion broker (D7b) all settled. Per-profile submit walk-through
+          documented. Tech lead may proceed to task planning.
   tasks:
     review_status: approved
     reviewed_by: matthew@liquid-labs.xyz
     reviewed_at: 2026-05-04T02:21:32+0700
-    review_comment: >-
-      Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
-      T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
-      (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
-      established at docs/language-policy.md; T7 is the Go beachhead.
-      Redeployment notes at the top of tasks.md document the rollout
-      cadence so agents keep running through the implementation.
+    review_comment: Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+      T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows (T2∥T4 after
+      T1; T5∥T7 after T3,T4). Workspace language policy established at
+      docs/language-policy.md; T7 is the Go beachhead. Redeployment notes at the
+      top of tasks.md document the rollout cadence so agents keep running
+      through the implementation.
     review_history:
       - at: 2026-05-04T02:21:32+0700
         by: matthew@liquid-labs.xyz
         action: approved
-        comment: >-
-          Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
-          T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows
-          (T2∥T4 after T1; T5∥T7 after T3,T4). Workspace language policy
-          established at docs/language-policy.md; T7 is the Go
-          beachhead. Redeployment notes at the top of tasks.md document
-          the rollout cadence so agents keep running through the
-          implementation.
+        comment: Approved. Ten tasks (T1-T10) covering Waves 1-5. Critical path
+          T1→T2→T3→T5→T6→T8→T9→T10 (8 deep). Two parallelism windows (T2∥T4
+          after T1; T5∥T7 after T3,T4). Workspace language policy established at
+          docs/language-policy.md; T7 is the Go beachhead. Redeployment notes at
+          the top of tasks.md document the rollout cadence so agents keep
+          running through the implementation.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
-
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-10T12:06:45+0700
+    review_comment: Handoff approved — all 10 tasks done and merged. Feature marked done.
+    review_history:
+      - at: 2026-05-10T12:06:45+0700
+        by: matthew@swellnetwork.io
+        action: approved
+        comment: Handoff approved — all 10 tasks done and merged. Feature marked done.
+    pr_url: https://github.com/tiendv89/project-workspace/pull/169
 history:
   - at: 2026-05-03T00:00:00+0700
     by: matthew@swellnetwork.io
     action: feature_created
-    note: >-
-      Feature initialized via /init-feature as platform-byo-executor.
-      Original goal was to enable platform customers to register their
-      own executor images and run tasks on tenant-isolated infrastructure.
-      Product spec drafted with ten open questions (Q1–Q10).
+    note: Feature initialized via /init-feature as platform-byo-executor. Original
+      goal was to enable platform customers to register their own executor
+      images and run tasks on tenant-isolated infrastructure. Product spec
+      drafted with ten open questions (Q1–Q10).
   - at: 2026-05-03T22:46:04+0700
     by: matthew@swellnetwork.io
     action: feature_rescoped
-    note: >-
-      Feature renamed from platform-byo-executor to
-      runtime-portable-architecture and rescoped to the architectural
-      foundation only. Customer-facing BYO surface (image registration,
-      conformance, tenant management, billing, pull-family runner agents,
-      production push/pull adapters) deferred to a future feature.
-      Remaining scope: hexagonal refactor (ports + adapters + profiles),
-      async submit/reap, two local profiles (local-subprocess and
-      local-docker), tenant-context plumbing without enforcement.
-      The discussion-orchestrator-architecture.md document is preserved
-      and includes the long-term BYO direction for the future feature
-      to pick up.
+    note: "Feature renamed from platform-byo-executor to
+      runtime-portable-architecture and rescoped to the architectural foundation
+      only. Customer-facing BYO surface (image registration, conformance, tenant
+      management, billing, pull-family runner agents, production push/pull
+      adapters) deferred to a future feature. Remaining scope: hexagonal
+      refactor (ports + adapters + profiles), async submit/reap, two local
+      profiles (local-subprocess and local-docker), tenant-context plumbing
+      without enforcement. The discussion-orchestrator-architecture.md document
+      is preserved and includes the long-term BYO direction for the future
+      feature to pick up."
   - at: 2026-05-03T23:30:36+0700
     by: matthew@liquid-labs.xyz
     action: stage_approved
-    note: >-
-      Product spec approved. Feature advanced from in_design to in_tdd;
+    note: Product spec approved. Feature advanced from in_design to in_tdd;
       current_stage moved from product_spec to technical_design.
   - at: 2026-05-04T01:59:51+0700
     by: matthew@liquid-labs.xyz
     action: stage_approved
-    note: >-
-      Technical design approved. current_stage moved from
-      technical_design to tasks. Tech lead may now run Phase 2 to draft
-      the task breakdown. Feature_status remains in_tdd until the tasks
-      stage is also approved (which moves it to ready_for_implementation).
+    note: Technical design approved. current_stage moved from technical_design to
+      tasks. Tech lead may now run Phase 2 to draft the task breakdown.
+      Feature_status remains in_tdd until the tasks stage is also approved
+      (which moves it to ready_for_implementation).
   - at: 2026-05-04T02:21:32+0700
     by: matthew@liquid-labs.xyz
     action: stage_approved
+    note: Tasks approved. Feature advanced from in_tdd to ready_for_implementation.
+      current_stage moved from tasks to implementation. T1 (Wave 1 — port
+      interfaces + fakes) activated from todo to ready. T2-T10 remain todo until
+      their dependencies reach done. The handoff stage will be drafted once all
+      tasks are done and reviewed at that point.
+  - at: 2026-05-09T02:23:46+0700
+    by: matthew@swellnetwork.io
+    action: advanced_to_handoff
+    note: All 10 tasks done and merged. Feature manually advanced from
+      ready_for_implementation to in_handoff. Handoff document written at
+      handoffs/handoff.md. Orchestrator stuck_handoff invariant resolved —
+      feature branch was never created (all work landed on per-task branches
+      pre-dating Feature Branch Lifecycle Manager).
+  - at: 2026-05-10T12:06:45+0700
+    by: matthew@swellnetwork.io
+    action: stage_approved
     note: >-
-      Tasks approved. Feature advanced from in_tdd to
-      ready_for_implementation. current_stage moved from tasks to
-      implementation. T1 (Wave 1 — port interfaces + fakes) activated
-      from todo to ready. T2-T10 remain todo until their dependencies
-      reach done. The handoff stage will be drafted once all tasks are
-      done and reviewed at that point.
-
+      Handoff approved. Feature advanced from in_handoff to done.
+      All 10 tasks (T1-T10) confirmed done and merged.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/runtime-portable-architecture
+feature_branch_base_sha: f52152454cb1ca82dcd21c7a9b6a9639fbbc9e53
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/169
