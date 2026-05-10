@@ -1,10 +1,9 @@
 feature_id: runtime-portable-architecture
 title: Portable runtime architecture — extract today's bundled
   orchestrator/executor into ports, adapters, and profiles
-feature_status: in_handoff
-current_stage: handoff
-next_action: All 10 tasks done and merged. Handoff document written at
-  handoffs/handoff.md. Awaiting human review and approval to advance to done.
+feature_status: done
+current_stage: done
+next_action: Feature complete. All 10 tasks done and merged. Handoff approved.
 stages:
   product_spec:
     review_status: approved
@@ -55,11 +54,15 @@ stages:
           the top of tasks.md document the rollout cadence so agents keep
           running through the implementation.
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-10T12:06:45+0700
+    review_comment: Handoff approved — all 10 tasks done and merged. Feature marked done.
+    review_history:
+      - at: 2026-05-10T12:06:45+0700
+        by: matthew@swellnetwork.io
+        action: approved
+        comment: Handoff approved — all 10 tasks done and merged. Feature marked done.
     pr_url: https://github.com/tiendv89/project-workspace/pull/169
 history:
   - at: 2026-05-03T00:00:00+0700
@@ -110,6 +113,12 @@ history:
       handoffs/handoff.md. Orchestrator stuck_handoff invariant resolved —
       feature branch was never created (all work landed on per-task branches
       pre-dating Feature Branch Lifecycle Manager).
+  - at: 2026-05-10T12:06:45+0700
+    by: matthew@swellnetwork.io
+    action: stage_approved
+    note: >-
+      Handoff approved. Feature advanced from in_handoff to done.
+      All 10 tasks (T1-T10) confirmed done and merged.
 revalidation:
   product_spec_required: false
   technical_design_required: false
