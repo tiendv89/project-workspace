@@ -154,24 +154,56 @@ The `LinearAdapter` implements this interface using the Linear MCP server:
 - `linear://project/{id}/issues` resource → `fetchTasks(betId)`
 - `update_issue` → `writeStatus(taskId, status)` (for future write-back)
 
-### 2. New CLI Skills
+### 2. Unified `/import-feature` Skill
 
-**`/import-feature <provider> <bet-id>`**
+`/import-feature` is the single entry point for all feature creation — both manual
+and provider-imported. It is backward compatible: the existing `<feature-id>` calling
+convention is preserved exactly.
+
+**Mode A — manual scaffold (existing behavior, unchanged)**
+
+```
+/import-feature <feature-id>
+```
+
+Behaves identically to the current `/init-feature` flow:
+creates the empty scaffold (`product-spec.md`, `technical-design.md`, `status.yaml`,
+`tasks/`, `handoffs/`) from templates and commits to `feature/<feature-id>`.
+No provider is contacted. No schema extensions are written.
+
+**Mode B — provider import (new)**
+
+```
+/import-feature <provider> <bet-id>
+```
 
 Single-invocation skill that:
 1. Resolves `.env` (calls `resolve-project-env`).
 2. Instantiates the named adapter (e.g. `LinearAdapter`).
-3. Fetches the Bet by `bet-id`.
-4. Calls `init-feature` internally to create the directory scaffold.
+3. Fetches the Bet by `bet-id`; derives `<feature-id>` from the Bet slug.
+4. Runs the Mode A scaffold creation for the derived `<feature-id>`.
 5. Fetches all Issues under the Bet.
 6. Generates one task YAML per issue, including:
    - Normalized status, priority, assignee type.
-   - `depends_on` list derived from Linear blocking relations.
+   - `depends_on` list derived from blocking relations.
    - `external_ref` block (see schema below).
 7. Writes `external_sync` metadata into `status.yaml`.
 8. Generates a draft `tasks.md` narrative from issue titles/descriptions.
 9. Commits and pushes to `feature/<feature-id>` branch.
 10. Prints a summary: N tasks imported, dependency graph, any warnings.
+
+**Dispatch logic (inside the skill):**
+
+```
+args = parse(argv)
+
+if args.length == 1:
+    run_mode_a(feature_id=args[0])       # existing init-feature path — no change
+elif args.length == 2:
+    run_mode_b(provider=args[0], bet_id=args[1])   # new provider import path
+else:
+    error("Usage: /import-feature <feature-id>  OR  /import-feature <provider> <bet-id>")
+```
 
 **`/sync-feature <feature-id>`** *(V2 scope, defined here for architecture clarity)*
 
@@ -223,24 +255,27 @@ work_item_providers:
     auth_env: JIRA_API_TOKEN
 ```
 
-### 4. Updated `/init-feature` Workflow
+### 4. Skill Migration
 
-`/init-feature` itself does **not** change — it remains the manual, from-scratch
-scaffold creator. The new `/import-feature` skill calls `init-feature` as a
-sub-step and then enriches the output. This preserves the existing contract and
-avoids coupling.
+`/init-feature` is superseded by `/import-feature`. The existing `/init-feature`
+behavior becomes Mode A of `/import-feature`; the skill body is moved, not rewritten.
 
-The call chain for an import is:
+| Invocation | Behaviour | Backward compatible? |
+|---|---|---|
+| `/import-feature <feature-id>` | Existing init-feature scaffold, no provider | Yes — identical output |
+| `/import-feature <provider> <bet-id>` | Provider import, fills scaffold from external issues | New |
+
+The internal call chain for Mode B:
 
 ```
 /import-feature linear proj_abc123
   └── resolve-project-env
-  └── LinearAdapter.fetchBet(proj_abc123)
-  └── /init-feature linear-mcp-integration      ← internal call, creates scaffold
+  └── LinearAdapter.fetchBet(proj_abc123)      → derive feature-id from Bet slug
+  └── run_mode_a(feature-id)                   ← existing scaffold creation, unchanged
   └── LinearAdapter.fetchTasks(proj_abc123)
-  └── write T1.yaml … Tn.yaml                   ← one per issue
-  └── write tasks.md                            ← narrative from issue titles
-  └── update status.yaml with external_sync
+  └── write T1.yaml … Tn.yaml                  ← one per issue
+  └── write tasks.md                           ← narrative from issue titles
+  └── update status.yaml (external_sync block)
   └── git commit + push → feature branch
 ```
 
@@ -292,8 +327,11 @@ Workspace task marked done
 
 ## Acceptance Criteria
 
-- [ ] Running `/import-feature linear <bet-id>` on a clean workspace creates a valid
-      feature scaffold (same structure as `/init-feature`) plus task YAMLs.
+- [ ] Running `/import-feature <feature-id>` (Mode A) produces output identical to
+      the current `/init-feature` — empty scaffold, no `external_ref` or `external_sync`
+      blocks, no provider contacted.
+- [ ] Running `/import-feature linear <bet-id>` (Mode B) on a clean workspace creates
+      a valid feature scaffold plus populated task YAMLs.
 - [ ] Every task YAML contains an `external_ref` block with provider, ID, URL, and
       import timestamp.
 - [ ] Dependency ordering from Linear blocking relations is faithfully represented in
