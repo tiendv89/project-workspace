@@ -1,7 +1,7 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -37,6 +37,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T14:48:27+0000
     note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-10T23:12:21+0700
+    note: Reset to ready — executor stopped mid-way without opening an implementation PR. Re-eligible for claim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/196
   status: open
