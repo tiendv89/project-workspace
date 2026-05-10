@@ -7,7 +7,7 @@ next_action: Tasks approved. T1 (Reviewer Identity injection) and T2 (Lifecycle
   parallel. T3 and T4 activate automatically when their dependencies complete.
 feature_branch: feature/autonomous-feature-reviewer
 feature_branch_base_sha: 2b676906318fd8bf301a451153aa0c6f3bbfda77
-handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/186
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/185
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/122
