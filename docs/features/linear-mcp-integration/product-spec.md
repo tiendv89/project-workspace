@@ -177,8 +177,21 @@ To reset: `rm -rf ~/.mcp-auth`
 **Pre-flight check in the skill:**
 
 Before making any Linear MCP calls, `/import-feature` checks whether `linear-server`
-is registered in Claude Code's MCP config. If not, it prints the setup command above
-and exits — no partial state is written.
+is registered in Claude Code's MCP config. If not, it prints the following and exits —
+no partial state is written:
+
+```
+Error: Linear MCP server is not configured.
+
+To set it up, run:
+  claude mcp add --transport http linear-server https://mcp.linear.app/mcp
+
+Then authenticate:
+  /mcp
+
+After setup, re-run your command:
+  /import-feature --provider linear <bet-id>
+```
 
 **`workspace.yaml` — `work_item_providers` schema:**
 
