@@ -2,7 +2,7 @@ feature_id: autonomous-task-orchestrator
 title: Autonomous Task Orchestrator
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 
 feature_branch: feature/autonomous-task-orchestrator

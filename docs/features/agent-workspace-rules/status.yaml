@@ -2,7 +2,7 @@ feature_id: agent-workspace-rules
 title: Inject workspace rules and skills into agent containers at task-claim time
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 
 stages:

@@ -2,7 +2,7 @@ feature_id: feature-status-dashboard-v2
 title: Feature Status Dashboard v2
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 handoff_pr_url: manually-approved
 

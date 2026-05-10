@@ -2,7 +2,7 @@ feature_id: agent-runtime-hardening
 title: Agent runtime hardening — credential delivery, full bootstrap, and PR lifecycle
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete. All 6 tasks merged. No further action required.
 
 stages:

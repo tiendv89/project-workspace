@@ -1,7 +1,7 @@
 feature_id: agent-pr-response
 title: Agent PR response
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 stages:
   product_spec:

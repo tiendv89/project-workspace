@@ -2,7 +2,7 @@ feature_id: agent-rag-v2
 title: Agent RAG v2 — Source Code + Docs Indexing
 
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 
 stages:
