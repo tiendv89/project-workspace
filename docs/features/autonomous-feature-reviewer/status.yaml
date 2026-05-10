@@ -105,3 +105,4 @@ revalidation:
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+handoff_pr_promoted: true
