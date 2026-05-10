@@ -55,7 +55,7 @@ manual translation step.
 |---|---|---|
 | Organization | Workspace | No new entity; implicit context |
 | Team | — | Not mapped; team context stored as metadata |
-| **Cycle** | Sprint (metadata only) | Stored in `status.yaml` as `external_sync.cycle`; no new workspace entity in V1 |
+| Cycle | — | Out of scope in V1; ignored during import |
 | **Project (Bet)** | **Feature** | Core mapping unit — one Bet → one Feature |
 | **Issue** | **Task** | One task YAML per issue |
 | Sub-issue | Subtask checklist item | Inline in parent task YAML; no separate lifecycle |
@@ -237,8 +237,6 @@ external_sync:
   provider: linear
   bet_id: "proj_abc123"
   bet_url: "https://linear.app/team/project/proj_abc123"
-  cycle_id: "cycle_xyz"
-  cycle_name: "Cycle 4 — May 2026"
   last_synced_at: "2026-05-10T13:00:00+0700"
 ```
 
@@ -321,9 +319,7 @@ Workspace task marked done
 | Add Jira adapter | Implement `WorkItemAdapter` interface; declare in `workspace.yaml` |
 | Add GitHub Projects adapter | Same interface, different MCP/REST calls |
 | Real-time webhook sync | Add `subscribe()` method to interface; V2 sync skill polls or subscribes |
-| Cycle-level import | `/import-feature --provider linear --cycle <cycle-id>` loops over Bets, calls Mode B per Bet |
 | Status write-back | `writeStatus()` already defined in interface; wired up in V2 |
-| Multi-cycle roadmaps | `ExternalCycle` already in normalized types; `status.yaml` can hold cycle array |
 
 ---
 
@@ -340,7 +336,7 @@ Workspace task marked done
       `depends_on` fields; no cycles are introduced.
 - [ ] Issue status at import time is correctly mapped to Workspace task status using
       the status mapping table.
-- [ ] `status.yaml` contains an `external_sync` block with bet ID, cycle name, and
+- [ ] `status.yaml` contains an `external_sync` block with bet ID, bet URL, and
       `last_synced_at`.
 - [ ] A draft `tasks.md` is generated from issue titles and descriptions.
 - [ ] All files are committed to `feature/<feature-id>` branch and pushed to origin.
@@ -353,22 +349,19 @@ Workspace task marked done
 
 ---
 
-## Open Questions
+## Decisions
 
-1. **Conflict resolution on re-import**: if `/import-feature` is run twice for the
-   same Bet, should it overwrite, merge, or error? Recommendation: error with
-   "feature already exists; use `/sync-feature` to update".
+1. **Conflict resolution on re-import**: `/import-feature --provider <provider> <bet-id>`
+   must error with "feature already exists; use `/sync-feature` to update" if the
+   feature directory already exists. No overwrite, no merge.
 
-2. **Agent skill inference from labels**: should the adapter attempt to map Linear
-   labels to `required_skills` slugs automatically, or should the tech lead do
-   this manually post-import? Recommendation: attempt a best-effort match; emit
-   a warning for labels that did not resolve.
+2. **Agent skill inference from labels**: the adapter performs a best-effort match of
+   Linear labels to `required_skills` slugs. Unmatched labels are stored as raw
+   metadata and a warning is emitted at import time. The tech lead reviews and
+   corrects after import.
 
-3. **Cycle as a first-class Workspace entity**: should Cycles become a top-level
-   directory (e.g. `docs/cycles/<cycle-id>/`) that groups Feature directories,
-   or remain metadata-only? Recommendation: metadata-only in V1; revisit if
-   reporting/dashboard features need a cycle-level aggregate view.
+3. **Cycles**: out of scope. Cycle metadata is not captured, not stored in
+   `status.yaml`, and not referenced by any skill or schema in V1.
 
-4. **Approval gate after import**: should the imported scaffold auto-advance to
-   `awaiting_approval` or stay `draft`? Recommendation: stay `draft` — the
-   tech lead should review the mapping before sending for approval.
+4. **Approval gate after import**: imported scaffold stays `draft`. The tech lead
+   must review the mapping and explicitly submit for approval via `/approve-feature`.
