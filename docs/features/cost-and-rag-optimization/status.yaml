@@ -1,7 +1,7 @@
 feature_id: cost-and-rag-optimization
 title: Cost Accounting & RAG Runtime Optimization
 feature_status: done
-current_stage: handoff
+current_stage: done
 next_action: Feature complete.
 stages:
   product_spec:
