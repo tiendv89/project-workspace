@@ -73,7 +73,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-    pr_url: https://github.com/tiendv89/project-workspace/pull/186
+    pr_url: https://github.com/tiendv89/project-workspace/pull/185
 history:
   - action: feature_branch_created
     by: matthew@liquid-labs.xyz
