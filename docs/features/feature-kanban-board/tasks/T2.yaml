@@ -1,7 +1,7 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/feature-kanban-board-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-10T16:22:17+0000
+  last_updated_at: 2026-05-10T16:27:45.654Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/37
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
