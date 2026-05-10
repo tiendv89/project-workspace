@@ -27,6 +27,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-10T17:52:23.952Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:52:37.340Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-kanban-board/product-spec.md,
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/technical-design.md"
+    rag_query: Feature Mode list view and controls integration feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/198
   status: open
