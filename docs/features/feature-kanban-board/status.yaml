@@ -1,10 +1,9 @@
 feature_id: feature-kanban-board
 title: Feature Kanban Board
-
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T4.
-
+next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and
+  T3; T5 waits for T4.
 stages:
   product_spec:
     review_status: approved
@@ -39,18 +38,19 @@ stages:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-09T12:28:46+07:00
-        comment: Task breakdown drafted from the technical design. Tasks remain todo until tasks-stage approval.
+        comment: Task breakdown drafted from the technical design. Tasks remain todo
+          until tasks-stage approval.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-09T06:02:30Z
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1
+          activated.
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - stage: product_spec
     action: created
@@ -71,7 +71,8 @@ history:
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-09T12:28:46+07:00
-    note: Task breakdown drafted and submitted for approval. Tasks remain todo until the tasks stage is approved.
+    note: Task breakdown drafted and submitted for approval. Tasks remain todo until
+      the tasks stage is approved.
   - stage: technical_design
     action: approved
     by: minhkienn203@gmail.com
@@ -82,9 +83,10 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-05-09T06:02:30Z
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/feature-kanban-board
+feature_branch_base_sha: 3c733005687bee498d5c22f1f4aa0414e5a6a9e2
