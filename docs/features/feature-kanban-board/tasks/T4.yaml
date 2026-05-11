@@ -1,7 +1,7 @@
 id: T4
 title: Feature Mode list view and controls integration
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T2
   - T3
@@ -9,13 +9,103 @@ blocked_reason: null
 branch: feature/feature-kanban-board-T4
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-09T12:28:46+07:00
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-11T10:14:36+0700
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/38
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-09T12:28:46+07:00
     note: Task drafted by tech-lead. It remains todo until tasks-stage approval.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:49:35.114Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:52:23.952Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:52:37.340Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-kanban-board/product-spec.md,
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/technical-design.md"
+    rag_query: Feature Mode list view and controls integration feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/38"
+    token_usage:
+      input: 631
+      output: 43705
+      model: claude-sonnet-4-6
+    cost_usd: 0.657468
+    at: 2026-05-10T18:08:29.927Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T18:10:22.552Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: blocked
+    by: norepy@tiendv.dev
+    at: 2026-05-10T18:25:55.949Z
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T10:14:36+0700
+    note: >-
+      Conflicts resolved manually, branch rebased onto feature/feature-kanban-board,
+      review findings addressed, PR merged.
+  - action: blocked
+    by: norepy@tiendv.dev
+    at: 2026-05-10T18:41:27.453Z
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/198
+  status: merged
+conflict_state: resolved
+rebase_log:
+  - at: 2026-05-10T18:11:16.349Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/feature-kanban-board.
+  - at: 2026-05-10T18:25:55.949Z
+    action: rebase_blocked
+    by: norepy@tiendv.dev
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."
+  - at: 2026-05-10T18:26:27.534Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/feature-kanban-board.
+  - at: 2026-05-10T18:41:27.453Z
+    action: rebase_blocked
+    by: norepy@tiendv.dev
+    note: "Unresolvable merge conflicts in:
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheet.tsx;
+      src/features/board/components/FeatureDetailSheet/FeatureDetailSheetMount.\
+      tsx; src/features/board/components/KanbanBoard/KanbanBoard.context.tsx;
+      src/features/board/components/KanbanBoard/KanbanBoard.tsx;
+      src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
+      resolution required."

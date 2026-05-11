@@ -1,20 +1,108 @@
 id: T2
 title: Task Mode shell preservation
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/feature-kanban-board-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-09T12:28:46+07:00
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-10T17:49:34.903Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/37
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-09T12:28:46+07:00
     note: Task drafted by tech-lead. It remains todo until tasks-stage approval.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-10T10:23:06.156Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-10T14:36:39.448Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-10T14:36:50.323Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Task Mode shell preservation feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T14:48:27+0000
+    note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-10T23:12:21+0700
+    note: Reset to ready — executor stopped mid-way without opening an
+      implementation PR. Re-eligible for claim.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-10T16:14:21.852Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-10T16:14:29.061Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Task Mode shell preservation feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T16:22:17+0000
+    note: executor work phase begun — resuming from existing T2 commit.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/37"
+    token_usage:
+      input: 226
+      output: 18767
+      model: claude-sonnet-4-6
+    cost_usd: 0.282183
+    at: 2026-05-10T16:27:55.213Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T16:30:03.339Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T00:28:06+0700
+    note: Manual state correction — status set to change_requested per human review
+      of PR
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:32:00.645Z
+    note: Fix agent claimed.
+  - action: comments_addressed
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:39:50+0000
+    note: Resolved 1 inline review thread; added task-board-view-wiring.test.ts with
+      8 render tests verifying toggleFeature (aria-expanded wiring) and
+      setSelectedTask (task card rendering) prop pass-throughs in TaskBoardView.
+      PR converted to ready-for-review.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/37"
+    token_usage:
+      input: 170
+      output: 23651
+      model: claude-sonnet-4-6
+    cost_usd: 0.355275
+    at: 2026-05-10T17:44:11.191Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:45:03.129Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-10T17:49:34.903Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/196
+  status: open
