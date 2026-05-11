@@ -1,18 +1,18 @@
 id: T5
 title: Regression, responsive, and browser QA
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T4
 blocked_reason: null
 branch: feature/feature-kanban-board-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-11T10:37:44+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-11T09:25:44.533Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/39
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -22,3 +22,71 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-11T10:37:44+0700
     note: Auto-ready — dependency T4 marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-11T03:41:29.446Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-11T03:41:41.349Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/product-spec.md"
+    rag_query: Regression, responsive, and browser QA feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T11:12:27+0700
+    note: "Reset to ready — executor terminated without result (container restart).
+      Stale workspace PR #199 closed."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-11T04:14:11.709Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-11T04:14:24.223Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/technical-design.md,
+      docs/features/feature-kanban-board/product-spec.md"
+    rag_query: Regression, responsive, and browser QA feature-kanban-board
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/39"
+    token_usage:
+      input: 163
+      output: 20032
+      model: claude-sonnet-4-6
+    cost_usd: 0.30096900000000004
+    at: 2026-05-11T04:24:25.942Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-11T04:26:52.267Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "missing_tool: npm run test exited with code 127 — vitest command not
+      found in PATH"
+    at: 2026-05-11T04:32:58.832Z
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T16:14:50+0700
+    note: Unblocked — review-pr skill fixed to diagnose 127 source before
+      hard-stopping. Resetting to in_review for reviewer retry.
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-11T09:17:34.737Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-11T09:25:44.533Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/200
+  status: open
+blocked_suggestion: null
