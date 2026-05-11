@@ -1,21 +1,19 @@
 id: T4
 title: Feature Mode list view and controls integration
 repo: digital-factory-ui
-status: blocked
+status: done
 depends_on:
   - T2
   - T3
-blocked_reason: pr_conflict
+blocked_reason: null
 branch: feature/feature-kanban-board-T4
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-10T18:41:27.453Z
-  suggested_next_step: Manually resolve the conflicts listed in blocked_reason
-    detail, then set status back to in_review.
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-11T10:14:36+0700
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/38
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -62,6 +60,12 @@ log:
       src/features/board/components/KanbanBoard/KanbanBoard.tsx;
       src/features/board/lib/filter.ts; src/features/board/lib/status.ts. Manual
       resolution required."
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-11T10:14:36+0700
+    note: >-
+      Conflicts resolved manually, branch rebased onto feature/feature-kanban-board,
+      review findings addressed, PR merged.
   - action: blocked
     by: norepy@tiendv.dev
     at: 2026-05-10T18:41:27.453Z
@@ -74,7 +78,7 @@ log:
       resolution required."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/198
-  status: open
+  status: merged
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-10T18:11:16.349Z
