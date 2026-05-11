@@ -1,15 +1,16 @@
 id: T5
 title: Regression, responsive, and browser QA
 repo: digital-factory-ui
-status: in_review
+status: blocked
 depends_on:
   - T4
-blocked_reason: null
+blocked_reason: "missing_tool: npm run test exited with code 127 — vitest
+  command not found in PATH"
 branch: feature/feature-kanban-board-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-11T04:26:52.267Z
+  last_updated_at: 2026-05-11T04:32:58.832Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/39
   status: open
@@ -68,6 +69,12 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-11T04:26:52.267Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "missing_tool: npm run test exited with code 127 — vitest command not
+      found in PATH"
+    at: 2026-05-11T04:32:58.832Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/200
   status: open
+blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
