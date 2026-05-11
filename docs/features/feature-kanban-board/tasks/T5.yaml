@@ -8,8 +8,8 @@ blocked_reason: null
 branch: feature/feature-kanban-board-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-11T16:14:50+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-11T09:17:34.737Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/39
   status: open
@@ -78,6 +78,10 @@ log:
     at: 2026-05-11T16:14:50+0700
     note: Unblocked — review-pr skill fixed to diagnose 127 source before
       hard-stopping. Resetting to in_review for reviewer retry.
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-11T09:17:34.737Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/200
   status: open
