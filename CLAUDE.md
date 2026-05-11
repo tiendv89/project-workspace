@@ -259,8 +259,11 @@ Rules:
 - The management repo commit is the canonical record of task ownership. Without it, the claim is not valid and the agent must not proceed with implementation.
 - Agents may only modify their own task file (`T_x.yaml`) in the management repo. See "Task file scope" rule.
 - **Branch merge rule**: when the human marks a task `done`, they must also open a PR on the management repo to merge the task's feature branch into `main`. This keeps `main` up-to-date with all terminal task states and prevents task state from living only on feature branches indefinitely. The `done` log entry and the management repo merge PR must happen together.
-- **Rebase-before-PR rule**: before opening a workspace PR (or pushing the final implementation branch for review), the feature branch must be rebased onto `origin/<base_branch>` of the target repo. `<base_branch>` is declared in `workspace.yaml` for each repo — do not assume `main`. This prevents duplicate commits from parallel tasks that merged while this task was in flight.
-- **Rebase-before-done rule**: before a workspace PR is merged (and a task marked `done`), the feature branch must be rebased onto `origin/<base_branch>`. A PR whose branch is not up-to-date with the base branch must not be merged — rebase it first, then merge. This applies to both the management repo PR and any implementation repo PR for the same task.
+- **Rebase-before-PR rule**: before opening a workspace PR (or pushing the final implementation branch for review), the task branch must be rebased onto its **PR base branch**:
+  - If the task's PR targets `feature/<feature_id>` (intra-feature task — the feature branch exists in the impl repo), rebase onto `origin/feature/<feature_id>`.
+  - If the task's PR targets `<base_branch>` directly, rebase onto `origin/<base_branch>`.
+  - `<base_branch>` is declared in `workspace.yaml` for each repo — do not assume `main`. This prevents duplicate commits from parallel tasks that merged while this task was in flight.
+- **Rebase-before-done rule**: before a workspace PR is merged (and a task marked `done`), the task branch must be rebased onto its PR base branch (see Rebase-before-PR rule above). A PR whose branch is not up-to-date with the base branch must not be merged — rebase it first, then merge. This applies to both the management repo PR and any implementation repo PR for the same task.
 - **Mergeable-before-close rule**: before the runtime merges the workspace PR, it checks whether the PR is in a mergeable state. If the PR is `CONFLICTING` (`mergeable: false`), the merge is skipped and a `workspace_pr_not_mergeable` event is emitted — the PR is left open. The task YAML remains `done`; only the workspace PR merge is deferred. If mergeability is `UNKNOWN` (GitHub has not finished computing it), the merge proceeds and any error is handled by the existing `workspace_pr_merge_failed` path. Operators must resolve the conflict on the feature branch and push before the next recovery cycle will retry.
 - **No direct push to main rule**: nothing may be committed directly to `main` on the management repo — not task state, not feature docs, not skill updates, not workspace initialisation, not any other change. Every write to the management repo must land on a feature branch and be merged via PR. This applies to agents, workflow skills (`init-feature`, `approve-feature`, `init-workspace`, etc.), and humans alike. No exceptions.
 - **Dependency unblock rule**: whenever a task is marked `done`, immediately check every other task in the same feature whose `depends_on` list includes the just-completed task. For each such task where all `depends_on` entries are now `done`, transition its status from `todo` to `ready` and append a `ready` log entry. This must happen in the same commit as the `done` update.
@@ -274,15 +277,29 @@ This protocol applies before any commit to **both the management repo and implem
 
 ```bash
 git fetch origin
-git checkout <feature-branch>   # create from main if it doesn't exist yet
+git checkout <feature-branch>   # create from the correct base if it doesn't exist yet
 ```
 
-If the branch does not exist locally or on origin, create it from the latest `main`:
+If the branch does not exist locally or on origin, determine the correct base before creating it:
+
+**For implementation repos** — check whether a feature-level branch (`feature/<feature_id>`) exists on origin. If it does, the task is intra-feature and must be created from there:
 
 ```bash
-git checkout main && git pull origin main
-git checkout -b <feature-branch>
+# Intra-feature task: feature/<feature_id> exists on origin
+git checkout -b <task-branch> origin/feature/<feature_id>
+
+# Standalone task: no feature branch, create from base_branch
+git checkout <base_branch> && git pull origin <base_branch>
+git checkout -b <task-branch>
 ```
+
+To check whether the feature branch exists:
+```bash
+git fetch origin
+git show-ref --verify --quiet refs/remotes/origin/feature/<feature_id> && echo "exists" || echo "absent"
+```
+
+**For the management repo** — always create from `main` (task branches in the management repo are always rooted at `main`).
 
 ### Step 2 — Pull latest from origin
 
@@ -321,16 +338,20 @@ If `git pull` is rejected because the origin branch has diverged (e.g. another a
 
    Only apply the patch when the answer to "still required and not yet present" is unambiguous.
 
-### Step 4 — Rebase onto base branch before committing
+### Step 4 — Rebase onto the PR base branch before committing
 
 ```bash
 git fetch origin
-git rebase origin/<base_branch>
+git rebase origin/<pr_base_branch>
 ```
 
-Where `<base_branch>` is the repo's base branch as declared in `workspace.yaml` (e.g. `main`, `matthew`). Do not hardcode `main` — always resolve from `workspace.yaml` for the repo being operated on.
+Where `<pr_base_branch>` is:
+- `feature/<feature_id>` — if this is an intra-feature task (i.e., `origin/feature/<feature_id>` exists in the impl repo and the task's PR will target it).
+- `<base_branch>` from `workspace.yaml` — for standalone tasks whose PR targets the repo's main integration branch directly.
 
-This keeps history linear and prevents merge conflicts when the branch is eventually merged into the base branch.
+Do not hardcode `main`. Always resolve from `workspace.yaml` and check for the feature branch first.
+
+This keeps history linear and ensures the task branch includes all prior work from sibling tasks that have already merged into the feature branch.
 
 ### Scope
 
