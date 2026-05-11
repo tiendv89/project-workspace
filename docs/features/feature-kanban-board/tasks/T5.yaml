@@ -1,7 +1,7 @@
 id: T5
 title: Regression, responsive, and browser QA
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/feature-kanban-board-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-11T09:17:34.737Z
+  last_updated_at: 2026-05-11T09:25:44.533Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/39
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -82,6 +82,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-11T09:17:34.737Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-11T09:25:44.533Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/200
   status: open
