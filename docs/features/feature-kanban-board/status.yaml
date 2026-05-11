@@ -1,7 +1,7 @@
 feature_id: feature-kanban-board
 title: Feature Kanban Board
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and
   T3; T5 waits for T4.
 stages:
@@ -51,6 +51,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/189
 history:
   - stage: product_spec
     action: created
@@ -90,3 +91,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/feature-kanban-board
 feature_branch_base_sha: 3c733005687bee498d5c22f1f4aa0414e5a6a9e2
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/189
