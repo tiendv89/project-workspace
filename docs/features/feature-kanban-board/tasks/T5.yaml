@@ -1,15 +1,15 @@
 id: T5
 title: Regression, responsive, and browser QA
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T4
 blocked_reason: null
 branch: feature/feature-kanban-board-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-11T10:37:44+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-11T03:41:29.446Z
 pr:
   url: null
   status: null
@@ -22,3 +22,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-11T10:37:44+0700
     note: Auto-ready — dependency T4 marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-11T03:41:29.446Z
+    note: Claimed via git-based claim protocol.
