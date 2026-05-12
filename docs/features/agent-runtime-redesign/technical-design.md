@@ -1,6 +1,6 @@
-# Technical Design — Handoff PR Flow Redesign
+# Technical Design — Agent Runtime Redesign
 
-- Feature ID: `handoff-pr-redesign`
+- Feature ID: `agent-runtime-redesign`
 - Stage: `technical_design`
 - Status: draft
 
@@ -773,7 +773,7 @@ Gap 3 — handleMergedPrs is currently synchronous (blocks poll cycle)
 
 ### 4.10 Technical reference document (Goal 1 of product spec)
 
-Produce a standalone `docs/features/handoff-pr-redesign/runtime-reference.md` document covering:
+Produce a standalone `docs/features/agent-runtime-redesign/runtime-reference.md` document covering:
 
 - Full orchestrator poll cycle step-by-step (what each function does, what state it reads/writes)
 - Executor ABI: inputs (`ExecutorPortInput`), outputs (`result.json`), side-effects
@@ -850,7 +850,7 @@ T1, T2, and T5 run in parallel.
 | `workflow` | `runtime/orchestrator/src/feature-branch/lifecycle-manager.ts` | Record `workspace_feature_pr_url`; remove step 5 re-promotion |
 | `workflow` | `runtime/orchestrator/src/handoff/handoff-trigger.ts` | Create handoff branch + PR; open impl repo PRs; populate `impl_feature_prs` |
 | `workflow` | `runtime/orchestrator/src/poll/handle-feature-done.ts` | Write done state before auto-merging workspace feature PR |
-| `management-repo` | `docs/features/handoff-pr-redesign/runtime-reference.md` | New technical reference document (T1) |
+| `management-repo` | `docs/features/agent-runtime-redesign/runtime-reference.md` | New technical reference document (T1) |
 
 | `workflow` | `runtime/abi/src/types.ts`, `runtime/abi/docs/abi-spec.md` | Add `HANDLE`, `EXECUTOR_WORKDIR`, `MGMT_REPO_URL`; add `"rebase"` to `HandleKind`; remove `TASK_REPO_PATH` (T5) |
 | `workflow` | `runtime/executors/claude/src/index.ts` | Two-phase startup; derive impl + mgmt paths from `EXECUTOR_WORKDIR` (T5) |

@@ -1,8 +1,8 @@
 # Product Specification
 
 ## Feature
-- Feature ID: `handoff-pr-redesign`
-- Title: Handoff PR Flow Redesign
+- Feature ID: `agent-runtime-redesign`
+- Title: Agent Runtime Redesign
 
 ## Problem
 
