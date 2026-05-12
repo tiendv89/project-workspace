@@ -1,8 +1,8 @@
 feature_id: runtime-runcycle-decomposition
 title: Decompose runOneCycle into named poll-step sub-functions
-feature_status: in_handoff
-current_stage: handoff
-next_action: Execute T1.
+feature_status: done
+current_stage: done
+next_action: null
 stages:
   product_spec:
     review_status: approved
@@ -35,11 +35,15 @@ stages:
         at: 2026-05-13T00:33:26+0700
         comment: null
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-13T01:41:51+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-05-13T01:41:51+0700
+        comment: null
     pr_url: https://github.com/tiendv89/project-workspace/pull/211
 history:
   - event: product_spec_approved
@@ -51,6 +55,12 @@ history:
   - event: tasks_approved
     by: matthew@swellnetwork.io
     at: 2026-05-13T00:33:26+0700
+  - event: handoff_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T01:41:51+0700
+  - event: feature_done
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T01:41:51+0700
 revalidation:
   product_spec_required: false
   technical_design_required: false
