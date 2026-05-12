@@ -10,20 +10,126 @@
 
 ### Orchestrator main loop (one poll cycle)
 
-`main.ts → runOneCycle()` executes the following steps every `idle_sleep_seconds`:
+`main.ts → runOneCycle()` — all steps run **sequentially** (no within-cycle parallelism). The cycle repeats every `idle_sleep_seconds`.
 
-| Step | What runs | What it does |
-|---|---|---|
-| 1 | `pullWorkspaces` | `git fetch + pull` all watched workspace repos and the workflow repo |
-| 2 | `runFeatureBranchLifecycle` | Per feature: creates/syncs `feature/{id}` branch in mgmt + impl repos; opens draft PR on first creation |
-| 3 | Eligible-task dispatch | `findEligibleTasks` → `claimTask` → RAG pre-flight → briefing → `adapter.submit` (executor) |
-| 4 | Fix-agent dispatch | `findFixableTasks` → `claimFixTask` → briefing → executor (runs only if step 3 ran nothing) |
-| 5 | Reviewer dispatch | `findReviewableTasks` → `dispatchReviewer` → executor (runs only if steps 3–4 ran nothing) |
-| 6 | PR poll (rate-limited) | `checkInReviewPrs` → `handleMergeConflicts` → `handleMergedPrs` → `handleWorkspacePrRecoveries` |
-| 7 | Feature Done Watcher | `handleFeatureDone` — transitions `in_handoff` features to `done` when all PRs merged |
-| 8 | Feature Review Daemon (every N cycles) | `runFeatureReviewCycle` — drift detection, auto-rebase |
-| 9 | State invariant checker (every N cycles) | `runStateInvariantCheck` |
-| 10 | Reap loop | `runReapLoop` — drains executor completions from broker, routes results |
+```
+Legend
+  [S-git]    Sync-blocking git — execSync(); blocks the Node.js event loop
+  [S-http]   Sync-blocking HTTP — curl via spawnSync(); blocks event loop
+  [A-http]   Async HTTP — fetch() / awaited curl; yields to event loop
+  [FF]       Fire-and-forget — submitted to broker; result arrives in a FUTURE cycle
+  ──────────────────────────────────────────────────────────────────────────────────
+
+ sleep(idle_sleep_seconds)
+       │
+       ▼
+ runOneCycle() ──────────────────────────────────────────────────────────────────
+ │
+ │  [S-git]
+ ├─ 1. pullWorkspaces
+ │       syncRepo() × (workflow repo + N mgmt repos + N impl repos)
+ │       git fetch origin
+ │       git checkout <baseBranch>
+ │       git reset --hard origin/<baseBranch>
+ │       ↳ skips impl repo pull if a subprocess executor is in-flight
+ │         (prevents syncRepo from switching the shared working tree mid-execution)
+ │
+ │  [S-git] + [S-http]
+ ├─ 2. runFeatureBranchLifecycle   (per feature with eligible feature_status)
+ │       git ls-remote, checkout, push  →  ensure feature/{id} exists on origin
+ │       git ls-remote, checkout, push  →  ensure feature/{id} on each impl repo
+ │       GitHub REST POST /pulls        →  open draft PR on first creation  [S-http]
+ │       GraphQL markPrReadyForReview   →  promote draft if in_handoff  [S-http]
+ │       Writes: status.yaml (feature_branch, feature_branch_base_sha, handoff_pr_url)
+ │
+ │  ╔═══════════════════════════════════════════════════════════════════════════╗
+ │  ║  dispatchBlock — skipped entirely when executor pool is full             ║
+ │  ║  (local-subprocess: max 1 in-flight; local-docker: configurable)        ║
+ │  ║                                                                          ║
+ │  ║  [A-http] + [S-git] + [FF]                                              ║
+ │  ║  ├─ 3. Eligible-task dispatch   (first eligible task, then break)        ║
+ │  ║  │       findEligibleTasks  →  read task YAMLs + tasks.md               ║
+ │  ║  │       claimTask          →  git commit/push (claim)  [S-git]         ║
+ │  ║  │       openWorkspacePr    →  GitHub REST POST /pulls  [S-http]        ║
+ │  ║  │       fetchRagContext    →  HTTP MCP call (optional)  [A-http]       ║
+ │  ║  │       generateBriefing   →  in-process template render               ║
+ │  ║  │       adapter.submit()   ──────────────────────────────────── [FF] ──┐║
+ │  ║  │                                                                      │║
+ │  ║  │  (only if step 3 found no eligible task)                             │║
+ │  ║  │  [S-git] + [FF]                                                      │║
+ │  ║  ├─ 4. Fix-agent dispatch   (first change_requested task, then break)   │║
+ │  ║  │       findFixableTasks   →  read task YAMLs                         │║
+ │  ║  │       claimFixTask       →  git commit/push  [S-git]                │║
+ │  ║  │       generateFixBriefing →  in-process                             │║
+ │  ║  │       adapter.submit()   ──────────────────────────────────── [FF] ──┤║
+ │  ║  │                                                                      │║
+ │  ║  │  (only if steps 3–4 found nothing)                                   │║
+ │  ║  │  [S-git] + [FF]                                                      │║
+ │  ║  └─ 5. Reviewer dispatch   (first in_review task, then break)           │║
+ │  ║          findReviewableTasks →  read task YAMLs                        │║
+ │  ║          dispatchReviewer   →  git log entry/push  [S-git]             │║
+ │  ║          adapter.submit()   ──────────────────────────────────── [FF] ──┘║
+ │  ║                                                                          ║
+ │  ║  Executors run as independent Claude CLI subprocesses (local-subprocess) ║
+ │  ║  or Docker containers (local-docker). They post result.json to the      ║
+ │  ║  broker when done. The orchestrator does NOT wait — it continues to     ║
+ │  ║  steps 6–10 immediately.                                                ║
+ │  ╚═══════════════════════════════════════════════════════════════════════════╝
+ │
+ │  (rate-limited by pr_poll_interval_seconds; skipped if subprocess in-flight)
+ │  [S-http] + [S-git] + optional [A] Claude subprocess
+ ├─ 6. PR poll
+ │       checkInReviewPrs         →  GitHub REST GET /pulls per in-review task  [S-http]
+ │       handleMergeConflicts     →  git rebase  [S-git]
+ │       │                           Claude CLI subprocess for YAML conflict resolution
+ │       │                           (ad-hoc spawn, not a skill — awaited to completion)
+ │       handleMergedPrs          →  git checkout/commit/push  [S-git]
+ │       │                           GitHub REST PUT /pulls/{n}/merge  [S-http]
+ │       │                           Writes: task YAML (done), sibling YAMLs (ready cascade)
+ │       │                           └─ if last task done → fireHandoffTrigger
+ │       │                                git commit/push handoff.md  [S-git]
+ │       │                                GitHub REST POST /pulls  [S-http]
+ │       │                                Writes: status.yaml (in_handoff, handoff_pr_url)
+ │       handleWorkspacePrRecoveries →  GitHub REST retry merge  [S-http]
+ │
+ │  [S-http] + [S-git]
+ ├─ 7. Feature Done Watcher   (handleFeatureDone)
+ │       GitHub REST GET /pulls  →  check merge state of handoff_pr_url  [S-http]
+ │       GitHub REST GET /pulls  →  check merge state of impl_feature_prs  [S-http]
+ │       git checkout feature/{id} + write status.yaml (done) + push  [S-git]
+ │       ↳ BUG: checkout fails when feature/{id} deleted after PR merge
+ │
+ │  (every FEATURE_REVIEW_INTERVAL cycles — default 20)
+ │  [S-http] + [S-git] + optional [FF] Claude subprocess
+ ├─ 8. Feature Review Daemon   (runFeatureReviewCycle)
+ │       git merge-base; GitHub REST drift check  [S-git] [S-http]
+ │       git rebase for task-level drift  [S-git]
+ │       Claude subprocess (reviewer) for feature-level conflict  [FF]
+ │
+ │  (every STATE_INVARIANT_CHECK_INTERVAL cycles — default 5)
+ │  [S-git] + YAML reads
+ ├─ 9. State Invariant Checker   (runStateInvariantCheck)
+ │       git show origin/<branch>:<path>  [S-git]
+ │       parseYaml; sanity checks against expected invariants
+ │
+ │  [A-http (broker)] + [S-git] + [S-http]
+ └─ 10. Reap Loop   (runReapLoop)
+         broker.listCompleted()  →  drain up to 10 results  [A-http or in-memory]
+         per completion, route by handle.kind:
+           kind = "impl"        →  dispatchExecutorResult
+                                    git task YAML mutation (done + cascade)  [S-git]
+                                    GitHub REST (open impl PR if needed)  [S-http]
+           kind = "review"      →  dispatchReviewResult
+                                    writeDoneAndCascade: git  [S-git]
+                                    └─ if all done: fireHandoffTrigger (see step 6)
+           kind = "review-fix"  →  emit review_dispatch_complete (in-process only)
+         broker.ack() / broker.nack()
+
+       ◄──── executor results posted here by subprocesses from steps 3–5
+             (in-memory queue for local-subprocess; HTTP broker for local-docker)
+
+ └── sleep(idle_sleep_seconds) → repeat
+```
 
 ### Current process-level state map
 
