@@ -3,7 +3,6 @@ title: Decompose runOneCycle into named poll-step sub-functions
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: Execute T1.
-
 stages:
   product_spec:
     review_status: approved
@@ -41,7 +40,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - event: product_spec_approved
     by: matthew@swellnetwork.io
@@ -52,9 +50,10 @@ history:
   - event: tasks_approved
     by: matthew@swellnetwork.io
     at: 2026-05-13T00:33:26+0700
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/runtime-runcycle-decomposition
+feature_branch_base_sha: 7d0b02f910078e2ad2cbee2a7d4f26816a458259
