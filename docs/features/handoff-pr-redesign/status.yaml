@@ -2,8 +2,8 @@ feature_id: handoff-pr-redesign
 title: Handoff PR Flow Redesign
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead produces technical-design.md.
+current_stage: tasks
+next_action: Tech lead produces task breakdown (tasks.md + T<n>.yaml files).
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         at: 2026-05-12T12:52:30+0700
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-12T08:46:23Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-12T08:46:23Z
+        comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -46,6 +50,11 @@ history:
     by: tiendv.52@gmai.com
     at: 2026-05-12T12:52:30+0700
     note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T08:46:23Z
+    note: Technical design approved. Feature advances to task planning.
 
 revalidation:
   product_spec_required: false

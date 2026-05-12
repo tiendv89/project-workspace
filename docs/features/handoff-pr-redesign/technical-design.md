@@ -221,6 +221,27 @@ Fires when `checkInReviewPrs` reports `merged: true` for an impl-repo task PR.
 | `feature_status` | Handoff Trigger (`in_handoff`) + Feature Done Watcher (`done`) | lifecycle state |
 | `current_stage` | Handoff Trigger (`handoff`) | stage name |
 
+### Executor filesystem isolation (current gaps)
+
+#### local-subprocess
+
+`syncRepo()` in `bootstrap/bootstrap.ts` resets the management repo working tree to `baseBranch` on every poll cycle via `git checkout <baseBranch> && git reset --hard origin/<baseBranch>`. A `skipImplRepoPull` guard (`execInFlight` flag) protects impl repos from being reset while an executor subprocess is in flight — but **the management repo has no equivalent guard**. An executor writing task-branch commits to the management repo can have its working tree reset between commits.
+
+`resolveRepoLocalPath()` reads operator-set env vars (`WORKFLOW_LOCAL_PATH`, `DIGITAL_FACTORY_UI_LOCAL_PATH`, etc.) to locate impl repos on disk. These paths are shared: two concurrent executors targeting the same impl repo receive the same directory.
+
+#### local-docker
+
+All containers share a single flat volume mount: `-v ${workspacesDir}:/workspace`. `TASK_REPO_PATH` is set to the orchestrator's host filesystem path (e.g., `/Users/matthew/workspace/workflow`). This path does not exist inside the container. `materializeRepo()` always falls through to a full clone and may write into a shared or incorrect location.
+
+#### ABI gaps
+
+| Gap | Current state |
+|---|---|
+| `HANDLE` | Passed as `-e HANDLE=${handle}` to docker containers only; absent from subprocess executor env; not in the formal ABI input table |
+| `WORKSPACE_ROOT` | Day-1 single-container extra; not in formal ABI; set to orchestrator's host management-repo path — unusable inside containers without a matching volume mount |
+| `TASK_REPO_PATH` | Set by orchestrator to its own host filesystem path; topology-dependent; incorrect inside docker containers |
+| `MGMT_REPO_URL` | Not passed; executor has no way to clone the management repo independently |
+
 ---
 
 ## 2. Problem Framing
@@ -235,6 +256,9 @@ No code path writes `impl_feature_prs`. The Handoff Trigger only opens/promotes 
 
 **Bug 3 — No auto-merge of the workspace feature PR.**
 The `feature_done` event is emitted but nothing acts on it. A human must manually merge the workspace feature PR after the feature is done, and must do so after the feature branch is already deleted — which makes the merge impossible unless the branch is recreated.
+
+**Bug 4 — Executor filesystem isolation broken for docker; racy for subprocess.**
+In `local-subprocess`, `syncRepo()` resets the management repo working tree every cycle with no guard, creating a race with executor writes. In `local-docker`, `TASK_REPO_PATH` is a host path that does not exist inside containers; `materializeRepo()` always clones into an unresolved or shared location. The ABI also lacks `HANDLE` (for subprocess), `MGMT_REPO_URL`, and a topology-agnostic base directory field, leaving executors unable to self-manage their filesystem isolation.
 
 **What must stay stable:**
 - Task PRs: `task-branch/{featureId}/{taskId}` → `feature/{id}` (impl repo and mgmt repo) — unchanged
@@ -289,9 +313,156 @@ After the PR is merged into `main`, read `status.yaml` directly from `main` and 
 
 **Decision:** Option A is chosen. It is the only option that resolves all three bugs without introducing new invariant violations.
 
+### Option D — Executor-owned repo materialisation; per-handle working directories (chosen for Bug 4)
+
+Each executor is responsible for its own repo lifecycle. The orchestrator generates a handle UUID and passes a base working directory (`EXECUTOR_WORKDIR`). The executor derives all paths from it and materialises both the impl repo and management repo on startup.
+
+**Pros:**
+- Full filesystem isolation between concurrent executors — no shared paths, no orchestrator-side coordination required
+- Orchestrator no longer maintains impl repo clones; `skipImplRepoPull` guard and `*_LOCAL_PATH` operator env vars are removed
+- Topology-agnostic: same executor binary works for subprocess and docker without path-translation logic
+- Management repo always on `main`, freshly pulled — executor reads current CLAUDE.md and skills on every invocation
+
+**Cons:**
+- Each executor clones the management repo on first cold invocation (warm on repeat at same `EXECUTOR_WORKDIR`)
+- ABI version bump: add `HANDLE`, `EXECUTOR_WORKDIR`, `MGMT_REPO_URL`; remove `TASK_REPO_PATH`
+
+**Decision:** Option D is chosen for Bug 4. It is independent of Option A — the two changes touch different files and can be implemented in parallel.
+
 ---
 
 ## 4. Chosen Design
+
+### 4.0 Updated orchestrator main loop
+
+For comparison with the current-state diagram in §1.
+
+```
+Legend
+  [S-git]    Sync-blocking git — execSync(); blocks the Node.js event loop
+  [S-http]   Sync-blocking HTTP — curl via spawnSync(); blocks event loop
+  [A-http]   Async HTTP — fetch() / awaited curl; yields to event loop
+  [FF]       Fire-and-forget — submitted to broker; result arrives in a FUTURE cycle
+  ──────────────────────────────────────────────────────────────────────────────────
+
+ sleep(idle_sleep_seconds)
+       │
+       ▼
+ runOneCycle() ──────────────────────────────────────────────────────────────────
+ │
+ │  [S-git]
+ ├─ 1. pullWorkspaces
+ │       syncRepo() × (workflow repo + N mgmt repos)   ← impl repos removed
+ │       git fetch origin
+ │       git checkout <baseBranch>
+ │       git reset --hard origin/<baseBranch>
+ │       ↳ skipImplRepoPull guard removed
+ │
+ │  [S-git] + [S-http]
+ ├─ 2. runFeatureBranchLifecycle
+ │       Guard: only runs for feature_status in
+ │         [ready_for_implementation, in_implementation, in_handoff]
+ │       git ls-remote, checkout, push  →  ensure feature/{id} on mgmt repo
+ │       ↳ impl repo feature/{id} creation removed — executor handles it
+ │       GitHub REST POST /pulls        →  open draft PR (first creation)  [S-http]
+ │       Writes: status.yaml (feature_branch, feature_branch_base_sha,
+ │                            workspace_feature_pr_url)   ← was handoff_pr_url
+ │       ↳ step 5 in_handoff re-promotion removed
+ │
+ │  ╔═════════════════════════════════════════════════════════════════════════╗
+ │  ║  dispatchBlock — skipped when executor pool is full                    ║
+ │  ║  Steps try in order; first match dispatches [FF] and ends the block   ║
+ │  ║                                                                        ║
+ │  ║  [S-git] + [FF]                                                        ║
+ │  ║  ├─ 3. Eligible-task dispatch  (status: ready)                         ║
+ │  ║  │       findEligibleTasks  →  scan task YAMLs + tasks.md              ║
+ │  ║  │       claimTask          →  git commit/push  [S-git]               ║
+ │  ║  │       openWorkspacePr    →  GitHub REST POST /pulls  [S-http]      ║
+ │  ║  │       fetchRagContext    →  HTTP MCP (optional)  [A-http]          ║
+ │  ║  │       generateBriefing   →  in-process                             ║
+ │  ║  │       adapter.submit({ HANDLE, EXECUTOR_WORKDIR, MGMT_REPO_URL,   ║
+ │  ║  │                         TASK_REPO_URL, TASK_REPO_BRANCH,          ║
+ │  ║  │                         TASK_BASE_BRANCH, ... })  [FF] ───────────┐║
+ │  ║  │                                                                    │║
+ │  ║  ├─ 4. Fix-agent dispatch  (status: change_requested)                 │║
+ │  ║  │       findFixableTasks; claimFixTask; generateFixBriefing          │║
+ │  ║  │       adapter.submit(same env contract)  [FF] ────────────────────┤║
+ │  ║  │                                                                    │║
+ │  ║  ├─ 5. In-review check                                                │║
+ │  ║  │                                                                    │║
+ │  ║  │    ├─ a. checkInReviewPrs  (rate-limited, GitHub GraphQL)  [A-http]│║
+ │  ║  │    │       per in_review task: mergeable, draft, merged            │║
+ │  ║  │    │       mergeable: false  →  claimRebase (mgmt repo commit/push) │║
+ │  ║  │    │                           adapter.submit(kind:"rebase") [FF] ─┤║
+ │  ║  │    │                           ↳ executor: git rebase + push to    │║
+ │  ║  │    │                             impl repo (impl repo only)        │║
+ │  ║  │    │                           reap loop: write result to task     │║
+ │  ║  │    │                             YAML (mgmt repo) — resolved or    │║
+ │  ║  │    │                             blocked; task stays in_review     │║
+ │  ║  │    │                             until future cycle confirms       │║
+ │  ║  │    │                             mergeable: true → 5b can fire     │║
+ │  ║  │    │       merged: true  →  enqueue merge-done (async orch.) ─────────┤║
+ │  ║  │    │                                                               │║
+ │  ║  │    └─ b. findReviewableTasks  (local YAML scan)                    │║
+ │  ║  │           status: in_review or review_incomplete                   │║
+ │  ║  │           pr.url set, last log ≠ reviewer_started                  │║
+ │  ║  │           only reaches here if 5a found no conflicts or merges     │║
+ │  ║  │           dispatchReviewer  →  git log entry/push  [S-git]        │║
+ │  ║  │           adapter.submit(kind:"review")  [FF] ─────────────────────┤║
+ │  ║  │                                                                    │║
+ │  ║  └─ (nothing dispatched — cycle idles until next sleep)               │║
+ │  ║                                                                        ║
+ │  ║  Executor subprocesses (impl, review, review-fix, rebase) on startup:   ║
+ │  ║    Phase 1: clone/pull mgmt repo at EXECUTOR_WORKDIR/mgmt (main, RO)  ║
+ │  ║      → reads CLAUDE.md (copyWorkspaceClaude) + skills (setupGlobalSkills)
+ │  ║    Phase 2: clone/reuse impl repo at EXECUTOR_WORKDIR/impl            ║
+ │  ║      → create feature/{id} on origin if absent (TASK_BASE_BRANCH)     ║
+ │  ║      → checkout task branch                                            ║
+ │  ║  On ack(): adapter removes exec-{handle}/ directory                   ║
+ │  ║  merge-done: async orchestrator code — no executor subprocess spawned  ║
+ │  ╚═════════════════════════════════════════════════════════════════════════╝
+ │
+ │  [S-http] + [S-git]
+ ├─ 6. Feature Done Watcher
+ │       GitHub REST GET /pulls  →  handoff_pr_url         (handoff/{id} → feature/{id})
+ │       GitHub REST GET /pulls  →  each impl_feature_prs  (feature/{id} → baseBranch)
+ │       When ALL merged:
+ │         git checkout -B feature/{id} origin/feature/{id}   ← still alive
+ │         write status.yaml: feature_status: done, current_stage: done
+ │         git commit + push to feature/{id}  [S-git]
+ │         GitHub REST PUT /pulls/{n}/merge   →  auto-merge workspace_feature_pr_url
+ │         emit feature_done
+ │
+ ├─ 7. Feature Review Daemon   (unchanged)
+ │
+ ├─ 8. State Invariant Checker  (unchanged)
+ │
+ │  [A-http] + [S-git] + [S-http]
+ └─ 9. Reap Loop
+         broker.listCompleted()  →  drain up to 10 results
+         kind = "impl"        →  task done + ready cascade; impl PR if needed
+         kind = "review"      →  writeDoneAndCascade → fireHandoffTrigger if all done
+         kind = "review-fix"  →  emit review_dispatch_complete
+         kind = "rebase"      →  on success: write conflict_state: resolved to task YAML (mgmt repo)
+                             on failure: write status: blocked, blocked_reason: pr_conflict (mgmt repo)
+         kind = "merge-done"  →  (async orchestrator code — no executor subprocess)
+                             checkout task branch (mgmt repo); write status: done
+                             + cascade (mgmt repo); merge workspace PR (GitHub API);
+                             fireHandoffTrigger if all tasks done:
+                               git checkout -B handoff/feature-{id} origin/feature/{id}
+                               git commit handoff.md → push handoff/feature-{id}
+                               GitHub REST POST /pulls:
+                                 handoff/feature-{id} → feature/{id}  (mgmt, non-draft)
+                                 feature/{id} → baseBranch             (each impl repo, API only)
+                               Writes: status.yaml (in_handoff, handoff_pr_url,
+                                                    impl_feature_prs[...])
+         broker.ack() → adapter.ack() → rm -rf exec-{handle}/
+
+       ◄──── executor results arrive here (impl, review, rebase, review-fix)
+             async orchestrator items also drained here (merge-done)
+
+ └── sleep(idle_sleep_seconds) → repeat
+```
 
 ### 4.1 New `status.yaml` field: `workspace_feature_pr_url`
 
@@ -353,7 +524,23 @@ git push origin handoff/feature-{id}
 - `current_stage: handoff`
 - (does NOT touch `workspace_feature_pr_url` — set by Lifecycle Manager)
 
-### 4.4 Feature Done Watcher (`handle-feature-done.ts`)
+### 4.4 PR poll merged into dispatch block
+
+The separate PR poll step is eliminated. `checkInReviewPrs` moves into the dispatch block as step 5, after eligible-task and fix-agent dispatch (steps 3–4). The block still skips when the executor pool is full — a merged PR detected in a future cycle is fine since the GitHub state persists.
+
+**Dispatch ordering within step 5:**
+- **5a** `checkInReviewPrs` (GitHub GraphQL, rate-limited): `mergeable: false` → `kind: "rebase"` [FF]; `merged: true` → `kind: "merge-done"` [FF]
+- **5b** `findReviewableTasks` (local YAML scan — no GitHub API): `status: in_review` or `review_incomplete`, `pr.url` set, last log ≠ `reviewer_started` → `kind: "review"` [FF]. Runs after 5a so a conflict is resolved before a reviewer is dispatched.
+
+**`checkInReviewPrs`** — narrowed to pure read. Remove `WorkspacePrRecovery[]` feature-branch scanning entirely. Returns only `PrStatusResult[]` from a GitHub GraphQL batch call.
+
+**`handleMergeConflicts`** — becomes `kind: "rebase"` executor dispatch. The executor materialises the impl repo at `EXECUTOR_WORKDIR/impl`, performs the rebase, and force-pushes the task branch to the impl repo. The reap loop handles the result (orchestrator code, mgmt repo only): write `conflict_state: resolved` to task YAML on success; write `status: blocked, blocked_reason: pr_conflict` on failure. This resolves the `⚠ impl repo path` problem — no orchestrator-side impl repo access needed.
+
+**`handleMergedPrs`** — becomes an async orchestrator work item (no Claude executor subprocess). When `checkInReviewPrs` detects `merged: true`, the task is enqueued for async processing. The reap loop handles it in-process (orchestrator code, mgmt repo + GitHub API only): checkout task branch on mgmt repo, write `status: done` + auto-ready cascade, commit + push, merge workspace PR via GitHub REST API, call `fireHandoffTrigger` if all tasks done.
+
+**`handleWorkspacePrRecoveries`** — removed. If a workspace PR fails to merge it is surfaced via the `merge-done` failure result and requires human resolution.
+
+### 4.5 Feature Done Watcher (`handle-feature-done.ts`)
 
 **PR check (unchanged logic, corrected targets):**
 - `handoff_pr_url` now points to `handoff/feature-{id}` → `feature/{id}` — this branch is never deleted by its merge, so `feature/{id}` remains alive
@@ -384,7 +571,207 @@ git push origin handoff/feature-{id}
 
 **Backward compatibility:** if `workspace_feature_pr_url` is absent (pre-migration features), skip the auto-merge and emit `workspace_feature_pr_url_missing`. The human must merge manually as before.
 
-### 4.5 Technical reference document (Goal 1 of product spec)
+### 4.6 ABI changes (`runtime/abi/src/types.ts` + `abi-spec.md`)
+
+| TypeScript field | Env var | Change | Notes |
+|---|---|---|---|
+| `handle` | `HANDLE` | **Add (formalise)** | Executor's unique invocation UUID. Already passed to docker containers; now also passed to subprocess executors. |
+| `executorWorkdir` | `EXECUTOR_WORKDIR` | **Add (new)** | Base directory for this executor's working tree. Orchestrator sets to `${workspacesDir}/exec-{handle}` (subprocess) or `/workspace` (docker, fixed by per-handle volume mount). |
+| `mgmtRepoUrl` | `MGMT_REPO_URL` | **Add (new)** | Management repo git URL. Executor clones read-only on `main` at `${EXECUTOR_WORKDIR}/mgmt`. |
+| `taskRepoPath` | `TASK_REPO_PATH` | **Remove** | Executor derives as `${EXECUTOR_WORKDIR}/impl`. No longer set by orchestrator. |
+| *(non-ABI)* | `WORKSPACE_ROOT` | **Remove from orchestrator env** | Executor derives as `${EXECUTOR_WORKDIR}/mgmt`. No longer set by orchestrator. |
+
+**`HandleKind` addition:**
+
+Add `"rebase"` to `HandleKind` in `types.ts`:
+```typescript
+export type HandleKind = "impl" | "review-fix" | "review" | "rebase";
+```
+
+The `"review-fix"` kind with `HandleSubkind = "rebase"` was an earlier design for rebase executors. It exists in the ABI but no code currently dispatches it; its reap loop handler only emits `review_dispatch_complete` with no YAML mutation. The new `"rebase"` kind replaces this intent with a correct handler (see §4.9 gap analysis).
+
+### 4.7 Executor startup protocol (`runtime/executors/claude/src/index.ts`)
+
+Replace the single-repo `materializeRepo(taskRepoUrl, taskRepoBranch, taskRepoPath, sshKeyPath)` with a two-phase startup. Both phases run before any task work.
+
+**Phase 1 — Management repo (read-only, always `main`):**
+```
+mgmt_dir = ${EXECUTOR_WORKDIR}/mgmt
+if mgmt_dir is a valid git repo with correct origin URL:
+    git -C mgmt_dir fetch origin
+    git -C mgmt_dir checkout main
+    git -C mgmt_dir pull --ff-only origin main
+else:
+    rm -rf mgmt_dir
+    git clone MGMT_REPO_URL mgmt_dir
+    git -C mgmt_dir checkout main
+WORKSPACE_ROOT = mgmt_dir   (process env; used by copyWorkspaceClaude, setupGlobalSkills)
+```
+
+**Phase 2 — Impl repo (existing protocol, corrected path):**
+```
+impl_dir = ${EXECUTOR_WORKDIR}/impl
+TASK_REPO_PATH = impl_dir
+(existing materializeRepo logic unchanged — reuses if origin URL matches, clones fresh otherwise)
+```
+
+Executor startup sequence: Phase 1 → Phase 2 → `copyWorkspaceClaude()` → `setupGlobalSkills()` → spawn Claude with `cwd: impl_dir`.
+
+### 4.8 Orchestrator and adapter changes
+
+**`runtime/orchestrator/src/bootstrap/bootstrap.ts`:**
+- `syncRepo()` called only for the management repo in `pullWorkspaces`. All impl repo sync calls removed.
+- `skipImplRepoPull` guard (`execInFlight` check) removed.
+
+**`runtime/orchestrator/src/main.ts` + `config/workspace-config.ts`:**
+- `resolveRepoLocalPath()` removed from executor dispatch path. Operator env vars `WORKFLOW_LOCAL_PATH`, `DIGITAL_FACTORY_UI_LOCAL_PATH`, etc. are no longer required.
+- `buildAndSubmitExecutor` passes `executorWorkdir`, `handle`, and `mgmtRepoUrl` in place of `taskRepoPath` and `WORKSPACE_ROOT`.
+- `mgmtRepoUrl` resolved from the management-repo entry in `workspace.yaml` (`github:` field).
+- PR poll step: `handleMergeConflicts` replaced by a `kind: "rebase"` executor dispatch via `adapter.submit()`. The `resolveImplRepoRoot` parameter is removed — executor derives the impl path from `EXECUTOR_WORKDIR`.
+- PR poll step: `handleMergedPrs` deferred to run async (orchestrator code, not an executor subprocess).
+- PR poll step: `handleWorkspacePrRecoveries` removed entirely.
+
+**`runtime/orchestrator/src/poll/reap-loop.ts`:**
+- Add handler for `kind === "rebase"`: on `terminal_status: "in_review"` write `conflict_state: resolved` to task YAML; on `terminal_status: "blocked"` write `status: blocked, blocked_reason: pr_conflict`.
+- `kind === "review-fix"` handler left in place (emits `review_dispatch_complete`) — it is dead code but removal is out of scope.
+
+**`runtime/orchestrator/src/pr-response/auto-rebase.ts`:**
+- `handleMergeConflicts` removed from the inline PR poll step. Its logic moves to the `kind: "rebase"` executor (which runs as a subprocess at `EXECUTOR_WORKDIR`).
+- `autoRebase` function may be repurposed as the executor entrypoint or removed if the executor implements the logic directly.
+
+**`runtime/orchestrator/src/adapters/executor/subprocess.ts`:**
+- Pass `HANDLE` env var to subprocess (currently absent).
+- Pass `EXECUTOR_WORKDIR = ${workspacesDir}/exec-{handle}`.
+- Pass `MGMT_REPO_URL`.
+- Remove `TASK_REPO_PATH` and `WORKSPACE_ROOT` from subprocess env.
+- `ack()`: add `rm -rf ${workspacesDir}/exec-{handle}` after result is processed.
+
+**`runtime/orchestrator/src/adapters/executor/docker-run.ts`:**
+- Change volume mount from `-v ${workspacesDir}:/workspace` (flat, shared) to `-v ${workspacesDir}/exec-{handle}:/workspace` (per-handle, isolated).
+- Pass `EXECUTOR_WORKDIR=/workspace` (fixed container-internal path).
+- Pass `MGMT_REPO_URL`.
+- Remove `TASK_REPO_PATH` and `WORKSPACE_ROOT` from container env.
+- `ack()`: add `rm -rf ${workspacesDir}/exec-{handle}` host-path cleanup (runs after `docker rm`).
+
+### 4.9 Executor result contracts
+
+Maps what each executor kind writes to `result.json` against what the reap loop expects. Used to verify the dispatch↔reap round-trip is consistent and to identify gaps introduced by this feature.
+
+```
+─────────────────────────────────────────────────────────────────────────────────────
+WHAT EXECUTORS WRITE TO result.json
+─────────────────────────────────────────────────────────────────────────────────────
+
+kind: "impl"
+  Dispatched by: buildAndSubmitExecutor (status:ready tasks + status:change_requested fix tasks)
+  ExecutorResult {
+    terminal_status : "in_review"    ← work done; PR opened; awaiting review
+                    | "blocked"      ← stuck; needs human; partial commits preserved
+                    | "failed"       ← executor crash; treated as blocked by reap loop
+    pr_url?         : string         ← impl PR URL opened by executor (if commits pushed)
+    blocked_reason? : string         ← required when terminal_status = "blocked"
+    token_usage?    : { input, output, model }
+    cost_usd?       : number
+    handover_path?  : string         ← path to handover.md for next executor's briefing
+  }
+
+kind: "review"
+  Dispatched by: dispatchReviewer (handleKind: "review" on SubProcessAdapter)
+  ReviewerResult {
+    terminal_status : "passed"           ← review passed; task can be marked done
+                    | "change_requested" ← reviewer posted REQUEST_CHANGES on PR
+                    | "escalate"         ← reviewer cannot proceed; human needed
+                    | <other / absent>   ← incomplete (max-turns, crash, no result.json)
+    verdict         : same as terminal_status
+    confidence      : number
+    notes           : string
+    review_url?     : string             ← GitHub review URL
+    self_review_skipped? : boolean       ← true when GitHub blocked self-review (HTTP 422)
+  }
+
+kind: "review-fix"   subkind: "rebase" | "respond"
+  Dispatched by: NOTHING — no code currently dispatches review-fix executors
+  ExecutorResult { terminal_status: any }
+  NOTE: defined in ABI + handled in reap loop but dispatch path is dead code
+
+kind: "rebase"   [NEW — proposed by this feature; does not exist in HandleKind today]
+  Dispatched by: step 5a (checkInReviewPrs detects mergeable:false) after claimRebase
+  ExecutorResult {
+    terminal_status : "in_review"  ← rebase + force-push succeeded; task stays in_review;
+                                     PR will show mergeable:true in next cycle
+                    | "blocked"    ← unresolvable conflict; conflict markers committed to
+                                     impl branch; human must resolve manually
+    blocked_reason? : "pr_conflict"   ← set when terminal_status = "blocked"
+  }
+
+─────────────────────────────────────────────────────────────────────────────────────
+WHAT THE REAP LOOP DOES ON EACH KIND
+─────────────────────────────────────────────────────────────────────────────────────
+
+kind: "impl"   →   dispatchExecutorResult
+  "in_review"
+    → task YAML: status=in_review, pr.url recorded
+    → promote impl PR from draft → ready-for-review (GitHub GraphQL)
+    (max-turns guard: if blocked_reason starts with "max_turns" and retry count < MAX,
+     reset to status:ready instead of blocked)
+  "blocked" / "failed"
+    → task YAML: status=blocked, blocked_reason recorded, pr.url recorded if present
+
+kind: "review"   →   dispatchReviewResult
+  "passed"
+    → writeDoneAndCascade: task YAML status=done; auto-ready cascade for dependents
+    → if allTasksDone: fireHandoffTrigger
+  "change_requested"
+    → task YAML: status=change_requested
+    → demote impl PR back to draft (GitHub API)
+  "escalate"
+    → handleEscalation: task YAML status=blocked; post Slack alert
+  <other> (incomplete / max-turns)
+    → if review_blocked_count < MAX_REVIEW_INCOMPLETES:
+        task YAML: status=review_incomplete, log: review_blocked
+      else:
+        handleEscalation → blocked
+
+kind: "review-fix"   →   emit review_dispatch_complete only (no YAML mutation)
+  NOTE: handler exists but dispatch path is dead — no executor ever produces this kind
+
+kind: "rebase"   [NEW — handler must be added to reap-loop.ts in T6]
+  "in_review" (rebase success)
+    → task YAML: conflict_state=resolved (mgmt repo)
+    → task stays status=in_review; reviewer fires when next cycle confirms mergeable:true
+  "blocked" (unresolvable conflict)
+    → task YAML: status=blocked, blocked_reason=pr_conflict (mgmt repo)
+
+merge-done   [async orchestrator code — NOT a broker executor kind]
+  → NOT processed via broker.listCompleted
+  → when checkInReviewPrs detects merged:true, handleMergedPrs runs as async orch. code:
+    checkout task branch (mgmt repo); write status:done + cascade (mgmt repo);
+    merge workspace PR (GitHub REST API);
+    if allTasksDone: fireHandoffTrigger
+
+─────────────────────────────────────────────────────────────────────────────────────
+GAP ANALYSIS
+─────────────────────────────────────────────────────────────────────────────────────
+
+Gap 1 — kind:"rebase" not in HandleKind
+  Current: autoRebase runs SYNCHRONOUSLY inline in the PR poll step (not an executor).
+           It needs implRepoRoot via resolveRepoLocalPath — breaks under executor isolation.
+  Fix (T5): add "rebase" to HandleKind in abi/src/types.ts
+  Fix (T6): add kind:"rebase" result handler to reap-loop.ts;
+            convert handleMergeConflicts to dispatch kind:"rebase" via adapter.submit()
+
+Gap 2 — kind:"review-fix" is dead code
+  Current: HandleKind and reap-loop handler exist but no dispatch code uses them.
+           HandleSubkind "rebase" was an earlier approach for the auto-rebase executor.
+  Fix: none required for this feature; may be removed or repurposed in a future task
+
+Gap 3 — handleMergedPrs is currently synchronous (blocks poll cycle)
+  Current: called inline in PR poll step; awaited to completion before next step
+  Fix (T6): defer to run async after checkInReviewPrs returns — orchestrator code only,
+            no new executor kind needed; no change to result.json contract
+```
+
+### 4.10 Technical reference document (Goal 1 of product spec)
 
 Produce a standalone `docs/features/handoff-pr-redesign/runtime-reference.md` document covering:
 
@@ -403,10 +790,13 @@ This document is independent of the code changes and can be produced in parallel
 |---|---|---|
 | GitHub REST API (PR create, merge, mergeability) | Existing — already used | No new API surfaces |
 | `workspace_feature_pr_url` field in status.yaml | New — internal | Schema addition; backward-compatible (absent = fall back to legacy) |
-| Impl repo local paths available | Required — env vars | `WORKFLOW_BACKEND_LOCAL_PATH` etc. must be set; Handoff Trigger must resolve via `resolveRepoLocalPath` |
-| Impl repo `feature/{id}` branch exists | Required | Lifecycle Manager already creates it (Step 5 of runFeatureBranchLifecycle) — confirmed present before Handoff Trigger fires |
+| Impl repo local paths available | **Removed** | Orchestrator no longer accesses impl repos directly. Handoff Trigger opens impl repo PRs via GitHub REST API only. `resolveRepoLocalPath()` removed from all orchestrator paths. |
+| Impl repo `feature/{id}` branch exists | Required — created by executors | Executors create `feature/{id}` on origin during Phase 2 startup (`TASK_BASE_BRANCH`). By the time all tasks are `done`, each referenced impl repo already has the feature branch. The Handoff Trigger opens the impl repo PR against this branch via GitHub REST API. |
 | GitHub token with PR create + merge permissions | Required | Already required; no new scopes |
 | Migration of existing `handoff_pr_url` entries | Required for live features | Features already in `in_handoff` using old semantics need `workspace_feature_pr_url` backfilled |
+| `EXECUTOR_WORKDIR` per-handle directories | New — internal | Created by adapters at dispatch time; cleaned up on `ack()`. No operator configuration needed. |
+| `MGMT_REPO_URL` in ABI | New — internal | Resolved from `workspace.yaml` management-repo `github:` field; no new operator configuration needed. |
+| Operator `*_LOCAL_PATH` env vars | **Removed** | `WORKFLOW_LOCAL_PATH`, `DIGITAL_FACTORY_UI_LOCAL_PATH`, etc. no longer required for executor dispatch. |
 
 **Unresolved:** if an impl repo has no `feature/{id}` branch (it was not created by the Lifecycle Manager, e.g. the repo was added to workspace.yaml after the feature started), the Handoff Trigger's impl PR creation will 422. The Handoff Trigger should check each impl repo's feature branch existence before opening the PR and emit a warning (non-fatal) if absent.
 
@@ -415,21 +805,40 @@ This document is independent of the code changes and can be produced in parallel
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Produce runtime-reference.md (technical document)
+T1: Produce runtime-reference.md (management-repo)
   └── Can begin now — no blockers
 
-T2: Lifecycle Manager — record workspace_feature_pr_url; remove step 5 re-promotion
+T2: Lifecycle Manager — record workspace_feature_pr_url; remove step 5 re-promotion (workflow)
   └── Can begin now — no blockers
 
-T1 and T2 run in parallel.
+T5: ABI + executor startup — formalise HANDLE; add EXECUTOR_WORKDIR, MGMT_REPO_URL;
+    add "rebase" to HandleKind; two-phase startup; remove TASK_REPO_PATH (workflow)
+  └── Can begin now — no blockers
+
+T1, T2, and T5 run in parallel.
   │
-  T3: Handoff Trigger redesign — handoff branch + PR; impl repo PRs; populate impl_feature_prs
-      └── BLOCKED on T2 (workspace_feature_pr_url field semantics must be frozen before Handoff
+  T3: Handoff Trigger redesign — handoff branch + PR; impl repo PRs; impl_feature_prs (workflow)
+      └── BLOCKED on T2 (workspace_feature_pr_url semantics must be frozen before Handoff
           Trigger drops its dependency on handoff_pr_url for the workspace feature PR)
+
+  T5 may still be in progress while T3 runs — they are independent.
       │
-      T4: Feature Done Watcher redesign — write done state on feature branch; auto-merge workspace_feature_pr_url
+      T4: Feature Done Watcher redesign — write done state on feature branch;
+          auto-merge workspace_feature_pr_url (workflow)
           └── BLOCKED on T2 (needs workspace_feature_pr_url field to read for auto-merge)
           └── BLOCKED on T3 (needs impl_feature_prs populated to check correctly)
+          (T4 does not depend on T5 or T6)
+
+      T6: Orchestrator dispatch + adapters — per-handle EXECUTOR_WORKDIR; SubprocessAdapter +
+          DockerRunAdapter isolation; remove impl repo syncing; ack() cleanup;
+          convert handleMergeConflicts → kind:"rebase" executor dispatch;
+          add kind:"rebase" handler to reap-loop.ts;
+          defer handleMergedPrs as async orchestrator code;
+          remove handleWorkspacePrRecoveries (workflow)
+          └── BLOCKED on T5 (ABI types + HandleKind must be defined before orchestrator uses them)
+          └── BLOCKED on T3 (reap loop merge-done path calls fireHandoffTrigger — must use T3's updated version)
+
+      T4 and T6 run in parallel (different files; no mutual dependency).
 ```
 
 ---
@@ -443,8 +852,16 @@ T1 and T2 run in parallel.
 | `workflow` | `runtime/orchestrator/src/poll/handle-feature-done.ts` | Write done state before auto-merging workspace feature PR |
 | `management-repo` | `docs/features/handoff-pr-redesign/runtime-reference.md` | New technical reference document (T1) |
 
+| `workflow` | `runtime/abi/src/types.ts`, `runtime/abi/docs/abi-spec.md` | Add `HANDLE`, `EXECUTOR_WORKDIR`, `MGMT_REPO_URL`; add `"rebase"` to `HandleKind`; remove `TASK_REPO_PATH` (T5) |
+| `workflow` | `runtime/executors/claude/src/index.ts` | Two-phase startup; derive impl + mgmt paths from `EXECUTOR_WORKDIR` (T5) |
+| `workflow` | `runtime/orchestrator/src/bootstrap/bootstrap.ts` | Remove impl repo `syncRepo()` calls; remove `skipImplRepoPull` guard (T6) |
+| `workflow` | `runtime/orchestrator/src/adapters/executor/subprocess.ts` | Pass `HANDLE` + `EXECUTOR_WORKDIR` + `MGMT_REPO_URL`; `ack()` directory cleanup (T6) |
+| `workflow` | `runtime/orchestrator/src/adapters/executor/docker-run.ts` | Per-handle volume mount; pass `EXECUTOR_WORKDIR=/workspace`; `ack()` host cleanup (T6) |
+| `workflow` | `runtime/orchestrator/src/main.ts`, `config/workspace-config.ts` | Remove `resolveRepoLocalPath` from dispatch; pass `EXECUTOR_WORKDIR` + `MGMT_REPO_URL`; convert handleMergeConflicts to kind:"rebase" dispatch; defer handleMergedPrs; remove handleWorkspacePrRecoveries (T6) |
+| `workflow` | `runtime/orchestrator/src/poll/reap-loop.ts` | Add `kind: "rebase"` result handler (T6) |
+| `workflow` | `runtime/orchestrator/src/pr-response/auto-rebase.ts` | Remove from inline PR poll path; logic moves to kind:"rebase" executor (T6) |
+
 No changes to:
-- Executor code (`executors/`)
 - Reviewer or fix-agent dispatch
 - Task PR flow
 - Workspace task PR auto-merge
@@ -460,6 +877,9 @@ No changes to:
 - **Unit tests** for each changed module: verify the Handoff Trigger opens the correct PR targets and populates `impl_feature_prs`; verify the Feature Done Watcher auto-merges `workspace_feature_pr_url` and writes done state to the feature branch (not to main).
 - **Integration test** (if E2E test harness exists): run a full feature lifecycle with `idle_sleep_seconds: 0` (single-shot mode) and verify `feature_done` is emitted correctly with the feature branch still alive at the time of the done write.
 - **Migration guard test**: feature with old-style `handoff_pr_url` (no `workspace_feature_pr_url`) must not regress — backward compat path emits `workspace_feature_pr_url_missing` and skips auto-merge cleanly.
+- **Unit tests for executor startup (T5):** verify Phase 1 (management repo clone/pull on `main`) runs before Phase 2 (impl repo materialisation); verify `WORKSPACE_ROOT` and `TASK_REPO_PATH` are correctly derived from `EXECUTOR_WORKDIR`.
+- **Unit tests for adapters (T6):** SubprocessAdapter passes `HANDLE` + `EXECUTOR_WORKDIR`; DockerRunAdapter mounts `${workspacesDir}/exec-{handle}` not the flat `workspacesDir`; `ack()` removes the `exec-{handle}` directory.
+- **Isolation test (T6):** spawn two concurrent executors targeting the same impl repo; verify each operates in its own `exec-{handle}` directory with no shared state.
 
 ### Rollout concerns
 
