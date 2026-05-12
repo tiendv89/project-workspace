@@ -1,0 +1,60 @@
+feature_id: runtime-runcycle-decomposition
+title: Decompose runOneCycle into named poll-step sub-functions
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute T1.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-13T00:33:26+0700
+    review_comment: Simple chore — approved inline.
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-05-13T00:33:26+0700
+        comment: Simple chore — approved inline.
+  technical_design:
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-13T00:33:26+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-05-13T00:33:26+0700
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-13T00:33:26+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-05-13T00:33:26+0700
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - event: product_spec_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:33:26+0700
+  - event: technical_design_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:33:26+0700
+  - event: tasks_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:33:26+0700
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
