@@ -1,7 +1,7 @@
 id: T6
 title: Orchestrator dispatch + adapters
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T5
   - T3
@@ -10,10 +10,10 @@ branch: feature/agent-runtime-redesign-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-05-12T18:48:22+0700
+  last_updated_at: 2026-05-12T19:15:49+0700
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/138
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -31,6 +31,14 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-12T18:48:22+0700
     note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: work_phase_complete
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T19:15:49+0700
+    note: "Implementation complete. PR #138 opened for review."
     token_usage:
       input: 0
       output: 0
