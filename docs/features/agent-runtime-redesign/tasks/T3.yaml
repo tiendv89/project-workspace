@@ -2,7 +2,7 @@ id: T3
 title: Handoff Trigger redesign
 
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: [T2]
 blocked_reason: null
 
@@ -11,11 +11,11 @@ branch: feature/agent-runtime-redesign-T3
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-12T17:18:00+0700
+  last_updated_at: 2026-05-12T17:38:45+0700
 
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/136
+  status: open
 
 log:
   - action: created
@@ -38,3 +38,14 @@ log:
       input: 0
       output: 0
     cost_usd: 0.000
+  - action: work_phase_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T17:38:45+0700
+    note: >-
+      Handoff Trigger redesign implemented. Removed promoteOrCreateFeaturePr;
+      added steps 5a-5d (handoff branch, handoff PR, impl PRs, status.yaml update).
+      10 new tests, 726-test suite clean. PR opened.
+  - action: reviewer_started
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T17:38:45+0700
+    note: Task set to in_review — PR https://github.com/tiendv89/agent-workflow/pull/136.
