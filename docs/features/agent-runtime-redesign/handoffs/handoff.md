@@ -127,7 +127,7 @@ Both `local-subprocess` and `local-docker` runtime profiles work with the new de
 
 | Item | Note |
 |---|---|
-| `WorkspacePrRecovery` interface remains in `check-in-review-prs.ts` | The runtime computation is gone, but the exported `interface WorkspacePrRecovery` declaration is still in the file as dead code. Safe to delete in a future cleanup PR. |
+| ~~`WorkspacePrRecovery` dead code~~ | Resolved in [#139](https://github.com/tiendv89/agent-workflow/pull/139) — interface, `handleWorkspacePrRecoveries`, and tests removed (–322 lines). |
 | `rebaseInFlight` Set is in-memory | An orchestrator restart while a rebase is mid-flight requires `claimRebase`'s `conflict_state: "resolving"` flag (committed to origin) to act as the persistent dedup. Working as designed, but worth documenting. |
 
 ---
