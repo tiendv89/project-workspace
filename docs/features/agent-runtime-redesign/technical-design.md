@@ -401,7 +401,9 @@ Legend
  │  ║  │    │                             blocked; task stays in_review     │║
  │  ║  │    │                             until future cycle confirms       │║
  │  ║  │    │                             mergeable: true → 5b can fire     │║
- │  ║  │    │       merged: true  →  enqueue merge-done (async orch.) ─────────┤║
+ │  ║  │    │       merged: true  →  await handleMergedPrs() inline         │║
+ │  ║  │    │                          (in-process orch. code, try/catch    │║
+ │  ║  │    │                          surfaces errors; NOT a broker kind)  │║
  │  ║  │    │                                                               │║
  │  ║  │    └─ b. findReviewableTasks  (local YAML scan)                    │║
  │  ║  │           status: in_review or review_incomplete                   │║
@@ -419,7 +421,10 @@ Legend
  │  ║      → create feature/{id} on origin if absent (TASK_BASE_BRANCH)     ║
  │  ║      → checkout task branch                                            ║
  │  ║  On ack(): adapter removes exec-{handle}/ directory                   ║
- │  ║  merge-done: async orchestrator code — no executor subprocess spawned  ║
+ │  ║  handleMergedPrs: awaited inline in 5a (in-process orch. code,        ║
+ │  ║                   NOT a broker kind, NOT processed in reap loop).     ║
+ │  ║                   await prevents next cycle's syncRepo from racing    ║
+ │  ║                   with the merge-done cascade push.                   ║
  │  ╚═════════════════════════════════════════════════════════════════════════╝
  │
  │  [S-http] + [S-git]
@@ -445,21 +450,21 @@ Legend
          kind = "review-fix"  →  emit review_dispatch_complete
          kind = "rebase"      →  on success: write conflict_state: resolved to task YAML (mgmt repo)
                              on failure: write status: blocked, blocked_reason: pr_conflict (mgmt repo)
-         kind = "merge-done"  →  (async orchestrator code — no executor subprocess)
-                             checkout task branch (mgmt repo); write status: done
-                             + cascade (mgmt repo); merge workspace PR (GitHub API);
-                             fireHandoffTrigger if all tasks done:
-                               git checkout -B handoff/feature-{id} origin/feature/{id}
-                               git commit handoff.md → push handoff/feature-{id}
-                               GitHub REST POST /pulls:
-                                 handoff/feature-{id} → feature/{id}  (mgmt, non-draft)
-                                 feature/{id} → baseBranch             (each impl repo, API only)
-                               Writes: status.yaml (in_handoff, handoff_pr_url,
-                                                    impl_feature_prs[...])
          broker.ack() → adapter.ack() → rm -rf exec-{handle}/
 
        ◄──── executor results arrive here (impl, review, rebase, review-fix)
-             async orchestrator items also drained here (merge-done)
+
+       Note: handleMergedPrs is NOT processed here. It runs in step 5a
+             (awaited inline). Cascade: checkout task branch (mgmt repo);
+             write status: done + cascade (mgmt repo); merge workspace PR
+             (GitHub REST API); fireHandoffTrigger if all tasks done:
+               git checkout -B handoff/feature-{id} origin/feature/{id}
+               git commit handoff.md → push handoff/feature-{id}
+               GitHub REST POST /pulls:
+                 handoff/feature-{id} → feature/{id}  (mgmt, non-draft)
+                 feature/{id} → baseBranch             (each impl repo, API only)
+               Writes: status.yaml (in_handoff, handoff_pr_url,
+                                    impl_feature_prs[...])
 
  └── sleep(idle_sleep_seconds) → repeat
 ```
@@ -529,14 +534,16 @@ git push origin handoff/feature-{id}
 The separate PR poll step is eliminated. `checkInReviewPrs` moves into the dispatch block as step 5, after eligible-task and fix-agent dispatch (steps 3–4). The block still skips when the executor pool is full — a merged PR detected in a future cycle is fine since the GitHub state persists.
 
 **Dispatch ordering within step 5:**
-- **5a** `checkInReviewPrs` (GitHub GraphQL, rate-limited): `mergeable: false` → `kind: "rebase"` [FF]; `merged: true` → `kind: "merge-done"` [FF]
-- **5b** `findReviewableTasks` (local YAML scan — no GitHub API): `status: in_review` or `review_incomplete`, `pr.url` set, last log ≠ `reviewer_started` → `kind: "review"` [FF]. Runs after 5a so a conflict is resolved before a reviewer is dispatched.
+- **5a** `checkInReviewPrs` (GitHub GraphQL — runs every poll cycle; `idle_sleep_seconds` provides natural rate limiting): `mergeable: false` → `claimRebase` (mgmt repo commit/push) then `adapter.submit(kind: "rebase")` [FF]; `merged: true` → `await handleMergedPrs()` inline (in-process orchestrator code, wrapped in try/catch — see below). When either branch fires, `outcome = "ran_task"` so 5b is skipped this cycle.
+- **5b** `findReviewableTasks` (local YAML scan — no GitHub API): `status: in_review` or `review_incomplete`, `pr.url` set, last log ≠ `reviewer_started` → `kind: "review"` [FF]. Runs only when `outcome !== "ran_task"`, i.e. 5a found no conflicts or merges this cycle, so a conflict is resolved before a reviewer is dispatched.
 
 **`checkInReviewPrs`** — narrowed to pure read. Remove `WorkspacePrRecovery[]` feature-branch scanning entirely. Returns only `PrStatusResult[]` from a GitHub GraphQL batch call.
 
 **`handleMergeConflicts`** — becomes `kind: "rebase"` executor dispatch. The executor materialises the impl repo at `EXECUTOR_WORKDIR/impl`, performs the rebase, and force-pushes the task branch to the impl repo. The reap loop handles the result (orchestrator code, mgmt repo only): write `conflict_state: resolved` to task YAML on success; write `status: blocked, blocked_reason: pr_conflict` on failure. This resolves the `⚠ impl repo path` problem — no orchestrator-side impl repo access needed.
 
-**`handleMergedPrs`** — becomes an async orchestrator work item (no Claude executor subprocess). When `checkInReviewPrs` detects `merged: true`, the task is enqueued for async processing. The reap loop handles it in-process (orchestrator code, mgmt repo + GitHub API only): checkout task branch on mgmt repo, write `status: done` + auto-ready cascade, commit + push, merge workspace PR via GitHub REST API, call `fireHandoffTrigger` if all tasks done.
+**`handleMergedPrs`** — in-process orchestrator code (no Claude executor subprocess, no broker `kind`). When `checkInReviewPrs` detects `merged: true`, the call is `await`ed inline in step 5a within `dispatchBlock`, wrapped in `try/catch` so errors surface as `handle_merged_prs_error` events without throwing into the dispatch loop. The handler does mgmt repo + GitHub API work only: checkout task branch on mgmt repo, write `status: done` + auto-ready cascade, commit + push, merge workspace PR via GitHub REST API, call `fireHandoffTrigger` if all tasks done.
+
+**Why `await` (not fire-and-forget):** the merge-done cascade writes to the mgmt repo task branch. If the call returned a Promise that the dispatch loop did not `await`, the next cycle's `syncRepo` could `git fetch` and reset the mgmt working tree before the cascade push completed, causing the newly-ready dependent tasks to be invisible to `findEligibleTasks` for an extra cycle. Awaiting blocks the dispatch loop for the duration (~1–2 s in practice, only triggered on cycles where a merged PR is detected) but eliminates the race. Errors are emitted, not thrown — a failure does not crash the orchestrator.
 
 **`handleWorkspacePrRecoveries`** — removed. If a workspace PR fails to merge it is surfaced via the `merge-done` failure result and requires human resolution.
 
@@ -742,12 +749,16 @@ kind: "rebase"   [NEW — handler must be added to reap-loop.ts in T6]
   "blocked" (unresolvable conflict)
     → task YAML: status=blocked, blocked_reason=pr_conflict (mgmt repo)
 
-merge-done   [async orchestrator code — NOT a broker executor kind]
-  → NOT processed via broker.listCompleted
-  → when checkInReviewPrs detects merged:true, handleMergedPrs runs as async orch. code:
-    checkout task branch (mgmt repo); write status:done + cascade (mgmt repo);
-    merge workspace PR (GitHub REST API);
-    if allTasksDone: fireHandoffTrigger
+merge-done   [in-process orchestrator code — NOT a broker executor kind]
+  → NOT processed via broker.listCompleted; NOT fire-and-forget
+  → when checkInReviewPrs detects merged:true, handleMergedPrs is AWAITED inline
+    in step 5a within dispatchBlock (wrapped in try/catch — errors emit as
+    handle_merged_prs_error without throwing into the dispatch loop):
+      checkout task branch (mgmt repo); write status:done + cascade (mgmt repo);
+      merge workspace PR (GitHub REST API);
+      if allTasksDone: fireHandoffTrigger
+  → await is required to prevent the next cycle's syncRepo from racing with the
+    cascade push (which would hide newly auto-readied tasks for an extra cycle).
 
 ─────────────────────────────────────────────────────────────────────────────────────
 GAP ANALYSIS
@@ -765,10 +776,16 @@ Gap 2 — kind:"review-fix" is dead code
            HandleSubkind "rebase" was an earlier approach for the auto-rebase executor.
   Fix: none required for this feature; may be removed or repurposed in a future task
 
-Gap 3 — handleMergedPrs is currently synchronous (blocks poll cycle)
-  Current: called inline in PR poll step; awaited to completion before next step
-  Fix (T6): defer to run async after checkInReviewPrs returns — orchestrator code only,
-            no new executor kind needed; no change to result.json contract
+Gap 3 — handleMergedPrs placement in the dispatch loop
+  Current (pre-T6): called inline in the post-dispatch PR poll step and awaited.
+  Initial T6 plan: defer to fire-and-forget (no await) after checkInReviewPrs returns.
+  Shipped in T6: kept awaited, but moved inside dispatchBlock (step 5a). The
+    fire-and-forget variant was tried and revealed a race: the next cycle's
+    syncRepo would reset the mgmt working tree before the cascade push completed,
+    hiding newly auto-readied dependent tasks for an extra cycle. await is the
+    correct semantic here even though it blocks the dispatch loop for ~1–2 s on
+    cycles that detect a merged PR. Wrapped in try/catch so errors emit as
+    handle_merged_prs_error without throwing.
 ```
 
 ### 4.10 Technical reference document (Goal 1 of product spec)

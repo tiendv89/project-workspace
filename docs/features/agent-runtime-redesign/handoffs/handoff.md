@@ -78,9 +78,9 @@ dispatchBlock {
 
 This closes a race where a reviewer and rebase executor could be co-dispatched in the same cycle for the same `mergeable: false` task in docker mode (subprocess mode was already protected by `skipPrPoll`).
 
-### `handleMergedPrs` is now awaited
+### `handleMergedPrs` is awaited inline in step 5a
 
-Originally fire-and-forget per the design wording. T6's final commit (`8da13f9`) awaits it (with try/catch surfacing errors as `handle_merged_prs_error`) because the next cycle's `syncRepo` could race with the merge-done cascade push, hiding newly auto-readied tasks for an extra cycle. Pragmatic deviation from § 4.4's "enqueued for async processing" wording — call this out when updating the spec.
+The initial T6 plan was fire-and-forget. Final commit `8da13f9` reverted to `await` (with try/catch surfacing errors as `handle_merged_prs_error`) because the next cycle's `syncRepo` could race with the merge-done cascade push, hiding newly auto-readied tasks for an extra cycle. Trade-off: dispatch loop blocks for ~1–2 s on cycles that detect a merged PR. § 4.4, § 4.0 step 9, and § 4.9 of the technical design were updated alongside this handoff to match the shipped semantics.
 
 ### `status.yaml` schema
 
@@ -127,7 +127,6 @@ Both `local-subprocess` and `local-docker` runtime profiles work with the new de
 
 | Item | Note |
 |---|---|
-| Update technical-design § 4.4 wording on `handleMergedPrs` | Spec says "enqueued for async processing" but the merged implementation awaits the call (to prevent a `syncRepo` race). Reconcile the spec text with the shipped semantics. |
 | `WorkspacePrRecovery` interface remains in `check-in-review-prs.ts` | The runtime computation is gone, but the exported `interface WorkspacePrRecovery` declaration is still in the file as dead code. Safe to delete in a future cleanup PR. |
 | `rebaseInFlight` Set is in-memory | An orchestrator restart while a rebase is mid-flight requires `claimRebase`'s `conflict_state: "resolving"` flag (committed to origin) to act as the persistent dedup. Working as designed, but worth documenting. |
 
