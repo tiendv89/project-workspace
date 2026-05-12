@@ -3,7 +3,7 @@
 ## Feature
 - Feature ID: `platform-byo-executor`
 - Title: Bring-Your-Own-Executor — customer-supplied executor images on the platform
-- **Status: deferred** — blocked on `runtime-portable-architecture`. This is a placeholder product spec capturing the long-term direction agreed during the architectural discussion. Activate this feature only after `runtime-portable-architecture` is `done`.
+- **Status: active** — `runtime-portable-architecture` is `done`. This feature is now in design.
 
 ## Open Technical Debt
 
@@ -13,9 +13,7 @@ The following internal items are deferred until this feature is activated. They 
 
 ## Dependency
 
-This feature has a hard prerequisite: **`runtime-portable-architecture` must be `done`** before any technical design or implementation work on this feature begins.
-
-`runtime-portable-architecture` delivers the architectural foundation (hexagonal refactor, async submit/reap, ports + adapters + profiles, two local profiles, tenant-context plumbing). This feature builds the customer-facing surface on top of those foundations.
+**`runtime-portable-architecture` is `done`.** This feature now builds the customer-facing surface on top of that foundation.
 
 The architectural reasoning behind both features lives in `../runtime-portable-architecture/discussion-orchestrator-architecture.md`. That document is the canonical record; do not duplicate it here.
 
@@ -39,9 +37,9 @@ Two execution shapes coexist per platform deployment, chosen per-tenant:
 - **Platform-hosted execution.** Push-based; platform spawns the customer's executor on its own infrastructure.
 - **Customer-hosted execution.** Pull-based; a platform-supplied runner agent lives in the customer's network, long-polls the platform for work, and never accepts inbound connections. Required for enterprise / on-prem / regulated customers.
 
-## Goals (long-form, deferred)
+## Goals
 
-These are the goals that distinguish this feature from the architectural foundation it depends on. None of them are in scope for `runtime-portable-architecture`.
+These goals distinguish this feature from the architectural foundation it depends on. None are in scope for `runtime-portable-architecture`.
 
 - A customer can register an executor image (registry URL, version, pull credentials, capability labels) against their workspace.
 - A platform-operated conformance test runs against every newly registered or version-bumped image and gates activation on a pass.
@@ -52,7 +50,7 @@ These are the goals that distinguish this feature from the architectural foundat
 - Per-tenant resource usage is tracked for metering and billing.
 - Customers have a self-service surface to register images, view their own runs and logs, and check conformance status.
 
-## Non-goals (long-form, deferred)
+## Non-goals
 
 - Replacing or modifying the architectural foundation delivered by `runtime-portable-architecture`. This feature is purely additive on top of those seams.
 - Building the executor SDK or reference Claude executor — they exist (`@workflow/runtime-abi`, `runtime/executors/claude/`).
@@ -60,9 +58,9 @@ These are the goals that distinguish this feature from the architectural foundat
 - Supporting non-containerised executors — the contract remains the runtime ABI plus a container image.
 - Hosting customers' workspace repos. Customers keep workflow state on their own git provider.
 
-## Open business questions (deferred)
+## Open business questions
 
-These are documented now so they are not lost, but they will be reopened and answered when this feature is activated. They are intentionally not committed to.
+These must be resolved during technical design.
 
 - **B1 — Conformance test scope.** Synthetic suite vs schema-only vs customer fixtures (or combination).
 - **B2 — Billing unit.** Per task, per executor-minute, per claim, per push/pull invocation, tiered subscription.
@@ -72,25 +70,6 @@ These are documented now so they are not lost, but they will be reopened and ans
 - **B6 — Tenant isolation guarantees.** Soft (logical namespaces, shared compute) vs hard (per-tenant compute) vs tiered.
 - **B7 — Runner agent host requirements.** Docker daemon, kubelet, or just outbound HTTPS — affects customer reach and runner-agent internal complexity.
 
-## Why we are deferring
-
-The architecture this feature depends on is large enough on its own. Combining the architectural refactor with the customer-facing product surface in one feature was creating a scope that:
-
-- Could not be reviewed coherently (architectural decisions and product decisions interleaved).
-- Could not be implemented in stages (every implementation wave needed both architecture and product progress).
-- Forced premature commitment to product decisions (billing, conformance, isolation tier) before the architectural pieces were stable.
-
-Splitting allows us to land the runtime architecture first, validate it under real workflow load, and then build the product surface deliberately on top.
-
-## When to activate this feature
-
-Activate this feature (move from `blocked` to `in_design`) when:
-
-1. `runtime-portable-architecture` has reached `done` status.
-2. There is appetite to invest in the customer-facing platform surface (this is significant scope on its own).
-3. We have at least one prospective customer or design partner whose needs can shape B1–B7.
-
-At activation, this product spec will be re-opened, the deferred questions will be discussed, and a fresh technical design will be authored on top of the architecture this feature's prerequisite delivered.
 
 ## References
 
