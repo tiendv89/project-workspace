@@ -1,9 +1,9 @@
 feature_id: agent-runtime-redesign
 title: Agent Runtime Redesign
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tech lead produces task breakdown (tasks.md + T<n>.yaml files).
+next_action: Tasks T2 and T5 are ready. Implementation may begin.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: 2026-05-12T08:46:23Z
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-12T09:19:17Z
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-12T09:19:17Z
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -55,6 +59,11 @@ history:
     by: tiendv.52@gmai.com
     at: 2026-05-12T08:46:23Z
     note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T09:19:17Z
+    note: Tasks approved. Feature advances to ready_for_implementation. T2 and T5 activated.
 
 revalidation:
   product_spec_required: false
