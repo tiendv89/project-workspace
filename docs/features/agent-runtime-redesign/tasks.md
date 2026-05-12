@@ -6,41 +6,11 @@
 
 | ID | Wave | Title | Depends on |
 |---|---|---|---|
-| T1 | 1 | Produce runtime-reference.md | — |
 | T2 | 1 | Lifecycle Manager: record workspace_feature_pr_url | — |
 | T5 | 1 | ABI + executor startup: EXECUTOR_WORKDIR two-phase startup | — |
 | T3 | 2 | Handoff Trigger redesign | T2 |
 | T4 | 3 | Feature Done Watcher redesign | T2, T3 |
 | T6 | 3 | Orchestrator dispatch + adapters | T5, T3 |
-
----
-
-## T1 — Produce runtime-reference.md
-
-### Description
-
-Produce a standalone technical reference document at `docs/features/agent-runtime-redesign/runtime-reference.md` in the management repo that describes the current (pre-redesign) orchestrator runtime as a shared reference for all other tasks in this feature.
-
-The document must cover:
-- Full orchestrator poll cycle step-by-step: what each function does, what git/YAML/API state it reads and writes, and whether each call is sync-blocking, async, or fire-and-forget.
-- Executor ABI: formal inputs (`ExecutorPortInput`), outputs (`result.json`), side-effects.
-- Per-process table: process name → reads → writes → implemented as TypeScript code or delegated to Claude skill.
-- Skill vs code boundary: which behaviours are purely TypeScript and which spawn a Claude executor subprocess.
-
-This document captures the current state as of the design. It may draw on §1 (Current State) and §4.9 (Executor result contracts) of `technical-design.md` and must cross-check them against the source code.
-
-### Required skills
-
-- typescript-best-practices
-
-### Subtasks
-
-- [ ] Read `runtime/orchestrator/src/main.ts` to enumerate every step in `runOneCycle()`
-- [ ] Read `runtime/abi/src/types.ts` — capture `HandleKind`, `ExecutorPortInput`, `ExecutorResult`, `ReviewerResult`
-- [ ] Read `runtime/abi/docs/abi-spec.md` if it exists; note any discrepancies with types.ts
-- [ ] For each named process (Lifecycle Manager, Handoff Trigger, Feature Done Watcher, handleMergedPrs, autoRebase, dispatchReviewer, dispatchExecutorResult, dispatchReviewResult): read the source file and record reads / writes / skill-or-code
-- [ ] Cross-check §1 current-state table and §4.9 gap analysis in `technical-design.md` against source; note any discrepancies
-- [ ] Write `docs/features/agent-runtime-redesign/runtime-reference.md` to management-repo on the feature branch
 
 ---
 
