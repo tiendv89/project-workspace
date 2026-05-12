@@ -1,5 +1,5 @@
-feature_id: management-repo-governance
-title: Management Repo Governance
+feature_id: agent-registration
+title: Agent Registration and Approval
 
 feature_status: in_design
 current_stage: product_spec
@@ -36,6 +36,13 @@ history:
     by: matthew@liquid-labs.xyz
     at: 2026-04-14T00:00:00Z
     note: "Feature initialized — gaps identified during T3 implementation: missing claim commit, no management_repo field, no agent approval model."
+  - action: rescoped
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:26:34+0700
+    note: >-
+      Renamed from management-repo-governance. Stripped completed goals (management_repo field,
+      claim commit, init-workspace tooling — all shipped). Remaining scope: agent registration,
+      approval, and revocation model.
 
 revalidation:
   product_spec_required: false
