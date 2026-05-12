@@ -1,9 +1,9 @@
 feature_id: agent-runtime-redesign
 title: Agent Runtime Redesign
 
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Tasks T2 and T5 are ready. Implementation may begin.
+feature_status: in_handoff
+current_stage: handoff
+next_action: All tasks (T2–T6) done. Handoff document drafted; awaiting human review and approval.
 
 stages:
   product_spec:
@@ -64,6 +64,13 @@ history:
     by: tiendv.52@gmai.com
     at: 2026-05-12T09:19:17Z
     note: Tasks approved. Feature advances to ready_for_implementation. T2 and T5 activated.
+  - stage: handoff
+    action: drafted
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T22:59:05+0700
+    note: >-
+      All tasks T2-T6 done. T6 PR #138 merged to agent-workflow main.
+      Handoff document drafted; feature advances to in_handoff.
 
 revalidation:
   product_spec_required: false
