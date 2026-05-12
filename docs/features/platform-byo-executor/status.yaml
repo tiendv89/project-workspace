@@ -1,24 +1,9 @@
 feature_id: platform-byo-executor
 title: Bring-Your-Own-Executor — customer-supplied executor images on the platform
 
-feature_status: blocked
+feature_status: in_design
 current_stage: product_spec
-next_action: >-
-  Deferred. Activate (move feature_status from blocked to in_design) only
-  after runtime-portable-architecture reaches done status. The product
-  spec is a placeholder capturing the long-term direction; the technical
-  design is intentionally empty until activation.
-
-blocked_reason: prerequisite_not_done
-blocked_details: >-
-  Hard dependency on runtime-portable-architecture, which is currently
-  in_design. This feature builds the customer-facing surface (image
-  registration, conformance, tenant management, runner agents, push and
-  pull production adapters, billing, self-service UI) on top of the
-  architectural foundation runtime-portable-architecture delivers.
-  Activating this feature before that prerequisite is done would force
-  premature commitment on questions whose answers depend on the
-  architecture.
+next_action: Review and approve product spec, then proceed to technical design.
 
 stages:
   product_spec:
@@ -68,6 +53,14 @@ history:
       marked blocked on the architectural feature.
       Long-term direction preserved in product-spec.md as deferred goals
       and open questions B1–B7.
+  - at: 2026-05-13T00:26:34+0700
+    by: matthew@swellnetwork.io
+    action: activated
+    note: >-
+      runtime-portable-architecture reached done status. Feature unblocked
+      and moved to in_design. Deferred framing stripped from product-spec.md.
+      agent-registration feature cancelled — its scope (agent registration
+      and approval model) is subsumed here.
 
 revalidation:
   product_spec_required: false
