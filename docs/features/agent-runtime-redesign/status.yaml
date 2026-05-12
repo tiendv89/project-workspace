@@ -1,0 +1,63 @@
+feature_id: agent-runtime-redesign
+title: Agent Runtime Redesign
+
+feature_status: in_tdd
+current_stage: tasks
+next_action: Tech lead produces task breakdown (tasks.md + T<n>.yaml files).
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-12T12:52:30+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-12T12:52:30+0700
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-12T08:46:23Z
+    review_comment: null
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-12T08:46:23Z
+        comment: null
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T01:12:57+0700
+    note: Feature scaffold created from init-feature.
+  - stage: product_spec
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T12:52:30+0700
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T08:46:23Z
+    note: Technical design approved. Feature advances to task planning.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
