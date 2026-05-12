@@ -1,22 +1,19 @@
 id: T6
 title: Orchestrator dispatch + adapters
-
 repo: workflow
-status: ready
-depends_on: [T5, T3]
+status: done
+depends_on:
+  - T5
+  - T3
 blocked_reason: null
-
-branch: null
-
+branch: feature/agent-runtime-redesign-T6
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-05-12T15:57:28+0700
-
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-12T22:59:05+0700
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/138
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -26,3 +23,32 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-12T17:41:03+0700
     note: Auto-readied — T3 marked done, all dependencies [T5, T3] satisfied.
+  - action: claimed
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T18:48:22+0700
+    note: Branch created; status set to in_progress.
+  - action: started
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T18:48:22+0700
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: work_phase_complete
+    by: tiendv.52@gmai.com
+    at: 2026-05-12T19:15:49+0700
+    note: "Implementation complete. PR #138 opened for review."
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T22:59:05+0700
+    note: >-
+      Implementation PR #138 merged (squash, ca903849). Eleven commits landed
+      per-handle exec-{handle} workdirs, claimRebase first-push-wins, rebaseInFlight
+      dedup, 5a/5b dispatch ordering fix, kind:"rebase" reap handler, and
+      await handleMergedPrs. §4.0-4.9 of the technical design verified against
+      the merged code.
