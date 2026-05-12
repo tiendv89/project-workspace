@@ -2,7 +2,7 @@ id: T4
 title: Feature Done Watcher redesign
 
 repo: workflow
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 
@@ -22,3 +22,7 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-12T15:57:28+0700
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T17:41:03+0700
+    note: Auto-readied — T3 marked done, all dependencies [T2, T3] satisfied.

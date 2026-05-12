@@ -2,7 +2,7 @@ id: T3
 title: Handoff Trigger redesign
 
 repo: workflow
-status: in_review
+status: done
 depends_on: [T2]
 blocked_reason: null
 
@@ -15,7 +15,7 @@ execution:
 
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/136
-  status: open
+  status: merged
 
 log:
   - action: created
@@ -49,3 +49,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-12T17:38:45+0700
     note: Task set to in_review — PR https://github.com/tiendv89/agent-workflow/pull/136.
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-12T17:41:03+0700
+    note: Implementation PR merged — https://github.com/tiendv89/agent-workflow/pull/136.
