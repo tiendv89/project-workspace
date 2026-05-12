@@ -1,0 +1,24 @@
+id: T1
+title: Split runOneCycle into named poll-step sub-functions
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/runtime-runcycle-decomposition-T1
+execution:
+  actor_type: agent
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:33:26+0700
+    note: One-task chore — created and approved inline.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-13T00:33:26+0700
+    note: No dependencies — immediately ready.
