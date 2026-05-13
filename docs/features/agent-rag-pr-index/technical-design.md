@@ -41,9 +41,13 @@ VALID_SOURCE_TYPES = frozenset({
 
 ### Change 2 — File-based cursor (`pr_index_state.json`)
 
-**New file:** `services/indexer/pr_index_state.json` (committed to the `rag-service` repo)
+**Runtime file:** `services/indexer/pr_index_state.json`
 
-Tracks the last indexed `merged_at` timestamp per repo. Updated and committed to git after each successful indexing run.
+This file is **not committed to git**. It is operational state written and read by the running indexer process:
+
+- **Locally:** lives on the host filesystem next to the indexer module.
+- **Docker:** mount a named volume to the directory containing this file so state survives container restarts.
+- **Cold start / missing file:** treated as no prior indexing — all merged PRs are fetched and indexed from scratch. This is safe because upsert is idempotent; the only cost is re-embedding on the first run.
 
 ```json
 {
@@ -54,15 +58,10 @@ Tracks the last indexed `merged_at` timestamp per repo. Updated and committed to
 }
 ```
 
-- On first run (no entry for repo): fetch all merged PRs, oldest first.
-- On subsequent runs: fetch PRs with `merged_at > last_indexed_merged_at` only.
-- After all new PRs are embedded and upserted, write the updated cursor and commit:
-  ```bash
-  git add services/indexer/pr_index_state.json
-  git commit -m "chore(pr-index): advance cursor for {repo_id} to {new_merged_at}"
-  git push origin <branch>
-  ```
-- If the git commit or push fails, log a warning and continue — the next run will re-index the same PRs (upsert is idempotent, so no duplicates in Qdrant).
+- On first run (no entry for repo): fetch all merged PRs oldest-first, index them, write the cursor.
+- On subsequent runs: fetch PRs with `merged_at > last_indexed_merged_at` only — stop paginating as soon as a page contains no newer PRs.
+- After all new PRs are upserted: atomically write the updated JSON (write to a `.tmp` file, then rename) so a crash mid-write cannot corrupt the cursor.
+- Each workspace deployment has its own process and filesystem, so multi-workspace isolation is free.
 
 ### Change 3 — PR indexer module
 
@@ -105,7 +104,7 @@ class PrIndexer:
      }
      ```
 
-4. **Advance cursor** — write updated `last_indexed_merged_at` (max `merged_at` seen) and `indexed_pr_count` to `pr_index_state.json`, then commit and push.
+4. **Advance cursor** — write updated `last_indexed_merged_at` (max `merged_at` seen) and `indexed_pr_count` to `pr_index_state.json` atomically (write to `.tmp`, rename). No git commit.
 
 5. **Return** count of newly indexed PRs. Log at INFO level.
 
@@ -154,7 +153,7 @@ The `rag_query` handler in `rag_server/server.py` already passes `source_types` 
 | Repo | File | Change |
 |---|---|---|
 | `rag-service` | `services/shared/schema.py` | Add `"pr_description"` to `VALID_SOURCE_TYPES` |
-| `rag-service` | `services/indexer/pr_index_state.json` | New — file-based cursor tracking `last_indexed_merged_at` per repo |
+| `rag-service` | `services/indexer/pr_index_state.json` | Runtime file (not committed) — cursor tracking `last_indexed_merged_at` per repo; Docker volume-mount to persist across restarts |
 | `rag-service` | `services/indexer/pr_indexer.py` | New — GitHub API PR fetch + embed + upsert + cursor advance |
 | `rag-service` | `services/indexer/branch_parser.py` | New — branch name → `feature_id` / `task_id` |
 | `rag-service` | `services/indexer/indexer.py` | Wire `PrIndexer` into poll loop |
