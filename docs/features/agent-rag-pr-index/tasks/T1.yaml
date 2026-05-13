@@ -25,6 +25,17 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-13T07:57:34.934Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-13T07:57:47.790Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-rag-pr-index/technical-design.md,
+      docs/features/agent-rag-pr-index/product-spec.md,
+      docs/features/agent-rag-pr-index/technical-design.md"
+    rag_query: PR indexer — schema, cursor, fetcher, branch parser, poll-loop wiring
+      agent-rag-pr-index
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/224
   status: open
