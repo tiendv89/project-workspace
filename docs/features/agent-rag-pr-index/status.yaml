@@ -1,40 +1,39 @@
 feature_id: agent-rag-pr-index
-title: RAG PR index — index merged PR titles and descriptions as a queryable source type
-
+title: RAG PR index — index merged PR titles and descriptions as a queryable
+  source type
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: T1 is ready — agent may claim and begin implementation.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T07:30:07Z"
+    reviewed_at: 2026-05-13T07:30:07Z
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T07:30:07Z"
+        reviewed_at: 2026-05-13T07:30:07Z
         review_comment: null
   technical_design:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T07:47:27Z"
+    reviewed_at: 2026-05-13T07:47:27Z
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T07:47:27Z"
+        reviewed_at: 2026-05-13T07:47:27Z
         review_comment: null
   tasks:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T07:51:36Z"
+    reviewed_at: 2026-05-13T07:51:36Z
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T07:51:36Z"
+        reviewed_at: 2026-05-13T07:51:36Z
         review_comment: null
   handoff:
     review_status: draft
@@ -42,11 +41,11 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history: []
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/agent-rag-pr-index
+feature_branch_base_sha: 6ecdd3bcf17fc9ecd23014bfffa60b02fa9405fd
