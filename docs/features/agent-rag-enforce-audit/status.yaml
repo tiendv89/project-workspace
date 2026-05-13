@@ -1,8 +1,8 @@
 feature_id: agent-rag-enforce-audit
 title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and
   GitNexus-first lookups
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Tasks approved. T2 is ready for execution. T1 unblocks after T2 is done.
 stages:
   product_spec:
@@ -41,6 +41,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/220
 history:
   - stage: product_spec
     action: approved
@@ -67,3 +68,8 @@ revalidation:
 feature_branch: feature/agent-rag-enforce-audit
 feature_branch_base_sha: 68808dad949e1c5d6ed0ad715facbc98ea4f7129
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/216
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/220
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/144
+    status: open
