@@ -2,15 +2,15 @@
 
 ## Feature
 - Feature ID: `agent-rag-enforce-audit`
-- Title: RAG & GitNexus enforce + audit — hook-based enforcement and tamper-proof mid-task query logging
+- Title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and GitNexus-first lookups
 
 ## Current State
 
 | Component | Behaviour today |
 |---|---|
 | Pre-inject RAG | Orchestrator calls `rag_query` before spawn; result injected into system prompt as `## RAG Context`; `rag_pre_flight` log entry written to task YAML ✓ |
-| Mid-task RAG | `mcp__rag-server__rag_query` tool available in executor's tool list; no instruction enforcement; no audit trail ✗ |
-| Mid-task GitNexus | `mcp__gitnexus__*` tools available; CLAUDE.md rule present but not enforced; no audit trail ✗ |
+| Mid-task RAG | `mcp__rag-server__rag_query` tool available in executor's tool list; no instruction enforcement ✗ |
+| Mid-task GitNexus | `mcp__gitnexus__*` tools available; CLAUDE.md rule present but not enforced ✗ |
 | `~/.claude/settings.json` | Not written by executor; no hooks configured ✗ |
 | `~/.claude/CLAUDE.md` | Written by `copyWorkspaceClaude` in `runtime/executors/claude/src/index.ts` ✓ |
 | `~/.claude/skills/` | Written by `setupGlobalSkills` in `runtime/executors/claude/src/index.ts` ✓ |
@@ -19,8 +19,6 @@
 
 1. Hook scripts must degrade gracefully — if RAG/GitNexus is unreachable, the original tool call must proceed unblocked.
 2. The source of truth for `~/.claude/settings.json` must be git-tracked.
-3. Server-side query logs must not require schema changes to the existing Qdrant collection.
-4. Audit summary must be written by the orchestrator, not the executor — the executor must not make management-repo mutations.
 
 ## Design
 
@@ -141,50 +139,6 @@ Git-tracked source of truth for hook configuration:
 }
 ```
 
-### Change 4 — Server-side query logging (rag-service)
-
-**File:** `rag_service/services/rag_server/server.py` (or equivalent FastMCP entry point)
-
-Add a middleware / decorator on the `rag_query` handler that appends a line to a per-workspace JSONL log:
-
-```
-~/.claude/rag-audit/<workspace_id>.jsonl
-```
-
-Each line:
-
-```json
-{
-  "ts": "2026-05-13T01:23:45+07:00",
-  "workspace_id": "workspace",
-  "query": "runOneCycle decomposition",
-  "source_types": ["technical_design"],
-  "top_k": 5,
-  "result_count": 5,
-  "top_score": 0.778,
-  "duration_ms": 42
-}
-```
-
-The log path is accessible to the orchestrator after the executor exits (shared filesystem in local-subprocess and local-docker profiles).
-
-### Change 5 — `rag_mid_task_summary` orchestrator step
-
-After the executor exits and before `result.json` is processed, the orchestrator reads the server-side query log for the task's execution window (entries between `started_at` and `finished_at` timestamps).
-
-It writes a `rag_mid_task_summary` log entry to the task YAML:
-
-```yaml
-- action: rag_mid_task_summary
-  by: orchestrator
-  at: <timestamp>
-  rag_calls: 7
-  gitnexus_calls: 3
-  avg_rag_score: 0.74
-  zero_result_queries: 1
-  note: "7 mid-task RAG calls, 3 GitNexus calls. 1 query returned no results."
-```
-
 ## Files changed
 
 | Repo | File | Change |
@@ -193,17 +147,12 @@ It writes a `rag_mid_task_summary` log entry to the task YAML:
 | `workflow` | `templates/claude-settings.json` | New — hook configuration source of truth |
 | `workflow` | `technical_skills/rag-enforce/rag-prefetch` | New — RAG hook script |
 | `workflow` | `technical_skills/rag-enforce/gitnexus-prefetch` | New — GitNexus hook script |
-| `workflow` | `runtime/orchestrator/src/main.ts` | Add `rag_mid_task_summary` step after executor exit |
-| `rag-service` | `services/rag_server/server.py` | Add query logging middleware |
 
 ## Parallelization
 
 ```
 T1 — setupGlobalSettings + claude-settings.json template (workflow)   independent
 T2 — rag-prefetch + gitnexus-prefetch hook scripts (workflow)         independent
-T3 — rag_mid_task_summary orchestrator step (workflow)                independent
-T4 — RAG server query logging (rag-service)                           independent
-```
 
-All four tasks are independent and can run in parallel.
-T3 depends on T4 having a log to read, but can be developed against a stub log for testing.
+T1 and T2 run in parallel. Both can begin now — no blockers.
+```
