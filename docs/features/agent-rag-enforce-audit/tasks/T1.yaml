@@ -1,7 +1,7 @@
 id: T1
 title: setupGlobalSettings + claude-settings.json template
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T2
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/agent-rag-enforce-audit-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-13T04:17:47+0000
+  last_updated_at: 2026-05-13T04:30:18.772Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/143
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
