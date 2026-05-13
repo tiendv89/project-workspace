@@ -1,40 +1,39 @@
 feature_id: agent-rag-enforce-audit
-title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and GitNexus-first lookups
-
+title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and
+  GitNexus-first lookups
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: Tasks approved. T2 is ready for execution. T1 unblocks after T2 is done.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T10:44:05+0700"
+    reviewed_at: 2026-05-13T10:44:05+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T10:44:05+0700"
+        reviewed_at: 2026-05-13T10:44:05+0700
         review_comment: null
   technical_design:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T10:48:48+0700"
+    reviewed_at: 2026-05-13T10:48:48+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T10:48:48+0700"
+        reviewed_at: 2026-05-13T10:48:48+0700
         review_comment: null
   tasks:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-13T10:51:45+0700"
+    reviewed_at: 2026-05-13T10:51:45+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
-        reviewed_at: "2026-05-13T10:51:45+0700"
+        reviewed_at: 2026-05-13T10:51:45+0700
         review_comment: null
   handoff:
     review_status: draft
@@ -42,26 +41,28 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - stage: product_spec
     action: approved
     by: tiendv.52@gmai.com
-    at: "2026-05-13T10:44:05+0700"
-    note: Product spec approved. Feature scoped to hook enforcement only — mid-task audit removed.
+    at: 2026-05-13T10:44:05+0700
+    note: Product spec approved. Feature scoped to hook enforcement only — mid-task
+      audit removed.
   - stage: technical_design
     action: approved
     by: tiendv.52@gmai.com
-    at: "2026-05-13T10:48:48+0700"
+    at: 2026-05-13T10:48:48+0700
     note: Technical design approved. Two parallel tasks in workflow repo only.
   - stage: tasks
     action: approved
     by: tiendv.52@gmai.com
-    at: "2026-05-13T10:51:45+0700"
-    note: Tasks approved. T2 activated to ready; T1 remains todo pending T2 completion.
-
+    at: 2026-05-13T10:51:45+0700
+    note: Tasks approved. T2 activated to ready; T1 remains todo pending T2
+      completion.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/agent-rag-enforce-audit
+feature_branch_base_sha: 68808dad949e1c5d6ed0ad715facbc98ea4f7129
