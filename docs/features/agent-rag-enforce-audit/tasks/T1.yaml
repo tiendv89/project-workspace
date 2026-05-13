@@ -1,19 +1,24 @@
 id: T1
 title: setupGlobalSettings + claude-settings.json template
 repo: workflow
-status: todo
-depends_on: [T2]
+status: ready
+depends_on:
+  - T2
 blocked_reason: null
 branch: feature/agent-rag-enforce-audit-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-13T10:50:27+0700"
+  last_updated_at: 2026-05-13T10:50:27+0700
 pr:
   url: null
   status: null
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-13T10:50:27+0700"
+    at: 2026-05-13T10:50:27+0700
     note: Task created during tech-lead Phase 2 breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-13T04:13:54.075Z
+    note: Task activated — dependency T2 merged and marked done.
