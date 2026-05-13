@@ -1,8 +1,8 @@
 feature_id: agent-rag-pr-index
 title: RAG PR index — index merged PR titles and descriptions as a queryable
   source type
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: T1 is ready — agent may claim and begin implementation.
 stages:
   product_spec:
@@ -41,6 +41,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/225
 history: []
 revalidation:
   product_spec_required: false
@@ -50,3 +51,5 @@ revalidation:
 feature_branch: feature/agent-rag-pr-index
 feature_branch_base_sha: 6ecdd3bcf17fc9ecd23014bfffa60b02fa9405fd
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/223
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/225
+impl_feature_prs: []
