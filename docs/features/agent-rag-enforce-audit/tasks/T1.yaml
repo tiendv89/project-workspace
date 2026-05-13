@@ -26,6 +26,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-13T04:15:19.782Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-13T04:15:32.278Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-rag-enforce-audit/tasks/tasks.md,
+      docs/features/agent-rag-enforce-audit/technical-design.md,
+      docs/features/agent-rag-enforce-audit/technical-design.md"
+    rag_query: setupGlobalSettings + claude-settings.json template agent-rag-enforce-audit
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/219
   status: open
