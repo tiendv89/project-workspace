@@ -1,8 +1,8 @@
 feature_id: agent-rag-pr-index
 title: RAG PR index — index merged PR titles and descriptions as a queryable
   source type
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: T1 is ready — agent may claim and begin implementation.
 stages:
   product_spec:
