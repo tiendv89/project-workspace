@@ -49,3 +49,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/agent-rag-pr-index
 feature_branch_base_sha: 6ecdd3bcf17fc9ecd23014bfffa60b02fa9405fd
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/223
