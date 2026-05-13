@@ -1,7 +1,7 @@
 id: T2
 title: rag-prefetch + gitnexus-prefetch hook scripts
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/agent-rag-enforce-audit-T2
@@ -17,3 +17,7 @@ log:
     by: tiendv.52@gmai.com
     at: "2026-05-13T10:50:27+0700"
     note: Task created during tech-lead Phase 2 breakdown.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: "2026-05-13T03:51:45Z"
+    note: Task activated on tasks-stage approval — dependencies met.

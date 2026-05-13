@@ -1,9 +1,9 @@
 feature_id: agent-rag-enforce-audit
 title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and GitNexus-first lookups
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Run tech-lead Phase 2 to produce task breakdown, then submit for approval.
+next_action: Tasks approved. T2 is ready for execution. T1 unblocks after T2 is done.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         reviewed_at: "2026-05-13T10:48:48+0700"
         review_comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-13T10:51:45+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: "2026-05-13T10:51:45+0700"
+        review_comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -50,6 +54,11 @@ history:
     by: tiendv.52@gmai.com
     at: "2026-05-13T10:48:48+0700"
     note: Technical design approved. Two parallel tasks in workflow repo only.
+  - stage: tasks
+    action: approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-13T10:51:45+0700"
+    note: Tasks approved. T2 activated to ready; T1 remains todo pending T2 completion.
 
 revalidation:
   product_spec_required: false
