@@ -1,7 +1,7 @@
 id: T1
 title: PR indexer — schema, cursor, fetcher, branch parser, poll-loop wiring
 repo: rag-service
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/agent-rag-pr-index-T1
@@ -17,3 +17,7 @@ log:
     by: tiendv.52@gmai.com
     at: "2026-05-13T07:49:45Z"
     note: Task created during tech-lead task breakdown.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: "2026-05-13T07:51:36Z"
+    note: Task activated on tasks-stage approval — dependencies met.
