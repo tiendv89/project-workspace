@@ -1,17 +1,21 @@
 feature_id: agent-rag-enforce-audit
-title: RAG & GitNexus enforce + audit — hook-based enforcement and tamper-proof mid-task query logging
+title: RAG & GitNexus enforce — hook-based enforcement for RAG-first and GitNexus-first lookups
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design to proceed to task breakdown.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-13T10:44:05+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: "2026-05-13T10:44:05+0700"
+        review_comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +35,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - stage: product_spec
+    action: approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-13T10:44:05+0700"
+    note: Product spec approved. Feature scoped to hook enforcement only — mid-task audit removed.
 
 revalidation:
   product_spec_required: false
