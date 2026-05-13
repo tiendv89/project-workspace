@@ -1,17 +1,17 @@
 id: T1
 title: PR indexer — schema, cursor, fetcher, branch parser, poll-loop wiring
 repo: rag-service
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/agent-rag-pr-index-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-13T09:19:39.029Z
+  last_updated_at: 2026-05-13T09:25:42.350Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/13
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -61,6 +61,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-13T09:19:39.029Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-13T09:25:42.350Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/224
   status: open
