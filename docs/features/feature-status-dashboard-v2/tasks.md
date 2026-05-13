@@ -92,8 +92,7 @@ Implements the root layout shell: sidebar navigation, top header bar, WorkspaceC
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Dashboard frame (sidebar + header layout): https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-2
@@ -120,8 +119,7 @@ Implements the Workspace Picker — the full-page grid that renders on first vis
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Dashboard frame (first-load / workspace picker state): https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-2
@@ -146,8 +144,7 @@ Implements the main Dashboard: workspace-level stat cards (total features, in_pr
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Dashboard: https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-2
@@ -172,8 +169,7 @@ Implements the `/features` page: a filterable table of all features in the activ
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Features: https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-574
@@ -199,8 +195,7 @@ Implements the `/features/[featureId]` page: a stage stepper showing current lif
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Feature Detail: https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-2141
@@ -227,8 +222,7 @@ Implements the New Feature modal: a form for feature name, auto-generated ID slu
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - New Feature Modal: https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-1770
@@ -254,8 +248,7 @@ Implements the `/tasks` page: a Kanban board with one column per task status (to
 - nextjs-best-practices
 - heroui-react
 - typescript-best-practices
-- `figma-mcp`
-- `figma:figma-implement-design`
+- figma-mcp
 
 ### Figma
 - Task Board: https://www.figma.com/design/qYFglR3hJRmB8VuAPt5Rjs/Agent-Workspace-design?node-id=2-825
