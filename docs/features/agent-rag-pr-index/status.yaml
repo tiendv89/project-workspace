@@ -1,17 +1,21 @@
 feature_id: agent-rag-pr-index
 title: RAG PR index — index merged PR titles and descriptions as a queryable source type
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Approve the technical design to unlock task breakdown.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-13T07:30:07Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: "2026-05-13T07:30:07Z"
+        review_comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
