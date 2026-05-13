@@ -23,6 +23,7 @@ PR descriptions are not files on disk — they exist only via the GitHub REST AP
 2. `GITHUB_TOKEN` is optional — absence must not crash the indexer.
 3. No changes to the `rag_query` MCP tool contract.
 4. PR indexing must not slow the existing file-based poll cycle — run as a separate pass.
+5. Cursor state must not live in Qdrant — querying Qdrant for all indexed PR numbers on every poll is expensive at scale and loses state if the collection is rebuilt. Use a file-based cursor instead.
 
 ## Design
 
@@ -38,7 +39,31 @@ VALID_SOURCE_TYPES = frozenset({
 })
 ```
 
-### Change 2 — PR indexer module
+### Change 2 — File-based cursor (`pr_index_state.json`)
+
+**Runtime file:** `services/indexer/pr_index_state.json`
+
+This file is **not committed to git**. It is operational state written and read by the running indexer process:
+
+- **Locally:** lives on the host filesystem next to the indexer module.
+- **Docker:** mount a named volume to the directory containing this file so state survives container restarts.
+- **Cold start / missing file:** treated as no prior indexing — all merged PRs are fetched and indexed from scratch. This is safe because upsert is idempotent; the only cost is re-embedding on the first run.
+
+```json
+{
+  "owner/repo-name": {
+    "last_indexed_merged_at": "2026-05-10T12:00:00Z",
+    "indexed_pr_count": 147
+  }
+}
+```
+
+- On first run (no entry for repo): fetch all merged PRs oldest-first, index them, write the cursor.
+- On subsequent runs: fetch PRs with `merged_at > last_indexed_merged_at` only — stop paginating as soon as a page contains no newer PRs.
+- After all new PRs are upserted: atomically write the updated JSON (write to a `.tmp` file, then rename) so a crash mid-write cannot corrupt the cursor.
+- Each workspace deployment has its own process and filesystem, so multi-workspace isolation is free.
+
+### Change 3 — PR indexer module
 
 **New file:** `services/indexer/pr_indexer.py`
 
@@ -46,20 +71,20 @@ Responsible for fetching and indexing merged PRs for a single repo.
 
 ```python
 class PrIndexer:
-    def __init__(self, github_token: str, qdrant_client, embedder, workspace_id: str): ...
+    def __init__(self, github_token: str, qdrant_client, embedder, workspace_id: str, state_path: str): ...
 
     def index_repo_prs(self, repo_full_name: str, repo_id: str) -> int:
-        """Fetch merged PRs not yet indexed; embed and upsert. Returns count of new PRs indexed."""
+        """Fetch merged PRs newer than cursor; embed, upsert, advance cursor. Returns count indexed."""
         ...
 ```
 
 **Algorithm:**
 
-1. **Fetch already-indexed PR numbers** from Qdrant — query points where `source_type == "pr_description"` and `repo_id == repo_id`; collect the `pr_number` payload field.
+1. **Read cursor** from `pr_index_state.json` — load `last_indexed_merged_at` for `repo_full_name`. Default to `None` if no entry exists.
 
-2. **Fetch merged PRs from GitHub API** — `GET /repos/{owner}/{repo}/pulls?state=closed&sort=updated&direction=desc&per_page=100`. Filter to `merged_at is not null`. Stop paginating when all results are already indexed.
+2. **Fetch merged PRs from GitHub API** — `GET /repos/{owner}/{repo}/pulls?state=closed&sort=updated&direction=asc&per_page=100`. Filter to `merged_at is not null`. If cursor is set, stop paginating when `merged_at <= last_indexed_merged_at`.
 
-3. **For each new PR:**
+3. **For each new PR (oldest first):**
    - Build document: `# {title}\n\n{body}`
    - Extract `feature_id` and `task_id` from branch name (`feature/<feature_id>-T<n>` pattern; null if no match)
    - Chunk: whole document if ≤ 1024 tokens; otherwise 512-token chunks with 50-token overlap
@@ -79,9 +104,11 @@ class PrIndexer:
      }
      ```
 
-4. **Return** count of newly indexed PRs. Log at INFO level.
+4. **Advance cursor** — write updated `last_indexed_merged_at` (max `merged_at` seen) and `indexed_pr_count` to `pr_index_state.json` atomically (write to `.tmp`, rename). No git commit.
 
-### Change 3 — Wire into main indexer poll loop
+5. **Return** count of newly indexed PRs. Log at INFO level.
+
+### Change 4 — Wire into main indexer poll loop
 
 **File:** `services/indexer/indexer.py` (or equivalent entry point)
 
@@ -90,7 +117,8 @@ After the existing file-based poll for each repo, call the PR indexer if `GITHUB
 ```python
 github_token = os.environ.get("GITHUB_TOKEN")
 if github_token:
-    pr_indexer = PrIndexer(github_token, qdrant_client, embedder, workspace_id)
+    state_path = os.path.join(os.path.dirname(__file__), "pr_index_state.json")
+    pr_indexer = PrIndexer(github_token, qdrant_client, embedder, workspace_id, state_path)
     for repo in workspace_repos:
         count = pr_indexer.index_repo_prs(repo["github"], repo["id"])
         if count > 0:
@@ -99,7 +127,7 @@ else:
     logger.warning("GITHUB_TOKEN not set — PR indexing skipped")
 ```
 
-### Change 4 — `feature_id` / `task_id` branch name parser
+### Change 5 — `feature_id` / `task_id` branch name parser
 
 **New file:** `services/indexer/branch_parser.py`
 
@@ -116,7 +144,7 @@ def parse_branch(branch_name: str) -> tuple[str | None, str | None]:
     return m.group("feature_id"), m.group("task_id")
 ```
 
-### Change 5 — `rag_query` filter passthrough (no-op)
+### Change 6 — `rag_query` filter passthrough (no-op)
 
 The `rag_query` handler in `rag_server/server.py` already passes `source_types` as a Qdrant filter. Adding `"pr_description"` to `VALID_SOURCE_TYPES` is sufficient — no handler changes needed.
 
@@ -125,11 +153,12 @@ The `rag_query` handler in `rag_server/server.py` already passes `source_types` 
 | Repo | File | Change |
 |---|---|---|
 | `rag-service` | `services/shared/schema.py` | Add `"pr_description"` to `VALID_SOURCE_TYPES` |
-| `rag-service` | `services/indexer/pr_indexer.py` | New — GitHub API PR fetch + embed + upsert |
+| `rag-service` | `services/indexer/pr_index_state.json` | Runtime file (not committed) — cursor tracking `last_indexed_merged_at` per repo; Docker volume-mount to persist across restarts |
+| `rag-service` | `services/indexer/pr_indexer.py` | New — GitHub API PR fetch + embed + upsert + cursor advance |
 | `rag-service` | `services/indexer/branch_parser.py` | New — branch name → `feature_id` / `task_id` |
 | `rag-service` | `services/indexer/indexer.py` | Wire `PrIndexer` into poll loop |
 
-One repo, four files. All changes are additive — no existing indexing behaviour changes.
+One repo, five files. All changes are additive — no existing indexing behaviour changes.
 
 ## Parallelization
 
