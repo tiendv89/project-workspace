@@ -1,7 +1,7 @@
 id: T3
 title: Adapters — remove BRIEFING_PATH env
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/executor-self-briefing-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T11:01:59+0000
+  last_updated_at: 2026-05-14T11:34:59.934Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/155
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
