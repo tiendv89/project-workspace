@@ -11,7 +11,7 @@ branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T17:58:22.779Z
+  last_updated_at: 2026-05-14T17:58:32.197Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
   status: open
@@ -103,6 +103,13 @@ log:
       docs/features/executor-self-briefing/technical-design.md"
     rag_query: Tests — delete, update, and add executor-self-briefing
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: max_turns_exceeded
+    token_usage:
+      input: 0
+      output: 0
+    at: 2026-05-14T17:58:32.197Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
