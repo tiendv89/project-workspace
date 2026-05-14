@@ -1,40 +1,38 @@
 feature_id: executor-self-briefing
-title: "Executor-owned briefing — move prompt construction out of the orchestrator"
-
+title: Executor-owned briefing — move prompt construction out of the orchestrator
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: Wave 1 task T1 is ready. Implementation may begin.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-14T16:47:54+0700"
+    reviewed_at: 2026-05-14T16:47:54+0700
     review_comment: null
     review_history:
       - status: approved
         by: tiendv.52@gmai.com
-        at: "2026-05-14T16:47:54+0700"
+        at: 2026-05-14T16:47:54+0700
         comment: null
   technical_design:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-14T17:06:10+0700"
+    reviewed_at: 2026-05-14T17:06:10+0700
     review_comment: null
     review_history:
       - status: approved
         by: tiendv.52@gmai.com
-        at: "2026-05-14T17:06:10+0700"
+        at: 2026-05-14T17:06:10+0700
         comment: null
   tasks:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-14T17:18:42+0700"
+    reviewed_at: 2026-05-14T17:18:42+0700
     review_comment: null
     review_history:
       - status: approved
         by: tiendv.52@gmai.com
-        at: "2026-05-14T17:18:42+0700"
+        at: 2026-05-14T17:18:42+0700
         comment: null
   handoff:
     review_status: draft
@@ -42,36 +40,33 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-14T16:30:14+0700"
-    note: >-
-      Feature initiated to track the architectural refactor of moving briefing
+    at: 2026-05-14T16:30:14+0700
+    note: "Feature initiated to track the architectural refactor of moving briefing
       construction from the orchestrator into each executor implementation.
-      Triggered by volume-sharing band-aid in PR #153 of tiendv89/agent-workflow.
+      Triggered by volume-sharing band-aid in PR #153 of
+      tiendv89/agent-workflow."
   - action: product_spec_approved
     by: tiendv.52@gmai.com
-    at: "2026-05-14T16:47:54+0700"
-    note: >-
-      Product spec approved. Feature advanced to in_tdd. Tech lead to produce
+    at: 2026-05-14T16:47:54+0700
+    note: Product spec approved. Feature advanced to in_tdd. Tech lead to produce
       technical-design.md next.
   - action: technical_design_approved
     by: tiendv.52@gmai.com
-    at: "2026-05-14T17:06:10+0700"
-    note: >-
-      Technical design approved. Feature advances to task planning. Tech lead to
+    at: 2026-05-14T17:06:10+0700
+    note: Technical design approved. Feature advances to task planning. Tech lead to
       produce task breakdown under docs/features/executor-self-briefing/tasks/.
   - action: tasks_approved
     by: tiendv.52@gmai.com
-    at: "2026-05-14T17:18:42+0700"
-    note: >-
-      Tasks approved. Feature advanced to ready_for_implementation. T1 activated
+    at: 2026-05-14T17:18:42+0700
+    note: Tasks approved. Feature advanced to ready_for_implementation. T1 activated
       (no dependencies). T2, T3, T4 remain todo pending T1 completion.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/executor-self-briefing
+feature_branch_base_sha: 7ce4b0ce9781bb64924c96d86eb82261d47a577a
