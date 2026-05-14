@@ -1,0 +1,20 @@
+id: T5
+title: Frontend API client and workspace shell integration
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T4
+blocked_reason: null
+branch: feature/workspace-tabs-data-flow-T5
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-14T19:09:09+07:00
+pr:
+  url: null
+  status: null
+log:
+  - action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:25:49+07:00
+    note: Task revised for frontend API client and workspace shell consuming backend workspace payloads.

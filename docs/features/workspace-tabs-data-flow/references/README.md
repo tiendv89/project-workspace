@@ -49,9 +49,3 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2689&m=dev
 
 ![Task tab](<task tab.png>)
-
-## Agent chat - full screen
-
-Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2859&m=dev
-
-![Agent chat - full screen](<agent chat - full screen.png>)

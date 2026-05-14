@@ -2,12 +2,12 @@
 
 ## Feature
 
-- Feature ID: `workspace-tabs-chat`
-- Title: `Workspace Tabs, Work Item Tabs, and Agent Chat`
+- Feature ID: `workspace-tabs-data-flow`
+- Title: `Workspace Tabs and End-to-End Workspace Data Flow`
 
 ## References
 
-Visual references are stored in `docs/features/workspace-tabs-chat/references/`. Each linked Figma frame is the source of truth for its surface, and the screenshot is shown inline for direct review.
+Visual references are stored in `docs/features/workspace-tabs-data-flow/references/`. The workspace, feature, and task tab references are the visual source for the user-facing surfaces.
 
 ### Workspace dropdown
 
@@ -57,39 +57,70 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ![Task tab](<references/task tab.png>)
 
-### Agent chat - full screen
-
-Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2859&m=dev
-
-![Agent chat - full screen](<references/agent chat - full screen.png>)
-
 ## Problem
 
-Users need to move between the workspace board, saved workspaces, task sessions, feature sessions, and scoped agent conversations without losing context. Today these flows are easy to confuse because quick detail views, persistent work sessions, workspace switching, and chat scope are not separated clearly enough.
+Users need workspace, feature, and task tabs to show real workflow state without reading raw repository files.
 
-This feature defines the product-level user journeys for workspace tabs, task tabs, feature tabs, and task/feature-scoped agent chat. Technical layout details, data models, persistence keys, event handling, accessibility roles, and API payloads should be handled later in technical design.
+The feature now needs an end-to-end data path:
+
+```text
+GitHub workspace repo ----\
+                          -> source adapters -> backend API -> UI
+Database workspace cache -/
+```
+
+GitHub and database records can have different shapes, freshness, and failure modes. The UI should not know those source-specific details. It should consume a stable backend contract that normalizes workspace, feature, task, document, pull request, and activity data.
 
 ## Goals
 
-- Make the workspace tab the clear way to return to the current workspace board.
-- Let users switch between saved workspaces from the workspace tab.
-- Let users import a new workspace from a repository.
+- Keep the workspace tab as the way back to the current workspace board.
+- Let users switch between saved workspaces loaded from backend data.
+- Let users import or sync a workspace from a GitHub repository.
+- Normalize GitHub and database-backed workspace data through adapters before it reaches UI components.
+- Let the backend expose stable workspace, feature, task, document, and activity APIs.
+- Let the UI render workspace board, feature tabs, and task tabs from backend payloads only.
 - Let users inspect tasks and features quickly without opening persistent sessions.
 - Let users open persistent task and feature tabs when they want deeper work context.
 - Keep task and feature tab behavior predictable across single click, double click, and context menu actions.
 - Keep the board sidebar limited to the workspace board, not task or feature tabs.
-- Let users read task and feature context inside their respective work item tabs.
-- Let users open agent chat only from task or feature context.
-- Let users start new scoped chats, choose a model, mention workflow skills, paste images, resize chat, and close or reopen chat.
-- Let users send scoped agent chat messages and see agent conversation results within the current task or feature context.
+- Show loading, empty, stale, and source-error states clearly when GitHub, database, or adapter reads fail.
 
 ## Non-goals
 
-- No workspace-level agent chat detached from a task or feature.
+- No agent, chat, model selector, composer, skill mention, image attachment, conversation persistence, or LLM surface.
 - No workflow lifecycle, approval gate, task status, or task YAML ownership changes.
-- No broad dashboard redesign outside workspace tabs, work item tabs, and scoped chat.
-- No implementation detail such as exact routes, event handlers, storage keys, payload schema, component layout values, or accessibility role definitions in this product spec.
+- No direct GitHub file parsing inside frontend UI components.
+- No frontend-only source of truth for imported workspace data.
+- No broad dashboard redesign outside workspace switching, work item tabs, source-backed detail views, and end-to-end data loading.
 - No `deployment-checklist.md` at this stage.
+
+## Source Model
+
+### GitHub source
+
+The GitHub source is an imported workflow repository. It contains feature folders, `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and `tasks/T*.yaml` files.
+
+GitHub reads are used for import, manual refresh, and source resync. The user should see clear errors for inaccessible repositories, invalid repository URLs, missing required files, invalid YAML, rate limits, and network failures.
+
+### Database source
+
+The database source stores saved workspaces and backend-owned cached workspace snapshots. It lets returning users open known workspaces without re-entering repository data every time.
+
+Database reads are used for workspace list, workspace detail, cached feature/task state, and fallback display when a fresh GitHub sync is not available.
+
+### Source adapters
+
+Adapters normalize GitHub and database data into the same backend DTOs. Source-specific parsing, fallback, freshness, and validation should stay behind this boundary.
+
+Adapter output must include enough source status for the UI to explain where data came from, whether it is fresh, stale, partially loaded, or unavailable.
+
+### Backend API
+
+The backend owns import, sync, cache reads, source normalization, and error mapping. It exposes the only data contract used by the UI.
+
+### UI
+
+The UI renders workspace, feature, and task surfaces from backend payloads. It should not parse GitHub archives, raw YAML, or database-specific records directly.
 
 ## User Journey
 
@@ -103,36 +134,37 @@ This feature defines the product-level user journeys for workspace tabs, task ta
 
 Expected result: the user can get back to the board quickly without closing open work item tabs.
 
-### Journey 2 - Open the workspace switcher
+### Journey 2 - Load saved workspaces
+
+1. The user opens the dashboard.
+2. The UI asks the backend for saved workspaces.
+3. The backend reads database-backed workspace records through the database adapter.
+4. The UI shows the saved workspace list and marks the active workspace when one exists.
+
+Expected result: saved workspaces load from backend state, not hardcoded frontend fixtures.
+
+### Journey 3 - Open the workspace switcher
 
 1. The user is on the dashboard with a workspace selected.
-2. The user opens the workspace switcher from the workspace tab.
+2. The user opens the workspace switcher from the workspace tab control.
 3. The app shows saved workspaces and a way to search them.
 4. The active workspace is clearly marked.
-5. The user can either choose a saved workspace or start importing a new one.
+5. The user can choose a saved workspace or start importing a new one.
 
 Expected result: the user understands where they are and can move to another workspace from the same header area.
 
-### Journey 3 - Search and select a saved workspace
+### Journey 4 - Search and select a saved workspace
 
 1. The user opens the workspace switcher.
 2. The user searches for a workspace.
 3. The app filters the saved workspace list.
 4. If there is no match, the app shows an empty state.
 5. The user selects a workspace from the results.
-6. The app switches to that workspace and returns to the board view.
-7. Task and feature tabs from the previous workspace are not shown in the newly selected workspace.
+6. The app asks the backend for that workspace detail.
+7. The app switches to that workspace and returns to the board view.
+8. Task and feature tabs from the previous workspace are not shown in the newly selected workspace.
 
 Expected result: workspace switching is fast and does not leak tabs or context from another workspace.
-
-### Journey 4 - Close the workspace switcher
-
-1. The workspace switcher is open.
-2. The user clicks outside it or dismisses it.
-3. The switcher closes.
-4. The active workspace does not change.
-
-Expected result: the user can back out of workspace switching without side effects.
 
 ### Journey 5 - Start importing a workspace
 
@@ -145,23 +177,26 @@ Expected result: importing a workspace is reachable from the same place users ma
 
 ### Journey 6 - Submit an imported workspace
 
-1. The user provides the repository information needed to create a workspace.
+1. The user provides repository information needed to import a workspace.
 2. The user provides access credentials when needed.
 3. The user submits the form.
-4. If the import succeeds, the app adds the workspace to the saved workspace list.
-5. The user can switch to the imported workspace from the workspace switcher.
+4. The UI sends the import request to the backend.
+5. The backend reads GitHub through the GitHub adapter.
+6. The adapter normalizes feature, task, document, pull request, and activity data.
+7. The backend stores a database snapshot for later reuse.
+8. The app adds the workspace to the saved workspace list and opens it.
 
-Expected result: the new workspace becomes available without requiring the user to restart the dashboard.
+Expected result: GitHub import creates a usable backend-backed workspace without requiring the UI to parse repository files.
 
-### Journey 7 - Handle import failure
+### Journey 7 - Handle import or sync failure
 
-1. The user submits the import form.
-2. The import fails because the repository cannot be used or accessed.
-3. The modal stays open.
-4. The app shows a clear error.
-5. The user edits the input and tries again.
+1. The user submits import or refresh.
+2. GitHub, database, or adapter validation fails.
+3. The UI keeps the current page stable.
+4. The app shows a source-specific but user-readable error.
+5. The user edits the input or retries.
 
-Expected result: the user can recover from import errors without losing form context.
+Expected result: users can recover from source failures without losing the current workspace state.
 
 ### Journey 8 - Cancel workspace import
 
@@ -172,27 +207,39 @@ Expected result: the user can recover from import errors without losing form con
 
 Expected result: cancelling import does not change the current workspace.
 
-### Journey 9 - Inspect a task quickly from the board
+### Journey 9 - Refresh workspace data
+
+1. The user is viewing a workspace.
+2. The user triggers refresh or the app performs a supported sync.
+3. The backend asks the GitHub adapter for a fresh snapshot.
+4. The backend updates the database cache if the sync succeeds.
+5. The UI updates board, task tab, and feature tab data from the backend response.
+6. If sync fails but cached data exists, the UI keeps cached data visible and marks it stale.
+
+Expected result: the user can see updated source data while retaining a usable cached workspace when refresh fails.
+
+### Journey 10 - Inspect a task quickly from the board
 
 1. The user is on the workspace board in task-oriented mode.
 2. The user single-clicks a task.
-3. The app opens a quick task detail view.
+3. The app opens a quick task detail view from backend task data.
 4. The user reviews the task at a glance.
 5. The user closes the quick view and remains on the board.
 
 Expected result: the user can inspect a task quickly without creating a persistent tab.
 
-### Journey 10 - Open a task tab from the board
+### Journey 11 - Open a task tab from the board
 
 1. The user is on the workspace board.
 2. The user double-clicks a task.
 3. The app opens a task tab for that task.
 4. If the task tab already exists, the app focuses the existing tab.
-5. The user can return to the board by clicking the workspace tab.
+5. The task tab requests or reuses backend task detail data.
+6. The user can return to the board by clicking the workspace tab.
 
-Expected result: double click starts or restores a persistent task work session.
+Expected result: double click starts or restores a persistent task work session backed by real task data.
 
-### Journey 11 - Open a task tab from a context menu
+### Journey 12 - Open a task tab from a context menu
 
 1. The user opens the context menu for a task.
 2. The user chooses the action to open the task in a new tab.
@@ -201,35 +248,35 @@ Expected result: double click starts or restores a persistent task work session.
 
 Expected result: users have an explicit context-menu path for opening a task work session.
 
-### Journey 12 - Use task items from the sidebar
+### Journey 13 - Use task items from the sidebar
 
 1. The user is on the workspace board where the sidebar is visible.
-2. The sidebar shows important task groups.
+2. The sidebar shows important task groups from backend workspace data.
 3. The user single-clicks a sidebar task item to inspect it quickly.
 4. The user double-clicks a sidebar task item to open or focus its task tab.
 5. The user can also open a task tab from the sidebar task context menu.
 
 Expected result: sidebar task items follow the same product behavior as task cards on the board.
 
-### Journey 13 - Inspect a feature quickly in Task Mode
+### Journey 14 - Inspect a feature quickly in Task Mode
 
 1. The user is viewing task-level board content.
 2. The user single-clicks a feature row.
-3. The app opens a quick feature detail view.
+3. The app opens a quick feature detail view from backend feature data.
 4. The user reviews the feature at a glance.
 5. Double-clicking the feature in this mode does not open a feature tab.
 
 Expected result: Task Mode remains focused on task work while still allowing quick feature inspection.
 
-### Journey 14 - Switch to Feature Mode
+### Journey 15 - Switch to Feature Mode
 
 1. The user changes the board to Feature Mode.
-2. The board shows feature-level content instead of task-level content.
+2. The board shows feature-level content from backend workspace data.
 3. The user scans features by their overall state.
 
 Expected result: the user can review feature-level progress without task-level noise.
 
-### Journey 15 - Open a feature tab in Feature Mode
+### Journey 16 - Open a feature tab in Feature Mode
 
 1. The user is in Feature Mode.
 2. The user single-clicks a feature to inspect it quickly.
@@ -238,43 +285,32 @@ Expected result: the user can review feature-level progress without task-level n
 
 Expected result: Feature Mode supports both quick inspection and persistent feature work sessions.
 
-### Journey 16 - Activate an existing task tab
+### Journey 17 - Activate an existing task tab
 
 1. A task tab is visible in the header.
 2. The user clicks the task tab.
 3. The task tab becomes active.
 4. The main content shows the task work session.
 5. The sidebar is hidden.
-6. If chat is open, chat follows task scope.
 
 Expected result: the user returns to the same task work session without losing task context.
 
-### Journey 17 - Read task tab content
+### Journey 18 - Read task tab content
 
 1. The user opens a task tab.
-2. The app shows the task identity and current task state.
+2. The app shows task identity and current task state from backend detail data.
 3. The user reviews task context, execution context, dependency or blocked state, related PR state, and task activity when available.
 4. Missing optional information is shown as empty or unavailable rather than breaking the view.
 
 Expected result: the user can understand the task without reading raw workflow files.
 
-### Journey 18 - Copy task identity
+### Journey 19 - Copy task identity
 
 1. The user is inside a task tab.
 2. The user copies the task identity from the task header.
 3. The app gives short feedback that the copy action succeeded.
 
-Expected result: the user can quickly reference the task in chat, issues, PRs, or documents.
-
-### Journey 19 - Open chat from a task tab
-
-1. The user is inside a task tab.
-2. The user opens agent chat.
-3. Chat opens beside the task content.
-4. Chat uses the current task as its scope.
-5. The user can ask about the task without leaving the task tab.
-
-Expected result: the user can discuss or prepare work using the current task context.
+Expected result: the user can quickly reference the task in issues, PRs, or documents.
 
 ### Journey 20 - Leave a task tab
 
@@ -291,14 +327,13 @@ Expected result: leaving a task tab preserves the most useful previous context.
 3. The feature tab becomes active.
 4. The main content shows the feature work session.
 5. The sidebar is hidden.
-6. If chat is open, chat follows feature scope.
 
 Expected result: the user returns to the same feature work session without losing feature context.
 
 ### Journey 22 - Read feature tab content
 
 1. The user opens a feature tab.
-2. The app shows the feature identity and current feature state.
+2. The app shows the feature identity and current feature state from backend detail data.
 3. The user can move between feature views such as product spec, technical design, tasks, and logs or status.
 4. Source documents are readable inside the dashboard.
 5. Feature history and task summary are visible when available.
@@ -330,19 +365,9 @@ Expected result: the user can drill down from feature context into task context 
 2. The user copies the feature identity from the feature header.
 3. The app gives short feedback that the copy action succeeded.
 
-Expected result: the user can quickly reference the feature in chat, issues, PRs, or documents.
+Expected result: the user can quickly reference the feature in issues, PRs, or documents.
 
-### Journey 26 - Open chat from a feature tab
-
-1. The user is inside a feature tab.
-2. The user opens agent chat.
-3. Chat opens beside the feature content.
-4. Chat uses the current feature as its scope.
-5. The user can ask about the active feature view without leaving the feature tab.
-
-Expected result: the user can discuss or prepare feature work using the current feature context.
-
-### Journey 27 - Close a feature tab
+### Journey 26 - Close a feature tab
 
 1. The user closes a feature tab.
 2. The feature tab is removed from the header.
@@ -351,101 +376,23 @@ Expected result: the user can discuss or prepare feature work using the current 
 
 Expected result: closing a feature tab does not unexpectedly close task work sessions or change workspace.
 
-### Journey 28 - Create a new chat in the current scope
-
-1. The user has agent chat open from a task tab or feature tab.
-2. The user chooses the plus icon for a new chat.
-3. The app starts a fresh conversation in the same task or feature scope.
-4. The current task tab or feature tab stays active.
-5. The previous conversation is no longer the active conversation.
-6. The composer is ready for the user to write a new prompt.
-7. The user can begin the new conversation without leaving the current tab or changing scope.
-
-Expected result: the user can create a new clean chat while preserving the current task or feature context.
-
-### Journey 29 - Send a chat message
-
-1. The user writes a message in scoped chat.
-2. The user sends the message.
-3. The message appears in the conversation.
-4. The conversation uses the selected model and current task or feature context.
-5. The agent result appears in the same scoped conversation.
-6. If the agent cannot respond, the user sees a clear failure state and can continue from the same chat.
-
-Expected result: the user can exchange messages with an agent without leaving the current task or feature context.
-
-### Journey 30 - Write multiline chat input
-
-1. The user writes in the chat composer.
-2. The user inserts a line break.
-3. The message remains unsent until the user explicitly sends it.
-
-Expected result: the user can write longer prompts comfortably.
-
-### Journey 31 - Resize or expand chat
-
-1. Chat is open beside a task or feature tab.
-2. The user adjusts the chat size.
-3. The active task or feature content remains accessible.
-4. The user can expand chat for more reading space.
-5. The user can return chat to the normal split view.
-
-Expected result: the user can control workspace between content and chat without losing the conversation.
-
-### Journey 32 - Choose a chat model
-
-1. The user opens the model selector in chat.
-2. The user chooses a model.
-3. The model applies to the current chat session.
-4. The user continues the conversation in the same task or feature scope.
-
-Expected result: the user can choose the model for the current scoped conversation.
-
-### Journey 33 - Mention a workflow skill
-
-1. The user is writing in chat.
-2. The user starts a workflow skill mention.
-3. The app shows matching workflow skills.
-4. The user selects a skill.
-5. The skill mention is inserted into the prompt.
-
-Expected result: the user can reference workflow skills without leaving the composer.
-
-### Journey 34 - Paste an image attachment
-
-1. The user pastes an image into chat.
-2. The app adds the image as a pending attachment.
-3. The user can remove it before sending.
-4. When the user sends the prompt, the image is included with the user message.
-
-Expected result: the user can include visual context in a scoped chat prompt.
-
-### Journey 35 - Close and reopen chat
-
-1. The user closes chat.
-2. The task or feature tab remains active.
-3. The user later opens chat again from the same task or feature.
-4. The app restores the scoped chat state when persistence is available.
-
-Expected result: closing chat removes the panel without intentionally discarding the active scoped conversation.
-
 ## Acceptance Criteria
 
 - The workspace tab returns the user from any task or feature tab to the current workspace board.
-- The workspace switcher lets the user search saved workspaces, switch workspace, and cancel without changing workspace.
-- Workspace import lets the user add a repository-backed workspace and recover from import errors.
+- The workspace switcher loads saved workspaces from the backend and supports search, switch, and cancel.
+- Workspace import sends repository input to the backend and does not parse GitHub files in the UI.
+- GitHub data and database data are normalized through source adapters before the backend returns UI payloads.
+- Backend APIs expose stable workspace list, workspace detail, feature detail, task detail, source document, task list, activity, and refresh/sync payloads.
+- The database cache supports reopening saved workspaces without a fresh GitHub import every time.
+- Sync failures keep cached data visible when available and mark the source state clearly.
 - Single-clicking a task or feature opens quick inspection rather than a persistent tab.
 - Double-clicking a task opens or focuses a task tab.
 - Double-clicking a feature opens or focuses a feature tab only in Feature Mode.
 - Task and feature context menus provide a clear path to open work item tabs where supported.
 - Sidebar task items follow the same task inspection and task tab behavior as board task cards.
-- Task tabs and feature tabs preserve work sessions and can be activated, closed, and navigated from predictably.
+- Task tabs and feature tabs preserve work sessions and can be activated, closed, and navigated predictably.
 - The sidebar is visible on the workspace board and hidden in task and feature tabs.
-- Task tabs let the user understand task identity, state, related work, and history.
-- Feature tabs let the user understand feature identity, stage state, source documents, tasks, and history.
+- Task tabs let the user understand task identity, state, related work, and history from backend data.
+- Feature tabs let the user understand feature identity, stage state, source documents, tasks, and history from backend data.
 - Opening a task from a feature tab lets the user return to the originating feature tab when possible.
-- Agent chat opens only from task or feature scope.
-- Chat lets the user create a new conversation in the current task or feature scope from a plus icon.
-- Chat supports model choice, workflow skill mentions, image attachments, resizing, expanding, closing, and reopening.
-- Chat supports scoped user messages, agent results, and clear failure states.
-- Product-level behavior is documented here; detailed UI structure, technical data contracts, routes, storage, events, and API integration are deferred to technical design.
+- Agent, chat, model, composer, and conversation controls are absent from this feature.
