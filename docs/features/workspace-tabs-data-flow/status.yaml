@@ -1,9 +1,9 @@
 feature_id: workspace-tabs-data-flow
 title: Workspace Tabs and End-to-End Workspace Data Flow
 
-feature_status: ready_for_implementation
-current_stage: ready_for_implementation
-next_action: T1 is ready to claim. T2 and T3 wait for T1 to complete.
+feature_status: in_design
+current_stage: product_spec
+next_action: Product spec requires revision and re-approval before advancing to technical_design.
 
 stages:
   product_spec:
@@ -99,6 +99,12 @@ stages:
     review_comment: null
     review_history: []
 
+revalidation:
+  product_spec_required: true
+  technical_design_required: true
+  tasks_required: true
+  deployment_checklist_required: false
+
 history:
   - stage: product_spec
     action: created
@@ -190,9 +196,10 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-05-15T00:15:49+07:00
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
-
-revalidation:
-  product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
-  deployment_checklist_required: false
+  - stage: product_spec
+    action: reset
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T00:31:25+0700
+    note: >-
+      Feature reset to product_spec stage. Technical design, tasks, and downstream
+      artifacts preserved for revalidation. All revalidation flags set to true.
