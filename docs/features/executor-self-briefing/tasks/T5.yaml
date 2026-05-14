@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T17:46:32.137Z
+  last_updated_at: 2026-05-14T17:47:50.586Z
 pr:
   url: null
   status: null
@@ -53,6 +53,10 @@ log:
     by: norepy@tiendv.dev
     note: Max-turns block reset to ready (attempt 1 of 3).
     at: 2026-05-14T17:46:32.137Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:47:50.586Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
