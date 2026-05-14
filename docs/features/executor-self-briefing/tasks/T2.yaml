@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T11:34:47.859Z
+  last_updated_at: 2026-05-14T11:36:17.651Z
 pr:
   url: null
   status: null
@@ -51,6 +51,10 @@ log:
     by: norepy@tiendv.dev
     note: Max-turns block reset to ready (attempt 1 of 3).
     at: 2026-05-14T11:34:47.859Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:36:17.651Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
