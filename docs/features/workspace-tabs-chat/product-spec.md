@@ -5,6 +5,64 @@
 - Feature ID: `workspace-tabs-chat`
 - Title: `Workspace Tabs, Work Item Tabs, and Agent Chat`
 
+## References
+
+Visual references are stored in `docs/features/workspace-tabs-chat/references/`. Each linked Figma frame is the source of truth for its surface, and the screenshot is shown inline for direct review.
+
+### Workspace dropdown
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2&m=dev
+
+![Workspace dropdown](<references/workspace dropdown.png>)
+
+### Import workspace modal
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-517&m=dev
+
+![Import workspace modal](<references/import workspace modal.png>)
+
+### Feature tab - product spec default
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-733&m=dev
+
+![Feature tab - product spec default](<references/feature tab -  product spec (default).png>)
+
+### Feature tab - technical design
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-1418&m=dev
+
+![Feature tab - technical design](<references/feature tab - technical design.png>)
+
+### Feature tab - tasks
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-1660&m=dev
+
+![Feature tab - tasks](<references/feature tab - tasks.png>)
+
+### Feature tab - tasks.md mode
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-1898&m=dev
+
+![Feature tab - tasks.md mode](<references/feature tab - tasks - tasks.md mode.png>)
+
+### Feature tab - logs
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2464&m=dev
+
+![Feature tab - logs](<references/feature tab - logs.png>)
+
+### Task tab
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2689&m=dev
+
+![Task tab](<references/task tab.png>)
+
+### Agent chat - full screen
+
+Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2859&m=dev
+
+![Agent chat - full screen](<references/agent chat - full screen.png>)
+
 ## Problem
 
 Users need to move between the workspace board, saved workspaces, task sessions, feature sessions, and scoped agent conversations without losing context. Today these flows are easy to confuse because quick detail views, persistent work sessions, workspace switching, and chat scope are not separated clearly enough.
@@ -23,13 +81,11 @@ This feature defines the product-level user journeys for workspace tabs, task ta
 - Let users read task and feature context inside their respective work item tabs.
 - Let users open agent chat only from task or feature context.
 - Let users start new scoped chats, choose a model, mention workflow skills, paste images, resize chat, and close or reopen chat.
-- Ensure chat UI prepares the correct task or feature context for a future real agent API without showing fake assistant responses.
+- Let users send scoped agent chat messages and see agent conversation results within the current task or feature context.
 
 ## Non-goals
 
-- No workspace-scope agent chat.
-- No real backend or LLM response integration in this stage.
-- No mock assistant response behavior.
+- No workspace-level agent chat detached from a task or feature.
 - No workflow lifecycle, approval gate, task status, or task YAML ownership changes.
 - No broad dashboard redesign outside workspace tabs, work item tabs, and scoped chat.
 - No implementation detail such as exact routes, event handlers, storage keys, payload schema, component layout values, or accessibility role definitions in this product spec.
@@ -298,7 +354,7 @@ Expected result: closing a feature tab does not unexpectedly close task work ses
 ### Journey 28 - Create a new chat in the current scope
 
 1. The user has agent chat open from a task tab or feature tab.
-2. The user chooses `New chat`.
+2. The user chooses the plus icon for a new chat.
 3. The app starts a fresh conversation in the same task or feature scope.
 4. The current task tab or feature tab stays active.
 5. The previous conversation is no longer the active conversation.
@@ -312,10 +368,11 @@ Expected result: the user can create a new clean chat while preserving the curre
 1. The user writes a message in scoped chat.
 2. The user sends the message.
 3. The message appears in the conversation.
-4. The chat UI prepares the selected model and current task or feature context for a future real API call.
-5. If no real chat API is connected, the UI does not show a fake assistant answer.
+4. The conversation uses the selected model and current task or feature context.
+5. The agent result appears in the same scoped conversation.
+6. If the agent cannot respond, the user sees a clear failure state and can continue from the same chat.
 
-Expected result: user messages are captured without implying a fake agent response.
+Expected result: the user can exchange messages with an agent without leaving the current task or feature context.
 
 ### Journey 30 - Write multiline chat input
 
@@ -388,7 +445,7 @@ Expected result: closing chat removes the panel without intentionally discarding
 - Feature tabs let the user understand feature identity, stage state, source documents, tasks, and history.
 - Opening a task from a feature tab lets the user return to the originating feature tab when possible.
 - Agent chat opens only from task or feature scope.
-- Chat lets the user create a new conversation in the current task or feature scope.
+- Chat lets the user create a new conversation in the current task or feature scope from a plus icon.
 - Chat supports model choice, workflow skill mentions, image attachments, resizing, expanding, closing, and reopening.
-- Chat does not show fake assistant responses before a real chat API exists.
+- Chat supports scoped user messages, agent results, and clear failure states.
 - Product-level behavior is documented here; detailed UI structure, technical data contracts, routes, storage, events, and API integration are deferred to technical design.
