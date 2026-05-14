@@ -61,15 +61,45 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 Users need workspace, feature, and task tabs to show real workflow state without reading raw repository files.
 
-The feature now needs an end-to-end data path:
+The current system has no backend layer. The UI calls the GitHub API directly from the browser, parses YAML in the browser, and saves workspace configuration only in `localStorage`. There is no database, no server-side cache, and no multi-workspace support.
 
 ```text
-GitHub workspace repo ----\
-                          -> source adapters -> backend API -> UI
-Database workspace cache -/
+Current state (the problem):
+
+  UI (browser)
+    → api.github.com (direct fetch)
+      → YAML parsed in browser
+        → localStorage (ephemeral, single workspace)
 ```
 
-GitHub and database records can have different shapes, freshness, and failure modes. The UI should not know those source-specific details. It should consume a stable backend contract that normalizes workspace, feature, task, document, pull request, and activity data.
+This feature adds a backend-mediated path. GitHub is used only for import and sync; all UI reads come from a backend-managed Supabase database. When a sync fails, the backend returns the last cached snapshot with a stale marker.
+
+```text
+Target state (what this feature builds):
+
+  Import / sync:
+    GitHub repo
+      → GitHubWorkspaceAdapter (backend)
+        → WorkspaceSourceService
+          → Supabase Postgres (workspace snapshots)
+
+  Read (normal):
+    Supabase Postgres
+      → DbWorkspaceAdapter (backend)
+        → WorkspaceSourceService
+          → NestJS API routes
+            → Frontend API client
+              → workspace shell / board / task tabs / feature tabs
+
+  Read (stale fallback — sync failed, cache exists):
+    Supabase Postgres (active snapshot)
+      → DbWorkspaceAdapter
+        → WorkspaceSourceService (SourceState.stale = true)
+          → NestJS API routes
+            → UI (stale banner, cached data still visible)
+```
+
+GitHub and database records have different shapes, freshness, and failure modes. The UI should not know those source-specific details. It should consume a stable backend contract that normalizes workspace, feature, task, document, pull request, and activity data.
 
 ## Goals
 

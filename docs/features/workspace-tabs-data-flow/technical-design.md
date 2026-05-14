@@ -7,13 +7,32 @@
 
 ## 1. Current State
 
-This feature is now an end-to-end workspace data flow:
+There is no backend layer today. The dashboard calls the GitHub API directly from the browser, parses workspace YAML files in the browser, and stores the active workspace configuration in `localStorage`. There is no server-side database, no cache, and no multi-workspace support.
 
 ```text
-GitHub workspace repo ----\
-                          -> source adapters -> backend API -> UI
-Database workspace cache -/
+Current system (what exists now):
+
+  UI (browser)
+    → api.github.com (direct: Contents API, Pulls API)
+      → yaml-parser.ts (browser-side YAML parse)
+        → localStorage (single workspace, ephemeral)
+          → board components
 ```
+
+Key files that implement this today:
+
+- `src/services/github.ts` — direct `fetch` calls to `https://api.github.com`
+- `src/services/yaml-parser.ts` — browser-side YAML and markdown parsing
+- `src/services/workspace-store.ts` — `localStorage` get/set/clear
+- `src/features/board/data/load-board-data.ts` — board loader built on the GitHub client above
+
+This feature replaces that direct-GitHub path. After this feature:
+
+- The UI never calls GitHub directly.
+- GitHub is used only for import and sync operations, handled entirely by the backend.
+- All UI reads come from a backend-managed Supabase Postgres database.
+- When a sync fails, the backend returns the last cached snapshot with a stale marker.
+- Workspace configuration is stored server-side, not in `localStorage`.
 
 The dashboard still needs workspace, task tab, and feature tab surfaces, but all source data must arrive through backend contracts. UI components should not own GitHub parsing, raw YAML parsing, database shape assumptions, agent state, model selection, or conversation behavior.
 
