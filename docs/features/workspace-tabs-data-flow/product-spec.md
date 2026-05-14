@@ -59,13 +59,11 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ## Problem
 
-Users need workspace, feature, and task tabs to show real workflow state without reading raw repository files.
+Today the dashboard reads workspace, feature, and task data directly from GitHub on every page load. As more features and tasks are added, this becomes too slow and too fragile — a single GitHub API failure breaks the entire board, and nothing persists when the browser session ends.
 
-Users need to see real workspace state — features, tasks, documents, and activity — without reading raw repository files. Today workspaces are tied to a single browser session, workspace data disappears when that session is cleared, and there is no server-backed store that retains imported workspaces across sessions or devices.
+GitHub still owns the canonical record for task state changes. Task claims, status transitions, and approvals are written to the repository, and that will not change. The gap is on the read side: there is no server-backed store that mirrors those records and serves them reliably to the UI.
 
-The dashboard needs a stable data path so workspace, feature, and task information can be loaded from a server-backed source, saved between sessions, and refreshed from the repository when needed. When a refresh fails, users should still see the last known state rather than a blank screen.
-
-GitHub and repository data have different shapes, freshness, and failure modes from server-cached data. The UI should not know those source-specific details. It should consume a stable backend contract that normalizes workspace, feature, task, document, pull request, and activity data.
+Users need the dashboard to load workspace data across sessions and devices without re-entering repository credentials every time. When a GitHub sync fails, users should still see the last known state rather than a blank screen. When GitHub data is available, it should update in the background without blocking the UI.
 
 ## Goals
 
@@ -118,259 +116,36 @@ The backend owns import, sync, cache reads, source normalization, and error mapp
 
 The UI renders workspace, feature, and task surfaces from backend payloads. It should not parse GitHub archives, raw YAML, or database-specific records directly.
 
-## User Journey
-
-### Journey 1 - Return to the workspace board
-
-1. The user is viewing a task tab or feature tab.
-2. The user clicks the workspace tab.
-3. The app returns to the board for the current workspace.
-4. The workspace tab becomes active.
-5. The task and feature tabs remain available so the user can return to them later.
-
-Expected result: the user can get back to the board quickly without closing open work item tabs.
-
-### Journey 2 - Load saved workspaces
-
-1. The user opens the dashboard.
-2. The UI asks the backend for saved workspaces.
-3. The backend reads database-backed workspace records through the database adapter.
-4. The UI shows the saved workspace list and marks the active workspace when one exists.
-
-Expected result: saved workspaces load from backend state, not hardcoded frontend fixtures.
-
-### Journey 3 - Open the workspace switcher
-
-1. The user is on the dashboard with a workspace selected.
-2. The user opens the workspace switcher from the workspace tab control.
-3. The app shows saved workspaces and a way to search them.
-4. The active workspace is clearly marked.
-5. The user can choose a saved workspace or start importing a new one.
-
-Expected result: the user understands where they are and can move to another workspace from the same header area.
-
-### Journey 4 - Search and select a saved workspace
-
-1. The user opens the workspace switcher.
-2. The user searches for a workspace.
-3. The app filters the saved workspace list.
-4. If there is no match, the app shows an empty state.
-5. The user selects a workspace from the results.
-6. The app asks the backend for that workspace detail.
-7. The app switches to that workspace and returns to the board view.
-8. Task and feature tabs from the previous workspace are not shown in the newly selected workspace.
-
-Expected result: workspace switching is fast and does not leak tabs or context from another workspace.
-
-### Journey 5 - Start importing a workspace
-
-1. The user opens the workspace switcher.
-2. The user chooses the import workspace action.
-3. The switcher closes.
-4. The import workspace modal opens directly to the import form.
-
-Expected result: importing a workspace is reachable from the same place users manage workspace switching.
-
-### Journey 6 - Submit an imported workspace
-
-1. The user provides repository information needed to import a workspace.
-2. The user provides access credentials when needed.
-3. The user submits the form.
-4. The UI sends the import request to the backend.
-5. The backend reads GitHub through the GitHub adapter.
-6. The adapter normalizes feature, task, document, pull request, and activity data.
-7. The backend stores a database snapshot for later reuse.
-8. The app adds the workspace to the saved workspace list and opens it.
-
-Expected result: GitHub import creates a usable backend-backed workspace without requiring the UI to parse repository files.
-
-### Journey 7 - Handle import or sync failure
-
-1. The user submits import or refresh.
-2. GitHub, database, or adapter validation fails.
-3. The UI keeps the current page stable.
-4. The app shows a source-specific but user-readable error.
-5. The user edits the input or retries.
-
-Expected result: users can recover from source failures without losing the current workspace state.
-
-### Journey 8 - Cancel workspace import
-
-1. The import modal is open.
-2. The user closes the modal.
-3. The modal state resets.
-4. The active workspace remains unchanged.
-
-Expected result: cancelling import does not change the current workspace.
-
-### Journey 9 - Refresh workspace data
-
-1. The user is viewing a workspace.
-2. The user triggers refresh or the app performs a supported sync.
-3. The backend asks the GitHub adapter for a fresh snapshot.
-4. The backend updates the database cache if the sync succeeds.
-5. The UI updates board, task tab, and feature tab data from the backend response.
-6. If sync fails but cached data exists, the UI keeps cached data visible and marks it stale.
-
-Expected result: the user can see updated source data while retaining a usable cached workspace when refresh fails.
-
-### Journey 10 - Inspect a task quickly from the board
-
-1. The user is on the workspace board in task-oriented mode.
-2. The user single-clicks a task.
-3. The app opens a quick task detail view from backend task data.
-4. The user reviews the task at a glance.
-5. The user closes the quick view and remains on the board.
-
-Expected result: the user can inspect a task quickly without creating a persistent tab.
-
-### Journey 11 - Open a task tab from the board
-
-1. The user is on the workspace board.
-2. The user double-clicks a task.
-3. The app opens a task tab for that task.
-4. If the task tab already exists, the app focuses the existing tab.
-5. The task tab requests or reuses backend task detail data.
-6. The user can return to the board by clicking the workspace tab.
-
-Expected result: double click starts or restores a persistent task work session backed by real task data.
-
-### Journey 12 - Open a task tab from a context menu
-
-1. The user opens the context menu for a task.
-2. The user chooses the action to open the task in a new tab.
-3. The app opens a task tab for that task.
-4. The context menu closes.
-
-Expected result: users have an explicit context-menu path for opening a task work session.
-
-### Journey 13 - Use task items from the sidebar
-
-1. The user is on the workspace board where the sidebar is visible.
-2. The sidebar shows important task groups from backend workspace data.
-3. The user single-clicks a sidebar task item to inspect it quickly.
-4. The user double-clicks a sidebar task item to open or focus its task tab.
-5. The user can also open a task tab from the sidebar task context menu.
-
-Expected result: sidebar task items follow the same product behavior as task cards on the board.
-
-### Journey 14 - Inspect a feature quickly in Task Mode
-
-1. The user is viewing task-level board content.
-2. The user single-clicks a feature row.
-3. The app opens a quick feature detail view from backend feature data.
-4. The user reviews the feature at a glance.
-5. Double-clicking the feature in this mode does not open a feature tab.
-
-Expected result: Task Mode remains focused on task work while still allowing quick feature inspection.
-
-### Journey 15 - Switch to Feature Mode
-
-1. The user changes the board to Feature Mode.
-2. The board shows feature-level content from backend workspace data.
-3. The user scans features by their overall state.
-
-Expected result: the user can review feature-level progress without task-level noise.
-
-### Journey 16 - Open a feature tab in Feature Mode
-
-1. The user is in Feature Mode.
-2. The user single-clicks a feature to inspect it quickly.
-3. The user double-clicks a feature to open or focus its feature tab.
-4. The user can also open a feature tab from the feature context menu.
-
-Expected result: Feature Mode supports both quick inspection and persistent feature work sessions.
-
-### Journey 17 - Activate an existing task tab
-
-1. A task tab is visible in the header.
-2. The user clicks the task tab.
-3. The task tab becomes active.
-4. The main content shows the task work session.
-5. The sidebar is hidden.
-
-Expected result: the user returns to the same task work session without losing task context.
-
-### Journey 18 - Read task tab content
-
-1. The user opens a task tab.
-2. The app shows task identity and current task state from backend detail data.
-3. The user reviews task context, execution context, dependency or blocked state, related PR state, and task activity when available.
-4. Missing optional information is shown as empty or unavailable rather than breaking the view.
-
-Expected result: the user can understand the task without reading raw workflow files.
-
-### Journey 19 - Copy task identity
-
-1. The user is inside a task tab.
-2. The user copies the task identity from the task header.
-3. The app gives short feedback that the copy action succeeded.
-
-Expected result: the user can quickly reference the task in issues, PRs, or documents.
-
-### Journey 20 - Leave a task tab
-
-1. The user closes a task tab or uses Back from inside a task tab.
-2. If the task was opened from a feature tab, the app returns to that feature tab when possible.
-3. Otherwise, the app returns to the workspace board or another relevant open tab.
-
-Expected result: leaving a task tab preserves the most useful previous context.
-
-### Journey 21 - Activate an existing feature tab
-
-1. A feature tab is visible in the header.
-2. The user clicks the feature tab.
-3. The feature tab becomes active.
-4. The main content shows the feature work session.
-5. The sidebar is hidden.
-
-Expected result: the user returns to the same feature work session without losing feature context.
-
-### Journey 22 - Read feature tab content
-
-1. The user opens a feature tab.
-2. The app shows the feature identity and current feature state from backend detail data.
-3. The user can move between feature views such as product spec, technical design, tasks, and logs or status.
-4. Source documents are readable inside the dashboard.
-5. Feature history and task summary are visible when available.
-
-Expected result: the user can review feature context without leaving the feature tab.
-
-### Journey 23 - Understand feature stage state
-
-1. The user is inside a feature tab.
-2. The user opens or hovers the current stage summary.
-3. The app shows which feature stages are complete, current, or not yet complete.
-4. The user dismisses the stage summary and remains in the feature tab.
-
-Expected result: the user can understand the feature stage without reading raw status files.
-
-### Journey 24 - Open a task from a feature tab
-
-1. The user is inside a feature tab.
-2. The user opens the feature tasks view.
-3. The user selects a task.
-4. The app opens or focuses the corresponding task tab.
-5. When the user goes Back from that task, the app returns to the originating feature tab when possible.
-
-Expected result: the user can drill down from feature context into task context and return cleanly.
-
-### Journey 25 - Copy feature identity
-
-1. The user is inside a feature tab.
-2. The user copies the feature identity from the feature header.
-3. The app gives short feedback that the copy action succeeded.
-
-Expected result: the user can quickly reference the feature in issues, PRs, or documents.
-
-### Journey 26 - Close a feature tab
-
-1. The user closes a feature tab.
-2. The feature tab is removed from the header.
-3. If related task tabs are open, they remain available unless a later product decision changes that behavior.
-4. The user remains in the same workspace.
-
-Expected result: closing a feature tab does not unexpectedly close task work sessions or change workspace.
+## User Journeys
+
+| ID | Title |
+|---|---|
+| [J01](journeys/J01-return-to-workspace-board.md) | Return to the workspace board |
+| [J02](journeys/J02-load-saved-workspaces.md) | Load saved workspaces |
+| [J03](journeys/J03-open-workspace-switcher.md) | Open the workspace switcher |
+| [J04](journeys/J04-search-and-select-workspace.md) | Search and select a saved workspace |
+| [J05](journeys/J05-start-importing-workspace.md) | Start importing a workspace |
+| [J06](journeys/J06-submit-import.md) | Submit an imported workspace |
+| [J07](journeys/J07-handle-import-sync-failure.md) | Handle import or sync failure |
+| [J08](journeys/J08-cancel-workspace-import.md) | Cancel workspace import |
+| [J09](journeys/J09-refresh-workspace-data.md) | Refresh workspace data |
+| [J10](journeys/J10-inspect-task-quickly.md) | Inspect a task quickly from the board |
+| [J11](journeys/J11-open-task-tab-from-board.md) | Open a task tab from the board |
+| [J12](journeys/J12-open-task-tab-from-context-menu.md) | Open a task tab from a context menu |
+| [J13](journeys/J13-use-sidebar-task-items.md) | Use task items from the sidebar |
+| [J14](journeys/J14-inspect-feature-quickly.md) | Inspect a feature quickly in Task Mode |
+| [J15](journeys/J15-switch-to-feature-mode.md) | Switch to Feature Mode |
+| [J16](journeys/J16-open-feature-tab-feature-mode.md) | Open a feature tab in Feature Mode |
+| [J17](journeys/J17-activate-task-tab.md) | Activate an existing task tab |
+| [J18](journeys/J18-read-task-tab-content.md) | Read task tab content |
+| [J19](journeys/J19-copy-task-identity.md) | Copy task identity |
+| [J20](journeys/J20-leave-task-tab.md) | Leave a task tab |
+| [J21](journeys/J21-activate-feature-tab.md) | Activate an existing feature tab |
+| [J22](journeys/J22-read-feature-tab-content.md) | Read feature tab content |
+| [J23](journeys/J23-understand-feature-stage.md) | Understand feature stage state |
+| [J24](journeys/J24-open-task-from-feature-tab.md) | Open a task from a feature tab |
+| [J25](journeys/J25-copy-feature-identity.md) | Copy feature identity |
+| [J26](journeys/J26-close-feature-tab.md) | Close a feature tab |
 
 ## Acceptance Criteria
 
