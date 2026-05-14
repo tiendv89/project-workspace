@@ -57,35 +57,36 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ![Task tab](<references/task tab.png>)
 
+## Dependencies
+
+- **`workspace-data-backend`** — provides the backend read APIs and workspace sync layer this feature's UI consumes.
+
 ## Problem
 
-Today the dashboard reads workspace, feature, and task data directly from GitHub on every page load. As more features and tasks are added, this becomes too slow and too fragile — a single GitHub API failure breaks the entire board, and nothing persists when the browser session ends.
+The current dashboard has no tab-based navigation. Viewing a task or feature means leaving the board entirely, with no way to return to the same context or keep multiple items open at once. There is no distinction between a quick glance at a task and a persistent work session — every navigation is destructive.
 
-GitHub still owns the canonical record for task state changes. Task claims, status transitions, and approvals are written to the repository, and that will not change. The gap is on the read side: there is no server-backed store that mirrors those records and serves them reliably to the UI.
-
-Users need the dashboard to load workspace data across sessions and devices without re-entering repository credentials every time. When a GitHub sync fails, users should still see the last known state rather than a blank screen. When GitHub data is available, it should update in the background without blocking the UI.
+Users need a tab shell that lets them hold their place on the board, open task and feature work sessions alongside it, and move between them without losing context. Single click, double click, and context menu entry points each need a distinct, predictable behavior so users can navigate confidently.
 
 ## Goals
 
 - Keep the workspace tab as the way back to the current workspace board.
-- Let users switch between saved workspaces loaded from backend data.
-- Let users import or sync a workspace from a GitHub repository.
-- Normalize GitHub and database-backed workspace data through adapters before it reaches UI components.
-- Let the backend expose stable workspace, feature, task, document, and activity APIs.
+- Let users switch between saved workspaces from the workspace tab control.
+- Let users import or sync a workspace from a GitHub repository through a modal form.
 - Let the UI render workspace board, feature tabs, and task tabs from backend payloads only.
 - Let users inspect tasks and features quickly without opening persistent sessions.
 - Let users open persistent task and feature tabs when they want deeper work context.
 - Keep task and feature tab behavior predictable across single click, double click, and context menu actions.
 - Keep the board sidebar limited to the workspace board, not task or feature tabs.
-- Show loading, empty, stale, and source-error states clearly when GitHub, database, or adapter reads fail.
+- Show loading, empty, stale, and error states clearly when backend reads fail.
 
 ## Non-goals
 
+- No backend changes — sync, import, caching, and read APIs are provided by `workspace-data-backend`.
+- No agent write path changes — task claims, transitions, and approvals are unchanged.
 - No agent, chat, model selector, composer, skill mention, image attachment, conversation persistence, or LLM surface.
-- No workflow lifecycle, approval gate, task status, or task YAML ownership changes.
 - No direct GitHub file parsing inside frontend UI components.
 - No frontend-only source of truth for imported workspace data.
-- No broad dashboard redesign outside workspace switching, work item tabs, source-backed detail views, and end-to-end data loading.
+- No broad dashboard redesign outside workspace switching, work item tabs, and source-backed detail views.
 - No `deployment-checklist.md` at this stage.
 
 ## User Journeys
@@ -124,10 +125,7 @@ Users need the dashboard to load workspace data across sessions and devices with
 - The workspace tab returns the user from any task or feature tab to the current workspace board.
 - The workspace switcher loads saved workspaces from the backend and supports search, switch, and cancel.
 - Workspace import sends repository input to the backend and does not parse GitHub files in the UI.
-- GitHub data and database data are normalized through source adapters before the backend returns UI payloads.
-- Backend APIs expose stable workspace list, workspace detail, feature detail, task detail, source document, task list, activity, and refresh/sync payloads.
-- The database cache supports reopening saved workspaces without a fresh GitHub import every time.
-- Sync failures keep cached data visible when available and mark the source state clearly.
+- Sync failures keep cached data visible when available and mark the source state clearly in the UI.
 - Single-clicking a task or feature opens quick inspection rather than a persistent tab.
 - Double-clicking a task opens or focuses a task tab.
 - Double-clicking a feature opens or focuses a feature tab only in Feature Mode.

@@ -1,0 +1,47 @@
+feature_id: workspace-data-backend
+title: Workspace Data Backend — GitHub Sync and Read API
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Review and approve product spec.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T00:54:07+0700
+    note: >-
+      Feature created by splitting backend data layer out of workspace-tabs-data-flow.
+      Read-only mirror of GitHub workspace data; UI read APIs for workspace-tabs-data-flow.
+      Agent write path is a separate concern handled by workflow-db.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
