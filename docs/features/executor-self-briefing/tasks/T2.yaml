@@ -1,0 +1,27 @@
+id: T2
+title: Orchestrator — delete briefing module
+repo: workflow
+status: todo
+depends_on: [T1]
+blocked_reason: null
+
+branch: feature/executor-self-briefing-T2
+
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: "2026-05-14T17:15:48+0700"
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: tiendv.52@gmai.com
+    at: "2026-05-14T17:15:48+0700"
+    note: >-
+      Task created during tech-lead Phase 2 breakdown. Deletes the entire
+      orchestrator briefing/ module (5 files), LocalFileBriefingAdapter, and
+      all call sites in main.ts (impl, fix, rebase paths) and
+      dispatch-reviewer.ts. Runs in parallel with T3 and T4 after T1 lands.
