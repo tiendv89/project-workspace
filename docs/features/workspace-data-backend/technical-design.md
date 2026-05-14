@@ -108,7 +108,7 @@ The database schema is defined in `database/schema.dbml` (repo root) and version
 - HTTP framework: `gin` (`github.com/gin-gonic/gin`).
 - Database driver: `pgx/v5` (`github.com/jackc/pgx/v5`) — direct PostgreSQL driver, no ORM.
 - Query layer: `sqlc` (`github.com/sqlc-dev/sqlc`) — generates type-safe Go from SQL queries; SQL is the source of truth for queries, not a Go ORM.
-- Migrations: `golang-migrate` (`github.com/golang-migrate/migrate/v4`) — SQL migration files, up/down.
+- Migrations: `goose` (`github.com/pressly/goose/v3`) — SQL migration files, up/down.
 - Database naming: all physical table, column, index, and constraint names use lowercase `snake_case`. Go structs use PascalCase; `sqlc` handles the mapping.
 - YAML parsing: `gopkg.in/yaml.v3`.
 - Tests: standard `testing` package; `testcontainers-go` for PostgreSQL integration tests.
