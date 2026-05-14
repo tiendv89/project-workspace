@@ -104,14 +104,15 @@ The database schema is defined in `database/schema.dbml` (repo root) and version
 
 ### Backend Technology Stack
 
-- Runtime: Node.js TypeScript.
-- Framework: NestJS.
-- ORM: Prisma Client + Prisma Migrate.
-- Database: PostgreSQL.
-- Database naming: all physical table, column, index, and constraint names use lowercase `snake_case`. Prisma model names use PascalCase in TypeScript; `@@map` and `@map` are used where needed.
-- YAML parsing: existing YAML library in `workflow-backend` if present; otherwise add one (e.g. `js-yaml`).
-- Connection config: `DATABASE_URL` for runtime queries; `DIRECT_DATABASE_URL` for Prisma migrations when the Postgres host provides separate pooled and direct URLs.
-- Tests: NestJS unit tests + integration tests against a real PostgreSQL instance.
+- Language: Go.
+- HTTP framework: `gin` (`github.com/gin-gonic/gin`).
+- Database driver: `pgx/v5` (`github.com/jackc/pgx/v5`) — direct PostgreSQL driver, no ORM.
+- Query layer: `sqlc` (`github.com/sqlc-dev/sqlc`) — generates type-safe Go from SQL queries; SQL is the source of truth for queries, not a Go ORM.
+- Migrations: `golang-migrate` (`github.com/golang-migrate/migrate/v4`) — SQL migration files, up/down.
+- Database naming: all physical table, column, index, and constraint names use lowercase `snake_case`. Go structs use PascalCase; `sqlc` handles the mapping.
+- YAML parsing: `gopkg.in/yaml.v3`.
+- Tests: standard `testing` package; `testcontainers-go` for PostgreSQL integration tests.
+- Connection config: `DATABASE_URL` for runtime (`pgx` DSN); migrations use the same DSN or a direct URL when the host uses a connection pooler.
 
 ### Adapter Boundaries
 
@@ -119,10 +120,10 @@ Two adapters with separate, non-overlapping responsibilities:
 
 **`GitHubWorkspaceAdapter`** — ingest only (no reads):
 
-```ts
-interface GitHubWorkspaceAdapter {
-  importWorkspace(input: ImportInput): Promise<WorkspaceSnapshot>
-  syncWorkspace(workspaceId: string, repoUrl: string, ref: string): Promise<WorkspaceSnapshot>
+```go
+type GitHubWorkspaceAdapter interface {
+    ImportWorkspace(ctx context.Context, input ImportInput) (*WorkspaceSnapshot, error)
+    SyncWorkspace(ctx context.Context, workspaceID, repoURL, ref string) (*WorkspaceSnapshot, error)
 }
 ```
 
@@ -130,20 +131,20 @@ This adapter fetches the GitHub repository, parses YAML and markdown, and return
 
 **`DbWorkspaceAdapter`** — read/write to PostgreSQL (no GitHub calls):
 
-```ts
-interface DbWorkspaceAdapter {
-  listWorkspaces(): Promise<WorkspaceSummary[]>
-  getWorkspace(workspaceId: string): Promise<WorkspaceDetail>
-  getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>
-  getTask(workspaceId: string, taskId: string): Promise<TaskDetail>
-  listFeatureTasks(workspaceId: string, featureId: string): Promise<TaskSummary[]>
-  listActivity(workspaceId: string, scope: ActivityScope): Promise<ActivityEvent[]>
-  saveSnapshot(workspaceId: string, snapshot: WorkspaceSnapshot): Promise<void>
-  getActiveSnapshot(workspaceId: string): Promise<WorkspaceSnapshot | null>
+```go
+type DbWorkspaceAdapter interface {
+    ListWorkspaces(ctx context.Context) ([]WorkspaceSummary, error)
+    GetWorkspace(ctx context.Context, workspaceID string) (*WorkspaceDetail, error)
+    GetFeature(ctx context.Context, workspaceID, featureID string) (*FeatureDetail, error)
+    GetTask(ctx context.Context, workspaceID, taskID string) (*TaskDetail, error)
+    ListFeatureTasks(ctx context.Context, workspaceID, featureID string) ([]TaskSummary, error)
+    ListActivity(ctx context.Context, workspaceID string, scope ActivityScope) ([]ActivityEvent, error)
+    SaveSnapshot(ctx context.Context, workspaceID string, snapshot *WorkspaceSnapshot) error
+    GetActiveSnapshot(ctx context.Context, workspaceID string) (*WorkspaceSnapshot, error)
 }
 ```
 
-The exact method names can follow existing `workflow-backend` conventions. The boundary requirement is that GitHub parsing does not appear in `DbWorkspaceAdapter` and database calls do not appear in `GitHubWorkspaceAdapter`.
+The boundary requirement is that GitHub parsing does not appear in `DbWorkspaceAdapter` and database calls do not appear in `GitHubWorkspaceAdapter`.
 
 ### Canonical Backend DTOs
 
