@@ -27,21 +27,47 @@ Table workspaces {
 Table workspace_snapshots {
   id           uuid        [primary key, default: `gen_random_uuid()`]
   workspace_id uuid        [not null, ref: > workspaces.id]
-  source_kind  text        [not null, note: 'github | database']
-  source_ref   text        [not null, note: 'branch or ref used for this snapshot']
-  commit_sha   text
-  status       text        [not null, note: 'fresh | partial | stale | failed']
-  started_at   timestamptz [not null]
-  completed_at timestamptz
-  error_code   text
-  error_message text
-  metadata     jsonb       [note: 'counts, parser warnings, skipped files']
-  created_at   timestamptz [not null, default: `now()`]
+  source_kind              text        [not null, note: 'github | database']
+  source_ref               text        [not null, note: 'branch or ref used for this snapshot']
+  commit_sha               text
+  status                   text        [not null, note: 'fresh | partial | stale | failed']
+  started_at               timestamptz [not null]
+  completed_at             timestamptz
+  last_targeted_sync_at    timestamptz [note: 'set when a targeted webhook sync updates rows in place; null until first targeted sync']
+  error_code               text
+  error_message            text
+  metadata                 jsonb       [note: 'counts, parser warnings, skipped files']
+  created_at               timestamptz [not null, default: `now()`]
 
   indexes {
     (workspace_id, created_at)
     (workspace_id, status)
     (workspace_id, commit_sha)
+  }
+}
+
+Table workspace_sync_runs {
+  id            uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id  uuid        [not null, ref: > workspaces.id]
+  trigger       text        [not null, note: 'import | poll | webhook_base | webhook_feature | webhook_task | manual']
+  branch        text        [note: 'branch that triggered the sync; null for import and poll']
+  feature_id    text        [note: 'set for webhook_feature and webhook_task triggers']
+  task_id       text        [note: 'set for webhook_task trigger']
+  mode          text        [not null, note: 'full_reconciliation | targeted']
+  status        text        [not null, note: 'running | success | partial | failed | skipped']
+  snapshot_id   uuid        [ref: > workspace_snapshots.id, note: 'snapshot created or updated by this run']
+  commit_sha    text
+  changed_paths jsonb       [note: 'file paths synced; populated for targeted runs']
+  started_at    timestamptz [not null]
+  finished_at   timestamptz
+  error_code    text
+  error_message text
+  metadata      jsonb       [note: 'counts, warnings, skipped files']
+
+  indexes {
+    (workspace_id, started_at)
+    (workspace_id, trigger)
+    (workspace_id, status)
   }
 }
 

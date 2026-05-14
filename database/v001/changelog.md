@@ -12,6 +12,11 @@
 - `workspace_tasks` — one row per task YAML per snapshot; stores all task state fields as queryable columns.
 - `workspace_activity_events` — derived timeline rows from feature `history[]` and task `log[]`; enables timeline queries without scanning JSON arrays.
 
+## Sync strategy additions
+
+- `workspace_snapshots.last_targeted_sync_at` — tracks when a targeted webhook sync last updated rows in this snapshot in place, separate from `created_at` which reflects the full reconciliation time.
+- `workspace_sync_runs` — one row per sync attempt (full or targeted). Records trigger type (`import`, `poll`, `webhook_base`, `webhook_feature`, `webhook_task`), mode, status, commit SHA, and changed file paths. Used for audit and detecting missed webhook deliveries.
+
 ## Design notes
 
 - All tables include `workspace_id` for future multi-tenancy partitioning.

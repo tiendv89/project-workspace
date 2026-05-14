@@ -102,6 +102,90 @@ On sync: same write path as import; on success snapshot is updated; on failure `
 
 The database schema is defined in `database/schema.dbml` (repo root) and versioned under `database/v<NNN>/`. See `docs/overview.md` § Database Schema for the versioning rules.
 
+### Sync Strategy
+
+There are two sync modes with different scope and cost. The trigger determines which mode runs.
+
+#### Sync modes
+
+**Full reconciliation** — reads everything from the base branch (`main`) from scratch. Does not assume what changed. Produces a new snapshot record. Guarantees the database is consistent with the repo.
+
+**Targeted sync** — reads only the files identified as changed in a push event. Updates only the affected rows in the active snapshot in place. No new snapshot record is created. Faster but assumes the push payload is complete and correct.
+
+#### Trigger → mode mapping
+
+| Trigger | Branch | Mode | Scope |
+|---|---|---|---|
+| `import` | — | Full reconciliation | Entire workspace (first time) |
+| `poll` | base branch (`main`) | Full reconciliation | Entire workspace |
+| `webhook` | `main` (base branch) | Full reconciliation | Entire workspace — a merge landed |
+| `webhook` | `feature/<feature-id>` | Targeted sync | Feature artifacts only |
+| `webhook` | `feature/<feature-id>-T<n>` | Targeted sync | Single task YAML only |
+
+**Polling is the primary sync for local development.** Webhook is used in production for low-latency updates. Both modes must produce a correct database state — targeted sync is an optimisation, not a shortcut that can leave the DB inconsistent.
+
+#### Branch routing for webhook events
+
+The GitHub push event payload contains `ref` (e.g. `refs/heads/feature/workspace-data-backend-T1`). The backend extracts the branch name and matches it against these patterns in order:
+
+```
+base branch (e.g. "main")
+  → Full reconciliation of the entire workspace
+
+"feature/<feature-id>"  (no task suffix — ends after feature-id)
+  → Targeted sync: read docs/features/<feature-id>/status.yaml
+                        docs/features/<feature-id>/product-spec.md
+                        docs/features/<feature-id>/technical-design.md
+                        docs/features/<feature-id>/tasks.md
+    Update workspace_features + workspace_feature_documents rows
+    in the active snapshot.
+
+"feature/<feature-id>-T<n>"
+  → Targeted sync: read only docs/features/<feature-id>/tasks/T<n>.yaml
+    Update the single workspace_tasks row in the active snapshot.
+
+Any other branch
+  → Ignore. No sync triggered.
+```
+
+The feature-id and task-id are extracted from the branch name using the workspace `git.branch_pattern` from `workspace.yaml` (`feature/{feature_id}-{work_id}`).
+
+#### Full reconciliation — step by step
+
+1. Fetch the full repository tree at `HEAD` of the base branch.
+2. Discover all `docs/features/*/status.yaml` paths.
+3. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files.
+4. Parse YAML and markdown into DTOs.
+5. Write a new `workspace_snapshots` row and all child rows (`workspace_features`, `workspace_feature_documents`, `workspace_tasks`, `workspace_activity_events`) inside one transaction.
+6. On success: update `workspaces.active_snapshot_id` to the new snapshot.
+7. On failure: leave `active_snapshot_id` unchanged; mark the snapshot `failed`; set `SourceState.stale = true` on the response.
+8. Write a `workspace_sync_runs` row for audit and debugging regardless of outcome.
+
+#### Targeted sync — step by step
+
+1. Parse the push event `commits[]` to collect the union of `added + modified + removed` file paths.
+2. Filter to files matching the expected scope (feature artifacts or a single task YAML).
+3. For each changed file: fetch its content from GitHub at the push `after` SHA.
+4. Parse into DTOs.
+5. Upsert only the affected rows in the active snapshot (`workspace_features`, `workspace_feature_documents`, or `workspace_tasks`). No new snapshot record.
+6. Bump `workspace_snapshots.updated_at` on the active snapshot.
+7. Write a `workspace_sync_runs` row with `trigger: webhook` and the changed file paths in `metadata`.
+
+#### Snapshot model for targeted syncs
+
+A full reconciliation always creates a new `workspace_snapshots` row (immutable after creation). A targeted sync updates rows within the existing active snapshot in place. The active snapshot record gains a `last_targeted_sync_at` timestamp to distinguish when it was last touched by a targeted update vs when the full snapshot was taken.
+
+This means `workspace_snapshots.created_at` reflects the last full reconciliation time, and `workspace_snapshots.last_targeted_sync_at` reflects the last webhook-triggered partial update.
+
+#### Polling configuration
+
+| Env var | Default | Description |
+|---|---|---|
+| `SYNC_POLL_ENABLED` | `true` | Enable or disable polling. Set to `false` when webhook is the primary trigger (production). |
+| `SYNC_POLL_INTERVAL_SECONDS` | `300` | How often to poll the base branch for new commits. |
+
+On each poll tick: fetch the latest commit SHA on the base branch. If it differs from `workspace_snapshots.commit_sha` of the active snapshot, trigger full reconciliation. Otherwise skip.
+
 ### Backend Technology Stack
 
 - Language: Go.
@@ -323,13 +407,46 @@ Derived timeline rows from feature `history[]` and task `log[]`. Lets the UI fet
 
 Indexes: `(workspace_id, scope_type, occurred_at)`; `(workspace_id, feature_id, occurred_at)`; `(workspace_id, feature_id, task_id, occurred_at)`.
 
+#### `workspace_snapshots` (amended)
+
+Add `last_targeted_sync_at` to the existing table:
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `last_targeted_sync_at` | timestamptz | no | Set when a targeted (webhook) sync updates rows in this snapshot in place. Null until the first targeted sync after the full reconciliation. |
+
+#### `workspace_sync_runs`
+
+One row per sync attempt — full reconciliation or targeted. Used for audit, debugging, and detecting missed webhook deliveries.
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `id` | uuid PK | yes | |
+| `workspace_id` | uuid FK | yes | |
+| `trigger` | text | yes | `import`, `poll`, `webhook_base`, `webhook_feature`, `webhook_task`, `manual`. |
+| `branch` | text | no | Branch that triggered the sync. Null for `import` and `poll`. |
+| `feature_id` | text | no | For `webhook_feature` and `webhook_task` triggers. |
+| `task_id` | text | no | For `webhook_task` trigger. |
+| `mode` | text | yes | `full_reconciliation` or `targeted`. |
+| `status` | text | yes | `running`, `success`, `partial`, `failed`, `skipped`. |
+| `snapshot_id` | uuid FK | no | Snapshot created or updated by this run. |
+| `commit_sha` | text | no | GitHub commit SHA at time of sync. |
+| `changed_paths` | jsonb | no | File paths synced (for targeted runs). |
+| `started_at` | timestamptz | yes | |
+| `finished_at` | timestamptz | no | |
+| `error_code` | text | no | |
+| `error_message` | text | no | |
+| `metadata` | jsonb | no | Counts, warnings, skipped files. |
+
+Indexes: `(workspace_id, started_at)`; `(workspace_id, trigger)`; `(workspace_id, status)`.
+
 #### Snapshot write rules
 
-- Import and sync write all related snapshot rows inside one transaction.
-- `workspaces.active_snapshot_id` is updated only after the snapshot is complete.
-- A failed sync writes a `workspace_sync_runs` diagnostic row but must not replace `active_snapshot_id`.
-- If sync fails and `active_snapshot_id` is set, the service returns that snapshot with `SourceState.stale = true`.
-- Credentials and expanded local paths are never written to UI-facing tables.
+- Full reconciliation writes all snapshot rows inside one transaction. `workspaces.active_snapshot_id` is updated only after the snapshot is complete.
+- Targeted sync upserts only the affected rows in the active snapshot; no new snapshot record. Bumps `workspace_snapshots.last_targeted_sync_at`.
+- A failed sync must not replace `active_snapshot_id`. If an active snapshot exists, the service returns it with `SourceState.stale = true`.
+- Every sync attempt — success or failure, full or targeted — writes a `workspace_sync_runs` row.
+- Credentials and expanded local paths are never written to any table.
 
 ### Workspace Source Service
 
