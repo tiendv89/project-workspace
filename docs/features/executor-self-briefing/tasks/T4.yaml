@@ -1,7 +1,7 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T13:31:06.419Z
+  last_updated_at: 2026-05-14T13:39:24.302Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/157
   status: open
@@ -82,6 +82,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T13:31:06.419Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure: vitest unit check has conclusion=failure. TypeScript
+      compile errors in orchestrator package (main.ts:228,729,
+      dispatch-reviewer.ts:322, subprocess.ts:196,243) — caused by T2/T3 not yet
+      landed. T4 executor implementation is complete and correct; rebase after
+      T2+T3 merge."
+    at: 2026-05-14T13:39:24.302Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
