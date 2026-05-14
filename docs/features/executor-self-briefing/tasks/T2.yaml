@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/executor-self-briefing-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T16:51:34.184Z
+  last_updated_at: 2026-05-14T16:56:35.342Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/156
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -137,6 +137,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T16:51:34.184Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-14T16:56:35.342Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
