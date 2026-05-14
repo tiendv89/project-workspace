@@ -1,7 +1,7 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T13:09:27.010Z
+  last_updated_at: 2026-05-14T13:15:15.493Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/157
   status: open
@@ -53,6 +53,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T13:09:27.010Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure: vitest unit concluded 'failure' on commit 15371af
+      (https://github.com/tiendv89/agent-workflow/actions/runs/25861138044/job/\
+      75991072309). 🟡 DRY violation: readTaskTitle duplicated identically in
+      agent-context.ts, fix-briefing.ts, and reviewer-briefing.ts — should be
+      extracted to briefing-template.ts."
+    at: 2026-05-14T13:15:15.493Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
