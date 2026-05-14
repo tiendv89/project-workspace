@@ -1,17 +1,21 @@
 feature_id: workspace-data-backend
 title: Workspace Data Backend — GitHub Sync and Read API
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve product spec.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Write technical design.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-15T01:14:28+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-15T01:14:28+0700
+        comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -39,6 +43,10 @@ history:
       Feature created by splitting backend data layer out of workspace-tabs-data-flow.
       Read-only mirror of GitHub workspace data; UI read APIs for workspace-tabs-data-flow.
       Agent write path is a separate concern handled by workflow-db.
+  - action: product_spec_approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-15T01:14:28+0700
+    note: Product spec approved. Advancing to technical_design stage.
 
 revalidation:
   product_spec_required: false
