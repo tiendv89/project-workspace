@@ -88,34 +88,6 @@ Users need the dashboard to load workspace data across sessions and devices with
 - No broad dashboard redesign outside workspace switching, work item tabs, source-backed detail views, and end-to-end data loading.
 - No `deployment-checklist.md` at this stage.
 
-## Source Model
-
-### GitHub source
-
-The GitHub source is an imported workflow repository. It contains feature folders, `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and `tasks/T*.yaml` files.
-
-GitHub reads are used for import, manual refresh, and source resync. The user should see clear errors for inaccessible repositories, invalid repository URLs, missing required files, invalid YAML, rate limits, and network failures.
-
-### Database source
-
-The database source stores saved workspaces and backend-owned cached workspace snapshots. It lets returning users open known workspaces without re-entering repository data every time.
-
-Database reads are used for workspace list, workspace detail, cached feature/task state, and fallback display when a fresh GitHub sync is not available.
-
-### Source adapters
-
-Adapters normalize GitHub and database data into the same backend DTOs. Source-specific parsing, fallback, freshness, and validation should stay behind this boundary.
-
-Adapter output must include enough source status for the UI to explain where data came from, whether it is fresh, stale, partially loaded, or unavailable.
-
-### Backend API
-
-The backend owns import, sync, cache reads, source normalization, and error mapping. It exposes the only data contract used by the UI.
-
-### UI
-
-The UI renders workspace, feature, and task surfaces from backend payloads. It should not parse GitHub archives, raw YAML, or database-specific records directly.
-
 ## User Journeys
 
 | ID | Title |
