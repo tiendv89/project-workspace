@@ -30,6 +30,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T11:32:51.833Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:33:28.323Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/product-spec.md,
+      docs/features/agent-runtime-selector/product-spec.md"
+    rag_query: Claude executor — self-briefing module executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
