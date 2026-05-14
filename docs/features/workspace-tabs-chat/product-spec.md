@@ -295,14 +295,17 @@ Expected result: the user can discuss or prepare feature work using the current 
 
 Expected result: closing a feature tab does not unexpectedly close task work sessions or change workspace.
 
-### Journey 28 - Start a new scoped chat
+### Journey 28 - Create a new chat in the current scope
 
-1. The user has chat open from a task or feature tab.
-2. The user starts a new chat.
-3. The new conversation starts in the same task or feature scope.
-4. The user can begin a fresh prompt without leaving the current tab.
+1. The user has agent chat open from a task tab or feature tab.
+2. The user chooses `New chat`.
+3. The app starts a fresh conversation in the same task or feature scope.
+4. The current task tab or feature tab stays active.
+5. The previous conversation is no longer the active conversation.
+6. The composer is ready for the user to write a new prompt.
+7. The user can begin the new conversation without leaving the current tab or changing scope.
 
-Expected result: the user can start a clean conversation while preserving the current task or feature context.
+Expected result: the user can create a new clean chat while preserving the current task or feature context.
 
 ### Journey 29 - Send a chat message
 
@@ -385,6 +388,7 @@ Expected result: closing chat removes the panel without intentionally discarding
 - Feature tabs let the user understand feature identity, stage state, source documents, tasks, and history.
 - Opening a task from a feature tab lets the user return to the originating feature tab when possible.
 - Agent chat opens only from task or feature scope.
-- Chat supports new scoped conversations, model choice, workflow skill mentions, image attachments, resizing, expanding, closing, and reopening.
+- Chat lets the user create a new conversation in the current task or feature scope.
+- Chat supports model choice, workflow skill mentions, image attachments, resizing, expanding, closing, and reopening.
 - Chat does not show fake assistant responses before a real chat API exists.
 - Product-level behavior is documented here; detailed UI structure, technical data contracts, routes, storage, events, and API integration are deferred to technical design.
