@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T14:43:56.807Z
+  last_updated_at: 2026-05-14T15:13:51.471Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/156
   status: open
@@ -88,6 +88,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T14:43:56.807Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure (vitest unit): 2 tests in tests/dispatch-reviewer.test.ts
+      fail with ENOENT /tmp/briefing-reviewer-T3/briefing.md — stale briefing
+      file assertions not removed when T2 deleted the briefing module. All 9
+      functional T2 subtasks are correctly implemented; fix is to delete the
+      'briefing references prUrl and resultPath' test block."
+    at: 2026-05-14T15:13:51.471Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
