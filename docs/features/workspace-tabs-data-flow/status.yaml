@@ -1,0 +1,171 @@
+feature_id: workspace-tabs-data-flow
+title: Workspace Tabs and End-to-End Workspace Data Flow
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the revised technical design before task approval.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-14T19:34:08+07:00
+    review_comment: Revised product spec approved for workspace-tabs-data-flow end-to-end data flow.
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T17:37:49+07:00
+        comment: null
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T18:25:49+07:00
+        comment: Revised to require GitHub/DB -> adapter -> backend -> UI end-to-end data flow.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:09:09+07:00
+        comment: Renamed feature id to workspace-tabs-data-flow to match the final end-to-end data-flow scope.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:34:08+07:00
+        comment: Revised product spec approved for workspace-tabs-data-flow end-to-end data flow.
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: Draft updated to standardize backend implementation on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T17:41:48+07:00
+        comment: Technical design drafted from approved product requirements.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T18:25:49+07:00
+        comment: Draft rewritten for the revised end-to-end data flow.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T18:43:41+07:00
+        comment: Added concrete database schema for workspace, feature, task, document, activity, snapshot, and sync-run persistence.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:09:09+07:00
+        comment: Removed extension wording and kept the design scoped to workspace, feature, task, adapter, backend, and database flow.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:19:26+07:00
+        comment: Standardized backend implementation stack on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: Task breakdown updated so backend work uses NestJS modules/controllers/services and Supabase Postgres with Prisma schema/migrations.
+    review_history:
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T17:41:48+07:00
+        comment: Task breakdown drafted from technical design. Tasks remain todo until technical design and tasks-stage approvals.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T18:25:49+07:00
+        comment: Task breakdown rewritten for backend adapters, backend APIs, frontend integration, and end-to-end QA.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T18:43:41+07:00
+        comment: Database task updated to require schema/migration, constraints, indexes, raw document storage, and derived activity rows.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:09:09+07:00
+        comment: Task branch metadata updated to use feature/workspace-tabs-data-flow-Tn.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-14T19:19:26+07:00
+        comment: Backend tasks updated to require NestJS modules/controllers/services and Supabase Postgres with Prisma schema/migrations.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T14:01:39+07:00
+    note: Feature scaffold created for workspace switching, feature tabs, and task tabs.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T17:37:49+07:00
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T17:41:48+07:00
+    note: Technical design submitted for review.
+  - stage: tasks
+    action: drafted
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T17:41:48+07:00
+    note: Task breakdown drafted from the technical design. Tasks remain todo until technical design and tasks-stage approvals.
+  - stage: product_spec
+    action: revision_submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:25:49+07:00
+    note: Product spec rewritten to require GitHub/DB -> adapter -> backend -> UI end-to-end flow.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:25:49+07:00
+    note: Technical design rewritten for backend source adapters, normalized API contracts, and frontend backend consumption.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:25:49+07:00
+    note: Tasks rewritten around backend adapters, backend APIs, frontend integration, source-state UX, and end-to-end QA.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:43:41+07:00
+    note: Added concrete database schema for workspace, repositories, snapshots, features, feature documents, tasks, activity events, and sync runs.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:43:41+07:00
+    note: Updated database implementation task to require schema/migration, constraints, indexes, raw document storage, and activity projection.
+  - stage: product_spec
+    action: renamed
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:09:09+07:00
+    note: Feature renamed to workspace-tabs-data-flow to match the final end-to-end data-flow scope.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:09:09+07:00
+    note: Kept the design scoped to workspace, feature, task, adapter, backend, and database flow.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:09:09+07:00
+    note: Updated task branch metadata to use feature/workspace-tabs-data-flow-Tn.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:19:26+07:00
+    note: Standardized backend implementation stack on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:19:26+07:00
+    note: Updated backend tasks to require NestJS modules/controllers/services, Prisma schema/migrations, and Supabase Postgres configuration.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:34:08+07:00
+    note: Revised product spec approved. Feature advances to in_tdd; technical design and tasks still require approval.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: true
+  tasks_required: true
+  deployment_checklist_required: false

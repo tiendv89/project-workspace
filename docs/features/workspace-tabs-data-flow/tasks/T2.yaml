@@ -1,0 +1,24 @@
+id: T2
+title: NestJS GitHub workspace adapter and import/sync parser
+repo: workflow-backend
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/workspace-tabs-data-flow-T2
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-14T19:19:26+07:00
+pr:
+  url: null
+  status: null
+log:
+  - action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T18:25:49+07:00
+    note: Task revised for GitHub source adapter import/sync parsing into canonical workspace DTOs.
+  - action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-14T19:19:26+07:00
+    note: Task updated to implement GitHub import/sync parsing as an injectable NestJS service.
