@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: todo
+status: ready
 depends_on: [T2, T3, T4]
 blocked_reason: null
 
@@ -25,3 +25,7 @@ log:
       briefing test files, updates 5 fixture files to remove briefingPath, and
       adds 4 new executor self-briefing unit tests. Blocked on T2 (deleted
       module), T3 (adapter fixtures), and T4 (new module must exist to test).
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T00:26:11+0700
+    note: Auto-readied — all dependencies done (T2, T3, T4).
