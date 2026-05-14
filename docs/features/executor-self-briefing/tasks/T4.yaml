@@ -1,19 +1,18 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: blocked
+status: done
 depends_on:
   - T1
-blocked_reason: Review cycle limit reached (cycle 3 of 3, MAX_REVIEW_CYCLES=3).
-  Human review required.
+blocked_reason: null
 branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T14:06:26.006Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-15T00:26:11+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/157
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -117,7 +116,13 @@ log:
     note: Review cycle limit reached (cycle 3 of 3, MAX_REVIEW_CYCLES=3). Human
       review required.
     at: 2026-05-14T14:06:26.006Z
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T00:26:11+0700
+    note: >-
+      Human review: impl PR #157 reviewed and merged after rebase onto
+      feature/executor-self-briefing (T1+T2+T3). CI passing. DRY violation fixed.
+      All T4 subtasks verified complete.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
