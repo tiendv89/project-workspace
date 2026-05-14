@@ -1,17 +1,17 @@
 id: T1
 title: ABI contract — remove briefingPath
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/executor-self-briefing-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T10:52:23.998Z
+  last_updated_at: 2026-05-14T10:57:13.754Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/154
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -54,6 +54,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T10:52:23.998Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:57:13.754Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/231
   status: open
