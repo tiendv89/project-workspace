@@ -37,7 +37,12 @@ line 562: briefingPath passed to buildAndSubmitExecutor()
 line 622: generateFixBriefing(opts) → fixContext
 line 638: ports.briefing.put(taskId, fixContext) → fixBriefingPath
 line 644: fixBriefingPath passed to buildAndSubmitExecutor()
+line 709: inline rebase briefing string built (4-line Markdown, no generated function)
+line 715: ports.briefing.put(`rebase-${taskId}-${handle}`, rebaseBriefingContent) → rebaseBriefingPath
+line 729: rebaseBriefingPath passed into ExecutorPortInput for kind="rebase" executor
 ```
+
+> **Note (verified 2026-05-14):** The `agent-runtime-redesign` feature added a `kind="rebase"` executor path in `main.ts`. Its briefing is an inline string (not from a briefing module function) but still written via `ports.briefing.put`. This path was absent from the original design and must be included in the removal scope.
 
 **`dispatch-reviewer.ts`** (reviewer executor dispatch):
 ```
@@ -134,10 +139,11 @@ dispatch(ExecutorInput)  ──▶    requireEnv: TASK_ID, FEATURE_ID, MGMT_REPO
 | `BriefingTransportPort` in `runtime/abi/src/ports.ts` | Remove interface |
 | `LocalFileBriefingAdapter` (`runtime/orchestrator/src/adapters/briefing/local-file.ts`) | Delete file |
 | `ports.briefing` field in `RuntimePorts` | Remove |
-| `briefing.put(...)` calls in `main.ts` and `dispatch-reviewer.ts` | Remove |
+| `briefing.put(...)` calls in `main.ts` (impl, fix, and rebase paths) and `dispatch-reviewer.ts` | Remove |
 | `briefingPath` in `ExecutorInput` | Remove field |
 | `BRIEFING_PATH` row in `runtime/abi/docs/abi-spec.md` | Remove; add changelog note |
-| `BRIEFING_PATH` in `subprocess.ts` and `docker-run.ts` env setup | Remove |
+| `BRIEFING_PATH` in `subprocess.ts` and `claude-docker-run.ts` env setup | Remove |
+| `briefing: new LocalFileBriefingAdapter()` in `local-docker.ts` | Remove (verified present alongside `local-subprocess.ts`) |
 
 ### What is added to the executor
 
@@ -147,7 +153,8 @@ dispatch(ExecutorInput)  ──▶    requireEnv: TASK_ID, FEATURE_ID, MGMT_REPO
 | `runtime/executors/claude/src/briefing/agent-context.ts` | Move + adapt (reads mgmt repo files) |
 | `runtime/executors/claude/src/briefing/fix-briefing.ts` | Move + adapt |
 | `runtime/executors/claude/src/briefing/reviewer-briefing.ts` | Move + adapt |
-| `runtime/executors/claude/src/index.ts` | Replace `requireEnv("BRIEFING_PATH")` + file read with `buildBriefing()` call |
+| `runtime/executors/claude/src/briefing/rebase-briefing.ts` | New — builds rebase context from env vars (`TASK_REPO_BRANCH`, `TASK_BASE_BRANCH`); no mgmt repo clone needed |
+| `runtime/executors/claude/src/index.ts` | Replace `requireEnv("BRIEFING_PATH")` + file read with `buildBriefing()` call; dispatch to rebase variant when `KIND=rebase` |
 
 ### ABI version
 
@@ -224,18 +231,21 @@ runtime/orchestrator/src/main.ts                           remove generateBriefi
 runtime/orchestrator/src/pr-response/dispatch-reviewer.ts  remove generateReviewerBriefing + writeBriefing
 runtime/orchestrator/src/runtime-ports.ts                  remove briefing port field
 runtime/orchestrator/src/profiles/local-subprocess.ts      remove LocalFileBriefingAdapter
-runtime/orchestrator/src/adapters/executor/subprocess.ts   remove BRIEFING_PATH from env
-runtime/orchestrator/src/adapters/executor/docker-run.ts   remove BRIEFING_PATH from env
-runtime/executors/claude/src/briefing/                     NEW — moved + adapted from orchestrator
-runtime/executors/claude/src/index.ts                      replace BRIEFING_PATH read with buildBriefing()
+runtime/orchestrator/src/adapters/executor/subprocess.ts      remove BRIEFING_PATH from env
+runtime/orchestrator/src/adapters/executor/claude-docker-run.ts  remove BRIEFING_PATH from env
+runtime/orchestrator/src/profiles/local-docker.ts             remove LocalFileBriefingAdapter wiring
+runtime/executors/claude/src/briefing/                        NEW — moved + adapted from orchestrator
+runtime/executors/claude/src/briefing/rebase-briefing.ts      NEW — rebase variant (env-var derived)
+runtime/executors/claude/src/index.ts                         replace BRIEFING_PATH read with buildBriefing(); handle KIND=rebase
 runtime/orchestrator/tests/agent-context.test.ts           DELETE
 runtime/orchestrator/tests/fix-briefing.test.ts            DELETE
 runtime/orchestrator/tests/reviewer-briefing.test.ts       DELETE
-runtime/orchestrator/tests/dispatch-reviewer.test.ts       update — no briefingPath in fixtures
+runtime/orchestrator/tests/dispatch-reviewer.test.ts       update — no briefingPath in fixtures; remove briefing file assertions
 runtime/orchestrator/tests/subprocess-w3.test.ts           update — no briefingPath in fixtures
 runtime/orchestrator/tests/seam-executor-dispatch.test.ts  update — no briefingPath in fixtures
+runtime/orchestrator/tests/adapters.test.ts                update — remove LocalFileBriefingAdapter tests
 runtime/abi/tests/fake-ports.test.ts                       update — no briefingPath in fakeInput
-runtime/executors/claude/tests/briefing/                   NEW — unit tests for buildBriefing variants
+runtime/executors/claude/tests/briefing/                   NEW — unit tests for buildBriefing variants (impl, fix, reviewer, rebase)
 ```
 
 ---
