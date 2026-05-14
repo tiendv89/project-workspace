@@ -15,7 +15,7 @@ Users need the dashboard to load workspace data across sessions and devices with
 
 ## Goals
 
-- Mirror GitHub workspace data (features, tasks, documents, activity) to a server-backed database after import or sync.
+- Keep workspace data — features, tasks, documents, and activity — stored server-side so the UI can load it without reading GitHub directly.
 - Provide stable backend read APIs for workspace list, workspace detail, feature detail, task detail, source documents, and activity.
 - Let users save a workspace once and reopen it across sessions and devices without re-importing.
 - Serve stale cached data when a GitHub sync fails, rather than returning an error that blanks the board.
