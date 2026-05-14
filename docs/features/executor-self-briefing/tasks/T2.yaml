@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: change_requested
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T15:13:51.471Z
+  last_updated_at: 2026-05-14T15:20:35.110Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/156
   status: open
@@ -96,6 +96,10 @@ log:
       functional T2 subtasks are correctly implemented; fix is to delete the
       'briefing references prUrl and resultPath' test block."
     at: 2026-05-14T15:13:51.471Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T15:20:35.110Z
+    note: Fix agent claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
