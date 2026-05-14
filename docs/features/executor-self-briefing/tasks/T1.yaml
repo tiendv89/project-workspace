@@ -27,6 +27,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T10:23:24.069Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:23:38.438Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/product-spec.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/product-spec.md"
+    rag_query: ABI contract — remove briefingPath executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/231
   status: open
