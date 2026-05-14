@@ -27,16 +27,17 @@ Key constraints:
 
 ## 2. Problem Framing
 
-Three things must be built:
+Two things must be built:
 
-1. **Source ingestion**: fetch a GitHub management repository, parse its workspace YAML and feature documents, and store a normalised snapshot in PostgreSQL.
-2. **Source normalisation**: expose a common workspace model through backend DTOs regardless of whether the data came from a fresh GitHub read or a cached database snapshot.
-3. **Read API**: serve workspace list, workspace detail, feature detail, task detail, source documents, and activity through stable REST routes that the UI (`workspace-tabs-data-flow`) can consume.
+1. **Source ingestion**: fetch a GitHub management repository on import or resync, parse its workspace YAML and feature documents, and persist a normalised snapshot in PostgreSQL.
+2. **Read API**: serve workspace list, workspace detail, feature detail, task detail, source documents, and activity from the database through stable REST routes that the UI (`workspace-tabs-data-flow`) consumes.
+
+The UI always reads from the backend API. It does not need to know whether the underlying data came from a fresh GitHub fetch or a cached snapshot — that distinction belongs to the backend's stale-state markers, not to the API contract shape.
 
 What must remain stable:
 - Existing task YAML ownership, agent claim protocol, and workflow lifecycle are unchanged.
 - No write path to task state. The database layer stores read-only mirrors.
-- GitHub is still used for import and resync — it is not cut out, only moved behind the backend boundary.
+- GitHub is used for import and resync only — all UI reads come from the database.
 
 ## 3. Options Considered
 
@@ -79,21 +80,27 @@ Chosen.
 ### Architecture
 
 ```text
-GitHub management repository
-  → GitHubWorkspaceAdapter   (parse repo content → WorkspaceDTOs)
-    ↓
-WorkspaceSourceService       (orchestrate import / sync / fallback)
-    ↓               ↓
-PostgreSQL DB      API routes  → UI (workspace-tabs-data-flow)
-    ↑
-DbWorkspaceAdapter             (read/write snapshots from PostgreSQL)
+WRITE PATH (import / sync):
+  GitHub repository
+    → GitHubWorkspaceAdapter   (fetch + parse → WorkspaceSnapshot)
+      → WorkspaceService       (orchestrate + stale-fallback logic)
+        → DbWorkspaceAdapter   (persist snapshot to PostgreSQL)
+
+READ PATH (all UI reads):
+  API routes
+    → WorkspaceService
+      → DbWorkspaceAdapter     (read from PostgreSQL)
+        → SourceState attached (stale flag, last synced time, error)
+          → UI (workspace-tabs-data-flow)
 ```
 
-On import: `GitHubWorkspaceAdapter` fetches and parses the repo → `WorkspaceSourceService` calls `DbWorkspaceAdapter` to persist the snapshot → API routes serve the result.
+On import: `GitHubWorkspaceAdapter` fetches and parses the repo → `WorkspaceService` calls `DbWorkspaceAdapter.saveSnapshot` → API route returns the result.
 
-On read: `WorkspaceSourceService` calls `DbWorkspaceAdapter` → returns cached snapshot with `SourceState`.
+On read: `WorkspaceService` calls `DbWorkspaceAdapter` → attaches `SourceState` → returns to API route.
 
-On sync: same as import; on success the snapshot is updated; on failure the existing snapshot is returned with `stale: true`.
+On sync: same write path as import; on success snapshot is updated; on failure `WorkspaceService` returns the existing active snapshot with `SourceState.stale = true`.
+
+The database schema is defined in `database/schema.dbml` (repo root) and versioned under `database/v<NNN>/`. See `docs/overview.md` § Database Schema for the versioning rules.
 
 ### Backend Technology Stack
 
@@ -106,32 +113,37 @@ On sync: same as import; on success the snapshot is updated; on failure the exis
 - Connection config: `DATABASE_URL` for runtime queries; `DIRECT_DATABASE_URL` for Prisma migrations when the Postgres host provides separate pooled and direct URLs.
 - Tests: NestJS unit tests + integration tests against a real PostgreSQL instance.
 
-### Source Adapter Contract
+### Adapter Boundaries
 
-Define a typed boundary in `workflow-backend` that isolates source-specific logic from controllers:
+Two adapters with separate, non-overlapping responsibilities:
+
+**`GitHubWorkspaceAdapter`** — ingest only (no reads):
 
 ```ts
-type WorkspaceSourceKind = "github" | "database";
-
-interface WorkspaceSourceAdapter {
-  kind: WorkspaceSourceKind;
-  listWorkspaces(): Promise<WorkspaceSummary[]>;
-  getWorkspace(workspaceId: string): Promise<WorkspaceDetail>;
-  getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>;
-  getTask(workspaceId: string, taskId: string): Promise<TaskDetail>;
-  listFeatureTasks(workspaceId: string, featureId: string): Promise<TaskSummary[]>;
-  listActivity(workspaceId: string, scope: ActivityScope): Promise<ActivityEvent[]>;
+interface GitHubWorkspaceAdapter {
+  importWorkspace(input: ImportInput): Promise<WorkspaceSnapshot>
+  syncWorkspace(workspaceId: string, repoUrl: string, ref: string): Promise<WorkspaceSnapshot>
 }
 ```
 
-Import and sync are service-level operations, not generic adapter methods:
+This adapter fetches the GitHub repository, parses YAML and markdown, and returns a `WorkspaceSnapshot` value object. It does not read from or write to the database. The service layer owns the persistence call.
+
+**`DbWorkspaceAdapter`** — read/write to PostgreSQL (no GitHub calls):
 
 ```ts
-importWorkspaceFromGitHub(input: ImportInput): Promise<WorkspaceDetail>
-syncWorkspaceFromGitHub(workspaceId: string): Promise<WorkspaceDetail>
+interface DbWorkspaceAdapter {
+  listWorkspaces(): Promise<WorkspaceSummary[]>
+  getWorkspace(workspaceId: string): Promise<WorkspaceDetail>
+  getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>
+  getTask(workspaceId: string, taskId: string): Promise<TaskDetail>
+  listFeatureTasks(workspaceId: string, featureId: string): Promise<TaskSummary[]>
+  listActivity(workspaceId: string, scope: ActivityScope): Promise<ActivityEvent[]>
+  saveSnapshot(workspaceId: string, snapshot: WorkspaceSnapshot): Promise<void>
+  getActiveSnapshot(workspaceId: string): Promise<WorkspaceSnapshot | null>
+}
 ```
 
-The exact names can follow existing `workflow-backend` conventions. The boundary requirement is that GitHub parsing and database reads do not appear in controllers or route handlers.
+The exact method names can follow existing `workflow-backend` conventions. The boundary requirement is that GitHub parsing does not appear in `DbWorkspaceAdapter` and database calls do not appear in `GitHubWorkspaceAdapter`.
 
 ### Canonical Backend DTOs
 

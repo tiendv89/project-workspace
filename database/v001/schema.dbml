@@ -1,0 +1,138 @@
+// workspace-data-backend v001
+// Workspace data backend — GitHub sync and read API
+// Visualise at: https://dbdiagram.io (paste this file)
+
+Table workspaces {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  slug         text        [unique, not null, note: 'Human-readable key derived from repo name']
+  name         text        [not null]
+  repo_url     text        [not null, note: 'GitHub repository URL']
+  repo_owner   text        [not null]
+  repo_name    text        [not null]
+  default_branch text
+  workspace_config jsonb   [note: 'Parsed workspace.yaml content']
+  active_snapshot_id uuid  [ref: > workspace_snapshots.id]
+  source_state jsonb       [not null, note: 'stale flag, partial flag, last synced time, error summary']
+  created_at   timestamptz [not null, default: `now()`]
+  updated_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    slug [unique]
+    (repo_owner, repo_name) [unique]
+    updated_at
+    active_snapshot_id
+  }
+}
+
+Table workspace_snapshots {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id uuid        [not null, ref: > workspaces.id]
+  source_kind  text        [not null, note: 'github | database']
+  source_ref   text        [not null, note: 'branch or ref used for this snapshot']
+  commit_sha   text
+  status       text        [not null, note: 'fresh | partial | stale | failed']
+  started_at   timestamptz [not null]
+  completed_at timestamptz
+  error_code   text
+  error_message text
+  metadata     jsonb       [note: 'counts, parser warnings, skipped files']
+  created_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, created_at)
+    (workspace_id, status)
+    (workspace_id, commit_sha)
+  }
+}
+
+Table workspace_features {
+  id             uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id   uuid        [not null, ref: > workspaces.id]
+  snapshot_id    uuid        [not null, ref: > workspace_snapshots.id]
+  feature_id     text        [not null, note: 'e.g. executor-self-briefing']
+  title          text        [not null]
+  feature_status text
+  current_stage  text
+  next_action    text
+  stages         jsonb       [note: 'Full parsed stages object from status.yaml']
+  history        jsonb       [note: 'Full parsed history array from status.yaml']
+  source_path    text        [not null, note: 'e.g. docs/features/executor-self-briefing/status.yaml']
+  source_hash    text
+  created_at     timestamptz [not null, default: `now()`]
+  updated_at     timestamptz [not null, default: `now()`]
+
+  indexes {
+    (snapshot_id, feature_id) [unique]
+    (workspace_id, feature_id)
+    (workspace_id, feature_status)
+    (workspace_id, current_stage)
+  }
+}
+
+Table workspace_feature_documents {
+  id            uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id  uuid        [not null, ref: > workspaces.id]
+  snapshot_id   uuid        [not null, ref: > workspace_snapshots.id]
+  feature_id    text        [not null]
+  document_type text        [not null, note: 'product_spec | technical_design | tasks_md | status_yaml']
+  source_path   text        [not null]
+  content       text        [note: 'Raw file content (YAML or markdown)']
+  content_hash  text
+  created_at    timestamptz [not null, default: `now()`]
+
+  indexes {
+    (snapshot_id, feature_id, document_type) [unique]
+    (workspace_id, feature_id)
+  }
+}
+
+Table workspace_tasks {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id uuid        [not null, ref: > workspaces.id]
+  snapshot_id  uuid        [not null, ref: > workspace_snapshots.id]
+  feature_id   text        [not null]
+  task_id      text        [not null, note: 'e.g. T1']
+  title        text        [not null]
+  repo         text        [note: 'Implementation repo id from workspace.yaml']
+  status       text
+  depends_on   jsonb       [not null, note: 'Array of task ids; [] when none']
+  blocked_reason text
+  branch       text
+  execution    jsonb
+  pr           jsonb
+  workspace_pr jsonb
+  log          jsonb
+  source_path  text        [not null]
+  source_hash  text
+  created_at   timestamptz [not null, default: `now()`]
+  updated_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (snapshot_id, feature_id, task_id) [unique]
+    (workspace_id, feature_id)
+    (workspace_id, status)
+    (workspace_id, repo)
+  }
+}
+
+Table workspace_activity_events {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id uuid        [not null, ref: > workspaces.id]
+  snapshot_id  uuid        [not null, ref: > workspace_snapshots.id]
+  scope_type   text        [not null, note: 'workspace | feature | task']
+  feature_id   text
+  task_id      text
+  action       text
+  actor        text
+  occurred_at  text        [note: 'Raw parseable timestamp from source event']
+  note         text
+  sequence     integer     [not null, note: 'Position in source array for stable ordering']
+  raw_event    jsonb       [not null]
+  created_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, scope_type, occurred_at)
+    (workspace_id, feature_id, occurred_at)
+    (workspace_id, feature_id, task_id, occurred_at)
+  }
+}
