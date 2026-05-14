@@ -1,7 +1,7 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: change_requested
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T13:39:24.302Z
+  last_updated_at: 2026-05-14T13:40:59.677Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/157
   status: open
@@ -90,6 +90,10 @@ log:
       landed. T4 executor implementation is complete and correct; rebase after
       T2+T3 merge."
     at: 2026-05-14T13:39:24.302Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T13:40:59.677Z
+    note: Fix agent claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
