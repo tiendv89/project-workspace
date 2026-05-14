@@ -1,9 +1,9 @@
 feature_id: executor-self-briefing
 title: "Executor-owned briefing — move prompt construction out of the orchestrator"
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tech lead produces task breakdown under docs/features/executor-self-briefing/tasks/.
+next_action: Wave 1 task T1 is ready. Implementation may begin.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: "2026-05-14T17:06:10+0700"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-14T17:18:42+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: "2026-05-14T17:18:42+0700"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -59,6 +63,12 @@ history:
     note: >-
       Technical design approved. Feature advances to task planning. Tech lead to
       produce task breakdown under docs/features/executor-self-briefing/tasks/.
+  - action: tasks_approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-14T17:18:42+0700"
+    note: >-
+      Tasks approved. Feature advanced to ready_for_implementation. T1 activated
+      (no dependencies). T2, T3, T4 remain todo pending T1 completion.
 
 revalidation:
   product_spec_required: false

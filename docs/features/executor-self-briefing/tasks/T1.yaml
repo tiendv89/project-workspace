@@ -1,7 +1,7 @@
 id: T1
 title: ABI contract — remove briefingPath
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 
@@ -24,3 +24,7 @@ log:
       Task created during tech-lead Phase 2 breakdown. Removes briefingPath
       from ExecutorInput and BriefingTransportPort from ports.ts — the ABI
       change that gates all Wave 2 tasks.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: "2026-05-14T10:18:42Z"
+    note: "Task activated on tasks-stage approval — dependencies met."
