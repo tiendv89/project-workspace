@@ -1,7 +1,7 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -55,6 +55,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T11:36:17.651Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-14T20:46:06+0700
+    note: >-
+      Human reset to ready. Agent was terminated after second claim with no PR
+      opened (pr.url null). WIP draft PR 156 on agent-workflow was a post-hoc
+      recovery artifact. Task re-eligible for claim.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
