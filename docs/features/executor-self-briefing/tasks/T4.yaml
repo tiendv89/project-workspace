@@ -1,7 +1,7 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: "2026-05-14T13:42:32+0000"
+  last_updated_at: 2026-05-14T13:47:01.920Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/157
   status: open
@@ -96,8 +96,8 @@ log:
     note: Fix agent claimed.
   - action: comments_addressed
     by: norepy@tiendv.dev
-    at: "2026-05-14T13:42:32+0000"
-    note: "No unresolved threads found; PR confirmed ready-for-review."
+    at: 2026-05-14T13:42:32+0000
+    note: No unresolved threads found; PR confirmed ready-for-review.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/234
   status: open
