@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T10:59:10.813Z
+  last_updated_at: 2026-05-14T11:01:59+0000
 pr:
   url: null
   status: null
@@ -38,6 +38,14 @@ log:
       docs/features/executor-self-briefing/technical-design.md"
     rag_query: Adapters — remove BRIEFING_PATH env executor-self-briefing
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:01:59+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/233
   status: open
