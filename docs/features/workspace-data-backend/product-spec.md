@@ -13,10 +13,6 @@ GitHub still owns writes for task state (claims, transitions, approvals). That w
 
 Users need the dashboard to load workspace data across sessions and devices without re-entering repository credentials every time. When a GitHub sync fails, users should still see the last known state rather than a blank screen.
 
-## Dependencies
-
-- **`workflow-db`** — provides the relational database that this feature writes workspace snapshots into. The workspace sync and cache layer builds on top of the same database infrastructure.
-
 ## Goals
 
 - Mirror GitHub workspace data (features, tasks, documents, activity) to a server-backed database after import or sync.
