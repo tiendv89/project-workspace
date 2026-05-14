@@ -1,15 +1,15 @@
 id: T4
 title: Claude executor — self-briefing module
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/executor-self-briefing-T4
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-05-14T17:15:48+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-14T11:32:51.833Z
 pr:
   url: null
   status: null
@@ -26,3 +26,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T10:57:13.969Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:32:51.833Z
+    note: Claimed via git-based claim protocol.
