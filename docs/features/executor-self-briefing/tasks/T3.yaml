@@ -1,15 +1,15 @@
 id: T3
 title: Adapters — remove BRIEFING_PATH env
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T1
-blocked_reason: null
+blocked_reason: Review cycle limit reached. Human review required.
 branch: feature/executor-self-briefing-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T12:19:51.072Z
+  last_updated_at: 2026-05-14T12:20:17.642Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/155
   status: open
@@ -105,6 +105,11 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T12:19:51.072Z
     note: Fix agent claimed.
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Review cycle limit reached. Human review required.
+    at: 2026-05-14T12:20:17.642Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/233
   status: open
+blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
