@@ -1,9 +1,9 @@
 feature_id: workspace-tabs-data-flow
 title: Workspace Tabs and End-to-End Workspace Data Flow
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Review and approve the revised technical design before task approval.
+feature_status: ready_for_implementation
+current_stage: ready_for_implementation
+next_action: T1 is ready to claim. T2 and T3 wait for T1 to complete.
 
 stages:
   product_spec:
@@ -29,10 +29,10 @@ stages:
         at: 2026-05-14T19:34:08+07:00
         comment: Revised product spec approved for workspace-tabs-data-flow end-to-end data flow.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: Draft updated to standardize backend implementation on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-15T00:13:07+07:00
+    review_comment: Technical design approved. Feature advances to task planning.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -54,11 +54,15 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:19:26+07:00
         comment: Standardized backend implementation stack on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T00:13:07+07:00
+        comment: Technical design approved. Feature advances to task planning.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: Task breakdown updated so backend work uses NestJS modules/controllers/services and Supabase Postgres with Prisma schema/migrations.
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-15T00:15:49+07:00
+    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
@@ -80,6 +84,14 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:19:26+07:00
         comment: Backend tasks updated to require NestJS modules/controllers/services and Supabase Postgres with Prisma schema/migrations.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T00:13:07+07:00
+        comment: Task breakdown submitted for approval after technical design approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T00:15:49+07:00
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -163,9 +175,24 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:34:08+07:00
     note: Revised product spec approved. Feature advances to in_tdd; technical design and tasks still require approval.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T00:13:07+07:00
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T00:13:07+07:00
+    note: Task breakdown submitted for approval. Tasks remain todo until tasks-stage approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T00:15:49+07:00
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: true
-  tasks_required: true
+  technical_design_required: false
+  tasks_required: false
   deployment_checklist_required: false
