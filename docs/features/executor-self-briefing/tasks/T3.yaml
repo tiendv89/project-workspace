@@ -1,7 +1,7 @@
 id: T3
 title: Adapters — remove BRIEFING_PATH env
 repo: workflow
-status: change_requested
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T11:58:46.147Z
+  last_updated_at: 2026-05-14T12:00:19.724Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/155
   status: open
@@ -66,6 +66,10 @@ log:
       changes (subprocess.ts + docker-run.ts) are correct but tsc fails until T2
       also merges. PR cannot merge with failing CI.
     at: 2026-05-14T11:58:46.147Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:00:19.724Z
+    note: Fix agent claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/233
   status: open
