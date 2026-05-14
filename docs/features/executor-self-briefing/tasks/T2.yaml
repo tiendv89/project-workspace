@@ -1,15 +1,15 @@
 id: T2
 title: Orchestrator — delete briefing module
 repo: workflow
-status: in_progress
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/executor-self-briefing-T2
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T15:26:15+0000
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-14T23:32:57+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/156
   status: open
@@ -104,6 +104,15 @@ log:
     by: norepy@tiendv.dev
     at: "2026-05-14T15:26:15+0000"
     note: "No unresolved threads found; PR confirmed ready-for-review."
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-14T23:32:57+0700
+    note: >-
+      Human reset to change_requested. Previous fix executor looped without fixing
+      CI — it took the no-comment fast path and declared success without deleting
+      the stale test block. CI still failing on PR #156. Fix: delete the
+      'briefing references prUrl and resultPath' describe block in
+      tests/dispatch-reviewer.test.ts.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/232
   status: open
