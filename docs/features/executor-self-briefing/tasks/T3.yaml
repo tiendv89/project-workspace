@@ -28,6 +28,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T10:59:10.813Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:59:22.793Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Adapters — remove BRIEFING_PATH env executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/233
   status: open
