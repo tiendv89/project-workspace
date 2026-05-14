@@ -1,17 +1,21 @@
 feature_id: executor-self-briefing
 title: "Executor-owned briefing — move prompt construction out of the orchestrator"
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve product-spec.md.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead produces technical-design.md.
 
 stages:
   product_spec:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-14T16:47:54+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: "2026-05-14T16:47:54+0700"
+        comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -39,6 +43,12 @@ history:
       Feature initiated to track the architectural refactor of moving briefing
       construction from the orchestrator into each executor implementation.
       Triggered by volume-sharing band-aid in PR #153 of tiendv89/agent-workflow.
+  - action: product_spec_approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-14T16:47:54+0700"
+    note: >-
+      Product spec approved. Feature advanced to in_tdd. Tech lead to produce
+      technical-design.md next.
 
 revalidation:
   product_spec_required: false
