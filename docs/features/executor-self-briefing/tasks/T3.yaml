@@ -1,7 +1,7 @@
 id: T3
 title: Adapters — remove BRIEFING_PATH env
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/executor-self-briefing-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-14T12:00:19.724Z
+  last_updated_at: "2026-05-14T12:02:25+0000"
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/155
   status: open
@@ -70,6 +70,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-14T12:00:19.724Z
     note: Fix agent claimed.
+  - action: comments_addressed
+    by: norepy@tiendv.dev
+    at: "2026-05-14T12:02:25+0000"
+    note: >-
+      Resolved 1 inline review thread; PR converted to ready-for-review.
+      Reviewer confirmed removal is correct (nit only — CI failure is from
+      main.ts in T2 scope, not T3).
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/233
   status: open
