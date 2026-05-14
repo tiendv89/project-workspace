@@ -1,0 +1,22 @@
+id: T2
+title: Test coverage — DockerRunAdapter / ClaudeDockerRunAdapter local-docker changes
+status: todo
+depends_on: []
+repo: workflow
+branch: feature/agent-execution-environment-T2
+
+execution:
+  actor_type: agent
+
+pr: null
+
+log:
+  - at: "2026-05-14T12:03:38+0700"
+    action: created
+    actor: matthew@swellnetwork.io
+    note: >-
+      Verify all existing tests pass after the local-docker PR (#152) merges.
+      Add unit tests for ClaudeDockerRunAdapter (env passthrough, IMPLEMENTATION_MODEL
+      forwarding) and DockerRunAdapter generic base (no Claude-specific env leaking
+      through). Add integration-level smoke test for the compose executor build-only
+      service pattern if feasible.

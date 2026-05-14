@@ -1,0 +1,22 @@
+id: T1
+title: Executor adapter factory — orchestrator loads adapter by executor type, not hardcoded import
+status: todo
+depends_on: []
+repo: workflow
+branch: feature/agent-execution-environment-T1
+
+execution:
+  actor_type: agent
+
+pr: null
+
+log:
+  - at: "2026-05-14T12:03:38+0700"
+    action: created
+    actor: matthew@swellnetwork.io
+    note: >-
+      Adapter factory task. Currently main.ts hardcodes a dynamic import path
+      for ClaudeDockerRunAdapter. Refactor so the orchestrator resolves the
+      adapter via a factory keyed on executor type — executor teams register
+      their adapter package; the orchestrator never imports a concrete adapter
+      class directly.
