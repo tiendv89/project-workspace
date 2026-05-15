@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -10,8 +10,8 @@ blocked_reason: null
 branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-15T14:29:01+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-15T07:30:31.049Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
   status: open
@@ -113,9 +113,12 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-15T14:29:01+0700
-    note: >-
-      Human unblock — API usage limit caused zero-work failures (0 tokens). No
+    note: Human unblock — API usage limit caused zero-work failures (0 tokens). No
       implementation was done; resetting to ready for re-execution.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:30:31.049Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
