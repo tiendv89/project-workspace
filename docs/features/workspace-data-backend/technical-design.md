@@ -79,50 +79,78 @@ Chosen.
 
 ### Architecture
 
-```text
-WRITE PATH (import / sync):
-  GitHub repository
-    → GitHubWorkspaceAdapter   (fetch + parse → WorkspaceSnapshot)
-      → WorkspaceService       (orchestrate + stale-fallback logic)
-        → DbWorkspaceAdapter   (persist snapshot to PostgreSQL)
+Two backend services share one PostgreSQL database. They have separate responsibilities and can be deployed independently.
 
-READ PATH (all UI reads):
-  API routes
-    → WorkspaceService
-      → DbWorkspaceAdapter     (read from PostgreSQL)
-        → SourceState attached (stale flag, last synced time, error)
-          → UI (workspace-tabs-data-flow)
+```text
+┌─────────────────────────────────────────────────────────┐
+│  adapter-service  (write side — not internet-facing)    │
+│                                                         │
+│  GitHub webhook ──→ WebhookHandler                      │
+│                       ├─ base branch  → full reconcile  │
+│                       ├─ feature branch → targeted sync │
+│                       └─ task branch  → enqueue         │
+│                                                         │
+│  SyncWorker (per workspace) ──→ drains queue            │
+│    └─ fetches HEAD of task branch → upserts core tables │
+│                                                         │
+│  SyncService ──→ full reconciliation                    │
+│    └─ triggered by: import RPC, manual RPC, webhook     │
+│                                                         │
+│  Writes to: workspace_features, workspace_feature_docs, │
+│             workspace_tasks, workspace_activity_events, │
+│             workspace_repos                             │
+│  Owns:      workspace_github_sources, workspace_snaps,  │
+│             workspace_sync_runs, workspace_sync_queue   │
+└─────────────────────────────────────────────────────────┘
+                          │ shared PostgreSQL
+┌─────────────────────────────────────────────────────────┐
+│  api-service  (read side — internet-facing)             │
+│                                                         │
+│  GET  /api/workspaces                                   │
+│  GET  /api/workspaces/:id                               │
+│  GET  /api/workspaces/:id/features/:featureId           │
+│  GET  /api/workspaces/:id/features/:featureId/tasks     │
+│  GET  /api/workspaces/:id/tasks/:taskId                 │
+│  GET  /api/workspaces/:id/activity                      │
+│  POST /api/workspaces/import   ──→ RPC → adapter        │
+│  POST /api/workspaces/:id/sync ──→ RPC → adapter        │
+│                                                         │
+│  Reads from: core tables only (workspaces, repos,       │
+│              features, tasks, documents, activity)      │
+│  Derives staleness from: workspace_sync_runs            │
+└─────────────────────────────────────────────────────────┘
+                          ↑ consumed by
+                  digital-factory-ui
 ```
 
-On import: `GitHubWorkspaceAdapter` fetches and parses the repo → `WorkspaceService` calls `DbWorkspaceAdapter.saveSnapshot` → API route returns the result.
+`import` and `sync` are triggered via the `api-service` — it validates the request and issues an RPC call to `adapter-service`. The adapter does the actual GitHub fetch and upserts. The `api-service` does not call GitHub directly.
 
-On read: `WorkspaceService` calls `DbWorkspaceAdapter` → attaches `SourceState` → returns to API route.
+On read: `api-service` queries core tables → derives `SourceState` from latest `workspace_sync_runs` row → returns to the UI.
 
-On sync: same write path as import; on success snapshot is updated; on failure `WorkspaceService` returns the existing active snapshot with `SourceState.stale = true`.
+On sync failure: core tables are untouched (transaction rolled back); `SourceState.stale = true` is derived from the failed `workspace_sync_runs` row — no fallback snapshot pointer needed.
 
 The database schema is defined in `database/schema.dbml` (repo root) and versioned under `database/v<NNN>/`. See `docs/overview.md` § Database Schema for the versioning rules.
 
 ### Sync Strategy
 
-There are two sync modes with different scope and cost. The trigger determines which mode runs.
+There are two sync modes and one async queue mechanism. The trigger determines which runs.
 
-#### Sync modes
+**Full reconciliation** — reads everything from the base branch from scratch. Upserts all core tables in one transaction. Cancels any pending task queue items before running — the full read supersedes all queued partial updates.
 
-**Full reconciliation** — reads everything from the base branch (`main`) from scratch. Does not assume what changed. Produces a new snapshot record. Guarantees the database is consistent with the repo.
+**Targeted sync** — reads only the changed feature's artifacts. Upserts only the affected rows for that feature. Used for webhook events on feature branches.
 
-**Targeted sync** — reads only the files identified as changed in a push event. Updates only the affected rows in the active snapshot in place. No new snapshot record is created. Faster but assumes the push payload is complete and correct.
+**Task sync queue** — webhook events on task branches are enqueued rather than processed on-the-fly. A background worker drains the queue per workspace, always fetching the current HEAD of the task branch at drain time. One pending item per task is enforced — out-of-order webhook delivery is safe because the worker fetches the latest state regardless of arrival order.
 
 #### Trigger → mode mapping
 
 | Trigger | Branch | Mode | Scope |
 |---|---|---|---|
 | `import` | — | Full reconciliation | Entire workspace (first time) |
-| `poll` | base branch (`main`) | Full reconciliation | Entire workspace |
+| `manual` | — | Full reconciliation | Entire workspace |
 | `webhook` | `main` (base branch) | Full reconciliation | Entire workspace — a merge landed |
 | `webhook` | `feature/<feature-id>` | Targeted sync | Feature artifacts only |
-| `webhook` | `feature/<feature-id>-T<n>` | Targeted sync | Single task YAML only |
-
-**Polling is the primary sync for local development.** Webhook is used in production for low-latency updates. Both modes must produce a correct database state — targeted sync is an optimisation, not a shortcut that can leave the DB inconsistent.
+| `webhook` | `feature/<feature-id>-T<n>` | Queue | Single task (deduped, drained async) |
+| Any other branch | — | Ignored | — |
 
 #### Branch routing for webhook events
 
@@ -130,73 +158,147 @@ The GitHub push event payload contains `ref` (e.g. `refs/heads/feature/workspace
 
 ```
 base branch (e.g. "main")
+  → Cancel all pending items in workspace_sync_queue for this workspace
   → Full reconciliation of the entire workspace
 
-"feature/<feature-id>"  (no task suffix — ends after feature-id)
+"feature/<feature-id>"  (no task suffix)
   → Targeted sync: read docs/features/<feature-id>/status.yaml
                         docs/features/<feature-id>/product-spec.md
                         docs/features/<feature-id>/technical-design.md
                         docs/features/<feature-id>/tasks.md
-    Update workspace_features + workspace_feature_documents rows
-    in the active snapshot.
+    Upsert/delete workspace_features + workspace_feature_documents rows.
 
 "feature/<feature-id>-T<n>"
-  → Targeted sync: read only docs/features/<feature-id>/tasks/T<n>.yaml
-    Update the single workspace_tasks row in the active snapshot.
+  → Enqueue:
+      INSERT INTO workspace_sync_queue (workspace_id, feature_id, task_id, branch, ...)
+      ON CONFLICT (workspace_id, feature_id, task_id) WHERE status = 'pending'
+      DO UPDATE SET branch = EXCLUDED.branch, queued_at = now()
+    Return 200 immediately. Worker handles the fetch.
 
 Any other branch
-  → Ignore. No sync triggered.
+  → Ignore.
 ```
 
 The feature-id and task-id are extracted from the branch name using the workspace `git.branch_pattern` from `workspace.yaml` (`feature/{feature_id}-{work_id}`).
 
 #### Full reconciliation — step by step
 
-1. Fetch the full repository tree at `HEAD` of the base branch.
-2. Discover all `docs/features/*/status.yaml` paths.
-3. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files.
-4. Parse YAML and markdown into DTOs.
-5. Write a new `workspace_snapshots` row and all child rows (`workspace_features`, `workspace_feature_documents`, `workspace_tasks`, `workspace_activity_events`) inside one transaction.
-6. On success: update `workspaces.active_snapshot_id` to the new snapshot.
-7. On failure: leave `active_snapshot_id` unchanged; mark the snapshot `failed`; set `SourceState.stale = true` on the response.
-8. Write a `workspace_sync_runs` row for audit and debugging regardless of outcome.
+1. Write `workspace_sync_runs` row: `status: running`, `mode: full_reconciliation`, `started_at: now()`.
+2. Cancel all `pending` items in `workspace_sync_queue` for this workspace (`status: cancelled`).
+3. Fetch the full repository tree at `HEAD` of the base branch from GitHub. Record `commit_sha`.
+4. Discover all `docs/features/*/status.yaml` paths.
+5. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files. Parse into DTOs.
+6. `BEGIN TRANSACTION`
+   - Upsert `workspace_features` on `(workspace_id, feature_id)`.
+   - Upsert `workspace_feature_documents` on `(workspace_id, feature_id, document_type)`.
+   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_id)`.
+   - Upsert `workspace_activity_events` on `(workspace_id, feature_id, task_id, sequence)`.
+   - Delete rows no longer present in the fetched set (removed features, deleted tasks, etc.).
+7. `COMMIT`.
+8. Write `workspace_snapshots` row: `commit_sha`, `status: success`, `created_at: now()`.
+9. Update `workspace_sync_runs`: `status: success`, `snapshot_id`, `commit_sha`, `finished_at: now()`.
 
-#### Targeted sync — step by step
+On failure:
+- `ROLLBACK` — core tables are untouched; last good state is preserved.
+- Update `workspace_sync_runs`: `status: failed`, `error_code`, `error_message`, `finished_at: now()`.
 
-1. Parse the push event `commits[]` to collect the union of `added + modified + removed` file paths.
-2. Filter to files matching the expected scope (feature artifacts or a single task YAML).
-3. For each changed file: fetch its content from GitHub at the push `after` SHA.
-4. Parse into DTOs.
-5. Upsert only the affected rows in the active snapshot (`workspace_features`, `workspace_feature_documents`, or `workspace_tasks`). No new snapshot record.
-6. Bump `workspace_snapshots.updated_at` on the active snapshot.
-7. Write a `workspace_sync_runs` row with `trigger: webhook` and the changed file paths in `metadata`.
+#### Targeted sync — step by step (feature level)
 
-#### Snapshot model for targeted syncs
+1. Write `workspace_sync_runs` row: `status: running`, `mode: targeted`, `feature_id`, `started_at: now()`.
+2. Fetch feature artifacts from GitHub: `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`.
+3. `BEGIN TRANSACTION`
+   - Upsert `workspace_features` for this `feature_id`.
+   - Upsert/delete `workspace_feature_documents` for this `feature_id`.
+   - Upsert/delete `workspace_tasks` for this `feature_id`.
+   - Upsert/delete `workspace_activity_events` for this `feature_id`.
+4. `COMMIT`.
+5. Update `workspace_sync_runs`: `status: success`, `finished_at: now()`.
 
-A full reconciliation always creates a new `workspace_snapshots` row (immutable after creation). A targeted sync updates rows within the existing active snapshot in place. The active snapshot record gains a `last_targeted_sync_at` timestamp to distinguish when it was last touched by a targeted update vs when the full snapshot was taken.
+On failure: `ROLLBACK`. Only this feature's rows are unchanged.
 
-This means `workspace_snapshots.created_at` reflects the last full reconciliation time, and `workspace_snapshots.last_targeted_sync_at` reflects the last webhook-triggered partial update.
+#### Task sync queue — enqueue and drain
 
-#### Polling configuration
+The task queue is backed by `asynq` (`github.com/hibiken/asynq`) using Redis. No database table is needed.
 
-| Env var | Default | Description |
-|---|---|---|
-| `SYNC_POLL_ENABLED` | `true` | Enable or disable polling. Set to `false` when webhook is the primary trigger (production). |
-| `SYNC_POLL_INTERVAL_SECONDS` | `300` | How often to poll the base branch for new commits. |
+**Task payload** — the branch is derived from workspace `branch_pattern` + `feature_id` + `task_id` at execution time; it is not stored in the payload:
+```go
+type TaskSyncPayload struct {
+    WorkspaceID string
+    FeatureID   string
+    TaskID      string
+}
+```
 
-On each poll tick: fetch the latest commit SHA on the base branch. If it differs from `workspace_snapshots.commit_sha` of the active snapshot, trigger full reconciliation. Otherwise skip.
+**Enqueue** (webhook handler, synchronous — returns immediately):
+```go
+task := asynq.NewTask("task:sync", payload,
+    asynq.Queue("task-sync"),
+    asynq.Unique(24*time.Hour),           // dedup key = task type + payload
+    asynq.MaxRetry(3),
+    asynq.Backoff(asynq.DefaultBackoff),
+)
+client.Enqueue(task)
+```
+
+`asynq.Unique` ensures only one pending item exists per `(WorkspaceID, FeatureID, TaskID)` for 24 hours. A second webhook for the same task within that window is a no-op — the existing pending item is kept. The worker always fetches current HEAD at execution time, so no branch update is needed on dedup.
+
+**Worker** (`adapter-service` asynq server):
+1. Derive branch from `workspace.branch_pattern` + `feature_id` + `task_id`.
+2. Fetch current `HEAD` of branch from GitHub. Parse task YAML into DTO.
+3. `BEGIN TRANSACTION`
+   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_id)`.
+   - Upsert/delete `workspace_activity_events` for this task.
+4. `COMMIT`.
+
+On failure: asynq retries automatically with backoff up to `MaxRetry`. After max retries the task moves to the dead queue and is visible in `asynqmon`.
+
+**Clear queue on full reconciliation**:
+```go
+inspector := asynq.NewInspector(redisOpt)
+inspector.DeleteAllPendingTasks("task-sync")
+```
+
+All pending task-sync jobs are deleted before the full reconciliation transaction begins. The full read supersedes them.
+
+#### Staleness signal
+
+Derived at read time by `WorkspaceService` — the `workspaces` table carries no sync state:
+
+```sql
+SELECT status, finished_at
+FROM workspace_sync_runs
+WHERE workspace_id = $1
+ORDER BY finished_at DESC NULLS LAST
+LIMIT 1
+```
+
+- Last run `failed` → `stale: true` in response DTO.
+- Last run `success` but `finished_at` older than a configurable threshold → `stale: true`.
+- Otherwise → `stale: false`.
 
 ### Backend Technology Stack
 
+Two Go binaries in `workflow-backend`, sharing one PostgreSQL database and one `sqlc`-generated query package.
+
+| | `adapter-service` | `api-service` |
+|---|---|---|
+| Role | Write side — GitHub sync, webhook ingestion, queue drain | Read side — UI-facing REST API |
+| Internet-facing | No — internal only | Yes |
+| GitHub calls | Yes | No |
+| DB access | Read + write (core + adapter tables) | Read only (core tables) |
+
+Common stack:
 - Language: Go.
 - HTTP framework: `gin` (`github.com/gin-gonic/gin`).
 - Database driver: `pgx/v5` (`github.com/jackc/pgx/v5`) — direct PostgreSQL driver, no ORM.
 - Query layer: `sqlc` (`github.com/sqlc-dev/sqlc`) — generates type-safe Go from SQL queries; SQL is the source of truth for queries, not a Go ORM.
-- Migrations: `goose` (`github.com/pressly/goose/v3`) — SQL migration files, up/down.
+- Migrations: `goose` (`github.com/pressly/goose/v3`) — SQL migration files, up/down. Run once at deploy time, not per service.
 - Database naming: all physical table, column, index, and constraint names use lowercase `snake_case`. Go structs use PascalCase; `sqlc` handles the mapping.
+- Task queue: `asynq` (`github.com/hibiken/asynq`) — Redis-backed distributed task queue used by `adapter-service` for task-branch webhook events. Provides built-in deduplication, retries, and monitoring via `asynqmon`. No custom queue table needed.
 - YAML parsing: `gopkg.in/yaml.v3`.
 - Tests: standard `testing` package; `testcontainers-go` for PostgreSQL integration tests.
-- Connection config: `DATABASE_URL` for runtime (`pgx` DSN); migrations use the same DSN or a direct URL when the host uses a connection pooler.
+- Connection config: `DATABASE_URL` for runtime (`pgx` DSN); `REDIS_URL` for asynq; migrations use the same DSN or a direct URL when the host uses a connection pooler.
+- Inter-service: `adapter-service` exposes an internal RPC (HTTP or gRPC — implementation choice in T2) for `import` and `sync` triggers from `api-service`.
 
 ### Adapter Boundaries
 
@@ -264,67 +366,63 @@ Responsibilities:
 Responsibilities:
 
 - List saved workspaces from PostgreSQL.
-- Read cached workspace, feature, and task detail by ID.
-- Write or replace a workspace snapshot after a successful import or sync (inside a transaction where the database supports it).
-- Update `workspaces.active_snapshot_id` only after the new snapshot is fully written.
-- Return stale cached data when a sync fails and an active snapshot exists.
+- Read current workspace, feature, and task detail by ID (core tables always reflect latest known state — no snapshot join needed).
+- Upsert core tables after a successful import or sync, inside a transaction.
+- On sync failure, core tables are untouched — the adapter returns whatever is currently in the tables; `WorkspaceService` attaches staleness from `workspace_sync_runs`.
+- Derive `SourceState` from the latest `workspace_sync_runs` row, not from a field on `workspaces`.
 - Never expose stored credentials or `local_path` values to UI DTOs.
 
 ### Database Schema
 
 All physical names use lowercase `snake_case`. Generated Go structs use PascalCase; `sqlc` maps them from SQL query definitions and table columns.
 
-#### `workspaces`
+The schema is split into two layers:
 
-One row per saved workspace.
+**Core** — workspace identity and current state. Adapter-agnostic. Survives adapter replacement intact.
+
+**GitHub adapter** — GitHub connection config, sync bookkeeping, and the task sync queue. Removable as a unit when the GitHub adapter is replaced.
+
+#### Core tables
+
+##### `workspaces`
+
+One row per saved workspace. Contains only identity and config — no adapter fields, no sync state.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
 | `id` | uuid PK | yes | Stable workspace id used in API routes. |
-| `slug` | text unique | yes | Human-readable key derived from repo or workspace name. |
+| `slug` | text unique | yes | Human-readable key derived from workspace name. |
 | `name` | text | yes | Display name from `workspace.yaml`. |
-| `repo_url` | text | yes | GitHub repository URL. |
-| `repo_owner` | text | yes | Parsed GitHub owner/org. |
-| `repo_name` | text | yes | Parsed GitHub repo name. |
-| `default_branch` | text | no | Branch used for sync. |
-| `workspace_config` | jsonb | no | Parsed `workspace.yaml` content. |
-| `active_snapshot_id` | uuid FK | no | Points to the current visible snapshot. |
-| `source_state` | jsonb | yes | Stale flag, partial flag, last synced time, error summary. |
+| `management_repo_id` | text | yes | `repos[].id` entry that is the management repo. |
+| `branch_pattern` | text | no | `git.branch_pattern` from `workspace.yaml` — used for webhook branch routing. |
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `slug`; unique `(repo_owner, repo_name)`; index `updated_at`; index `active_snapshot_id`.
+Indexes: unique `slug`; index `updated_at`.
 
-#### `workspace_snapshots`
+##### `workspace_repos`
 
-One row per import or sync result. Immutable after creation.
-
-| Column | Type | Req | Notes |
-|---|---|---|---|
-| `id` | uuid PK | yes | |
-| `workspace_id` | uuid FK | yes | Parent workspace. |
-| `source_kind` | text | yes | `github` or `database`. |
-| `source_ref` | text | yes | Branch or ref used. |
-| `commit_sha` | text | no | Git commit SHA when known. |
-| `status` | text | yes | `fresh`, `partial`, `stale`, or `failed`. |
-| `started_at` | timestamptz | yes | |
-| `completed_at` | timestamptz | no | |
-| `error_code` | text | no | Machine-readable failure code. |
-| `error_message` | text | no | User-readable error summary. |
-| `metadata` | jsonb | no | Counts, parser warnings, skipped files. |
-| `created_at` | timestamptz | yes | |
-
-Indexes: `(workspace_id, created_at)`; `(workspace_id, status)`; `(workspace_id, commit_sha)`.
-
-#### `workspace_features`
-
-One row per feature per snapshot.
+One row per repo declared in `workspace.yaml` `repos[]`. Stable registry that tasks reference by `repo_id`.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `snapshot_id` | uuid FK | yes | |
+| `repo_id` | text | yes | Logical repo identifier, e.g. `workflow-backend`. Matches `repos[].id` in `workspace.yaml` and `repo:` in task YAMLs. |
+| `base_branch` | text | no | Default integration branch for this repo. |
+| `created_at` | timestamptz | yes | |
+| `updated_at` | timestamptz | yes | |
+
+Indexes: unique `(workspace_id, repo_id)`.
+
+##### `workspace_features`
+
+One row per feature. Always reflects current known state — no snapshot versioning.
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `id` | uuid PK | yes | |
+| `workspace_id` | uuid FK | yes | |
 | `feature_id` | text | yes | Folder name, e.g. `executor-self-briefing`. |
 | `title` | text | yes | |
 | `feature_status` | text | no | From `status.yaml`. |
@@ -337,39 +435,38 @@ One row per feature per snapshot.
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(snapshot_id, feature_id)`; `(workspace_id, feature_id)`; `(workspace_id, feature_status)`; `(workspace_id, current_stage)`.
+Indexes: unique `(workspace_id, feature_id)`; index `(workspace_id, feature_status)`; index `(workspace_id, current_stage)`.
 
-#### `workspace_feature_documents`
+##### `workspace_feature_documents`
 
-One row per feature document per snapshot.
+One row per feature document. Always reflects current known state.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `snapshot_id` | uuid FK | yes | |
 | `feature_id` | text | yes | |
 | `document_type` | text | yes | `product_spec`, `technical_design`, `tasks_md`, or `status_yaml`. |
 | `source_path` | text | yes | |
 | `content` | text | no | Raw file content. |
 | `content_hash` | text | no | |
 | `created_at` | timestamptz | yes | |
+| `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(snapshot_id, feature_id, document_type)`; `(workspace_id, feature_id)`.
+Indexes: unique `(workspace_id, feature_id, document_type)`.
 
-#### `workspace_tasks`
+##### `workspace_tasks`
 
-One row per task YAML per snapshot.
+One row per task YAML. Always reflects current known state.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `snapshot_id` | uuid FK | yes | |
 | `feature_id` | text | yes | |
 | `task_id` | text | yes | e.g. `T1`. |
 | `title` | text | yes | |
-| `repo` | text | no | Implementation repo id. |
+| `repo` | text | no | Implementation repo id. Matches `workspace_repos.repo_id`. |
 | `status` | text | no | |
 | `depends_on` | jsonb | yes | Array of task ids. `[]` when none. |
 | `blocked_reason` | text | no | |
@@ -383,9 +480,9 @@ One row per task YAML per snapshot.
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(snapshot_id, feature_id, task_id)`; `(workspace_id, feature_id)`; `(workspace_id, status)`; `(workspace_id, repo)`.
+Indexes: unique `(workspace_id, feature_id, task_id)`; index `(workspace_id, feature_id)`; index `(workspace_id, status)`; index `(workspace_id, repo)`.
 
-#### `workspace_activity_events`
+##### `workspace_activity_events`
 
 Derived timeline rows from feature `history[]` and task `log[]`. Lets the UI fetch timelines without scanning JSON arrays.
 
@@ -393,7 +490,6 @@ Derived timeline rows from feature `history[]` and task `log[]`. Lets the UI fet
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `snapshot_id` | uuid FK | yes | |
 | `scope_type` | text | yes | `workspace`, `feature`, or `task`. |
 | `feature_id` | text | no | |
 | `task_id` | text | no | |
@@ -407,31 +503,57 @@ Derived timeline rows from feature `history[]` and task `log[]`. Lets the UI fet
 
 Indexes: `(workspace_id, scope_type, occurred_at)`; `(workspace_id, feature_id, occurred_at)`; `(workspace_id, feature_id, task_id, occurred_at)`.
 
-#### `workspace_snapshots` (amended)
+#### GitHub adapter tables
 
-Add `last_targeted_sync_at` to the existing table:
+All tables below are owned by the GitHub adapter. Dropping them removes GitHub sync entirely — core tables are unaffected.
 
-| Column | Type | Req | Notes |
-|---|---|---|---|
-| `last_targeted_sync_at` | timestamptz | no | Set when a targeted (webhook) sync updates rows in this snapshot in place. Null until the first targeted sync after the full reconciliation. |
+##### `workspace_github_sources`
 
-#### `workspace_sync_runs`
-
-One row per sync attempt — full reconciliation or targeted. Used for audit, debugging, and detecting missed webhook deliveries.
+GitHub connection config for a workspace. 1:1 with `workspaces`.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `trigger` | text | yes | `import`, `poll`, `webhook_base`, `webhook_feature`, `webhook_task`, `manual`. |
-| `branch` | text | no | Branch that triggered the sync. Null for `import` and `poll`. |
-| `feature_id` | text | no | For `webhook_feature` and `webhook_task` triggers. |
-| `task_id` | text | no | For `webhook_task` trigger. |
+| `repo_url` | text | yes | GitHub repository URL. |
+| `repo_owner` | text | yes | Parsed GitHub owner/org. |
+| `repo_name` | text | yes | Parsed GitHub repo name. |
+| `default_branch` | text | no | Branch used for sync. Defaults to `main` when absent. |
+| `created_at` | timestamptz | yes | |
+| `updated_at` | timestamptz | yes | |
+
+Indexes: unique `workspace_id`; unique `(repo_owner, repo_name)`.
+
+##### `workspace_snapshots`
+
+One row per completed full reconciliation. Adapter bookkeeping only — tracks `commit_sha` so the staleness check has a reference point. No core table references this.
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `id` | uuid PK | yes | |
+| `workspace_id` | uuid FK | yes | |
+| `commit_sha` | text | no | Git commit SHA at time of full reconciliation. |
+| `status` | text | yes | `success` or `failed`. |
+| `created_at` | timestamptz | yes | |
+
+Indexes: `(workspace_id, created_at DESC)`.
+
+##### `workspace_sync_runs`
+
+One row per sync attempt — full or targeted. Primary source for staleness derivation and audit.
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `id` | uuid PK | yes | |
+| `workspace_id` | uuid FK | yes | |
+| `trigger` | text | yes | `import`, `manual`, `webhook_base`, `webhook_feature`, `webhook_task_queue`. |
+| `branch` | text | no | Branch that triggered the sync. Null for `import` and `manual`. |
+| `feature_id` | text | no | For `webhook_feature` and `webhook_task_queue` triggers. |
+| `task_id` | text | no | For `webhook_task_queue` trigger. |
 | `mode` | text | yes | `full_reconciliation` or `targeted`. |
 | `status` | text | yes | `running`, `success`, `partial`, `failed`, `skipped`. |
-| `snapshot_id` | uuid FK | no | Snapshot created or updated by this run. |
-| `commit_sha` | text | no | GitHub commit SHA at time of sync. |
-| `changed_paths` | jsonb | no | File paths synced (for targeted runs). |
+| `snapshot_id` | uuid FK | no | `workspace_snapshots` row written by this full reconciliation run. Null for targeted runs. |
+| `changed_paths` | jsonb | no | File paths synced (targeted runs). |
 | `started_at` | timestamptz | yes | |
 | `finished_at` | timestamptz | no | |
 | `error_code` | text | no | |
@@ -440,23 +562,41 @@ One row per sync attempt — full reconciliation or targeted. Used for audit, de
 
 Indexes: `(workspace_id, started_at)`; `(workspace_id, trigger)`; `(workspace_id, status)`.
 
-#### Snapshot write rules
+##### `workspace_sync_queue`
 
-- Full reconciliation writes all snapshot rows inside one transaction. `workspaces.active_snapshot_id` is updated only after the snapshot is complete.
-- Targeted sync upserts only the affected rows in the active snapshot; no new snapshot record. Bumps `workspace_snapshots.last_targeted_sync_at`.
-- A failed sync must not replace `active_snapshot_id`. If an active snapshot exists, the service returns it with `SourceState.stale = true`.
-- Every sync attempt — success or failure, full or targeted — writes a `workspace_sync_runs` row.
-- Credentials and expanded local paths are never written to any table.
+Task-level webhook events waiting to be drained. One `pending` item per task at a time.
+
+| Column | Type | Req | Notes |
+|---|---|---|---|
+| `id` | uuid PK | yes | |
+| `workspace_id` | uuid FK | yes | |
+| `feature_id` | text | yes | |
+| `task_id` | text | yes | |
+| `branch` | text | yes | Task branch name. Worker fetches current HEAD at drain time — no commit SHA stored. |
+| `status` | text | yes | `pending`, `processing`, `done`, `cancelled`, `failed`. |
+| `queued_at` | timestamptz | yes | Updated on dedup upsert — always reflects the latest webhook receipt time. |
+| `processed_at` | timestamptz | no | |
+
+Indexes: unique `(workspace_id, feature_id, task_id)` where `status = 'pending'`; index `(workspace_id, status, queued_at)`.
+
+#### Write rules
+
+- Full reconciliation upserts all core tables in one transaction. Rollback leaves core tables with last good state.
+- Targeted sync upserts only the affected feature's rows in one transaction.
+- Task queue drain upserts a single task's rows in one transaction.
+- Full reconciliation cancels all `pending` queue items before its transaction begins.
+- `workspaces` is written only on import (create) and explicit workspace config update — never by sync operations.
+- Credentials and local paths are never written to any table.
 
 ### Workspace Source Service
 
 Orchestration logic:
 
-- `listWorkspaces` → reads from `DbWorkspaceAdapter`.
-- `importWorkspace(input)` → calls `GitHubWorkspaceAdapter`, writes snapshot via `DbWorkspaceAdapter`, returns `WorkspaceDetail`.
-- `getWorkspace(id)` → reads active snapshot from `DbWorkspaceAdapter`.
-- `syncWorkspace(id)` → calls `GitHubWorkspaceAdapter`, updates snapshot on success; on failure returns cached snapshot with `stale: true`.
-- If no cached snapshot exists on failure → returns structured `SourceError`.
+- `listWorkspaces` → reads `workspaces` + `workspace_repos` from `DbWorkspaceAdapter`.
+- `importWorkspace(input)` → calls `GitHubWorkspaceAdapter`, upserts core tables via `DbWorkspaceAdapter`, returns `WorkspaceDetail`.
+- `getWorkspace(id)` → reads core tables from `DbWorkspaceAdapter`; derives `SourceState` from latest `workspace_sync_runs` row.
+- `syncWorkspace(id)` → full reconciliation via `GitHubWorkspaceAdapter`; upserts on success. On failure, core tables are unchanged — `SourceState.stale = true` is derived from the failed `workspace_sync_runs` row.
+- If core tables are empty and sync fails on first import → returns structured `SourceError` (no cached data to fall back to).
 
 ### Backend API Routes
 
