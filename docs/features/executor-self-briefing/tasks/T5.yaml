@@ -1,17 +1,17 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: in_review
+status: blocked
 depends_on:
   - T2
   - T3
   - T4
-blocked_reason: null
+blocked_reason: result_not_written
 branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T08:43:20.759Z
+  last_updated_at: 2026-05-15T08:45:57.070Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
   status: open
