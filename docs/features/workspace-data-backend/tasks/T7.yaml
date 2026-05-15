@@ -1,0 +1,21 @@
+id: T7
+title: Backend integration tests and release validation
+repo: workflow-backend
+status: todo
+depends_on:
+  - T4
+  - T6
+blocked_reason: null
+branch: feature/workspace-data-backend-T7
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-15T18:01:08+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:01:08+0700
+    note: Task created from revised tech-lead planning for backend integration tests and release validation.

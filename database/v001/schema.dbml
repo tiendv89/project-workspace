@@ -191,5 +191,6 @@ Table workspace_sync_runs {
 // NOT a database table — backed by asynq + Redis.
 // Task payload: { WorkspaceID, FeatureID, TaskID }
 // Dedup: asynq.Unique(24h) — one pending item per payload key.
-// Clear on full reconciliation: inspector.DeleteAllPendingTasks("task-sync")
+// Clear on full reconciliation: use workspace-scoped queue clearing or stale-job skipping;
+// do not delete unrelated workspace jobs from a shared task-sync queue.
 // Monitor via asynqmon UI. REDIS_URL required in environment.

@@ -30,7 +30,7 @@ Key constraints:
 Two things must be built:
 
 1. **Source ingestion**: fetch a GitHub management repository on import or resync, parse its workspace YAML and feature documents, and persist a normalised snapshot in PostgreSQL.
-2. **Read API**: serve workspace list, workspace detail, feature detail, task detail, source documents, and activity from the database through stable REST routes that the UI (`workspace-tabs-data-flow`) consumes.
+2. **Read API**: serve workspace list, workspace detail, feature search/list, task search/list, feature detail, task detail, source documents, and activity from the database through stable REST routes that the UI (`workspace-tabs-data-flow`) consumes.
 
 The UI always reads from the backend API. It does not need to know whether the underlying data came from a fresh GitHub fetch or a cached snapshot — that distinction belongs to the backend's stale-state markers, not to the API contract shape.
 
@@ -73,7 +73,39 @@ Cons:
 - Requires schema design and migration.
 - Requires GitHub parsing logic in the backend.
 
-Chosen.
+Chosen for the persistence model.
+
+### Option C — Single backend service
+
+One Go service exposes UI routes, performs GitHub import/sync, handles webhooks, drains the task queue, and writes PostgreSQL rows.
+
+Pros:
+- Smallest deployment topology.
+- No inter-service RPC contract.
+- Easier local bootstrap for the first implementation pass.
+
+Cons:
+- Public UI API, GitHub credentials, webhook handling, and queue workers all share one runtime boundary.
+- Harder to restrict the internet-facing process to read-oriented operations.
+- Scaling read traffic and sync/queue work independently is not possible.
+
+Not chosen.
+
+### Option D — Split API service and adapter service
+
+Two Go binaries share one PostgreSQL database. `api-service` is internet-facing and serves UI routes. `adapter-service` is internal and owns GitHub fetches, webhook routing, sync orchestration, and Redis/asynq task-branch queueing.
+
+Pros:
+- Keeps GitHub write-side sync and queue work out of the public API process.
+- Lets UI read traffic and sync/worker load scale independently.
+- Matches the DBML split between adapter-agnostic core tables and GitHub-adapter bookkeeping.
+- Gives a clean future replacement point for the GitHub adapter.
+
+Cons:
+- Requires an internal RPC contract and service-to-service configuration.
+- Requires deployment of two binaries plus Redis for task-branch queueing.
+
+Chosen for the service topology.
 
 ## 4. Chosen Design
 
@@ -90,7 +122,7 @@ Two backend services share one PostgreSQL database. They have separate responsib
 │                       ├─ feature branch → targeted sync │
 │                       └─ task branch  → enqueue         │
 │                                                         │
-│  SyncWorker (per workspace) ──→ drains queue            │
+│  SyncWorker ──→ drains Redis/asynq queue                │
 │    └─ fetches HEAD of task branch → upserts core tables │
 │                                                         │
 │  SyncService ──→ full reconciliation                    │
@@ -99,8 +131,9 @@ Two backend services share one PostgreSQL database. They have separate responsib
 │  Writes to: workspace_features, workspace_feature_docs, │
 │             workspace_tasks, workspace_activity_events, │
 │             workspace_repos                             │
-│  Owns:      workspace_github_sources, workspace_snaps,  │
-│             workspace_sync_runs, workspace_sync_queue   │
+│  Owns:      workspace_github_sources,                   │
+│             workspace_snapshots, workspace_sync_runs    │
+│  Uses:      Redis/asynq task-sync queue                 │
 └─────────────────────────────────────────────────────────┘
                           │ shared PostgreSQL
 ┌─────────────────────────────────────────────────────────┐
@@ -108,6 +141,8 @@ Two backend services share one PostgreSQL database. They have separate responsib
 │                                                         │
 │  GET  /api/workspaces                                   │
 │  GET  /api/workspaces/:id                               │
+│  GET  /api/workspaces/:id/features                      │
+│  GET  /api/workspaces/:id/tasks                         │
 │  GET  /api/workspaces/:id/features/:featureId           │
 │  GET  /api/workspaces/:id/features/:featureId/tasks     │
 │  GET  /api/workspaces/:id/tasks/:taskId                 │
@@ -158,7 +193,7 @@ The GitHub push event payload contains `ref` (e.g. `refs/heads/feature/workspace
 
 ```
 base branch (e.g. "main")
-  → Cancel all pending items in workspace_sync_queue for this workspace
+  → Apply the queue supersession policy for this workspace
   → Full reconciliation of the entire workspace
 
 "feature/<feature-id>"  (no task suffix)
@@ -170,9 +205,10 @@ base branch (e.g. "main")
 
 "feature/<feature-id>-T<n>"
   → Enqueue:
-      INSERT INTO workspace_sync_queue (workspace_id, feature_id, task_id, branch, ...)
-      ON CONFLICT (workspace_id, feature_id, task_id) WHERE status = 'pending'
-      DO UPDATE SET branch = EXCLUDED.branch, queued_at = now()
+      asynq task type: "task:sync"
+      payload: { WorkspaceID, FeatureID, TaskID }
+      queue: "task-sync"
+      dedup: asynq.Unique(24h)
     Return 200 immediately. Worker handles the fetch.
 
 Any other branch
@@ -184,11 +220,12 @@ The feature-id and task-id are extracted from the branch name using the workspac
 #### Full reconciliation — step by step
 
 1. Write `workspace_sync_runs` row: `status: running`, `mode: full_reconciliation`, `started_at: now()`.
-2. Cancel all `pending` items in `workspace_sync_queue` for this workspace (`status: cancelled`).
+2. Apply the queue supersession policy before the full read begins. The implementation must either clear only this workspace's pending task-sync jobs or make older queued task jobs skip themselves after a newer full reconciliation. It must not delete unrelated workspace jobs from a shared queue.
 3. Fetch the full repository tree at `HEAD` of the base branch from GitHub. Record `commit_sha`.
 4. Discover all `docs/features/*/status.yaml` paths.
 5. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files. Parse into DTOs.
 6. `BEGIN TRANSACTION`
+   - Upsert `workspace_repos` on `(workspace_id, repo_id)`.
    - Upsert `workspace_features` on `(workspace_id, feature_id)`.
    - Upsert `workspace_feature_documents` on `(workspace_id, feature_id, document_type)`.
    - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_id)`.
@@ -196,7 +233,7 @@ The feature-id and task-id are extracted from the branch name using the workspac
    - Delete rows no longer present in the fetched set (removed features, deleted tasks, etc.).
 7. `COMMIT`.
 8. Write `workspace_snapshots` row: `commit_sha`, `status: success`, `created_at: now()`.
-9. Update `workspace_sync_runs`: `status: success`, `snapshot_id`, `commit_sha`, `finished_at: now()`.
+9. Update `workspace_sync_runs`: `status: success`, `snapshot_id`, `finished_at: now()`. The `commit_sha` is stored on `workspace_snapshots`, not on `workspace_sync_runs`.
 
 On failure:
 - `ROLLBACK` — core tables are untouched; last good state is preserved.
@@ -252,13 +289,14 @@ client.Enqueue(task)
 
 On failure: asynq retries automatically with backoff up to `MaxRetry`. After max retries the task moves to the dead queue and is visible in `asynqmon`.
 
-**Clear queue on full reconciliation**:
-```go
-inspector := asynq.NewInspector(redisOpt)
-inspector.DeleteAllPendingTasks("task-sync")
-```
+**Supersede queue on full reconciliation**:
 
-All pending task-sync jobs are deleted before the full reconciliation transaction begins. The full read supersedes them.
+The full read supersedes pending task-level partial updates for the same workspace. T4 chooses the concrete implementation:
+
+- Workspace-scoped queue clearing, if queue names can safely be scoped by workspace.
+- Stale-job skipping, if one shared `task-sync` queue is used.
+
+Do not call a global queue clear that can delete another workspace's pending jobs.
 
 #### Staleness signal
 
@@ -298,7 +336,7 @@ Common stack:
 - YAML parsing: `gopkg.in/yaml.v3`.
 - Tests: standard `testing` package; `testcontainers-go` for PostgreSQL integration tests.
 - Connection config: `DATABASE_URL` for runtime (`pgx` DSN); `REDIS_URL` for asynq; migrations use the same DSN or a direct URL when the host uses a connection pooler.
-- Inter-service: `adapter-service` exposes an internal RPC (HTTP or gRPC — implementation choice in T2) for `import` and `sync` triggers from `api-service`.
+- Inter-service: `adapter-service` exposes an internal RPC (HTTP or gRPC — implementation choice in T1) for `import` and `sync` triggers from `api-service`.
 
 ### Adapter Boundaries
 
@@ -321,12 +359,16 @@ This adapter fetches the GitHub repository, parses YAML and markdown, and return
 type DbWorkspaceAdapter interface {
     ListWorkspaces(ctx context.Context) ([]WorkspaceSummary, error)
     GetWorkspace(ctx context.Context, workspaceID string) (*WorkspaceDetail, error)
+    SearchFeatures(ctx context.Context, workspaceID string, filter WorkspaceSearchFilter) ([]FeatureSummary, error)
+    SearchTasks(ctx context.Context, workspaceID string, filter WorkspaceSearchFilter) ([]TaskSummary, error)
     GetFeature(ctx context.Context, workspaceID, featureID string) (*FeatureDetail, error)
     GetTask(ctx context.Context, workspaceID, taskID string) (*TaskDetail, error)
     ListFeatureTasks(ctx context.Context, workspaceID, featureID string) ([]TaskSummary, error)
     ListActivity(ctx context.Context, workspaceID string, scope ActivityScope) ([]ActivityEvent, error)
-    SaveSnapshot(ctx context.Context, workspaceID string, snapshot *WorkspaceSnapshot) error
-    GetActiveSnapshot(ctx context.Context, workspaceID string) (*WorkspaceSnapshot, error)
+    SaveFullReconciliation(ctx context.Context, workspaceID string, snapshot *WorkspaceSnapshot, runID string) (*SnapshotRecord, error)
+    SaveTargetedFeatureSync(ctx context.Context, workspaceID string, feature *FeatureSnapshot, changedPaths []string) error
+    SaveTaskSync(ctx context.Context, workspaceID string, task *TaskSnapshot) error
+    GetLatestSyncRun(ctx context.Context, workspaceID string) (*SyncRun, error)
 }
 ```
 
@@ -342,6 +384,7 @@ UI-facing contract. Names are indicative — implementation may differ as long a
 - `FeatureDetail`: summary, product spec markdown, technical design markdown, tasks, logs, source state.
 - `TaskSummary`: task id, feature id, title, status, repo, branch, next action, blocked state.
 - `TaskDetail`: summary, dependencies, execution context, PR refs, blocked context, activity log.
+- `WorkspaceSearchFilter`: optional query text, status list, date-time range, pagination, and sort. Feature search applies it to feature name/title/status/updated time; task search applies it to task name/title/status/updated time.
 - `PullRequestRef`: label, url, status, repo.
 - `ActivityEvent`: action, scope, actor, timestamp, note.
 - `SourceState`: source kind, stale flag, partial flag, last synced time, error code, user-facing error message.
@@ -380,7 +423,7 @@ The schema is split into two layers:
 
 **Core** — workspace identity and current state. Adapter-agnostic. Survives adapter replacement intact.
 
-**GitHub adapter** — GitHub connection config, sync bookkeeping, and the task sync queue. Removable as a unit when the GitHub adapter is replaced.
+**GitHub adapter** — GitHub connection config and sync bookkeeping. These PostgreSQL tables are removable as a unit when the GitHub adapter is replaced. Task-branch queueing is adapter-owned too, but it lives in Redis/asynq rather than PostgreSQL.
 
 #### Core tables
 
@@ -413,7 +456,7 @@ One row per repo declared in `workspace.yaml` `repos[]`. Stable registry that ta
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(workspace_id, repo_id)`.
+Indexes: unique `(workspace_id, repo_id)`; index `workspace_id`.
 
 ##### `workspace_features`
 
@@ -453,7 +496,7 @@ One row per feature document. Always reflects current known state.
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(workspace_id, feature_id, document_type)`.
+Indexes: unique `(workspace_id, feature_id, document_type)`; index `(workspace_id, feature_id)`.
 
 ##### `workspace_tasks`
 
@@ -562,29 +605,24 @@ One row per sync attempt — full or targeted. Primary source for staleness deri
 
 Indexes: `(workspace_id, started_at)`; `(workspace_id, trigger)`; `(workspace_id, status)`.
 
-##### `workspace_sync_queue`
+#### Task sync queue
 
-Task-level webhook events waiting to be drained. One `pending` item per task at a time.
+There is no `workspace_sync_queue` PostgreSQL table. Task-level webhook events are backed by Redis/asynq:
 
-| Column | Type | Req | Notes |
-|---|---|---|---|
-| `id` | uuid PK | yes | |
-| `workspace_id` | uuid FK | yes | |
-| `feature_id` | text | yes | |
-| `task_id` | text | yes | |
-| `branch` | text | yes | Task branch name. Worker fetches current HEAD at drain time — no commit SHA stored. |
-| `status` | text | yes | `pending`, `processing`, `done`, `cancelled`, `failed`. |
-| `queued_at` | timestamptz | yes | Updated on dedup upsert — always reflects the latest webhook receipt time. |
-| `processed_at` | timestamptz | no | |
-
-Indexes: unique `(workspace_id, feature_id, task_id)` where `status = 'pending'`; index `(workspace_id, status, queued_at)`.
+- Queue name: `task-sync`.
+- Task type: `task:sync`.
+- Payload: `{ WorkspaceID, FeatureID, TaskID }`.
+- Deduplication: `asynq.Unique(24h)` gives one pending item per payload key.
+- Full reconciliation supersession: workspace-scoped queue clearing or stale-job skipping; never global deletion of unrelated workspace jobs.
+- Monitoring: `asynqmon`.
+- Runtime config: `REDIS_URL`.
 
 #### Write rules
 
 - Full reconciliation upserts all core tables in one transaction. Rollback leaves core tables with last good state.
 - Targeted sync upserts only the affected feature's rows in one transaction.
 - Task queue drain upserts a single task's rows in one transaction.
-- Full reconciliation cancels all `pending` queue items before its transaction begins.
+- Full reconciliation supersedes pending Redis/asynq task-sync jobs for the same workspace before its transaction begins.
 - `workspaces` is written only on import (create) and explicit workspace config update — never by sync operations.
 - Credentials and local paths are never written to any table.
 
@@ -595,6 +633,8 @@ Orchestration logic:
 - `listWorkspaces` → reads `workspaces` + `workspace_repos` from `DbWorkspaceAdapter`.
 - `importWorkspace(input)` → calls `GitHubWorkspaceAdapter`, upserts core tables via `DbWorkspaceAdapter`, returns `WorkspaceDetail`.
 - `getWorkspace(id)` → reads core tables from `DbWorkspaceAdapter`; derives `SourceState` from latest `workspace_sync_runs` row.
+- `searchFeatures(workspaceID, filter)` → reads `workspace_features` by feature name/title, status, and date-time range; derives `SourceState` from latest `workspace_sync_runs` row.
+- `searchTasks(workspaceID, filter)` → reads `workspace_tasks` by task id/title, status, and date-time range; derives `SourceState` from latest `workspace_sync_runs` row.
 - `syncWorkspace(id)` → full reconciliation via `GitHubWorkspaceAdapter`; upserts on success. On failure, core tables are unchanged — `SourceState.stale = true` is derived from the failed `workspace_sync_runs` row.
 - If core tables are empty and sync fails on first import → returns structured `SourceError` (no cached data to fall back to).
 
@@ -607,11 +647,31 @@ GET  /api/workspaces
 POST /api/workspaces/import
 GET  /api/workspaces/:workspaceId
 POST /api/workspaces/:workspaceId/sync
+GET  /api/workspaces/:workspaceId/features?query=&status=&updated_from=&updated_to=&limit=&cursor=
+GET  /api/workspaces/:workspaceId/tasks?query=&status=&updated_from=&updated_to=&limit=&cursor=
 GET  /api/workspaces/:workspaceId/features/:featureId
 GET  /api/workspaces/:workspaceId/features/:featureId/tasks
 GET  /api/workspaces/:workspaceId/tasks/:taskId
 GET  /api/workspaces/:workspaceId/activity
 ```
+
+`GET /api/workspaces/:workspaceId/features` is the feature search/list route. Query behavior:
+
+- `query`: optional text search over feature id/name/title and next action.
+- `status`: optional repeated or comma-separated feature status filter.
+- `updated_from`, `updated_to`: optional RFC3339 date-time range over feature `updated_at`.
+- `limit` and `cursor`: optional pagination controls.
+
+The route returns feature summaries with task counts and the same `SourceState` metadata used by workspace detail. It does not return raw markdown or raw YAML; those remain on the feature detail/source-document routes.
+
+`GET /api/workspaces/:workspaceId/tasks` is the workspace-level task search/list route. Query behavior:
+
+- `query`: optional text search over task id/name/title and feature id.
+- `status`: optional repeated or comma-separated task status filter.
+- `updated_from`, `updated_to`: optional RFC3339 date-time range over task `updated_at`.
+- `limit` and `cursor`: optional pagination controls.
+
+The route returns task summaries across all features in the workspace. Feature-scoped task listing remains available at `GET /api/workspaces/:workspaceId/features/:featureId/tasks`.
 
 Error response shape:
 
@@ -631,69 +691,92 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### Internal dependencies
 
-- T1 (adapter contract + DTOs) must be finalised before T2 and T3 can produce conformant output.
-- T2 (GitHub adapter) and T3 (schema + database adapter) are both inputs to T4 (source service + API routes). T4 cannot be completed until both T2 and T3 are done.
-- T5 (integration tests) requires T4 routes and a real PostgreSQL instance.
+- T1 (service layout, adapter contract, DTOs, and internal RPC contract) must be finalised before T2 and T3 can produce conformant output.
+- T2 (GitHub adapter) and T3 (schema + database adapter) are both inputs to T4 (adapter-service sync orchestration). T4 cannot be completed until both T2 and T3 are done.
+- T4 (adapter-service sync orchestration, webhooks, and Redis/asynq worker) requires T2 parser output and T3 transactional persistence.
+- T5 (api-service read routes) requires T3 because UI reads must come from PostgreSQL core tables.
+- T6 (api-service import/sync RPC proxy and fallback behavior) requires T4's internal adapter RPC and T5's route/error conventions.
+- T7 (integration tests) requires T4/T6 routes, the adapter worker path, and a real PostgreSQL instance.
 
 ### External dependencies
 
 - `workflow-backend` repo must have a working Go module and service entrypoint. If the existing project is not yet Go-based, T1 must establish the Go module, package layout, and service bootstrap before adapter work continues.
 - PostgreSQL must be accessible from the `workflow-backend` runtime. `DATABASE_URL` must be set in environment config before T3 migrations can run.
 - GitHub API access (token or unauthenticated for public repos) is needed for T2 integration testing.
+- Redis must be reachable through `REDIS_URL` before the adapter-service task queue can run.
+- GitHub webhook delivery requires a configured webhook secret and an externally reachable adapter webhook endpoint, or a relay equivalent in non-public environments.
 
 ### Blocking decisions
 
 - **GitHub fetch strategy**: Contents API (file-by-file) vs repository archive download (zip/tarball). The archive approach is faster for initial import; Contents API is easier to make incremental. This must be decided in T2.
 - **Credential storage**: PAT provided on import — is it stored server-side for reuse in sync, or re-provided by the UI on each sync? Storing it requires an encryption strategy. Must be resolved before T2 is complete.
+- **Internal RPC transport**: HTTP+JSON vs gRPC between `api-service` and `adapter-service`. This must be decided in T1 so T4 and T6 implement the same contract.
+- **Task queue isolation policy**: v001 can use one Redis/asynq queue only if full reconciliation clears do not delete unrelated workspace tasks. If multiple workspaces can sync concurrently, T4 must implement workspace-scoped queues or stale-job skipping before shipping.
 
 ### Configuration dependencies
 
 - `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
+- `REDIS_URL` — Redis connection string for `adapter-service` task-branch sync queueing.
 - Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workflow-backend` conventions.
 - GitHub API token handling (to be determined in T2).
+- Internal adapter RPC base URL or service discovery config for `api-service`.
+- GitHub webhook secret for adapter-service webhook validation.
 
 ### Release dependencies
 
 - PostgreSQL database must be provisioned and `DATABASE_URL` set before T3 migrations can be run.
-- `workspace-tabs-data-flow` frontend tasks are blocked on T4 routes being deployed and reachable.
+- `workspace-tabs-data-flow` frontend tasks are blocked on T6 routes being deployed and reachable.
 
 ## 6. Parallelization / Blocking Analysis
 
 ```
 D1: Choose GitHub fetch strategy (Contents API vs archive download)
-  └── Unblock before T2 implementation hardens network behavior and fixtures
-D2: Decide GitHub token reuse policy (store server-side vs require per sync)
-  └── Unblock before T4 exposes import/sync request and error semantics
+  └── Unblock before T2 hardens network behavior and before T4 runs import/sync orchestration
+D2: Decide GitHub token reuse policy (store encrypted server-side vs require per sync)
+  └── Unblock before T6 finalizes import/sync request semantics and fallback behavior
+D3: Choose internal RPC transport between api-service and adapter-service
+  └── Unblock before T1 freezes service contracts used by T4 and T6
+D4: Confirm Redis/asynq task queue isolation policy
+  └── Unblock before T4 ships full-reconciliation queue clearing
 
-T1: Source adapter contract + canonical DTOs  [workflow-backend]
+T1: Go backend foundation + canonical contracts [workflow-backend]
   └── Can begin now — no blockers
 
-T2: GitHub workspace adapter + parser         [workflow-backend]
-  └── BLOCKED on T1 (canonical snapshot DTOs and source error contract must be frozen)
-
+T2: GitHub workspace adapter + parser           [workflow-backend]
 T3: PostgreSQL schema (goose/sqlc) + DB adapter [workflow-backend]
-  └── BLOCKED on T1 (database rows must map to the frozen canonical DTOs)
   └── T2 and T3 run in parallel
-
-  T4: Workspace source service + API routes   [workflow-backend]
-    └── BLOCKED on T2 (GitHub adapter must produce conformant DTOs)
-    └── BLOCKED on T3 (DB adapter must be able to read/write snapshots)
-    └── BLOCKED on D2 (import/sync token reuse semantics affect request and sync behavior)
-
-    T5: Backend integration tests             [workflow-backend]
-      └── BLOCKED on T4 (routes must exist and be reachable)
-      └── BLOCKED on T3 (requires live PostgreSQL with migrated schema)
+  └── BLOCKED on T1 (canonical snapshot DTOs, source errors, and RPC contracts must be frozen)
+  └── T2 also resolves D1 before adapter behavior is final
+  │
+  T4: Adapter-service sync, webhooks, and queue worker [workflow-backend]
+    └── BLOCKED on T2 (GitHub adapter must produce conformant snapshots)
+    └── BLOCKED on T3 (DB adapter must write current mirror rows, sync runs, and snapshot bookkeeping)
+    └── BLOCKED on D3 (adapter RPC server must match the frozen transport contract)
+    └── BLOCKED on D4 (queue clear/skip behavior must not corrupt other workspace syncs)
+  │
+  T5: API-service workspace read routes + source state [workflow-backend]
+    └── BLOCKED on T3 (read routes must query migrated PostgreSQL core tables)
+    └── T4 and T5 run in parallel once their own blockers are clear
+    │
+    T6: API import/sync RPC proxy + stale fallback [workflow-backend]
+      └── BLOCKED on T4 (adapter-service import/sync RPC must exist)
+      └── BLOCKED on T5 (API route and error-response conventions must be in place)
+      └── BLOCKED on D2 (token reuse policy changes request and error semantics)
+      │
+      T7: Backend integration tests + release validation [workflow-backend]
+        └── BLOCKED on T4 (adapter-service worker/webhook paths must exist)
+        └── BLOCKED on T6 (UI-facing import/sync and fallback routes must exist)
 ```
 
-All tasks target `workflow-backend`. No cross-repo parallelization within this feature.
+All tasks target `workflow-backend`. T2/T3 can run in parallel after T1. T4 and T5 can overlap once T3 is ready and T2 is complete for T4.
 
-`workspace-tabs-data-flow` T1 (frontend API client) can begin against T1/T4 draft contract from this feature; full integration is blocked on T4 being deployed.
+`workspace-tabs-data-flow` frontend integration can begin against T1/T5/T6 draft contracts from this feature; full integration is blocked on T6 being deployed and reachable.
 
 ## 7. Repository Impact
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New Go packages: workspace adapter contract, GitHub adapter, database adapter, source service, HTTP handlers, `goose` SQL migrations, `sqlc` query definitions, integration tests. |
+| `workflow-backend` | New Go packages and binaries for `api-service` and `adapter-service`: workspace contracts, GitHub adapter, database adapter, adapter RPC, webhook handlers, Redis/asynq worker, HTTP handlers, `goose` SQL migrations, `sqlc` query definitions, integration tests. |
 | `management-repo` | Planning artifacts only (`docs/features/workspace-data-backend/`). No runtime changes. |
 
 Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-data-flow`), `workflow`, `rag-service`, `git-nexus`.
@@ -702,19 +785,19 @@ Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-dat
 
 ### Testing expectations
 
-- **Unit tests**: GitHub adapter parsing (valid YAML, missing files, invalid YAML, rate-limit response), database adapter CRUD, source service fallback logic (sync failure + stale cache path, sync failure + no cache path).
-- **Integration tests**: full import flow (real or mocked GitHub → PostgreSQL write → read back via API), sync success flow, sync failure with stale fallback, workspace list and detail routes, feature and task detail routes.
+- **Unit tests**: GitHub adapter parsing (valid YAML, missing files, invalid YAML, rate-limit response), database adapter CRUD, adapter RPC handler behavior, API route mapping, source-state fallback logic (sync failure + stale cache path, sync failure + no cache path).
+- **Integration tests**: full import flow (real or mocked GitHub → adapter-service → PostgreSQL write → read back via api-service), webhook branch routing, task queue drain, sync success flow, sync failure with stale fallback, workspace list and detail routes, feature and task detail routes.
 - **Schema tests**: `goose` migrations apply cleanly on a fresh database; existing data survives a re-migration if run incrementally; `sqlc` generated queries compile against the schema.
 
 ### Migration / config impact
 
 - `goose` migrations must be run before the service starts for the first time.
-- `DATABASE_URL` and any deployment-specific direct migration URL must be present in the environment when migrations run.
+- `DATABASE_URL`, `REDIS_URL`, adapter RPC service config, and any deployment-specific direct migration URL must be present in the environment when migrations and services run.
 - No existing data migration required — this is a greenfield schema.
 
 ### Rollout concerns
 
-- The backend routes from this feature are the prerequisite for `workspace-tabs-data-flow` frontend work. Coordinate deployment timing with that feature.
+- The backend routes from T5/T6 are the prerequisite for `workspace-tabs-data-flow` frontend work. Coordinate deployment timing with that feature.
 - GitHub credential handling strategy must be confirmed before T2 ships to avoid a second breaking schema change.
 
 ### Backward compatibility

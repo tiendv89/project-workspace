@@ -3,7 +3,7 @@ title: Workspace Data Backend — GitHub Sync and Read API
 
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
-next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T3 and T4.
+next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T3; T6 waits for T4 and T5; T7 waits for T4 and T6.
 
 stages:
   product_spec:
@@ -19,8 +19,8 @@ stages:
   technical_design:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-15T14:10:09+0700
-    review_comment: Technical design approved. Feature advances to task planning.
+    reviewed_at: 2026-05-15T18:27:26+0700
+    review_comment: Technical design re-approved after DBML/schema refresh, service-boundary split, and search API contract revision. Feature advances to task planning.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -30,10 +30,18 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:10:09+0700
         comment: Technical design approved. Feature advances to task planning.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T18:01:08+0700
+        comment: Updated technical design submitted for re-approval after DBML/schema refresh and service-boundary split.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T18:27:26+0700
+        comment: Technical design re-approved after DBML/schema refresh, service-boundary split, and search API contract revision. Feature advances to task planning.
   tasks:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-15T14:13:22+0700
+    reviewed_at: 2026-05-15T18:29:02+0700
     review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
     review_history:
       - status: draft
@@ -47,6 +55,18 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:13:22+0700
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T18:01:08+0700
+        comment: Task breakdown expanded to split adapter-service orchestration, api-service read/API proxy work, and backend integration validation.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T18:27:26+0700
+        comment: Task breakdown submitted for approval after technical design re-approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T18:29:02+0700
         comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
   handoff:
     review_status: draft
@@ -91,6 +111,56 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:13:22+0700
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:01:08+0700
+    note: >-
+      Technical design updated after DBML/schema refresh to document split
+      api-service and adapter-service topology, Redis/asynq task queueing,
+      adapter RPC, and current core-table mirror semantics.
+  - stage: tasks
+    action: redrafted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:01:08+0700
+    note: >-
+      Task breakdown expanded from five to seven tasks. T1 reset to todo and
+      new T6/T7 task files added; implementation waits for renewed technical
+      design and task approval.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:20:25+0700
+    note: >-
+      API contract updated with GET /api/workspaces/:workspaceId/features for
+      an initial feature search/list route using query text, status filtering,
+      stage filtering, and pagination.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:24:35+0700
+    note: >-
+      Search API contract revised to separate feature and task list routes.
+      Both use query, status, updated_from, updated_to, limit, and cursor
+      parameters; feature_status and task_status query parameters were removed.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:27:26+0700
+    note: >-
+      Technical design re-approved after the DBML/schema refresh, split
+      api-service/adapter-service boundary, Redis/asynq queueing design, and
+      separated feature/task search API contract.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:27:26+0700
+    note: Task breakdown submitted for approval. Tasks remain todo until tasks-stage approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T18:29:02+0700
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
 
 revalidation:
