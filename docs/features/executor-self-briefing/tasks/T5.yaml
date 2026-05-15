@@ -1,12 +1,12 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T2
   - T3
   - T4
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
@@ -159,6 +159,10 @@ log:
       input: 238
       output: 27033
     at: 2026-05-15T07:58:46.972Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T15:19:05+0700
+    note: Human unblock — resetting to ready to verify fix for TASK_REPO_PATH shortcut regression.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
