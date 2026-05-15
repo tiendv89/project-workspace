@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T07:30:31.049Z
+  last_updated_at: 2026-05-15T07:35:23.832Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
   status: open
@@ -132,7 +132,12 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-15T14:33:41+0700
-    note: Human reset — runner-wrapper BRIEFING_PATH fix deployed; re-queuing for execution.
+    note: Human reset — runner-wrapper BRIEFING_PATH fix deployed; re-queuing for
+      execution.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:35:23.832Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
