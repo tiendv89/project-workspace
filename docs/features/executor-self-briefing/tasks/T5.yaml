@@ -235,7 +235,7 @@ log:
     note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
-  status: open
+  status: merged
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-15T08:42:20.533Z
