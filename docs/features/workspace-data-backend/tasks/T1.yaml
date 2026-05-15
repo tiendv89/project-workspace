@@ -1,14 +1,14 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: in_review
+status: change_requested
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T18:26:26.352Z
+  last_updated_at: 2026-05-15T18:33:58.763Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/1
   status: open
@@ -117,6 +117,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-15T18:26:26.352Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Dockerfile line 7: COPY go.mod go.sum ./ fails because go.sum does not
+      exist in the repository — Docker build will break. Fix: run go mod tidy to
+      create an empty go.sum and commit it. All other subtasks (DTOs,
+      interfaces, error types, source-state helpers, unit tests, bootstrap) are
+      correctly implemented and tests pass."
+    at: 2026-05-15T18:33:58.763Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open
