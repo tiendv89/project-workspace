@@ -1,14 +1,14 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T18:08:54.291Z
+  last_updated_at: 2026-05-15T18:15:30.436Z
 pr:
   url: null
   status: null
@@ -85,11 +85,14 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-16T01:13:48+0700
-    note: >-
-      Unblocked by human (second attempt). Root cause confirmed: orchestrator-bundled
-      image (local-subprocess mode) was missing Go — only the standalone executor
-      Dockerfile had it. Added Go install to orchestrator Dockerfile Stage 4.
-      Rebuild required before re-dispatch.
+    note: "Unblocked by human (second attempt). Root cause confirmed:
+      orchestrator-bundled image (local-subprocess mode) was missing Go — only
+      the standalone executor Dockerfile had it. Added Go install to
+      orchestrator Dockerfile Stage 4. Rebuild required before re-dispatch."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:15:30.436Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open
