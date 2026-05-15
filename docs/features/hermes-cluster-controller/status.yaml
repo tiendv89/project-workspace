@@ -1,0 +1,48 @@
+feature_id: hermes-cluster-controller
+title: Hermes Cluster Controller — HTTP service for containerised Hermes executor dispatch
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Review and approve the product spec.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-15T14:15:40+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Spun out from adding-hermes-executor. The cluster controller (HTTP service,
+      model registry, container/K8s spawning, workdir lifecycle) was deferred from
+      the initial Hermes executor feature to keep that feature shippable as a local
+      subprocess. This feature picks up that deferred scope.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
