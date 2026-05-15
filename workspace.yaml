@@ -92,3 +92,9 @@ repos:
     local_path: env:GIT_NEXUS_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
+
+  - id: workspace-github-adapter
+    github: git@github.com:tiendv89/workspace-github-adapter.git
+    local_path: env:WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
