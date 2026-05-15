@@ -1,7 +1,7 @@
 feature_id: executor-self-briefing
 title: Executor-owned briefing — move prompt construction out of the orchestrator
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Wave 1 task T1 is ready. Implementation may begin.
 stages:
   product_spec:
@@ -40,6 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/240
 history:
   - action: created
     by: tiendv.52@gmai.com
@@ -71,3 +72,8 @@ revalidation:
 feature_branch: feature/executor-self-briefing
 feature_branch_base_sha: 7ce4b0ce9781bb64924c96d86eb82261d47a577a
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/230
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/240
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/165
+    status: open
