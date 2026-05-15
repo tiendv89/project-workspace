@@ -1,14 +1,14 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T17:55:03.732Z
+  last_updated_at: 2026-05-15T18:03:21.648Z
 pr:
   url: null
   status: null
@@ -53,10 +53,14 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-16T01:01:57+0700
-    note: >-
-      Unblocked by human. Root cause: executor Dockerfile hardcoded TARGETARCH=amd64,
-      installing an x86 Go binary that failed on arm64 host. Fixed by removing the
-      default so BuildKit auto-detects the platform. Resetting to ready for re-claim.
+    note: "Unblocked by human. Root cause: executor Dockerfile hardcoded
+      TARGETARCH=amd64, installing an x86 Go binary that failed on arm64 host.
+      Fixed by removing the default so BuildKit auto-detects the platform.
+      Resetting to ready for re-claim."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:03:21.648Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open
