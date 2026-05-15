@@ -1,7 +1,7 @@
 id: T2
 title: GitHub workspace adapter and parser
 repo: workspace-github-adapter
-status: in_review
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/workspace-data-backend-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T19:03:28.439Z
+  last_updated_at: 2026-05-15T19:10:11.824Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/2
   status: open
@@ -58,6 +58,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-15T19:03:28.439Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Duplicate getCommitSHA API call: getTree (client.go:152) calls
+      getCommitSHA internally but fetchSnapshot (adapter.go:89) already calls it
+      — two GitHub API requests where one suffices, wasting one rate-limit token
+      per import/sync. All T2 subtasks implemented and tests pass."
+    at: 2026-05-15T19:10:11.824Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/245
   status: open
