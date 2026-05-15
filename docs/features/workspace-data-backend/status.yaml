@@ -152,3 +152,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/workspace-data-backend
 feature_branch_base_sha: 70eb8cb0da81d9b615f969e73412a146e9cbf141
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/243
