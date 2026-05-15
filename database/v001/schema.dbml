@@ -52,7 +52,6 @@ Table workspace_features {
   current_stage  text
   next_action    text
   stages         jsonb       [note: 'Full parsed stages object from status.yaml']
-  history        jsonb       [note: 'Full parsed history array from status.yaml']
   source_path    text        [not null, note: 'e.g. docs/features/executor-self-briefing/status.yaml']
   source_hash    text
   created_at     timestamptz [not null, default: `now()`]
@@ -70,9 +69,8 @@ Table workspace_feature_documents {
   workspace_id  uuid        [not null, ref: > workspaces.id]
   feature_id    text        [not null]
   document_type text        [not null, note: 'product_spec | technical_design | tasks_md | status_yaml']
-  source_path   text        [not null]
-  content       text        [note: 'Raw file content (YAML or markdown)']
-  content_hash  text
+  source_path   text        [not null, note: 'Relative path in repo, e.g. docs/features/x/product-spec.md']
+  url    text        [note: 'GitHub web URL to the document file']
   created_at    timestamptz [not null, default: `now()`]
   updated_at    timestamptz [not null, default: `now()`]
 
@@ -96,7 +94,6 @@ Table workspace_tasks {
   execution      jsonb
   pr             jsonb
   workspace_pr   jsonb
-  log            jsonb
   source_path    text        [not null]
   source_hash    text
   created_at     timestamptz [not null, default: `now()`]
@@ -151,18 +148,6 @@ Table workspace_github_sources {
   }
 }
 
-Table workspace_snapshots {
-  id           uuid        [primary key, default: `gen_random_uuid()`]
-  workspace_id uuid        [not null, ref: > workspaces.id]
-  commit_sha   text        [note: 'Git commit SHA at time of full reconciliation']
-  status       text        [not null, note: 'success | failed']
-  created_at   timestamptz [not null, default: `now()`]
-
-  indexes {
-    (workspace_id, created_at)
-  }
-}
-
 Table workspace_sync_runs {
   id            uuid        [primary key, default: `gen_random_uuid()`]
   workspace_id  uuid        [not null, ref: > workspaces.id]
@@ -172,7 +157,7 @@ Table workspace_sync_runs {
   task_id       text        [note: 'set for webhook_task_queue trigger']
   mode          text        [not null, note: 'full_reconciliation | targeted']
   status        text        [not null, note: 'running | success | partial | failed | skipped']
-  snapshot_id   uuid        [ref: > workspace_snapshots.id, note: 'set for full reconciliation runs only']
+  commit_sha    text        [note: 'Git commit SHA at time of full reconciliation; null for targeted runs']
   changed_paths jsonb       [note: 'file paths synced; populated for targeted runs']
   started_at    timestamptz [not null]
   finished_at   timestamptz

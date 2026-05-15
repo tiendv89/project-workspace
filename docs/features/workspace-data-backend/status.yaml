@@ -3,7 +3,7 @@ title: Workspace Data Backend — GitHub Sync and Read API
 
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
-next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T3 and T4.
+next_action: T1 is ready to claim. T2, T3 wait for T1; T4 waits for T2+T3; T5 and T6 wait for T4 (and T6 also waits for T1).
 
 stages:
   product_spec:
@@ -18,9 +18,12 @@ stages:
         comment: null
   technical_design:
     review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-15T14:10:09+0700
-    review_comment: Technical design approved. Feature advances to task planning.
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-16T00:47:06+0700
+    review_comment: >-
+      Technical design re-approved after schema and sync strategy corrections.
+      All blocking decisions resolved (fetch strategy: Git Trees + Contents API;
+      token: GITHUB_TOKEN env var). Task breakdown updated to match revised design.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -30,11 +33,30 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:10:09+0700
         comment: Technical design approved. Feature advances to task planning.
+      - status: draft
+        by: matthew@swellnetwork.io
+        at: 2026-05-16T00:21:52+0700
+        comment: >-
+          Technical design revised: schema corrections (drop workspace_snapshots,
+          commit_sha moved to workspace_sync_runs; drop log/history jsonb in favour
+          of workspace_activity_events; workspace_feature_documents uses url not
+          content; main branch webhook changed from full reconciliation to targeted
+          sync). Requires re-approval before task execution resumes.
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-16T00:47:06+0700
+        comment: >-
+          Technical design re-approved after schema and sync strategy corrections.
+          All blocking decisions resolved (fetch strategy: Git Trees + Contents API;
+          token: GITHUB_TOKEN env var). Task breakdown updated to match revised design.
   tasks:
     review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-15T14:13:22+0700
-    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-16T00:47:06+0700
+    review_comment: >-
+      Tasks re-approved after revalidation. T6 added (Docker Compose infra + service
+      entries). T1-T5 subtasks and deliverables updated to match revised schema.
+      T1 remains ready; all others todo pending dependencies.
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
@@ -48,6 +70,13 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:13:22+0700
         comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: 2026-05-16T00:47:06+0700
+        comment: >-
+          Tasks re-approved after revalidation. T6 added (Docker Compose infra + service
+          entries). T1-T5 subtasks and deliverables updated to match revised schema.
+          T1 remains ready; all others todo pending dependencies.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -92,6 +121,30 @@ history:
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:13:22+0700
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: technical_design
+    action: reset
+    by: matthew@swellnetwork.io
+    at: 2026-05-16T00:21:52+0700
+    note: >-
+      Feature reset to technical_design stage after schema and design corrections.
+      Changes: dropped workspace_snapshots, moved commit_sha to workspace_sync_runs,
+      removed log/history jsonb (replaced by workspace_activity_events), simplified
+      workspace_feature_documents to url-only, corrected main branch webhook to
+      targeted sync. Tasks marked for revalidation.
+  - stage: technical_design
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T00:47:06+0700
+    note: >-
+      Technical design re-approved after schema and sync strategy corrections.
+      All blocking decisions resolved.
+  - stage: tasks
+    action: approved
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T00:47:06+0700
+    note: >-
+      Tasks re-approved after revalidation. T6 added, T1-T5 updated.
+      Feature advances to ready_for_implementation. T1 already ready.
 
 revalidation:
   product_spec_required: false

@@ -5,6 +5,7 @@ status: todo
 depends_on:
   - T3
   - T4
+  - T6
 blocked_reason: null
 branch: feature/workspace-data-backend-T5
 execution:

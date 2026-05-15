@@ -100,8 +100,8 @@ Two backend services share one PostgreSQL database. They have separate responsib
 │  Writes to: workspace_features, workspace_feature_docs, │
 │             workspace_tasks, workspace_activity_events, │
 │             workspace_repos                             │
-│  Owns:      workspace_github_sources, workspace_snaps,  │
-│             workspace_sync_runs, workspace_sync_queue   │
+│  Owns:      workspace_github_sources, workspace_sync_runs, │
+│             workspace_sync_queue                           │
 └─────────────────────────────────────────────────────────┘
                           │ shared PostgreSQL
 ┌─────────────────────────────────────────────────────────┐
@@ -148,7 +148,7 @@ There are two sync modes and one async queue mechanism. The trigger determines w
 |---|---|---|---|
 | `import` | — | Full reconciliation | Entire workspace (first time) |
 | `manual` | — | Full reconciliation | Entire workspace |
-| `webhook` | `main` (base branch) | Full reconciliation | Entire workspace — a merge landed |
+| `webhook` | `main` (base branch) | Targeted sync | Changed features only (paths from push event) |
 | `webhook` | `feature/<feature-id>` | Targeted sync | Feature artifacts only |
 | `webhook` | `feature/<feature-id>-T<n>` | Queue | Single task (deduped, drained async) |
 | Any other branch | — | Ignored | — |
@@ -159,8 +159,12 @@ The GitHub push event payload contains `ref` (e.g. `refs/heads/feature/workspace
 
 ```
 base branch (e.g. "main")
-  → Cancel all pending items in workspace_sync_queue for this workspace
-  → Full reconciliation of the entire workspace
+  → Extract changed file paths from push event commits[].added/modified/removed.
+  → For each unique docs/features/<feature-id>/ path found, run a targeted sync
+    for that feature (same as feature branch targeted sync below).
+  → Features not touched by this push are not re-read.
+  → Note: feature deletions (folder removed from main) are not detected here;
+    use a manual full reconciliation to clean up orphan rows.
 
 "feature/<feature-id>"  (no task suffix)
   → Targeted sync: read docs/features/<feature-id>/status.yaml
@@ -170,10 +174,12 @@ base branch (e.g. "main")
     Upsert/delete workspace_features + workspace_feature_documents rows.
 
 "feature/<feature-id>-T<n>"
-  → Enqueue:
-      INSERT INTO workspace_sync_queue (workspace_id, feature_id, task_id, branch, ...)
-      ON CONFLICT (workspace_id, feature_id, task_id) WHERE status = 'pending'
-      DO UPDATE SET branch = EXCLUDED.branch, queued_at = now()
+  → Enqueue via asynq:
+      asynq.NewTask("task:sync", TaskSyncPayload{WorkspaceID, FeatureID, TaskID},
+          asynq.Queue("task-sync"),
+          asynq.Unique(24*time.Hour),  // dedup: one pending item per task
+          asynq.MaxRetry(3),
+      )
     Return 200 immediately. Worker handles the fetch.
 
 Any other branch
@@ -185,7 +191,7 @@ The feature-id and task-id are extracted from the branch name using the workspac
 #### Full reconciliation — step by step
 
 1. Write `workspace_sync_runs` row: `status: running`, `mode: full_reconciliation`, `started_at: now()`.
-2. Cancel all `pending` items in `workspace_sync_queue` for this workspace (`status: cancelled`).
+2. Delete all pending task-sync jobs for this workspace from the asynq queue (`inspector.DeleteAllPendingTasks("task-sync")`).
 3. Fetch the full repository tree at `HEAD` of the base branch from GitHub. Record `commit_sha`.
 4. Discover all `docs/features/*/status.yaml` paths.
 5. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files. Parse into DTOs.
@@ -196,8 +202,7 @@ The feature-id and task-id are extracted from the branch name using the workspac
    - Upsert `workspace_activity_events` on `(workspace_id, feature_id, task_id, sequence)`.
    - Delete rows no longer present in the fetched set (removed features, deleted tasks, etc.).
 7. `COMMIT`.
-8. Write `workspace_snapshots` row: `commit_sha`, `status: success`, `created_at: now()`.
-9. Update `workspace_sync_runs`: `status: success`, `snapshot_id`, `commit_sha`, `finished_at: now()`.
+8. Update `workspace_sync_runs`: `status: success`, `commit_sha`, `finished_at: now()`.
 
 On failure:
 - `ROLLBACK` — core tables are untouched; last good state is preserved.
@@ -341,27 +346,58 @@ UI-facing contract. Names are indicative — implementation may differ as long a
 - `WorkspaceSummary`: id, name, repo URL, source state, updated time.
 - `WorkspaceDetail`: summary, feature summaries, task summaries, source state.
 - `FeatureSummary`: feature id, title, status, current stage, updated time, task counts.
-- `FeatureDetail`: summary, product spec markdown, technical design markdown, tasks, logs, source state.
+- `FeatureDetail`: summary, document links (url per document_type), tasks, logs, source state.
 - `TaskSummary`: task id, feature id, title, status, repo, branch, next action, blocked state.
 - `TaskDetail`: summary, dependencies, execution context, PR refs, blocked context, activity log.
 - `PullRequestRef`: label, url, status, repo.
 - `ActivityEvent`: action, scope, actor, timestamp, note.
-- `SourceState`: source kind, stale flag, partial flag, last synced time, error code, user-facing error message.
+- `SourceState`: stale flag, last synced time, error code, user-facing error message.
 
-No raw YAML, no raw markdown, and no database row shapes are exposed to the UI.
+Documents (product spec, technical design, tasks.md) are returned as GitHub URLs — the UI fetches content on demand. No inline markdown or raw YAML is returned by the API.
 
 ### GitHub Adapter
 
-Responsibilities:
+#### Fetch strategy options
 
-- Validate repository URL and access token.
-- Fetch repository content (GitHub Contents API or archive download — implementation choice).
-- Discover `docs/features/*/status.yaml` files.
-- Read feature-level `product-spec.md`, `technical-design.md`, `tasks.md`, and `tasks/T*.yaml` for each feature found.
-- Parse YAML into structured objects; preserve raw markdown strings for document views.
+Three options were considered for reading repository content from GitHub.
+
+**Option A — Archive download (zip/tarball)**
+
+Single `GET /repos/{owner}/{repo}/zipball/{ref}` request downloads the entire repo.
+
+Pros: one HTTP call for full import; very fast.
+Cons: downloads all repo content including source code and build files; requires zip extraction logic; cannot be used for targeted sync (fetching a single feature's files) — still needs Contents API for that path. Results in maintaining two different fetch strategies.
+
+Not chosen.
+
+**Option B — Contents API (file-by-file)**
+
+`GET /repos/{owner}/{repo}/contents/{path}` fetched per file.
+
+Pros: uniform — works for both full reconciliation and targeted sync; no extraction logic; fine-grained per-file error handling.
+Cons: one HTTP round trip per file; slow for full reconciliation on large workspaces with many features.
+
+Not chosen as the primary strategy for full reconciliation.
+
+**Option C — Git Trees API for discovery + Contents API for fetches (chosen)**
+
+`GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1` returns the full file tree in one call. Then `GET /repos/{owner}/{repo}/contents/{path}` fetches only the files that are needed (`status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, `tasks/T*.yaml`).
+
+Pros: single call to discover all `docs/features/*/` paths; fetches only relevant files; same approach works uniformly for full reconciliation and targeted sync; no zip extraction; per-file error handling preserved.
+Cons: two-phase approach (tree + per-file fetches); slightly more code than a single archive download.
+
+Chosen. This eliminates the need for a dual strategy and keeps the code surface minimal.
+
+#### Responsibilities
+
+- Validate repository URL. Use `GITHUB_TOKEN` from environment for all API calls.
+- Fetch full file tree via Git Trees API to discover `docs/features/*/status.yaml` paths.
+- Read `workspace.yaml`, feature `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and `tasks/T*.yaml` via Contents API.
+- Build GitHub web URLs for each document file to populate `workspace_feature_documents.url`.
+- Parse YAML into structured objects.
 - Map missing optional files to empty states, not hard failures.
 - Treat inaccessible repos, invalid YAML, missing required files, rate limits, and network failures as structured `SourceError` objects.
-- Return freshness metadata (commit SHA, fetch timestamp) for the snapshot record.
+- Return freshness metadata (commit SHA, fetch timestamp) for the sync-run record.
 
 ### Database Adapter
 
@@ -431,7 +467,6 @@ One row per feature. Always reflects current known state — no snapshot version
 | `current_stage` | text | no | From `status.yaml`. |
 | `next_action` | text | no | |
 | `stages` | jsonb | no | Full parsed `stages` object. |
-| `history` | jsonb | no | Full parsed `history` array. |
 | `source_path` | text | yes | e.g. `docs/features/executor-self-briefing/status.yaml`. |
 | `source_hash` | text | no | Hash for change detection. |
 | `created_at` | timestamptz | yes | |
@@ -441,7 +476,7 @@ Indexes: unique `(workspace_id, feature_id)`; index `(workspace_id, feature_stat
 
 ##### `workspace_feature_documents`
 
-One row per feature document. Always reflects current known state.
+One row per feature document. Stores a link to the file on GitHub rather than the content itself.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
@@ -449,9 +484,8 @@ One row per feature document. Always reflects current known state.
 | `workspace_id` | uuid FK | yes | |
 | `feature_id` | text | yes | |
 | `document_type` | text | yes | `product_spec`, `technical_design`, `tasks_md`, or `status_yaml`. |
-| `source_path` | text | yes | |
-| `content` | text | no | Raw file content. |
-| `content_hash` | text | no | |
+| `source_path` | text | yes | Relative path in repo, e.g. `docs/features/x/product-spec.md`. |
+| `url` | text | no | GitHub web URL to the document file. |
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
@@ -476,7 +510,6 @@ One row per task YAML. Always reflects current known state.
 | `execution` | jsonb | no | |
 | `pr` | jsonb | no | |
 | `workspace_pr` | jsonb | no | |
-| `log` | jsonb | no | |
 | `source_path` | text | yes | |
 | `source_hash` | text | no | |
 | `created_at` | timestamptz | yes | |
@@ -486,7 +519,7 @@ Indexes: unique `(workspace_id, feature_id, task_id)`; index `(workspace_id, fea
 
 ##### `workspace_activity_events`
 
-Derived timeline rows from feature `history[]` and task `log[]`. Lets the UI fetch timelines without scanning JSON arrays.
+Normalized activity rows sourced from feature `history[]` and task `log[]` during sync. One row per event — queryable by scope, feature, task, and time without scanning JSON arrays.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
@@ -526,20 +559,6 @@ GitHub connection config for a workspace. 1:1 with `workspaces`.
 
 Indexes: unique `workspace_id`; unique `(repo_owner, repo_name)`.
 
-##### `workspace_snapshots`
-
-One row per completed full reconciliation. Adapter bookkeeping only — tracks `commit_sha` so the staleness check has a reference point. No core table references this.
-
-| Column | Type | Req | Notes |
-|---|---|---|---|
-| `id` | uuid PK | yes | |
-| `workspace_id` | uuid FK | yes | |
-| `commit_sha` | text | no | Git commit SHA at time of full reconciliation. |
-| `status` | text | yes | `success` or `failed`. |
-| `created_at` | timestamptz | yes | |
-
-Indexes: `(workspace_id, created_at DESC)`.
-
 ##### `workspace_sync_runs`
 
 One row per sync attempt — full or targeted. Primary source for staleness derivation and audit.
@@ -554,7 +573,7 @@ One row per sync attempt — full or targeted. Primary source for staleness deri
 | `task_id` | text | no | For `webhook_task_queue` trigger. |
 | `mode` | text | yes | `full_reconciliation` or `targeted`. |
 | `status` | text | yes | `running`, `success`, `partial`, `failed`, `skipped`. |
-| `snapshot_id` | uuid FK | no | `workspace_snapshots` row written by this full reconciliation run. Null for targeted runs. |
+| `commit_sha` | text | no | Git commit SHA at time of full reconciliation. Null for targeted runs. |
 | `changed_paths` | jsonb | no | File paths synced (targeted runs). |
 | `started_at` | timestamptz | yes | |
 | `finished_at` | timestamptz | no | |
@@ -564,29 +583,16 @@ One row per sync attempt — full or targeted. Primary source for staleness deri
 
 Indexes: `(workspace_id, started_at)`; `(workspace_id, trigger)`; `(workspace_id, status)`.
 
-##### `workspace_sync_queue`
+##### Task sync queue (asynq + Redis — not a DB table)
 
-Task-level webhook events waiting to be drained. One `pending` item per task at a time.
-
-| Column | Type | Req | Notes |
-|---|---|---|---|
-| `id` | uuid PK | yes | |
-| `workspace_id` | uuid FK | yes | |
-| `feature_id` | text | yes | |
-| `task_id` | text | yes | |
-| `branch` | text | yes | Task branch name. Worker fetches current HEAD at drain time — no commit SHA stored. |
-| `status` | text | yes | `pending`, `processing`, `done`, `cancelled`, `failed`. |
-| `queued_at` | timestamptz | yes | Updated on dedup upsert — always reflects the latest webhook receipt time. |
-| `processed_at` | timestamptz | no | |
-
-Indexes: unique `(workspace_id, feature_id, task_id)` where `status = 'pending'`; index `(workspace_id, status, queued_at)`.
+Task-level webhook events are not stored in PostgreSQL. The queue is backed by `asynq` using Redis. Payload: `{ WorkspaceID, FeatureID, TaskID }`. Dedup via `asynq.Unique(24h)` — one pending item per task at a time. Monitor via `asynqmon`. Requires `REDIS_URL` in environment.
 
 #### Write rules
 
 - Full reconciliation upserts all core tables in one transaction. Rollback leaves core tables with last good state.
 - Targeted sync upserts only the affected feature's rows in one transaction.
 - Task queue drain upserts a single task's rows in one transaction.
-- Full reconciliation cancels all `pending` queue items before its transaction begins.
+- Full reconciliation deletes all pending task-sync jobs from the asynq queue before its transaction begins.
 - `workspaces` is written only on import (create) and explicit workspace config update — never by sync operations.
 - Credentials and local paths are never written to any table.
 
@@ -633,9 +639,12 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### Internal dependencies
 
-- T1 (adapter contract + DTOs) must be finalised before T2 and T3 can produce conformant output.
-- T2 (GitHub adapter) and T3 (schema + database adapter) are both inputs to T4 (source service + API routes). T4 cannot be completed until both T2 and T3 are done.
-- T5 (integration tests) requires T4 routes and a real PostgreSQL instance.
+- T1 is the only wave 1 task — no blockers.
+- T2 and T3 are blocked on T1; they run in parallel with each other once T1 is done.
+- T4 is blocked on both T2 and T3.
+- T3 owns activity normalization: it must upsert `workspace_activity_events` rows from feature `history[]` and task `log[]` during sync — not T2 or T4.
+- T6 is blocked on T1 (adapter-service Dockerfile) and T4 (api-service Dockerfile). It covers both infra (PostgreSQL, Redis, asynqmon) and service compose entries in one task.
+- T5 is blocked on T2, T3, T4, and T6. T5 and T6 run in parallel in wave 4.
 
 ### External dependencies
 
@@ -645,14 +654,14 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### Blocking decisions
 
-- **GitHub fetch strategy**: Contents API (file-by-file) vs repository archive download (zip/tarball). The archive approach is faster for initial import; Contents API is easier to make incremental. This must be decided in T2.
-- **Credential storage**: PAT provided on import — is it stored server-side for reuse in sync, or re-provided by the UI on each sync? Storing it requires an encryption strategy. Must be resolved before T2 is complete.
+- **GitHub fetch strategy**: Resolved — Git Trees API for discovery + Contents API for individual file fetches. See GitHub Adapter § Fetch strategy options.
+- **GitHub token**: Resolved — `GITHUB_TOKEN` environment variable on `adapter-service`. No per-workspace credential storage, no UI re-prompt.
 
 ### Configuration dependencies
 
 - `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
 - Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workspace-github-adapter` repo conventions (migrations live there).
-- GitHub API token handling (to be determined in T2).
+- `GITHUB_TOKEN` — GitHub API token for `adapter-service`. Required on `adapter-service` only; `api-service` makes no GitHub calls.
 
 ### Release dependencies
 
@@ -662,34 +671,40 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Choose GitHub fetch strategy (Contents API vs archive download)
-  └── Unblock before T2 implementation hardens network behavior and fixtures
-D2: Decide GitHub token reuse policy (store server-side vs require per sync)
-  └── Unblock before T4 exposes import/sync request and error semantics
+D2: GitHub token policy — resolved: GITHUB_TOKEN env var on adapter-service
 
-T1: Source adapter contract + canonical DTOs  [workspace-github-adapter]
+── Wave 1 ───────────────────────────────────────────────────────────────────────
+T1: Source adapter contract + canonical DTOs    [workspace-github-adapter]
   └── Can begin now — no blockers
 
-T2: GitHub workspace adapter + parser         [workspace-github-adapter]
-  └── BLOCKED on T1 (canonical snapshot DTOs and source error contract must be frozen)
+── Wave 2 — parallel, both blocked on T1 ────────────────────────────────────────
+T2: GitHub workspace adapter + parser           [workspace-github-adapter]
+  └── BLOCKED on T1 (DTOs and source error contract must be frozen)
+  └── Fetch strategy resolved: Git Trees API + Contents API
 
 T3: PostgreSQL schema (goose/sqlc) + DB adapter [workspace-github-adapter]
-  └── BLOCKED on T1 (database rows must map to the frozen canonical DTOs)
-  └── T2 and T3 run in parallel
+  └── BLOCKED on T1 (table rows must map to frozen canonical DTOs)
 
-  T4: Workspace source service + API routes   [workflow-backend]
-    └── BLOCKED on T2 (GitHub adapter must produce conformant DTOs)
-    └── BLOCKED on T3 (DB adapter must be able to read/write snapshots)
-    └── BLOCKED on D2 (import/sync token reuse semantics affect request and sync behavior)
+── Wave 3 ───────────────────────────────────────────────────────────────────────
+T4: Workspace source service + API routes       [workflow-backend]
+  └── BLOCKED on T2 (GitHub adapter must produce conformant DTOs)
+  └── BLOCKED on T3 (DB adapter must be able to upsert core tables and write sync-run audit rows)
 
-    T5: Backend integration tests             [workflow-backend]
-      └── BLOCKED on T4 (routes must exist and be reachable)
-      └── BLOCKED on T3 (requires live PostgreSQL with migrated schema)
+── Wave 4 — parallel ────────────────────────────────────────────────────────────
+T5: Backend integration tests                   [workflow-backend]
+  └── BLOCKED on T2 (GitHub fixture data needed for import/sync tests)
+  └── BLOCKED on T3 (requires live PostgreSQL with migrated schema)
+  └── BLOCKED on T4 (routes must exist)
+  └── BLOCKED on T6 (infra + compose entries must exist)
+
+T6: Docker Compose — local infra + service entries [workflow]
+  └── BLOCKED on T1 (adapter-service Dockerfile must exist)
+  └── BLOCKED on T4 (api-service Dockerfile must exist)
 ```
 
-T1–T3 target `workspace-github-adapter`; T4–T5 target `workflow-backend`. T4 cannot start until T2 and T3 are done.
+T1 is the only wave 1 task. T2 and T3 run in parallel in wave 2. T4 is wave 3. T5 and T6 run in parallel in wave 4 — T6 depends on T1 and T4; T5 depends on T2, T3, T4, and T6.
 
-`workspace-tabs-data-flow` T1 (frontend API client) can begin against T1/T4 draft contract from this feature; full integration is blocked on T4 being deployed.
+`workspace-tabs-data-flow` frontend work can begin against the T1/T4 draft API contract; full integration requires T4 deployed and reachable.
 
 ## 7. Repository Impact
 
@@ -718,7 +733,7 @@ Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-dat
 ### Rollout concerns
 
 - The backend routes from this feature are the prerequisite for `workspace-tabs-data-flow` frontend work. Coordinate deployment timing with that feature.
-- GitHub credential handling strategy must be confirmed before T2 ships to avoid a second breaking schema change.
+- `GITHUB_TOKEN` must be set in `adapter-service` environment before T2 integration tests can run against real GitHub.
 
 ### Backward compatibility
 
