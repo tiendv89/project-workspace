@@ -1,9 +1,9 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: missing_tool
+blocked_reason: null
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
@@ -82,6 +82,14 @@ log:
       input: 88
       output: 8824
     at: 2026-05-15T18:08:54.291Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-16T01:13:48+0700
+    note: >-
+      Unblocked by human (second attempt). Root cause confirmed: orchestrator-bundled
+      image (local-subprocess mode) was missing Go — only the standalone executor
+      Dockerfile had it. Added Go install to orchestrator Dockerfile Stage 4.
+      Rebuild required before re-dispatch.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open
