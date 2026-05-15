@@ -1,6 +1,6 @@
 id: T4
 title: Workspace source service and HTTP API routes
-repo: workspace-github-adapter
+repo: workflow-backend
 status: todo
 depends_on:
   - T2

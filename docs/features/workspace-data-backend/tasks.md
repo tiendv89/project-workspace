@@ -9,8 +9,8 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 | T1 | 1 | workspace-github-adapter | Go backend foundation and canonical workspace DTOs | [] |
 | T2 | 2 | workspace-github-adapter | GitHub workspace adapter and parser | [T1] |
 | T3 | 2 | workspace-github-adapter | PostgreSQL schema and sqlc database adapter | [T1] |
-| T4 | 3 | workspace-github-adapter | Workspace source service and HTTP API routes | [T2, T3] |
-| T5 | 4 | workspace-github-adapter | Backend integration tests and release validation | [T3, T4] |
+| T4 | 3 | workflow-backend | Workspace source service and HTTP API routes | [T2, T3] |
+| T5 | 4 | workflow-backend | Backend integration tests and release validation | [T3, T4] |
 
 ---
 
