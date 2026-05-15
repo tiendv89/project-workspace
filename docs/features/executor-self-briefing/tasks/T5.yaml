@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T10:29:26.934Z
+  last_updated_at: 2026-05-15T10:30:55.380Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -274,6 +274,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.4895069999999999
     at: 2026-05-15T10:29:26.934Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-15T10:30:55.380Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/241
   status: open
