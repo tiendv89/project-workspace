@@ -1,0 +1,47 @@
+feature_id: adding-hermes-executor
+title: Hermes Executor — ABI-conformant executor image for Hermes Agent
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Review and approve the product spec.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-15T10:30:37+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Feature initialized. Delivers the Hermes executor package at
+      runtime/executors/hermes/ conforming to the ABI spec. Prerequisite
+      for agent-runtime-selector.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

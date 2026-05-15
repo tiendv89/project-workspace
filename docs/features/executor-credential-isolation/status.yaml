@@ -1,0 +1,48 @@
+feature_id: executor-credential-isolation
+title: Executor Credential Isolation — remove model credentials from the orchestrator
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Review and approve the product spec.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-15T11:32:34+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Spun out from adding-hermes-executor discussion. The Hermes cluster
+      controller correctly holds model credentials internally; the Claude
+      executor incorrectly inherits ANTHROPIC_API_KEY from the orchestrator
+      environment via process.env spread. This feature fixes that boundary.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
