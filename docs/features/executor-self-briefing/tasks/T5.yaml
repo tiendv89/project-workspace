@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -10,8 +10,8 @@ blocked_reason: null
 branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-15T16:54:35+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-15T10:00:45.648Z
 pr:
   url: null
   status: null
@@ -240,10 +240,13 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-15T16:54:35+0700
-    note: >-
-      Human reset — PR #163 was merged to main instead of feature/executor-self-briefing
-      (recovery bug, now fixed in PR #167). Main reverted, T5 re-queued to run
-      against the feature branch.
+    note: "Human reset — PR #163 was merged to main instead of
+      feature/executor-self-briefing (recovery bug, now fixed in PR #167). Main
+      reverted, T5 re-queued to run against the feature branch."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T10:00:45.648Z
+    note: Claimed via git-based claim protocol.
 workspace_pr:
   url: null
   status: null
