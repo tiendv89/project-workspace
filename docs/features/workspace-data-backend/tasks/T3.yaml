@@ -1,7 +1,7 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
 repo: workspace-github-adapter
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/workspace-data-backend-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T19:04:44+0000
+  last_updated_at: 2026-05-15T19:10:30.636Z
 pr:
   url: null
   status: null
@@ -41,6 +41,10 @@ log:
     by: norepy@tiendv.dev
     note: executor work phase begun.
     at: 2026-05-15T19:04:44+0000
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-15T19:10:30.636Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/246
   status: open
