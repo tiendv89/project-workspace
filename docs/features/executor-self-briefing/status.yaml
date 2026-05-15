@@ -1,8 +1,16 @@
 feature_id: executor-self-briefing
 title: Executor-owned briefing — move prompt construction out of the orchestrator
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Wave 1 task T1 is ready. Implementation may begin.
+feature_status: in_handoff
+current_stage: handoff
+next_action: >-
+  Handoff PR awaiting human review. Merge
+  https://github.com/tiendv89/project-workspace/pull/240 to complete the
+  feature.
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/240
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/165
+    status: merged
 stages:
   product_spec:
     review_status: approved
@@ -63,6 +71,15 @@ history:
     at: 2026-05-14T17:18:42+0700
     note: Tasks approved. Feature advanced to ready_for_implementation. T1 activated
       (no dependencies). T2, T3, T4 remain todo pending T1 completion.
+  - action: in_handoff
+    by: tiendv.52@gmai.com
+    at: "2026-05-15T19:04:15+0700"
+    note: >-
+      All tasks done (T1-T5). Handoff document written. Handoff PR
+      https://github.com/tiendv89/project-workspace/pull/240 opened. Impl
+      feature PR https://github.com/tiendv89/agent-workflow/pull/165 merged.
+      Status corrected manually — handoff_trigger_failed due to
+      --force-with-lease missing (fixed in agent-workflow PR #169).
 revalidation:
   product_spec_required: false
   technical_design_required: false
