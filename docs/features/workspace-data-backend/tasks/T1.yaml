@@ -26,6 +26,15 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-15T17:50:44.201Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T17:50:56.609Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-hardening/technical-design.md, README.md,
+      CLAUDE.md"
+    rag_query: Go backend foundation and canonical workspace DTOs workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open
