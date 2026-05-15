@@ -1,0 +1,21 @@
+id: T4
+title: Workspace source service and HTTP API routes
+repo: workflow-backend
+status: todo
+depends_on:
+  - T2
+  - T3
+blocked_reason: null
+branch: feature/workspace-data-backend-T4
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-15T14:06:12+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:06:12+0700
+    note: Task created from tech-lead planning for the workspace source service and HTTP API routes.

@@ -7,7 +7,7 @@
 
 ## 1. Current State
 
-`workflow-backend` is a NestJS TypeScript service that exists today but has no workspace data layer. There is no database schema for storing workspace snapshots, no GitHub parsing logic, and no workspace read API. The dashboard calls `api.github.com` directly from the browser and keeps the active workspace in `localStorage`.
+`workflow-backend` is the backend implementation target, but it has no workspace data layer today. There is no database schema for storing workspace snapshots, no GitHub parsing logic, and no workspace read API. The dashboard calls `api.github.com` directly from the browser and keeps the active workspace in `localStorage`.
 
 ```text
 Today:
@@ -23,7 +23,7 @@ Key constraints:
 - `workflow-backend` is the backend service — all implementation work lands there.
 - `digital-factory-ui` is the UI consumer — it currently calls GitHub directly but will be updated in `workspace-tabs-data-flow` to call `workflow-backend` instead.
 - GitHub still owns all task state writes. This feature introduces read-only mirroring only.
-- `workflow-backend` uses PostgreSQL via Prisma. Database naming uses lowercase `snake_case`.
+- This feature standardizes the workspace data backend on Go, PostgreSQL, `pgx`, `sqlc`, and `goose`. Database naming uses lowercase `snake_case`.
 
 ## 2. Problem Framing
 
@@ -272,7 +272,7 @@ Responsibilities:
 
 ### Database Schema
 
-All physical names use lowercase `snake_case`. Prisma model names use PascalCase.
+All physical names use lowercase `snake_case`. Generated Go structs use PascalCase; `sqlc` maps them from SQL query definitions and table columns.
 
 #### `workspaces`
 
@@ -497,7 +497,7 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### External dependencies
 
-- `workflow-backend` repo must have a working NestJS + Prisma setup. If the existing project does not yet have Prisma wired up, T3 must add it as part of the schema task.
+- `workflow-backend` repo must have a working Go module and service entrypoint. If the existing project is not yet Go-based, T1 must establish the Go module, package layout, and service bootstrap before adapter work continues.
 - PostgreSQL must be accessible from the `workflow-backend` runtime. `DATABASE_URL` must be set in environment config before T3 migrations can run.
 - GitHub API access (token or unauthenticated for public repos) is needed for T2 integration testing.
 
@@ -508,8 +508,8 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### Configuration dependencies
 
-- `DATABASE_URL` — PostgreSQL connection string for Prisma runtime queries.
-- `DIRECT_DATABASE_URL` — direct connection for Prisma migrations (needed when host uses a connection pooler).
+- `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
+- Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workflow-backend` conventions.
 - GitHub API token handling (to be determined in T2).
 
 ### Release dependencies
@@ -520,17 +520,25 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 ## 6. Parallelization / Blocking Analysis
 
 ```
+D1: Choose GitHub fetch strategy (Contents API vs archive download)
+  └── Unblock before T2 implementation hardens network behavior and fixtures
+D2: Decide GitHub token reuse policy (store server-side vs require per sync)
+  └── Unblock before T4 exposes import/sync request and error semantics
+
 T1: Source adapter contract + canonical DTOs  [workflow-backend]
   └── Can begin now — no blockers
 
-T2: GitHub workspace adapter + parser          [workflow-backend]
-T3: PostgreSQL schema (Prisma) + DB adapter   [workflow-backend]
+T2: GitHub workspace adapter + parser         [workflow-backend]
+  └── BLOCKED on T1 (canonical snapshot DTOs and source error contract must be frozen)
+
+T3: PostgreSQL schema (goose/sqlc) + DB adapter [workflow-backend]
+  └── BLOCKED on T1 (database rows must map to the frozen canonical DTOs)
   └── T2 and T3 run in parallel
-  └── Both BLOCKED on T1 (DTO shapes must be frozen before adapters produce output)
 
   T4: Workspace source service + API routes   [workflow-backend]
     └── BLOCKED on T2 (GitHub adapter must produce conformant DTOs)
     └── BLOCKED on T3 (DB adapter must be able to read/write snapshots)
+    └── BLOCKED on D2 (import/sync token reuse semantics affect request and sync behavior)
 
     T5: Backend integration tests             [workflow-backend]
       └── BLOCKED on T4 (routes must exist and be reachable)
@@ -545,7 +553,7 @@ All tasks target `workflow-backend`. No cross-repo parallelization within this f
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New NestJS modules: workspace adapter contract, GitHub adapter, database adapter, source service, API controllers, Prisma schema migrations, integration tests. |
+| `workflow-backend` | New Go packages: workspace adapter contract, GitHub adapter, database adapter, source service, HTTP handlers, `goose` SQL migrations, `sqlc` query definitions, integration tests. |
 | `management-repo` | Planning artifacts only (`docs/features/workspace-data-backend/`). No runtime changes. |
 
 Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-data-flow`), `workflow`, `rag-service`, `git-nexus`.
@@ -556,12 +564,12 @@ Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-dat
 
 - **Unit tests**: GitHub adapter parsing (valid YAML, missing files, invalid YAML, rate-limit response), database adapter CRUD, source service fallback logic (sync failure + stale cache path, sync failure + no cache path).
 - **Integration tests**: full import flow (real or mocked GitHub → PostgreSQL write → read back via API), sync success flow, sync failure with stale fallback, workspace list and detail routes, feature and task detail routes.
-- **Schema tests**: Prisma migrations apply cleanly on a fresh database; existing data survives a re-migration if run incrementally.
+- **Schema tests**: `goose` migrations apply cleanly on a fresh database; existing data survives a re-migration if run incrementally; `sqlc` generated queries compile against the schema.
 
 ### Migration / config impact
 
-- Prisma migrations must be run before the service starts for the first time.
-- `DATABASE_URL` and (where needed) `DIRECT_DATABASE_URL` must be present in the environment.
+- `goose` migrations must be run before the service starts for the first time.
+- `DATABASE_URL` and any deployment-specific direct migration URL must be present in the environment when migrations run.
 - No existing data migration required — this is a greenfield schema.
 
 ### Rollout concerns

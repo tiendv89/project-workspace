@@ -1,9 +1,9 @@
 feature_id: workspace-data-backend
 title: Workspace Data Backend — GitHub Sync and Read API
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Write technical design.
+feature_status: ready_for_implementation
+current_stage: ready_for_implementation
+next_action: T1 is ready to claim. T2 and T3 wait for T1; T4 waits for T2 and T3; T5 waits for T3 and T4.
 
 stages:
   product_spec:
@@ -17,17 +17,37 @@ stages:
         at: 2026-05-15T01:14:28+0700
         comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-15T14:10:09+0700
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T14:06:12+0700
+        comment: Technical design drafted for Go backend workspace data import, PostgreSQL snapshot persistence, and read APIs.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T14:10:09+0700
+        comment: Technical design approved. Feature advances to task planning.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-15T14:13:22+0700
+    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+    review_history:
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T14:06:12+0700
+        comment: Task breakdown drafted for Go backend contracts, GitHub adapter, PostgreSQL/sqlc persistence, HTTP routes, and integration validation.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T14:10:09+0700
+        comment: Task breakdown submitted for approval after technical design approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-15T14:13:22+0700
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -47,6 +67,31 @@ history:
     by: tiendv.52@gmai.com
     at: 2026-05-15T01:14:28+0700
     note: Product spec approved. Advancing to technical_design stage.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:06:12+0700
+    note: Technical design submitted for review using Go, gin, pgx, sqlc, goose, and PostgreSQL.
+  - stage: tasks
+    action: drafted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:06:12+0700
+    note: Task breakdown drafted. Tasks remain todo until technical design and tasks approvals.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:10:09+0700
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:10:09+0700
+    note: Task breakdown submitted for approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:13:22+0700
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
 
 revalidation:
   product_spec_required: false
