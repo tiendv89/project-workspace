@@ -1,26 +1,134 @@
 id: T3
 title: Adapters — remove BRIEFING_PATH env
 repo: workflow
-status: todo
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
-
 branch: feature/executor-self-briefing-T3
-
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-14T17:15:48+0700"
-
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-15T00:17:40+0700
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/155
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-14T17:15:48+0700"
-    note: >-
-      Task created during tech-lead Phase 2 breakdown. Removes BRIEFING_PATH
+    at: 2026-05-14T17:15:48+0700
+    note: Task created during tech-lead Phase 2 breakdown. Removes BRIEFING_PATH
       from the subprocess and claude-docker-run adapter env-var serialization.
       Runs in parallel with T2 and T4 after T1 lands.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:57:13.967Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:59:10.813Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T10:59:22.793Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Adapters — remove BRIEFING_PATH env executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:01:59+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/155"
+    token_usage:
+      input: 368
+      output: 41261
+      model: claude-sonnet-4-6
+    cost_usd: 0.620019
+    at: 2026-05-14T11:35:26.929Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T11:51:04.785Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🔴 CI type-check fails (vitest unit / Type-check step). main.ts and
+      dispatch-reviewer.ts still reference briefingPath (T2 scope); T3 adapter
+      changes (subprocess.ts + docker-run.ts) are correct but tsc fails until T2
+      also merges. PR cannot merge with failing CI.
+    at: 2026-05-14T11:58:46.147Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:00:19.724Z
+    note: Fix agent claimed.
+  - action: comments_addressed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:02:25+0000
+    note: Resolved 1 inline review thread; PR converted to ready-for-review.
+      Reviewer confirmed removal is correct (nit only — CI failure is from
+      main.ts in T2 scope, not T3).
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:08:18.343Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/155"
+    token_usage:
+      input: 13010
+      output: 14017
+      model: claude-sonnet-4-6
+    cost_usd: 0.249285
+    at: 2026-05-14T12:08:53.938Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:15:20.832Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure — vitest unit fails with TypeScript errors in T2-scope
+      files (main.ts:228/729, dispatch-reviewer.ts:322, runtime-ports.ts:12). T3
+      adapter changes in subprocess.ts and docker-run.ts are correct. Fix path:
+      merge T2 into feature/executor-self-briefing first, then rebase T3 onto
+      the updated feature branch."
+    at: 2026-05-14T12:15:45.629Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:19:51.072Z
+    note: Fix agent claimed.
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Review cycle limit reached. Human review required.
+    at: 2026-05-14T12:20:17.642Z
+  - action: comments_addressed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T12:22:04+0000
+    note: Resolved 1 inline review thread(s); PR converted to ready-for-review.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/155"
+    token_usage:
+      input: 117
+      output: 12632
+      model: claude-sonnet-4-6
+    cost_usd: 0.189831
+    at: 2026-05-14T12:28:09.449Z
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T00:17:40+0700
+    note: >-
+      Human review: impl PR #155 reviewed and merged. T2 overstepped into T3 scope
+      to fix tsc; net adapter state correct — briefingPath absent from both
+      subprocess.ts and docker-run.ts. CI passing. Marking done.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/233
+  status: open
