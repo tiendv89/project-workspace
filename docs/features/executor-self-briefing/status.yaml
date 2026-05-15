@@ -1,8 +1,8 @@
 feature_id: executor-self-briefing
 title: Executor-owned briefing — move prompt construction out of the orchestrator
-feature_status: in_implementation
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: T5 reset to ready — re-queued after main revert (recovery bug PR #167).
+next_action: Wave 1 task T1 is ready. Implementation may begin.
 stages:
   product_spec:
     review_status: approved
@@ -40,7 +40,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-    pr_url: null
 history:
   - action: created
     by: tiendv.52@gmai.com
@@ -72,5 +71,3 @@ revalidation:
 feature_branch: feature/executor-self-briefing
 feature_branch_base_sha: 7ce4b0ce9781bb64924c96d86eb82261d47a577a
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/230
-handoff_pr_url: null
-impl_feature_prs: []
