@@ -1,27 +1,25 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: ready
-depends_on: [T2, T3, T4]
-blocked_reason: null
-
+status: done
+depends_on:
+  - T2
+  - T3
+  - T4
+blocked_reason: result_not_written
 branch: feature/executor-self-briefing-T5
-
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-14T17:15:48+0700"
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-15T09:24:46.330Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/163
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-14T17:15:48+0700"
-    note: >-
-      Task created during tech-lead Phase 2 breakdown. Deletes 3 orchestrator
+    at: 2026-05-14T17:15:48+0700
+    note: Task created during tech-lead Phase 2 breakdown. Deletes 3 orchestrator
       briefing test files, updates 5 fixture files to remove briefingPath, and
       adds 4 new executor self-briefing unit tests. Blocked on T2 (deleted
       module), T3 (adapter fixtures), and T4 (new module must exist to test).
@@ -29,3 +27,218 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-15T00:26:11+0700
     note: Auto-readied — all dependencies done (T2, T3, T4).
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:28:40.290Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:28:53.065Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:31:05+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-14T17:46:32.137Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:47:50.586Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:47:56.748Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 2 of 3).
+    at: 2026-05-14T17:50:30.921Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:51:48.916Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:51:55.119Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 3 of 3).
+    at: 2026-05-14T17:54:29.174Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:55:47.331Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-14T17:55:53.766Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: max_turns_exceeded
+    token_usage:
+      input: 0
+      output: 0
+    at: 2026-05-14T17:58:32.197Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T14:29:01+0700
+    note: Human unblock — API usage limit caused zero-work failures (0 tokens). No
+      implementation was done; resetting to ready for re-execution.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:30:31.049Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:30:38.895Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T14:33:41+0700
+    note: Human reset — runner-wrapper BRIEFING_PATH fix deployed; re-queuing for
+      execution.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:35:23.832Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:35:32.250Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T07:54:18+0000
+    note: executor work phase begun — continuing from WIP commit aa4c532.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: result_not_written
+    token_usage:
+      input: 238
+      output: 27033
+    at: 2026-05-15T07:58:46.972Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-15T15:19:05+0700
+    note: Human unblock — resetting to ready to verify fix for TASK_REPO_PATH
+      shortcut regression.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:21:08.159Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:21:14.606Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md,
+      docs/features/executor-self-briefing/technical-design.md"
+    rag_query: Tests — delete, update, and add executor-self-briefing
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:33:34+0000
+    note: executor work phase begun — all test changes verified, continuing to PR.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/163"
+    token_usage:
+      input: 219
+      output: 20870
+      model: claude-sonnet-4-6
+    cost_usd: 0.313707
+    at: 2026-05-15T08:41:40.485Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:43:20.759Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "Code quality APPROVED — all T5 subtasks implemented correctly. Merge
+      blocked: PR has merge conflicts (GitHub HTTP 405 'Pull Request has merge
+      conflicts', pre-check mergeable=false/dirty). Branch must be rebased onto
+      base branch before merge can proceed."
+    at: 2026-05-15T08:51:45.890Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:53:07.587Z
+    note: Fix agent claimed.
+  - action: comments_addressed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T09:16:45+0000
+    note: No unresolved inline review threads. Resolved merge conflicts by rebasing
+      T5 branch onto origin/main (force-pushed). Fixed WIP commit title nit
+      noted by reviewer. PR is now mergeable and ready-for-review.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/163"
+    token_usage:
+      input: 274
+      output: 32579
+      model: claude-sonnet-4-6
+    cost_usd: 0.4895069999999999
+    at: 2026-05-15T09:19:31.856Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T09:21:11.082Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-15T09:24:46.330Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/237
+  status: open
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-15T08:42:20.533Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/executor-self-briefing.
