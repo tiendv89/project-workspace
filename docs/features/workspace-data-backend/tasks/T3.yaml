@@ -1,0 +1,20 @@
+id: T3
+title: PostgreSQL schema and sqlc database adapter
+repo: workspace-github-adapter
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/workspace-data-backend-T3
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-15T14:06:12+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-15T14:06:12+0700
+    note: Task created from tech-lead planning for PostgreSQL schema, goose migrations, sqlc queries, and DB adapter work.

@@ -56,13 +56,46 @@ Use `workspace.yaml` as source of truth. Summarize repos here for humans.
 | `workflow-db` | Moves YAML state to Postgres; enables live dashboard and DB-backed claim protocol | In design |
 | `agent-rag-mcp` | Gives agents project knowledge at claim time + on-demand mid-task; replaces cold-start discovery | In design |
 
-## 5. Environments
+## 5. Database Schema
+
+### Location and format
+
+The canonical database schema lives at `database/schema.dbml` (repo root). This file is the **single source of truth** for the current applied schema.
+
+Format: [DBML](https://dbml.org) — paste `database/schema.dbml` into [dbdiagram.io](https://dbdiagram.io) to visualise the current schema.
+
+### Version history
+
+Past schema versions are stored under `database/v<NNN>/`:
+
+```
+database/
+├── schema.dbml        ← current applied schema (always up to date)
+├── v001/
+│   ├── changelog.md   ← what changed and why
+│   └── schema.dbml    ← schema snapshot at this version
+├── v002/
+│   ├── changelog.md
+│   └── schema.dbml
+```
+
+Version folders are numbered sequentially (`v001`, `v002`, …). `v001` is the oldest. The root `schema.dbml` always reflects the newest applied version.
+
+### Rules for contributors
+
+- Every schema change must create a new version folder (`v002`, `v003`, …) with `changelog.md` and `schema.dbml`.
+- After creating the version folder, update `database/schema.dbml` to match.
+- `changelog.md` must describe which tables were added, altered, or dropped, and why.
+- All physical names (tables, columns, indexes, constraints) use lowercase `snake_case`.
+- Every table must include a `workspace_id` column for multi-tenancy partitioning, even in single-tenant v1.
+
+## 6. Environments
 Document whether this workspace uses:
 - develop
 - staging
 - production
 
-## 6. Automation Policy
+## 7. Automation Policy
 Summarize:
 - which roles can later be handled by agents
 - which steps remain human-only
