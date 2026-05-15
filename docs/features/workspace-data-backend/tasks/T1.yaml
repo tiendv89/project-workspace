@@ -1,14 +1,14 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: in_progress
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: missing_tool
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T18:05:33+0000
+  last_updated_at: 2026-05-15T18:08:44.702Z
 pr:
   url: null
   status: null
