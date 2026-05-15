@@ -1,7 +1,7 @@
 id: T5
 title: Tests — delete, update, and add
 repo: workflow
-status: change_requested
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/executor-self-briefing-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T08:51:45.890Z
+  last_updated_at: 2026-05-15T08:53:07.587Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/163
   status: open
@@ -206,6 +206,10 @@ log:
       conflicts', pre-check mergeable=false/dirty). Branch must be rebased onto
       base branch before merge can proceed."
     at: 2026-05-15T08:51:45.890Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T08:53:07.587Z
+    note: Fix agent claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/237
   status: open
