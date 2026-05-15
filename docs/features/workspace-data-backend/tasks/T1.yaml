@@ -1,6 +1,6 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
-repo: workflow-backend
+repo: workspace-github-adapter
 status: ready
 depends_on: []
 blocked_reason: null

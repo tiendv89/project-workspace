@@ -1,6 +1,6 @@
 id: T5
 title: Backend integration tests and release validation
-repo: workflow-backend
+repo: workspace-github-adapter
 status: todo
 depends_on:
   - T3

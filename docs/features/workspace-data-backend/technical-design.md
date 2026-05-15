@@ -7,7 +7,7 @@
 
 ## 1. Current State
 
-`workflow-backend` is the backend implementation target, but it has no workspace data layer today. There is no database schema for storing workspace snapshots, no GitHub parsing logic, and no workspace read API. The dashboard calls `api.github.com` directly from the browser and keeps the active workspace in `localStorage`.
+There is no dedicated workspace data service today. `workflow-backend` exists but has no workspace data layer — no database schema for storing workspace snapshots, no GitHub parsing logic, and no workspace read API. The dashboard calls `api.github.com` directly from the browser and keeps the active workspace in `localStorage`.
 
 ```text
 Today:
@@ -20,8 +20,9 @@ Today:
 There is no server-side persistence. Workspaces do not survive browser session resets and are unavailable across devices.
 
 Key constraints:
-- `workflow-backend` is the backend service — all implementation work lands there.
-- `digital-factory-ui` is the UI consumer — it currently calls GitHub directly but will be updated in `workspace-tabs-data-flow` to call `workflow-backend` instead.
+- `workspace-github-adapter` is the new dedicated adapter service — all implementation work for this feature lands there. It contains both the write-side adapter service (GitHub sync, webhook ingestion, queue drain) and the read-side API service (REST routes consumed by the UI).
+- `workflow-backend` is an existing backend service but is not the target repo for this feature.
+- `digital-factory-ui` is the UI consumer — it currently calls GitHub directly but will be updated in `workspace-tabs-data-flow` to call the `workspace-github-adapter` API instead.
 - GitHub still owns all task state writes. This feature introduces read-only mirroring only.
 - This feature standardizes the workspace data backend on Go, PostgreSQL, `pgx`, `sqlc`, and `goose`. Database naming uses lowercase `snake_case`.
 
@@ -278,7 +279,7 @@ LIMIT 1
 
 ### Backend Technology Stack
 
-Two Go binaries in `workflow-backend`, sharing one PostgreSQL database and one `sqlc`-generated query package.
+Two Go binaries in `workspace-github-adapter`, sharing one PostgreSQL database and one `sqlc`-generated query package.
 
 | | `adapter-service` | `api-service` |
 |---|---|---|
@@ -600,7 +601,7 @@ Orchestration logic:
 
 ### Backend API Routes
 
-Representative shape (exact paths follow `workflow-backend` conventions):
+Representative shape (exact paths follow `workspace-github-adapter` conventions):
 
 ```
 GET  /api/workspaces
@@ -637,8 +638,8 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 
 ### External dependencies
 
-- `workflow-backend` repo must have a working Go module and service entrypoint. If the existing project is not yet Go-based, T1 must establish the Go module, package layout, and service bootstrap before adapter work continues.
-- PostgreSQL must be accessible from the `workflow-backend` runtime. `DATABASE_URL` must be set in environment config before T3 migrations can run.
+- `workspace-github-adapter` repo must have a working Go module and service entrypoint. T1 establishes the Go module, package layout, and service bootstrap for both binaries.
+- PostgreSQL must be accessible from the `workspace-github-adapter` runtime. `DATABASE_URL` must be set in environment config before T3 migrations can run.
 - GitHub API access (token or unauthenticated for public repos) is needed for T2 integration testing.
 
 ### Blocking decisions
@@ -649,7 +650,7 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 ### Configuration dependencies
 
 - `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
-- Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workflow-backend` conventions.
+- Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workspace-github-adapter` conventions.
 - GitHub API token handling (to be determined in T2).
 
 ### Release dependencies
@@ -665,27 +666,27 @@ D1: Choose GitHub fetch strategy (Contents API vs archive download)
 D2: Decide GitHub token reuse policy (store server-side vs require per sync)
   └── Unblock before T4 exposes import/sync request and error semantics
 
-T1: Source adapter contract + canonical DTOs  [workflow-backend]
+T1: Source adapter contract + canonical DTOs  [workspace-github-adapter]
   └── Can begin now — no blockers
 
-T2: GitHub workspace adapter + parser         [workflow-backend]
+T2: GitHub workspace adapter + parser         [workspace-github-adapter]
   └── BLOCKED on T1 (canonical snapshot DTOs and source error contract must be frozen)
 
-T3: PostgreSQL schema (goose/sqlc) + DB adapter [workflow-backend]
+T3: PostgreSQL schema (goose/sqlc) + DB adapter [workspace-github-adapter]
   └── BLOCKED on T1 (database rows must map to the frozen canonical DTOs)
   └── T2 and T3 run in parallel
 
-  T4: Workspace source service + API routes   [workflow-backend]
+  T4: Workspace source service + API routes   [workspace-github-adapter]
     └── BLOCKED on T2 (GitHub adapter must produce conformant DTOs)
     └── BLOCKED on T3 (DB adapter must be able to read/write snapshots)
     └── BLOCKED on D2 (import/sync token reuse semantics affect request and sync behavior)
 
-    T5: Backend integration tests             [workflow-backend]
+    T5: Backend integration tests             [workspace-github-adapter]
       └── BLOCKED on T4 (routes must exist and be reachable)
       └── BLOCKED on T3 (requires live PostgreSQL with migrated schema)
 ```
 
-All tasks target `workflow-backend`. No cross-repo parallelization within this feature.
+All tasks target `workspace-github-adapter`. No cross-repo parallelization within this feature.
 
 `workspace-tabs-data-flow` T1 (frontend API client) can begin against T1/T4 draft contract from this feature; full integration is blocked on T4 being deployed.
 
@@ -693,10 +694,10 @@ All tasks target `workflow-backend`. No cross-repo parallelization within this f
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New Go packages: workspace adapter contract, GitHub adapter, database adapter, source service, HTTP handlers, `goose` SQL migrations, `sqlc` query definitions, integration tests. |
+| `workspace-github-adapter` | New Go service repo. Contains both the `adapter-service` (write side — GitHub sync, webhook ingestion, asynq worker) and `api-service` (read side — REST API). New Go packages: workspace adapter contract, GitHub adapter, database adapter, source service, HTTP handlers, `goose` SQL migrations, `sqlc` query definitions, integration tests. |
 | `management-repo` | Planning artifacts only (`docs/features/workspace-data-backend/`). No runtime changes. |
 
-Unaffected repos: `digital-factory-ui` (consumer, updated in `workspace-tabs-data-flow`), `workflow`, `rag-service`, `git-nexus`.
+Unaffected repos: `workflow-backend`, `digital-factory-ui` (consumer, updated in `workspace-tabs-data-flow`), `workflow`, `rag-service`, `git-nexus`.
 
 ## 8. Validation and Release Impact
 

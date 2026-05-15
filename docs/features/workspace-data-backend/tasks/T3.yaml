@@ -1,6 +1,6 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
-repo: workflow-backend
+repo: workspace-github-adapter
 status: todo
 depends_on:
   - T1

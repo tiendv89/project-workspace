@@ -6,11 +6,11 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 
 | ID | Wave | Repo | Title | Depends on |
 |---|---:|---|---|---|
-| T1 | 1 | workflow-backend | Go backend foundation and canonical workspace DTOs | [] |
-| T2 | 2 | workflow-backend | GitHub workspace adapter and parser | [T1] |
-| T3 | 2 | workflow-backend | PostgreSQL schema and sqlc database adapter | [T1] |
-| T4 | 3 | workflow-backend | Workspace source service and HTTP API routes | [T2, T3] |
-| T5 | 4 | workflow-backend | Backend integration tests and release validation | [T3, T4] |
+| T1 | 1 | workspace-github-adapter | Go backend foundation and canonical workspace DTOs | [] |
+| T2 | 2 | workspace-github-adapter | GitHub workspace adapter and parser | [T1] |
+| T3 | 2 | workspace-github-adapter | PostgreSQL schema and sqlc database adapter | [T1] |
+| T4 | 3 | workspace-github-adapter | Workspace source service and HTTP API routes | [T2, T3] |
+| T5 | 4 | workspace-github-adapter | Backend integration tests and release validation | [T3, T4] |
 
 ---
 
@@ -20,11 +20,11 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 
 Establish the Go implementation boundary for this backend feature and define the canonical data contracts shared by the GitHub adapter, database adapter, service layer, and HTTP handlers.
 
-This task owns the package layout, DTOs, adapter interfaces, source-state semantics, and source-error contract. If `workflow-backend` is not yet Go-based, this task also owns the minimal Go module and service bootstrap needed for later tasks to compile against.
+This task owns the package layout, DTOs, adapter interfaces, source-state semantics, and source-error contract. It also owns the minimal Go module and service bootstrap needed for later tasks to compile against, since `workspace-github-adapter` is a new repo.
 
 Deliverables:
 
-- Confirm or create the Go module and service package layout for `workflow-backend`.
+- Confirm or create the Go module and service package layout for `workspace-github-adapter`.
 - Define canonical workspace DTOs for workspace summary/detail, feature summary/detail, task summary/detail, pull request refs, activity events, source state, and source errors.
 - Define Go interfaces for `GitHubWorkspaceAdapter` and `DbWorkspaceAdapter`.
 - Define source-state semantics for fresh, stale, partial, unavailable, and failed states.
@@ -38,8 +38,8 @@ Deliverables:
 
 ### Subtasks
 
-- [ ] Inspect current `workflow-backend` entrypoint, package layout, build command, and test command.
-- [ ] Add or align Go module/service bootstrap if the backend is not yet Go-based.
+- [ ] Inspect current `workspace-github-adapter` repo state (entrypoint, package layout, build command, test command) — bootstrap if empty.
+- [ ] Add Go module and service bootstrap for `workspace-github-adapter` (new repo — both binaries start here).
 - [ ] Define workspace, feature, task, PR, activity, source-state, and source-error DTOs.
 - [ ] Define Go adapter interfaces for GitHub ingestion and PostgreSQL persistence.
 - [ ] Define source error codes for GitHub, database, parser, validation, and adapter failures.
@@ -113,7 +113,7 @@ Deliverables:
 
 ### Subtasks
 
-- [ ] Inspect current `workflow-backend` database conventions, if any.
+- [ ] Inspect current `workspace-github-adapter` database conventions, if any.
 - [ ] Add `goose` migration files for workspace, snapshot, feature, document, task, activity, and sync-run tables.
 - [ ] Add constraints and indexes for workspace lookup, feature status/stage, task status/repo, activity timeline, snapshot version, and sync-run audit queries.
 - [ ] Add `sqlc` config and SQL query files following repo layout.
