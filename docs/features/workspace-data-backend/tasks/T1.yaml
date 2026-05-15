@@ -1,17 +1,17 @@
 id: T1
 title: Go backend foundation and canonical workspace DTOs
 repo: workspace-github-adapter
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-data-backend-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T18:40:24.025Z
+  last_updated_at: 2026-05-15T18:44:37.162Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/1
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -143,6 +143,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-15T18:40:24.025Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:44:37.162Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/244
   status: open

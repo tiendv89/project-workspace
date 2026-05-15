@@ -1,7 +1,7 @@
 id: T2
 title: GitHub workspace adapter and parser
 repo: workspace-github-adapter
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -17,4 +17,9 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task created from tech-lead planning for the GitHub workspace adapter and parser.
+    note: Task created from tech-lead planning for the GitHub workspace adapter and
+      parser.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:44:37.415Z
+    note: Task activated — dependency T1 merged and marked done.

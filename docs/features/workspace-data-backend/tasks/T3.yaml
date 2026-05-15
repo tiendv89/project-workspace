@@ -1,7 +1,7 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
 repo: workspace-github-adapter
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -17,4 +17,9 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task created from tech-lead planning for PostgreSQL schema, goose migrations, sqlc queries, and DB adapter work.
+    note: Task created from tech-lead planning for PostgreSQL schema, goose
+      migrations, sqlc queries, and DB adapter work.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:44:37.417Z
+    note: Task activated — dependency T1 merged and marked done.
