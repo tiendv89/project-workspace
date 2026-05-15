@@ -1,7 +1,7 @@
 id: T2
 title: GitHub workspace adapter and parser
 repo: workspace-github-adapter
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,10 +9,10 @@ branch: feature/workspace-data-backend-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T18:48:47+0000
+  last_updated_at: 2026-05-15T19:01:36.059Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/2
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
