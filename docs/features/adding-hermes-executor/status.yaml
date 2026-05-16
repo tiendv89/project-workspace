@@ -1,17 +1,23 @@
 feature_id: adding-hermes-executor
 title: Hermes Executor — ABI-conformant executor image for Hermes Agent
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-17T00:55:10+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-17T00:55:10+0700
+        by: tiendv.52@gmai.com
+        action: approved
+        note: >-
+          Approved. Scope trimmed to minimum viable executor wiring — memory,
+          review capability, and cluster controller deferred to separate features.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -39,6 +45,12 @@ history:
       Feature initialized. Delivers the Hermes executor package at
       runtime/executors/hermes/ conforming to the ABI spec. Prerequisite
       for agent-runtime-selector.
+  - at: 2026-05-17T00:55:10+0700
+    by: tiendv.52@gmai.com
+    action: product_spec_approved
+    note: >-
+      Product spec approved. Feature advances to in_tdd — technical design
+      ready for review.
 
 revalidation:
   product_spec_required: false
