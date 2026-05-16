@@ -51,6 +51,37 @@ this feature, the "workspace-aware" promise of Hermes is not delivered.
 - **PVC per executor** — not needed. Mem0 holds the persistent layer; the process is
   intentionally ephemeral.
 
+## Architecture overview
+
+```
+Orchestrator
+  │  submit(ExecutorPortInput) via SubProcessAdapter
+  │  (executorBinPath = hermes-executor/dist/index.js)
+  │  (extraEnv = HERMES_INFERENCE_MODEL, HERMES_INFERENCE_PROVIDER,
+  │              DEEPSEEK_API_KEY, MEM0_URL, MEM0_API_KEY, ...)
+  ▼
+Hermes Executor process (ephemeral)
+  ├── Phase 1: clone mgmt repo (read-only)
+  ├── Phase 2: clone impl repo
+  ├── Phase 3: write HERMES_HOME/config.yaml (Mem0 + MCP)
+  │     HERMES_HOME = ${EXECUTOR_WORKDIR}/hermes-home (tmpdir)
+  ├── Phase 4: build briefing from mgmt clone
+  ├── Phase 5: hermes chat --query "$BRIEFING" --quiet --ignore-rules
+  │     Hermes loads Mem0 at session start (inherits workspace knowledge)
+  │     Hermes makes code changes and saves files only
+  ├── Phase 6: wrapper commits + pushes + opens impl PR + writes result.json
+  ├── Phase 7: writes memory-candidates.json (best-effort)
+  └── exits 0
+
+Memory consolidator (optional, separate process)
+  watches HERMES_MEMORY_QUEUE_PATH
+  drains memory-candidates.json → Mem0
+  if absent → graceful no-op
+
+Mem0 instance (per workspace, optional)
+  if absent → stateless execution, no accumulation
+```
+
 ## Knowledge lifecycle
 
 ```
