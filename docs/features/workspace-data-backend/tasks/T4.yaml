@@ -1,7 +1,7 @@
 id: T4
 title: Workspace source service and HTTP API routes
 repo: workflow-backend
-status: in_review
+status: change_requested
 depends_on:
   - T2
   - T3
@@ -10,7 +10,7 @@ branch: feature/workspace-data-backend-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-16T03:30:50.918Z
+  last_updated_at: 2026-05-16T03:36:39.299Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/1
   status: open
@@ -65,6 +65,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-16T03:30:50.918Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 N+1 query in ListWorkspaces (internal/service/workspace.go ~line
+      2066): githubRepoURL() issues a GetGitHubSource DB query per workspace
+      inside a loop — batch-load GitHub sources the same way sync runs are
+      already batched. 🟢 Handler holds concrete *service.WorkspaceService
+      instead of an interface. 🟢 Dead variable in TestGetTask_Success."
+    at: 2026-05-16T03:36:39.299Z
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/247
   status: open
