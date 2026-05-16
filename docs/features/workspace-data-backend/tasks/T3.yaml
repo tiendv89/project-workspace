@@ -1,15 +1,15 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
 repo: workspace-github-adapter
-status: blocked
+status: in_review
 depends_on:
   - T1
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/workspace-data-backend-T3
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-15T19:19:33.148Z
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: 2026-05-16T09:37:03+0700
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/3
   status: open
@@ -70,6 +70,13 @@ log:
       input: 140
       output: 15413
     at: 2026-05-15T19:19:33.148Z
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T09:37:03+0700
+    note: "Human resolved block: executor exited cleanly (subtype:success) without
+      writing result.json — known bug in pr-self-review skill (fixed in
+      agent-workflow#170). PR already open; resetting to in_review for reviewer
+      dispatch."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/246
   status: open
