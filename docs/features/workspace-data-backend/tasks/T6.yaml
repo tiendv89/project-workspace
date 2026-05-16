@@ -1,11 +1,11 @@
 id: T6
 title: Docker Compose — local infra and service entries for workspace-data-backend
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T1
   - T4
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/workspace-data-backend-T6
 execution:
   actor_type: agent
@@ -51,6 +51,10 @@ log:
       input: 144
       output: 17277
     at: 2026-05-16T10:03:47.577Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-16T23:11:14+0700
+    note: Human reset to ready — agent to continue implementation on existing PR.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/248
   status: open
