@@ -1,7 +1,7 @@
 id: T4
 title: Workspace source service and HTTP API routes
 repo: workflow-backend
-status: ready
+status: done
 depends_on:
   - T2
   - T3
@@ -9,11 +9,11 @@ blocked_reason: null
 branch: feature/workspace-data-backend-T4
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-15T14:06:12+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-16T03:51:41.508Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/1
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -24,3 +24,76 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-16T03:06:16.114Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:07:24.438Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:07:38.123Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-data-backend/product-spec.md,
+      docs/features/workspace-tabs-data-flow/technical-design.md,
+      docs/features/workspace-tabs-data-flow/technical-design.md"
+    rag_query: Workspace source service and HTTP API routes workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:11:28+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: result_not_written
+    token_usage:
+      input: 240
+      output: 70523
+    at: 2026-05-16T03:25:36.327Z
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T10:30:21+0700
+    note: "Human resolved block: pr-create skill returned PR URL as text in
+      agent-runtime mode, ending the session before result.json was written —
+      same root cause as T3 (fixed in agent-workflow#170, pr-create also
+      patched). PR already open at pr.url; resetting to in_review for reviewer
+      dispatch."
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:30:50.918Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 N+1 query in ListWorkspaces (internal/service/workspace.go ~line
+      2066): githubRepoURL() issues a GetGitHubSource DB query per workspace
+      inside a loop — batch-load GitHub sources the same way sync runs are
+      already batched. 🟢 Handler holds concrete *service.WorkspaceService
+      instead of an interface. 🟢 Dead variable in TestGetTask_Success."
+    at: 2026-05-16T03:36:39.299Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:37:50.927Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/1"
+    token_usage:
+      input: 466
+      output: 14369
+      model: claude-sonnet-4-6
+    cost_usd: 0.21693300000000001
+    at: 2026-05-16T03:44:21.642Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:45:16.051Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:51:41.508Z
+    note: Reviewer approved.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/247
+  status: open
