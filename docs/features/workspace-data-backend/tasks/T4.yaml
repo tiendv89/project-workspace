@@ -96,4 +96,4 @@ log:
     note: Reviewer approved.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/247
-  status: open
+  status: merged
