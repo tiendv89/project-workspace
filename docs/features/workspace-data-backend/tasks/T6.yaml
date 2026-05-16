@@ -1,7 +1,7 @@
 id: T6
 title: Docker Compose — local infra and service entries for workspace-data-backend
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T1
   - T4
@@ -16,6 +16,10 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-16T00:34:05+0700
-    note: >-
-      Task created to add workspace-infra profile (PostgreSQL, Redis, asynqmon) and
-      workspace-backend profile (adapter-service, api-service) to docker-compose.yml.
+    note: Task created to add workspace-infra profile (PostgreSQL, Redis, asynqmon)
+      and workspace-backend profile (adapter-service, api-service) to
+      docker-compose.yml.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:51:41.537Z
+    note: Task activated — dependency T4 merged and marked done.
