@@ -1,19 +1,19 @@
 id: T4
 title: Workspace source service and HTTP API routes
 repo: workflow-backend
-status: in_progress
+status: blocked
 depends_on:
   - T2
   - T3
-blocked_reason: null
+blocked_reason: result_not_written
 branch: feature/workspace-data-backend-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-16T03:11:28+0000
+  last_updated_at: 2026-05-16T03:25:26.578Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/1
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
