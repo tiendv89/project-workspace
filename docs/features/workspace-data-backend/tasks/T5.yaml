@@ -1,7 +1,7 @@
 id: T5
 title: Backend integration tests and release validation
 repo: workflow-backend
-status: todo
+status: ready
 depends_on:
   - T3
   - T4
@@ -19,4 +19,9 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task created from tech-lead planning for backend integration tests and release validation.
+    note: Task created from tech-lead planning for backend integration tests and
+      release validation.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-16T16:23:17.446Z
+    note: Task activated — dependency T6 merged and marked done.
