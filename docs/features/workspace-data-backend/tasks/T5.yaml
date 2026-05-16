@@ -30,3 +30,6 @@ log:
     at: 2026-05-16T16:25:22.489Z
     note: Claimed via git-based claim protocol.
 blocked_context: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/250
+  status: open
