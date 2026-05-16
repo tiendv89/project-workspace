@@ -1,7 +1,7 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
 repo: workspace-github-adapter
-status: change_requested
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ branch: feature/workspace-data-backend-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-16T02:44:15.760Z
+  last_updated_at: 2026-05-16T02:45:08.423Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/3
   status: open
@@ -90,6 +90,10 @@ log:
       GetFeature. 🟡 N+1 in GetActiveSnapshot. 🟡 Hardcoded ManagementRepoID in
       upsertSnapshot.
     at: 2026-05-16T02:44:15.760Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T02:45:08.423Z
+    note: Fix agent claimed.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/246
   status: open
