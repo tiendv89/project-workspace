@@ -1,7 +1,7 @@
 id: T4
 title: Workspace source service and HTTP API routes
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -9,8 +9,8 @@ blocked_reason: null
 branch: feature/workspace-data-backend-T4
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-15T14:06:12+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-16T03:07:24.438Z
 pr:
   url: null
   status: null
@@ -24,3 +24,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-16T03:06:16.114Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:07:24.438Z
+    note: Claimed via git-based claim protocol.
