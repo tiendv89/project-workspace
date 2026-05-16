@@ -1,16 +1,16 @@
 id: T4
 title: Workspace source service and HTTP API routes
 repo: workflow-backend
-status: blocked
+status: in_review
 depends_on:
   - T2
   - T3
-blocked_reason: result_not_written
+blocked_reason: null
 branch: feature/workspace-data-backend-T4
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-16T03:25:36.327Z
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: 2026-05-16T10:30:21+0700
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/1
   status: open
@@ -53,6 +53,14 @@ log:
       input: 240
       output: 70523
     at: 2026-05-16T03:25:36.327Z
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T10:30:21+0700
+    note: "Human resolved block: pr-create skill returned PR URL as text in
+      agent-runtime mode, ending the session before result.json was written —
+      same root cause as T3 (fixed in agent-workflow#170, pr-create also
+      patched). PR already open at pr.url; resetting to in_review for reviewer
+      dispatch."
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/247
   status: open
