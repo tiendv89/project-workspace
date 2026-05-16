@@ -73,16 +73,7 @@ This feature introduces Hermes as a second executor. It is the prerequisite for
    draft PR if needed, write `result.json` with `terminal_status: "blocked"` if
    Hermes did not produce a valid result. Same recovery contract as the Claude executor.
 
-9. **Runtime model selection** — model and provider are set via env vars
-   (`HERMES_INFERENCE_MODEL`, `HERMES_INFERENCE_PROVIDER`) injected through
-   `SubProcessAdapterOpts.extraEnv` by the operator. Once `executor-credential-isolation`
-   lands, the executor also reads `task.execution.model` from the task YAML directly
-   as the first-priority override. Platform default is `deepseek-v4-flash` / `deepseek`.
-   All provider API keys live in `extraEnv`; the orchestrator is not involved in model
-   selection. The model registry and three-level fallback resolution are deferred to
-   `hermes-cluster-controller`.
-
-10. **Responsibility split — Hermes codes, wrapper handles workflow protocol** —
+9. **Responsibility split — Hermes codes, wrapper handles workflow protocol** —
     Hermes does not auto-inject `CLAUDE.md` and has no built-in knowledge of
     workflow conventions (git patterns, PR body format, `result.json` schema,
     `pr-create` skill). Delegating the full output contract to Hermes via the briefing
@@ -102,27 +93,17 @@ This feature introduces Hermes as a second executor. It is the prerequisite for
     task description, technical design, subtasks, and codebase context — nothing about
     git or result files.
 
-## Model
-
-**Default: DeepSeek V4-Flash** (`deepseek-v4-flash` via the `deepseek` provider).
-
-DeepSeek V4-Flash is the platform default for Hermes-routed tasks: 284B total / 13B
-active parameters, 1M context window, full tool use and function calling support,
-OpenAI-compatible API, and MIT-licensed weights. At $0.14/$0.28 per million
-input/output tokens it is approximately 34× cheaper than Claude Sonnet 4.6 for the
-same task volume.
-
-Local models (Ollama) are a planned future tier once GPU infrastructure is in place.
-The model registry design in this feature accommodates them without code changes.
-
 ## Non-goals
 
-- **Orchestrator dispatch routing** — `execution.runtime` on task YAMLs and the
+- **Orchestrator dispatch routing and model selection** — `execution.runtime` and
+  `execution.model` on task YAMLs, per-task model/provider resolution, and the
   orchestrator's runtime-selection logic are `agent-runtime-selector`'s scope.
+  The Hermes executor accepts model and provider via `HERMES_INFERENCE_MODEL` /
+  `HERMES_INFERENCE_PROVIDER` env vars; which values to inject is the selector's decision.
 - **Hermes cluster controller** — the HTTP service, container/K8s job spawning, model
   registry, workspace Mem0 config registry, and workdir lifecycle management are
   deferred to `hermes-cluster-controller`.
-- **Reviewer executor for Hermes** — `kind=impl` tasks only. Review is out of scope.
+- **Reviewer executor for Hermes** — `kind=impl` tasks only in this feature. Review capability is deferred to `executor-capability`.
 - **PVC per executor** — not needed. Mem0 holds the persistent layer; the process is
   intentionally ephemeral.
 - **Shared Hermes state across parallel executors** — each executor has its own
@@ -219,8 +200,8 @@ hermes chat \
   --ignore-rules
 ```
 
-Model and provider are set via env vars rather than CLI flags so the cluster
-controller can inject them without constructing a flag string.
+Model and provider are passed as env vars; which values to set is resolved by the
+selector before the executor is spawned — the executor has no selection logic.
 
 ## Environment variables
 
@@ -257,8 +238,8 @@ controller can inject them without constructing a flag string.
 | `HERMES_MEMORY_QUEUE_PATH` | Path to write `memory-candidates.json` (optional) |
 
 These are set by the operator in `SubProcessAdapterOpts.extraEnv` when wiring the
-Hermes executor profile. Once `executor-credential-isolation` lands, the executor also
-reads `task.execution.model` directly from the task YAML as a first-priority override.
+Hermes executor profile. Which model and provider to use is resolved by
+`agent-runtime-selector` — the executor accepts whatever values are injected.
 The model registry and automatic three-level fallback resolution are `hermes-cluster-controller` scope.
 
 ## Success criteria

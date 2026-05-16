@@ -1,0 +1,48 @@
+feature_id: executor-capability
+title: Executor Capability — Full parity for alternative executors (impl + review)
+
+feature_status: in_design
+current_stage: product_spec
+next_action: Draft and submit the product spec for approval.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-17T00:32:00+0700
+    by: matthew@swellnetwork.io
+    action: feature_created
+    note: >-
+      Feature initialized. Tracks full capability parity for alternative executors
+      (Hermes and future runtimes) — review kind deferred from adding-hermes-executor.
+      An executor that cannot review is not a true alternative; this feature closes
+      that gap.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
