@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T09:11:38.235Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T09:11:51.079Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-cluster-controller/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/238,
+      docs/features/adding-hermes-executor/technical-design.md"
+    rag_query: EXECUTOR_TYPE / EXECUTOR_PROFILE adapter wiring adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
