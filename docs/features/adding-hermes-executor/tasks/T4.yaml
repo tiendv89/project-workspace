@@ -1,7 +1,7 @@
 id: T4
 title: Phase 6 — post-execution workflow protocol
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -9,12 +9,14 @@ blocked_context: null
 branch: feature/adding-hermes-executor-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-17T10:17:08.517Z
 pr:
-  url: null
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/177
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/257
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -24,3 +26,38 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T09:58:07.083Z
     note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:00:03.798Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:00:15.450Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/adding-hermes-executor/product-spec.md,
+      docs/features/adding-hermes-executor/technical-design.md,
+      docs/features/hermes-workspace-memory/technical-design.md"
+    rag_query: Phase 6 — post-execution workflow protocol adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:03:22+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/177"
+    token_usage:
+      input: 196
+      output: 20789
+      model: claude-sonnet-4-6
+    cost_usd: 0.31242299999999995
+    at: 2026-05-17T10:09:25.245Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:11:08.197Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:17:08.517Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
