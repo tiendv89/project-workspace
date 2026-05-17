@@ -71,3 +71,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/adding-hermes-executor
 feature_branch_base_sha: 2b2931601de68e107acc7e2f92758565f5fd62b0
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/253
