@@ -70,6 +70,7 @@ There is no mechanism today to route a task to a different runtime based on its 
 4. **Skill compatibility** — `SKILL.md` context is injected into both runtimes; a translation layer converts SKILL.md content into Hermes-compatible system prompt or skill format at invocation time
 5. **MCP parity** — MCP tools (`rag_query`, etc.) configured identically for both runtimes; no tool loses functionality based on runtime choice
 6. **Cost routing guidance** — document which task types are suited for each runtime so tech leads can assign `execution.runtime` intentionally during task planning
+7. **Model and provider selection for Hermes tasks** — introduce `execution.model` on task YAMLs as an optional per-task override. The selector resolves which model/provider to inject (`HERMES_INFERENCE_MODEL`, `HERMES_INFERENCE_PROVIDER`) before spawning the executor. Tasks with no `execution.model` fall back to operator-configured defaults in `SubProcessAdapterOpts.extraEnv`. The Hermes executor itself has no selection logic — it accepts whatever values are injected.
 
 ## Non-goals
 

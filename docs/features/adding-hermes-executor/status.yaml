@@ -1,29 +1,46 @@
 feature_id: adding-hermes-executor
 title: Hermes Executor — ABI-conformant executor image for Hermes Agent
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Wave 1 tasks (T1, T2, T3) are ready for execution.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-17T00:55:10+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-17T00:55:10+0700
+        by: tiendv.52@gmai.com
+        action: approved
+        note: >-
+          Approved. Scope trimmed to minimum viable executor wiring — memory,
+          review capability, and cluster controller deferred to separate features.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-17T15:46:23+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-17T15:46:23+0700
+        by: tiendv.52@gmai.com
+        action: approved
+        note: >-
+          Approved. EXECUTOR_TYPE / EXECUTOR_PROFILE separation correct. Task
+          breakdown refined to 6 tasks with clear dependency graph.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-17T15:53:40+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-17T15:53:40+0700
+        by: tiendv.52@gmai.com
+        action: approved
+        note: >-
+          Approved. 6 tasks across 3 waves. Wave 1 (T1, T2, T3) activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -39,6 +56,24 @@ history:
       Feature initialized. Delivers the Hermes executor package at
       runtime/executors/hermes/ conforming to the ABI spec. Prerequisite
       for agent-runtime-selector.
+  - at: 2026-05-17T00:55:10+0700
+    by: tiendv.52@gmai.com
+    action: product_spec_approved
+    note: >-
+      Product spec approved. Feature advances to in_tdd — technical design
+      ready for review.
+  - at: 2026-05-17T15:46:23+0700
+    by: tiendv.52@gmai.com
+    action: technical_design_approved
+    note: >-
+      Technical design approved. Feature advances to task planning — task
+      breakdown ready to be produced.
+  - at: 2026-05-17T15:53:40+0700
+    by: tiendv.52@gmai.com
+    action: tasks_approved
+    note: >-
+      Tasks approved. Feature advances to ready_for_implementation.
+      Wave 1 tasks T1, T2, T3 activated.
 
 revalidation:
   product_spec_required: false
