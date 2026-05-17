@@ -39,14 +39,18 @@ startup logic.
 ### Option B — Reuse `SubProcessAdapter` with a Hermes executor profile (chosen)
 
 Wire the existing `SubProcessAdapter` with `executorBinPath` pointing at the Hermes
-executor binary and Hermes-specific env vars injected via `extraEnv`. The orchestrator
-sees only `ExecutorPort` — no Hermes internals.
+executor binary. Hermes-specific config is passed as env vars — the executor reads
+`process.env.HERMES_INFERENCE_MODEL`, `process.env.HERMES_INFERENCE_PROVIDER`, etc.
+directly. The orchestrator sets those vars on the child process via `extraEnv`; it
+never imports or calls into executor code. Env vars are the explicit, version-stable
+boundary between the two codebases.
 
-- Pro: zero new adapter code; the same pattern already used for the Claude executor;
-  `HermesClusterAdapter` will replace this in a single profile swap when
-  `hermes-cluster-controller` ships
-- Con: Hermes-specific config is declared at wiring time (profile), not in the executor
-  binary itself — acceptable since all executor profiles are operator-configured
+- Pro: zero new adapter code; same pattern as the Claude executor; env-var interface
+  works identically whether the executor runs as a local subprocess or inside a
+  container — the orchestrator just sets the env, the executor reads it
+- Pro: `HermesClusterAdapter` replaces this profile in a single config swap when
+  `hermes-cluster-controller` ships — no executor code changes required
+- Con: none — env vars as the interface is the intended design
 
 **Chosen: Option B.**
 
