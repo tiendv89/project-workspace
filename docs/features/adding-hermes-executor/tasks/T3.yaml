@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T09:27:55.505Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T09:28:07.804Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-cluster-controller/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/238,
+      docs/features/hermes-cluster-controller/technical-design.md"
+    rag_query: Docker image — Hermes CLI installation adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
