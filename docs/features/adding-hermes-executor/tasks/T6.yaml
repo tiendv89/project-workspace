@@ -1,7 +1,7 @@
 id: T6
 title: Tests + integration
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T1
   - T2
@@ -13,12 +13,14 @@ blocked_context: null
 branch: feature/adding-hermes-executor-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-17T11:38:25.774Z
 pr:
-  url: null
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/179
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/259
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -28,3 +30,89 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T10:19:36.722Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:22:01.729Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:22:13.743Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/176,
+      github.com/tiendv89/project-workspace/pull/238,
+      github.com/tiendv89/project-workspace/pull/252"
+    rag_query: Tests + integration adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:36:14+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/179"
+    token_usage:
+      input: 216
+      output: 51424
+      model: claude-sonnet-4-6
+    cost_usd: 0.7720079999999999
+    at: 2026-05-17T10:50:19.902Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:52:08.694Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure: hermes executor tsc build fails due to missing @types/node
+      (and vitest, yaml) in runtime/executors/hermes/package.json — 30+ TS
+      errors cause beforeAll to throw (run-hermes.test.ts:76:5). 🔴 Missing
+      subtask: recovery.test.ts listed in T6 tasks.md but not implemented."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/179#pullrequestreview-4305314465
+    at: 2026-05-17T10:57:57.252Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:59:26.848Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/179"
+    token_usage:
+      input: 151
+      output: 16160
+      model: claude-sonnet-4-6
+    cost_usd: 0.242853
+    at: 2026-05-17T11:14:03.253Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T11:14:32.980Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Missing npm test step for hermes executor unit tests in CI
+      (.github/workflows/ci-orchestrator.yml test-hermes job). Unit tests
+      (briefing.test.ts, recovery.test.ts, etc.) are type-checked but never
+      executed. T6 subtask 'All tests pass in CI before PR is opened' not fully
+      satisfied. Fix: add npm test step in runtime/executors/hermes between
+      typecheck and orchestrator npm ci."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/179#pullrequestreview-4305339433
+    at: 2026-05-17T11:23:07.292Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T11:24:42.831Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/179"
+    token_usage:
+      input: 62
+      output: 4090
+      model: claude-sonnet-4-6
+    cost_usd: 0.061536
+    at: 2026-05-17T11:29:09.052Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T11:30:32.948Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-17T11:38:25.774Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
