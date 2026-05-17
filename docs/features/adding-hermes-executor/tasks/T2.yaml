@@ -1,7 +1,7 @@
 id: T2
 title: Hermes executor scaffolding + phases 1–5
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/adding-hermes-executor-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-17T09:16:28+0000
+  last_updated_at: 2026-05-17T09:28:34.635Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/174
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/255
   status: open
