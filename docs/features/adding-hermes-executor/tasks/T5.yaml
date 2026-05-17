@@ -14,7 +14,9 @@ execution:
 pr:
   url: null
   status: not_created
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/258
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
