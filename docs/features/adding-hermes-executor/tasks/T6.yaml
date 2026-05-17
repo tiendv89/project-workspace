@@ -1,7 +1,7 @@
 id: T6
 title: Tests + integration
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -14,7 +14,7 @@ branch: feature/adding-hermes-executor-T6
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-17T10:52:08.694Z
+  last_updated_at: 2026-05-17T10:57:57.252Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/179
   status: open
@@ -60,3 +60,11 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T10:52:08.694Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure: hermes executor tsc build fails due to missing @types/node
+      (and vitest, yaml) in runtime/executors/hermes/package.json — 30+ TS
+      errors cause beforeAll to throw (run-hermes.test.ts:76:5). 🔴 Missing
+      subtask: recovery.test.ts listed in T6 tasks.md but not implemented."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/179#pullrequestreview-4305314465
+    at: 2026-05-17T10:57:57.252Z
