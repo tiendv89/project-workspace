@@ -1,7 +1,7 @@
 id: T5
 title: Layer 1 recovery
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/adding-hermes-executor-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-17T10:03:59+0000
+  last_updated_at: 2026-05-17T10:11:28.699Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/178
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/258
   status: open
