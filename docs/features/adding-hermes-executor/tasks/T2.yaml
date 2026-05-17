@@ -1,7 +1,7 @@
 id: T2
 title: Hermes executor scaffolding + phases 1–5
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-17T15:49:49+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-17T08:53:40Z
+    note: Task activated on tasks-stage approval — dependencies met.

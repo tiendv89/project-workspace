@@ -1,9 +1,9 @@
 feature_id: adding-hermes-executor
 title: Hermes Executor — ABI-conformant executor image for Hermes Agent
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown and submit for approval.
+next_action: Wave 1 tasks (T1, T2, T3) are ready for execution.
 
 stages:
   product_spec:
@@ -31,11 +31,16 @@ stages:
           Approved. EXECUTOR_TYPE / EXECUTOR_PROFILE separation correct. Task
           breakdown refined to 6 tasks with clear dependency graph.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-17T15:53:40+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - at: 2026-05-17T15:53:40+0700
+        by: tiendv.52@gmai.com
+        action: approved
+        note: >-
+          Approved. 6 tasks across 3 waves. Wave 1 (T1, T2, T3) activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -63,6 +68,12 @@ history:
     note: >-
       Technical design approved. Feature advances to task planning — task
       breakdown ready to be produced.
+  - at: 2026-05-17T15:53:40+0700
+    by: tiendv.52@gmai.com
+    action: tasks_approved
+    note: >-
+      Tasks approved. Feature advances to ready_for_implementation.
+      Wave 1 tasks T1, T2, T3 activated.
 
 revalidation:
   product_spec_required: false
