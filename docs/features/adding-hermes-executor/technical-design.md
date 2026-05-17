@@ -281,25 +281,45 @@ Orchestrator reap loop
 ## Parallelization / blocking analysis
 
 ```
-T1: SubProcessAdapter profile wiring (runtime/orchestrator)
+T1: EXECUTOR_TYPE/EXECUTOR_PROFILE wiring in SubProcessAdapter (runtime/orchestrator)
   └── Can begin now — no blockers
 
-T2: Hermes executor package — phases 1–6 + Layer 1 recovery (runtime/executors/hermes)
+T2: Hermes executor scaffolding + phases 1–5 (runtime/executors/hermes)
   └── Can begin now — no blockers
+      Package scaffold, repo cloning (phases 1–2), HERMES_HOME/config.yaml (phase 3),
+      briefing builder (phase 4), hermes chat spawn (phase 5).
+
+T3: Docker image — Hermes CLI installation (runtime/orchestrator or build repo)
+  └── Can begin now — no blockers
+      Add Hermes install step to orchestrator-bundled Docker image so `hermes`
+      binary is on PATH when the executor process spawns.
   │
-  T1 and T2 run in parallel
+  T1, T2, T3 run in parallel
   │
-  T3: Tests + integration (runtime/executors/hermes + runtime/orchestrator)
-      └── BLOCKED on T1 (adapter must be wired before end-to-end spawn test)
-      └── BLOCKED on T2 (executor package must exist before it can be tested)
+  T4: Phase 6 — post-execution workflow protocol (runtime/executors/hermes)
+      └── BLOCKED on T2 (phase 5 spawn must exist before phase 6 can follow it)
+      git commit + push, open impl PR via GitHub REST API, write result.json.
+  │
+  T5: Layer 1 recovery — src/recovery.ts (runtime/executors/hermes)
+      └── BLOCKED on T2 (recovery wraps the phase 5 try/finally; phase 5 must exist)
+      Dirty tree commit, draft PR, handover.md, blocked result.json on abnormal exit.
+  │
+  T4 and T5 run in parallel once T2 is done
+  │
+  T6: Tests + integration (runtime/executors/hermes + runtime/orchestrator)
+      └── BLOCKED on T1 (adapter wiring must exist for end-to-end spawn test)
+      └── BLOCKED on T2 (executor scaffold must exist)
+      └── BLOCKED on T3 (hermes binary must be on PATH in test environment)
+      └── BLOCKED on T4 (happy-path result.json must be produced before test can assert it)
+      └── BLOCKED on T5 (recovery path must exist before abnormal-exit test can assert it)
 ```
 
 ## Repository impact
 
 | Repo | Changes |
 |---|---|
-| `runtime/orchestrator` | Add hermes-subprocess profile; wire `SubProcessAdapter` with Hermes binary + extraEnv |
-| `runtime/executors/hermes` | New package: `src/index.ts`, `src/recovery.ts`, `src/briefing.ts` |
+| `runtime/orchestrator` | `createExecutorAdapter`: add `EXECUTOR_TYPE` / `EXECUTOR_PROFILE` split; `resolveExecutorBin` / `resolveExecutorEnv` for hermes case; Docker image Hermes CLI install |
+| `runtime/executors/hermes` | New package: `src/index.ts`, `src/briefing.ts`, `src/recovery.ts` |
 
 Repo IDs must match `workspace.yaml → repos[].id`.
 
