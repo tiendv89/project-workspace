@@ -34,3 +34,12 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T10:22:01.729Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:22:13.743Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/176,
+      github.com/tiendv89/project-workspace/pull/238,
+      github.com/tiendv89/project-workspace/pull/252"
+    rag_query: Tests + integration adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
