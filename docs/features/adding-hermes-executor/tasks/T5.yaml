@@ -30,3 +30,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-17T10:00:40.284Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-17T10:00:52.256Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/adding-hermes-executor/technical-design.md,
+      docs/features/hermes-workspace-memory/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/176"
+    rag_query: Layer 1 recovery adding-hermes-executor
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
