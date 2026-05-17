@@ -1,7 +1,7 @@
 feature_id: adding-hermes-executor
 title: Hermes Executor — ABI-conformant executor image for Hermes Agent
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Wave 1 tasks (T1, T2, T3) are ready for execution.
 stages:
   product_spec:
@@ -77,4 +77,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/260
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/180
-    status: open
+    status: merged
