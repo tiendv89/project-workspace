@@ -58,29 +58,50 @@ boundary between the two codebases.
 
 ### 1. Hermes executor profile — `SubProcessAdapter` wiring
 
-No new adapter class is required. The existing `SubProcessAdapter` is wired with the
-Hermes executor binary as `executorBinPath`. Hermes-specific env vars are injected via
-`extraEnv`. This is the same pattern as the Claude executor local-subprocess profile.
+#### How the orchestrator chooses an adapter in this version
+
+In this version there is no per-task routing. Selection is **static at startup**:
+the operator sets `EXECUTOR_PROFILE` and the orchestrator wires one `ExecutorPort`
+for all tasks dispatched in that instance. Per-task routing (`execution.runtime` on
+task YAMLs) is deferred to `agent-runtime-selector`.
 
 ```typescript
-// runtime/orchestrator/src/adapters/index.ts  (hermes-subprocess profile)
+// runtime/orchestrator/src/adapters/index.ts
 
-const hermesAdapter = new SubProcessAdapter({
-  executorBinPath: path.join(config.hermesExecutorDist, "index.js"),
-  extraEnv: {
-    HERMES_INFERENCE_MODEL:    config.hermesModel,       // e.g. "deepseek-v4-flash"
-    HERMES_INFERENCE_PROVIDER: config.hermesProvider,   // e.g. "deepseek"
-    DEEPSEEK_API_KEY:          config.deepseekApiKey,
-    ...(config.ragMcpUrl   ? { RAG_MCP_URL:   config.ragMcpUrl }   : {}),
-    ...(config.ragMcpToken ? { RAG_MCP_TOKEN: config.ragMcpToken } : {}),
-    ...(config.hermesMaxTurns ? { HERMES_MAX_TURNS: String(config.hermesMaxTurns) } : {}),
-  },
-});
+export function createExecutorAdapter(config: OrchestratorConfig): ExecutorPort {
+  const profile = process.env.EXECUTOR_PROFILE ?? 'local-subprocess';
+
+  switch (profile) {
+    case 'hermes-subprocess':
+      return new SubProcessAdapter({
+        executorBinPath: path.join(config.hermesExecutorDist, "index.js"),
+        extraEnv: {
+          HERMES_INFERENCE_MODEL:    config.hermesModel,
+          HERMES_INFERENCE_PROVIDER: config.hermesProvider,
+          DEEPSEEK_API_KEY:          config.deepseekApiKey,
+          ...(config.ragMcpUrl    ? { RAG_MCP_URL:    config.ragMcpUrl }    : {}),
+          ...(config.ragMcpToken  ? { RAG_MCP_TOKEN:  config.ragMcpToken }  : {}),
+          ...(config.hermesMaxTurns ? { HERMES_MAX_TURNS: String(config.hermesMaxTurns) } : {}),
+        },
+      });
+
+    case 'local-subprocess':
+    default:
+      return new SubProcessAdapter({
+        executorBinPath: path.join(config.claudeExecutorDist, "index.js"),
+        extraEnv: { /* Claude-specific env vars */ },
+      });
+  }
+}
 ```
 
-The orchestrator core sees only `ExecutorPort`. All Hermes-specific wiring stays in
-the profile. When `hermes-cluster-controller` ships, `HermesClusterAdapter` replaces
-this profile entry — no orchestrator changes required.
+The orchestrator core receives only an `ExecutorPort` — it has no knowledge of which
+profile is active. All adapter-specific wiring stays inside `createExecutorAdapter`.
+
+When `hermes-cluster-controller` ships, a new `hermes-cluster` case is added here —
+no changes to the orchestrator core or the executor package required.
+When `agent-runtime-selector` ships, this static switch is replaced by per-task
+dispatch that reads `task.execution.runtime` — again, no executor changes required.
 
 ### 2. Hermes Executor package (`runtime/executors/hermes/`)
 
