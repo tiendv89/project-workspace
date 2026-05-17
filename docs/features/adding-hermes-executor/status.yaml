@@ -1,10 +1,8 @@
 feature_id: adding-hermes-executor
 title: Hermes Executor — ABI-conformant executor image for Hermes Agent
-
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: done
+current_stage: done
 next_action: Wave 1 tasks (T1, T2, T3) are ready for execution.
-
 stages:
   product_spec:
     review_status: approved
@@ -15,9 +13,8 @@ stages:
       - at: 2026-05-17T00:55:10+0700
         by: tiendv.52@gmai.com
         action: approved
-        note: >-
-          Approved. Scope trimmed to minimum viable executor wiring — memory,
-          review capability, and cluster controller deferred to separate features.
+        note: Approved. Scope trimmed to minimum viable executor wiring — memory, review
+          capability, and cluster controller deferred to separate features.
   technical_design:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
@@ -27,8 +24,7 @@ stages:
       - at: 2026-05-17T15:46:23+0700
         by: tiendv.52@gmai.com
         action: approved
-        note: >-
-          Approved. EXECUTOR_TYPE / EXECUTOR_PROFILE separation correct. Task
+        note: Approved. EXECUTOR_TYPE / EXECUTOR_PROFILE separation correct. Task
           breakdown refined to 6 tasks with clear dependency graph.
   tasks:
     review_status: approved
@@ -39,44 +35,46 @@ stages:
       - at: 2026-05-17T15:53:40+0700
         by: tiendv.52@gmai.com
         action: approved
-        note: >-
-          Approved. 6 tasks across 3 waves. Wave 1 (T1, T2, T3) activated.
+        note: Approved. 6 tasks across 3 waves. Wave 1 (T1, T2, T3) activated.
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/260
 history:
   - at: 2026-05-15T10:30:37+0700
     by: matthew@swellnetwork.io
     action: feature_created
-    note: >-
-      Feature initialized. Delivers the Hermes executor package at
-      runtime/executors/hermes/ conforming to the ABI spec. Prerequisite
-      for agent-runtime-selector.
+    note: Feature initialized. Delivers the Hermes executor package at
+      runtime/executors/hermes/ conforming to the ABI spec. Prerequisite for
+      agent-runtime-selector.
   - at: 2026-05-17T00:55:10+0700
     by: tiendv.52@gmai.com
     action: product_spec_approved
-    note: >-
-      Product spec approved. Feature advances to in_tdd — technical design
-      ready for review.
+    note: Product spec approved. Feature advances to in_tdd — technical design ready
+      for review.
   - at: 2026-05-17T15:46:23+0700
     by: tiendv.52@gmai.com
     action: technical_design_approved
-    note: >-
-      Technical design approved. Feature advances to task planning — task
+    note: Technical design approved. Feature advances to task planning — task
       breakdown ready to be produced.
   - at: 2026-05-17T15:53:40+0700
     by: tiendv.52@gmai.com
     action: tasks_approved
-    note: >-
-      Tasks approved. Feature advances to ready_for_implementation.
-      Wave 1 tasks T1, T2, T3 activated.
-
+    note: Tasks approved. Feature advances to ready_for_implementation. Wave 1 tasks
+      T1, T2, T3 activated.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/adding-hermes-executor
+feature_branch_base_sha: 2b2931601de68e107acc7e2f92758565f5fd62b0
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/253
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/260
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/180
+    status: merged
