@@ -9,7 +9,7 @@ branch: feature/adding-hermes-executor-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-17T09:13:38.050Z
+  last_updated_at: 2026-05-17T09:16:28+0000
 pr:
   url: null
   status: not_created
@@ -39,3 +39,7 @@ log:
       docs/features/hermes-cluster-controller/technical-design.md"
     rag_query: Hermes executor scaffolding + phases 1–5 adding-hermes-executor
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-17T09:16:28+0000
+    note: executor work phase begun.
