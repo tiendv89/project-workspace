@@ -1,7 +1,7 @@
 id: T7
 title: GitHub webhook handler and task sync queue
 repo: workspace-github-adapter
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/workspace-data-backend-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-18T11:18:40.216Z
+  last_updated_at: 2026-05-18T11:22:08.241Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/5
   status: open
