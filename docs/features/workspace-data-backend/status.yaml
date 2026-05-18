@@ -184,8 +184,5 @@ impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/173
     status: open
-drift_detected: true
-drift_reason: >-
-  Rebase conflict: 2 new commits on main. To
-  github.com:tiendv89/project-workspace.git
-   ! [remote rejected] feature/workspace-data-backend -> feature/workspace-data-backend (cannot lock ref 'refs/heads/feature/workspace-data-backend': is at b
+drift_detected: false
+drift_reason: null
