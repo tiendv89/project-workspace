@@ -1,7 +1,7 @@
 id: T1
 title: NestJS source adapter contract and canonical workspace DTOs
 repo: workflow-backend
-status: ready
+status: todo
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T1
