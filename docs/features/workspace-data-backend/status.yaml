@@ -1,9 +1,8 @@
 feature_id: workspace-data-backend
 title: Workspace Data Backend — GitHub Sync and Read API
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Review and approve the amended task breakdown for T7. T7 remains
-  todo and must not be claimed until task review is approved.
+next_action: T7 approved and set ready for claim and implementation.
 stages:
   product_spec:
     review_status: approved
@@ -50,18 +49,16 @@ stages:
           Trees + Contents API; token: GITHUB_TOKEN env var). Task breakdown
           updated to match revised design."
   tasks:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: Tasks amended after webhook implementation gap. T7 added for
-      GitHub webhook handler, branch routing, asynq enqueue/drain, and queue
-      clearing. T7 remains todo until the amended task breakdown is reviewed and
-      approved.
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-18T16:45:00+0700
+    review_comment: T7 approved and set ready for claim and implementation.
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:06:12+0700
-        comment: Task breakdown drafted for Go backend contracts, GitHub adapter,
+        comment:
+          Task breakdown drafted for Go backend contracts, GitHub adapter,
           PostgreSQL/sqlc persistence, HTTP routes, and integration validation.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -70,12 +67,14 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-15T14:13:22+0700
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1
+        comment:
+          Tasks approved. Feature advances to ready_for_implementation. T1
           activated.
       - status: approved
         by: tiendv.52@gmai.com
         at: 2026-05-16T00:47:06+0700
-        comment: Tasks re-approved after revalidation. T6 added (Docker Compose infra +
+        comment:
+          Tasks re-approved after revalidation. T6 added (Docker Compose infra +
           service entries). T1-T5 subtasks and deliverables updated to match
           revised schema. T1 remains ready; all others todo pending
           dependencies.
@@ -84,6 +83,10 @@ stages:
         at: 2026-05-18T16:34:35+0700
         comment: Tasks amended after webhook implementation gap. T7 added and
           submitted for review. T7 remains todo until approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-18T16:45:00+0700
+        comment: T7 approved and set to ready.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -107,13 +110,15 @@ history:
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Technical design submitted for review using Go, gin, pgx, sqlc, goose, and
+    note:
+      Technical design submitted for review using Go, gin, pgx, sqlc, goose, and
       PostgreSQL.
   - stage: tasks
     action: drafted
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task breakdown drafted. Tasks remain todo until technical design and tasks
+    note:
+      Task breakdown drafted. Tasks remain todo until technical design and tasks
       approvals.
   - stage: technical_design
     action: approved
@@ -144,7 +149,8 @@ history:
     action: approved
     by: tiendv.52@gmai.com
     at: 2026-05-16T00:47:06+0700
-    note: Technical design re-approved after schema and sync strategy corrections.
+    note:
+      Technical design re-approved after schema and sync strategy corrections.
       All blocking decisions resolved.
   - stage: tasks
     action: approved
@@ -162,7 +168,7 @@ history:
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: true
+  tasks_required: false
   deployment_checklist_required: false
 feature_branch: feature/workspace-data-backend
 feature_branch_base_sha: 70eb8cb0da81d9b615f969e73412a146e9cbf141
