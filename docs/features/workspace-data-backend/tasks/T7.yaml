@@ -1,7 +1,7 @@
 id: T7
 title: GitHub webhook handler and task sync queue
 repo: workspace-github-adapter
-status: todo
+status: ready
 depends_on:
   - T2
   - T3
@@ -27,5 +27,9 @@ log:
     at: 2026-05-18T16:34:35+0700
     note: T7 is intentionally left todo until the amended task breakdown is
       reviewed and approved.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-18T16:45:00+0700
+    note: Task reviewed and approved; status set to ready.
 workspace_pr: null
 blocked_context: null
