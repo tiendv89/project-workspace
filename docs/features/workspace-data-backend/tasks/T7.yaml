@@ -35,6 +35,16 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-18T10:48:01.015Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-18T10:48:14.434Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md"
+    rag_query: GitHub webhook handler and task sync queue workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/264
   status: open
