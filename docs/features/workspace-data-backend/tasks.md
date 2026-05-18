@@ -1,6 +1,6 @@
 # Tasks - Workspace Data Backend
 
-Feature status reference: `in_tdd`; stage status: `technical_design/draft` (revised — re-approval pending), `tasks/approved` (revalidation required). Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
+Feature status reference: `in_tdd`; stage status: `technical_design/approved`, `tasks/awaiting_approval`, `handoff/draft` paused until T7 is reviewed. Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
 
 ## Index
 
@@ -12,50 +12,7 @@ Feature status reference: `in_tdd`; stage status: `technical_design/draft` (revi
 | T4 | 3 | workflow-backend | Workspace source service and HTTP API routes | [T2, T3] |
 | T5 | 4 | workflow-backend | Backend integration tests and release validation | [T3, T4, T6] |
 | T6 | 4 | workflow | Docker Compose — local infra and service entries for workspace-data-backend | [T1, T4] |
-
----
-
-## T6 - Docker Compose — local infra and service entries for workspace-data-backend
-
-### Description
-
-Add all workspace-data-backend Docker Compose entries to `runtime/orchestrator/templates/docker-compose.yml` in two profiles: infra (PostgreSQL, Redis, asynqmon) and services (adapter-service, api-service).
-
-Deliverables:
-
-**`workspace-infra` profile** — pulled images, no build required:
-- `postgres`: PostgreSQL 16, port `5432`, database `workspace_data`, named volume, health check.
-- `redis`: Redis 7, port `6379`, named volume.
-- `asynqmon`: asynq monitoring UI, port `8080`, points at Redis.
-
-**`workspace-backend` profile** — builds from local repo paths:
-- `adapter-service`: builds from `WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH`, depends on `postgres` + `redis`, env vars `DATABASE_URL`, `REDIS_URL`, `GITHUB_TOKEN`. Joins `agents-net`.
-- `api-service`: builds from `WORKFLOW_BACKEND_LOCAL_PATH`, depends on `postgres`, env vars `DATABASE_URL`, `ADAPTER_SERVICE_URL`. Exposes HTTP port. Joins `agents-net`.
-
-Document all required env vars in the file header and `.env.template`.
-
-Usage after this task:
-```
-docker compose --profile workspace-infra up -d                           # infra only
-docker compose --profile workspace-infra --profile workspace-backend up -d  # full stack
-```
-
-### Required skills
-
-- backend-engineer
-
-### Subtasks
-
-- [ ] Add `postgres`, `redis`, `asynqmon` services under `workspace-infra` profile with named volumes.
-- [ ] Add `adapter-service` build + env + depends_on under `workspace-backend` profile.
-- [ ] Add `api-service` build + env + depends_on + port under `workspace-backend` profile.
-- [ ] Add named volumes for postgres and redis data.
-- [ ] Add `WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH`, `WORKFLOW_BACKEND_LOCAL_PATH`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `REDIS_URL`, `ADAPTER_SERVICE_URL` to `.env.template`.
-- [ ] Document startup commands in the file header comment.
-- [ ] Verify `docker compose --profile workspace-infra up -d` starts infra only and not the app services.
-- [ ] Verify `docker compose up` (no profile) starts neither infra nor app services.
-
----
+| T7 | 5 | workspace-github-adapter | GitHub webhook handler and task sync queue | [T2, T3, T6] |
 
 ## T1 - Go backend foundation and canonical workspace DTOs
 
@@ -250,3 +207,90 @@ Deliverables:
 - [ ] Validate `sqlc` generated queries compile in CI/local test flow.
 - [ ] Document required env vars, migration command, polling config, and token policy.
 - [ ] Confirm backward compatibility: existing routes keep working and frontend can keep using direct GitHub reads until `workspace-tabs-data-flow` switches over.
+
+---
+
+## T6 - Docker Compose — local infra and service entries for workspace-data-backend
+
+### Description
+
+Add all workspace-data-backend Docker Compose entries to `runtime/orchestrator/templates/docker-compose.yml` in two profiles: infra (PostgreSQL, Redis, asynqmon) and services (adapter-service, api-service).
+
+Deliverables:
+
+**`workspace-infra` profile** — pulled images, no build required:
+- `postgres`: PostgreSQL 16, port `5432`, database `workspace_data`, named volume, health check.
+- `redis`: Redis 7, port `6379`, named volume.
+- `asynqmon`: asynq monitoring UI, port `8080`, points at Redis.
+
+**`workspace-backend` profile** — builds from local repo paths:
+- `adapter-service`: builds from `WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH`, depends on `postgres` + `redis`, env vars `DATABASE_URL`, `REDIS_URL`, `GITHUB_TOKEN`. Joins `agents-net`.
+- `api-service`: builds from `WORKFLOW_BACKEND_LOCAL_PATH`, depends on `postgres`, env vars `DATABASE_URL`, `ADAPTER_SERVICE_URL`. Exposes HTTP port. Joins `agents-net`.
+
+Document all required env vars in the file header and `.env.template`.
+
+Usage after this task:
+```
+docker compose --profile workspace-infra up -d                           # infra only
+docker compose --profile workspace-infra --profile workspace-backend up -d  # full stack
+```
+
+### Required skills
+
+- backend-engineer
+
+### Subtasks
+
+- [ ] Add `postgres`, `redis`, `asynqmon` services under `workspace-infra` profile with named volumes.
+- [ ] Add `adapter-service` build + env + depends_on under `workspace-backend` profile.
+- [ ] Add `api-service` build + env + depends_on + port under `workspace-backend` profile.
+- [ ] Add named volumes for postgres and redis data.
+- [ ] Add `WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH`, `WORKFLOW_BACKEND_LOCAL_PATH`, `POSTGRES_PASSWORD`, `DATABASE_URL`, `REDIS_URL`, `ADAPTER_SERVICE_URL` to `.env.template`.
+- [ ] Document startup commands in the file header comment.
+- [ ] Verify `docker compose --profile workspace-infra up -d` starts infra only and not the app services.
+- [ ] Verify `docker compose up` (no profile) starts neither infra nor app services.
+
+---
+
+## T7 - GitHub webhook handler and task sync queue
+
+### Description
+
+Implement the missing `adapter-service` webhook runtime so GitHub push events can keep the read mirror current without manual sync.
+
+This task owns the webhook HTTP handler, GitHub signature verification, branch routing, task-branch queue enqueueing, and the asynq worker that drains queued task sync events.
+
+Deliverables:
+
+- Add a webhook endpoint in `adapter-service` for GitHub push events.
+- Verify GitHub webhook signatures using `GITHUB_WEBHOOK_SECRET`; reject invalid signatures before parsing.
+- Parse push payload `ref` and changed paths from `commits[].added`, `commits[].modified`, and `commits[].removed`.
+- Route base-branch pushes to targeted feature sync for each touched `docs/features/<feature-id>/` path.
+- Route `feature/<feature-id>` pushes to targeted feature sync for that feature.
+- Route `feature/<feature-id>-T<n>` pushes to an asynq `task:sync` job with `{WorkspaceID, FeatureID, TaskID}` payload and `asynq.Unique(24*time.Hour)` dedupe.
+- Return quickly from the webhook handler after validation and enqueue/dispatch; task branch work must not block the webhook response.
+- Implement the asynq worker that derives the task branch from `workspace.yaml` branch pattern, fetches current task branch HEAD, parses `tasks/T<n>.yaml`, and upserts `workspace_tasks` plus task activity events in one transaction.
+- Clear pending task-sync jobs for the workspace before full reconciliation starts.
+- Expose worker/client configuration through `REDIS_URL`; document `GITHUB_WEBHOOK_SECRET` and webhook setup alongside existing adapter-service env vars.
+- Add tests for valid/invalid signatures, ignored branches, base branch changed-path routing, feature branch targeted sync, task branch enqueue dedupe, worker success, retryable worker failure, and full-reconciliation queue clearing.
+
+### Required skills
+
+- backend-engineer
+- go-best-practices
+
+### Subtasks
+
+- [ ] Add webhook HTTP route/handler to `adapter-service`.
+- [ ] Implement GitHub HMAC signature verification with `GITHUB_WEBHOOK_SECRET`.
+- [ ] Parse push event refs and changed file paths.
+- [ ] Implement branch classification for base branch, feature branch, task branch, and ignored branch.
+- [ ] Dispatch base branch and feature branch events to targeted feature sync.
+- [ ] Add asynq client setup and enqueue task branch events with `task:sync`, `task-sync` queue, `Unique(24h)`, retries, and backoff.
+- [ ] Add asynq worker/server setup for task sync queue drain.
+- [ ] Implement task worker fetch of current task branch HEAD and upsert of task rows/activity rows in a transaction.
+- [ ] Clear pending task-sync jobs before full reconciliation.
+- [ ] Document webhook URL, `GITHUB_WEBHOOK_SECRET`, and `REDIS_URL` requirements.
+- [ ] Add unit tests for signature verification, branch routing, changed-path extraction, enqueue behavior, and ignored branches.
+- [ ] Add worker tests for success, retryable failure, and dead/retry visibility where practical.
+- [ ] Verify `go test ./...` passes for the adapter-service packages.

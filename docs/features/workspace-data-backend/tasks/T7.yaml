@@ -1,0 +1,31 @@
+id: T7
+title: GitHub webhook handler and task sync queue
+repo: workspace-github-adapter
+status: todo
+depends_on:
+  - T2
+  - T3
+  - T6
+blocked_reason: null
+branch: feature/workspace-data-backend-T7
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-18T09:34:35.317Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-18T16:27:23+0700
+    note: Task added after identifying that webhook runtime implementation was
+      described in the technical design but missing from the executable task
+      breakdown.
+  - action: submitted_for_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-18T16:34:35+0700
+    note: T7 is intentionally left todo until the amended task breakdown is
+      reviewed and approved.
+workspace_pr: null
+blocked_context: null
