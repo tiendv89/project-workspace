@@ -1,7 +1,7 @@
 id: T7
 title: GitHub webhook handler and task sync queue
 repo: workspace-github-adapter
-status: in_review
+status: change_requested
 depends_on:
   - T2
   - T3
@@ -63,6 +63,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-18T11:08:44.584Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    at: 2026-05-18T11:14:25+0000
+    note: >-
+      REQUEST_CHANGES posted. 🟡 internal/webhook/webhook.go:VerifySignature —
+      empty GITHUB_WEBHOOK_SECRET silently disables signature verification with
+      no WARNING logged. Fix: add startup log when secret is empty.
+      Review: https://github.com/tiendv89/workspace-github-adapter/pull/5#pullrequestreview-4309635619
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/264
   status: open
