@@ -1,9 +1,9 @@
 feature_id: workspace-data-backend
 title: Workspace Data Backend — GitHub Sync and Read API
-feature_status: in_handoff
-current_stage: handoff
-next_action: T1 is ready to claim. T2, T3 wait for T1; T4 waits for T2+T3; T5
-  and T6 wait for T4 (and T6 also waits for T1).
+feature_status: in_tdd
+current_stage: tasks
+next_action: Review and approve the amended task breakdown for T7. T7 remains
+  todo and must not be claimed until task review is approved.
 stages:
   product_spec:
     review_status: approved
@@ -50,12 +50,13 @@ stages:
           Trees + Contents API; token: GITHUB_TOKEN env var). Task breakdown
           updated to match revised design."
   tasks:
-    review_status: approved
-    reviewed_by: tiendv.52@gmai.com
-    reviewed_at: 2026-05-16T00:47:06+0700
-    review_comment: Tasks re-approved after revalidation. T6 added (Docker Compose
-      infra + service entries). T1-T5 subtasks and deliverables updated to match
-      revised schema. T1 remains ready; all others todo pending dependencies.
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: Tasks amended after webhook implementation gap. T7 added for
+      GitHub webhook handler, branch routing, asynq enqueue/drain, and queue
+      clearing. T7 remains todo until the amended task breakdown is reviewed and
+      approved.
     review_history:
       - status: draft
         by: minhkienn203@gmail.com
@@ -78,6 +79,11 @@ stages:
           service entries). T1-T5 subtasks and deliverables updated to match
           revised schema. T1 remains ready; all others todo pending
           dependencies.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-18T16:34:35+0700
+        comment: Tasks amended after webhook implementation gap. T7 added and
+          submitted for review. T7 remains todo until approval.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -146,10 +152,17 @@ history:
     at: 2026-05-16T00:47:06+0700
     note: Tasks re-approved after revalidation. T6 added, T1-T5 updated. Feature
       advances to ready_for_implementation. T1 already ready.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-18T16:34:35+0700
+    note: Added T7 for the missing GitHub webhook handler, branch routing,
+      task-branch asynq queue, worker drain, and queue clearing. T7 remains todo
+      until task review is approved.
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: false
+  tasks_required: true
   deployment_checklist_required: false
 feature_branch: feature/workspace-data-backend
 feature_branch_base_sha: 70eb8cb0da81d9b615f969e73412a146e9cbf141

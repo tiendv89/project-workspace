@@ -645,6 +645,7 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 - T3 owns activity normalization: it must upsert `workspace_activity_events` rows from feature `history[]` and task `log[]` during sync — not T2 or T4.
 - T6 is blocked on T1 (adapter-service Dockerfile) and T4 (api-service Dockerfile). It covers both infra (PostgreSQL, Redis, asynqmon) and service compose entries in one task.
 - T5 is blocked on T2, T3, T4, and T6. T5 and T6 run in parallel in wave 4.
+- T7 is blocked on T2, T3, and T6. It implements the adapter-side webhook runtime that the original task breakdown missed: GitHub signature verification, branch routing, asynq enqueue/drain, task sync worker, and queue clearing before full reconciliation.
 
 ### External dependencies
 
@@ -660,8 +661,10 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 ### Configuration dependencies
 
 - `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
+- `REDIS_URL` — Redis connection string for asynq task queue enqueueing, worker drain, and queue inspection.
 - Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workspace-github-adapter` repo conventions (migrations live there).
 - `GITHUB_TOKEN` — GitHub API token for `adapter-service`. Required on `adapter-service` only; `api-service` makes no GitHub calls.
+- `GITHUB_WEBHOOK_SECRET` — shared secret used by `adapter-service` to verify GitHub webhook signatures before accepting push payloads.
 
 ### Release dependencies
 
@@ -700,9 +703,15 @@ T5: Backend integration tests                   [workflow-backend]
 T6: Docker Compose — local infra + service entries [workflow]
   └── BLOCKED on T1 (adapter-service Dockerfile must exist)
   └── BLOCKED on T4 (api-service Dockerfile must exist)
+
+── Wave 5 — correction / follow-up ─────────────────────────────────────────────
+T7: GitHub webhook handler + task sync queue [workspace-github-adapter]
+  └── BLOCKED on T2 (GitHub fetch/parser must support targeted reads)
+  └── BLOCKED on T3 (DB adapter must support feature/task upserts and sync-run audit)
+  └── BLOCKED on T6 (Redis/asynq infra and adapter-service compose config must exist)
 ```
 
-T1 is the only wave 1 task. T2 and T3 run in parallel in wave 2. T4 is wave 3. T5 and T6 run in parallel in wave 4 — T6 depends on T1 and T4; T5 depends on T2, T3, T4, and T6.
+T1 is the only wave 1 task. T2 and T3 run in parallel in wave 2. T4 is wave 3. T5 and T6 run in parallel in wave 4 — T6 depends on T1 and T4; T5 depends on T2, T3, T4, and T6. T7 is a corrective follow-up task for the webhook runtime and can begin after the amended task breakdown is reviewed and approved; its implementation dependencies are T2, T3, and T6.
 
 `workspace-tabs-data-flow` frontend work can begin against the T1/T4 draft API contract; full integration requires T4 deployed and reachable.
 
