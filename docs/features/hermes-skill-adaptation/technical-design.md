@@ -316,32 +316,122 @@ The two **content-staging subdirectories** (`workflow/claude/` and
 its executor's setup phase (the code that already lives in
 `runtime/executors/<exec>/src/index.ts`) and never touched by the other.
 
-### 4.2 Setup-phase responsibility (per executor)
+**Per-workspace files (in each management repo, NOT in the workflow repo):**
 
-**Claude executor setup (unchanged behaviour, new paths):**
+Every workspace that uses this workflow already has a `CLAUDE.md` at its
+root. After this feature, it also gets a `HERMES.md` at its root. Both
+are workspace-owned, both maintained by `sync-workspace-rules`. The
+workflow repo holds the *templates* (`*.shared.md`); the workspace
+repos hold the *per-project files*.
 
-| Step | Source | Destination |
-|---|---|---|
-| copy CLAUDE.md | `<mgmt>/CLAUDE.md` (generated from `workflow/claude/CLAUDE.shared.md` via `sync-workspace-rules`) | `~/.claude/CLAUDE.md` |
-| copy skills | `workflow/claude/workflow_skills/`, `workflow/claude/technical_skills/`, `<mgmt>/.claude/skills/` | `~/.claude/skills/` |
-| copy settings | `workflow/templates/claude-settings.json` | `~/.claude/settings.json` |
-| env var | — | spawn with `AGENT_RUNTIME=1` (renamed from `CLAUDE_AGENT_RUNTIME=1`) |
+```
+<each management repo>/                                  # e.g. /Users/matthew/workspace/workspace/
+├── CLAUDE.md                                            [EXISTING — project-local + synced shared block]
+├── HERMES.md                                            [NEW — added on first sync after this feature ships]
+└── …
+```
 
-**Hermes executor setup (new Phase 3.5):**
+The skills, SOUL.md, and `claude-settings.json` do not have a per-workspace
+file — they are staged Tier 1 → Tier 3 (workflow → executor home) without
+a workspace stop in between.
 
-| Step | Source | Destination |
-|---|---|---|
-| copy SOUL.md | `workflow/hermes/SOUL.md` | `~/.hermes/SOUL.md` |
-| copy skills | `workflow/hermes/workflow_skills/`, `workflow/hermes/technical_skills/` | `~/.hermes/skills/` |
-| copy HERMES.md | `workflow/hermes/HERMES.shared.md` | `<implDir>/HERMES.md` |
-| exclude HERMES.md | — | append `HERMES.md` to `<implDir>/.git/info/exclude` |
-| env var | — | spawn with `AGENT_RUNTIME=1` |
-| spawn args | — | drop `--ignore-rules` so Hermes auto-loads the staged content |
+### 4.2 The three-tier content layout
+
+Both executors share the same conceptual layout. Every piece of agent-facing
+content has up to three tiers:
+
+```
+TIER 1 — WORKFLOW (shared template)                      lives in:  workflow repo
+   │   one canonical version, all workspaces using this workflow inherit from here
+   ▼
+TIER 2 — WORKSPACE (per-project file)                    lives in:  management repo
+   │   one per workspace; carries Tier 1 verbatim between markers
+   │   plus workspace-specific content above/below the markers
+   ▼
+TIER 3 — EXECUTOR STAGING (agent native location)        lives in:  executor work-dir
+   │   one per task spawn; written by the executor wrapper from Tier 2
+   ▼
+   AGENT CLI auto-loads at Tier 3 location
+```
+
+The transitions between tiers are:
+
+- **Tier 1 → Tier 2**: performed by the `sync-workspace-rules` skill,
+  run by humans/agents when workflow rules change. Preserves workspace-local
+  content above the `<!-- BEGIN SHARED WORKFLOW RULES -->` marker and below
+  the `<!-- END SHARED WORKFLOW RULES -->` marker.
+- **Tier 2 → Tier 3**: performed by the executor wrapper at task spawn
+  time. Pure file copy; no content rewriting.
+
+#### Claude — the existing flow (unchanged structurally; paths updated)
+
+| Content | Tier 1 (workflow) | Tier 2 (workspace) | Tier 3 (executor) | Read by |
+|---|---|---|---|---|
+| Workspace rules | `workflow/claude/CLAUDE.shared.md` *(moved)* | `<mgmtRoot>/CLAUDE.md` | `~/.claude/CLAUDE.md` | Claude CLI system prompt |
+| Workflow skills | `workflow/claude/workflow_skills/*` *(moved)* | *(no Tier 2 — bypasses)* | `~/.claude/skills/*` | Claude CLI slash commands |
+| Technical skills | `workflow/claude/technical_skills/*` *(moved)* | *(no Tier 2 — bypasses)* | `~/.claude/skills/*` | Claude CLI slash commands |
+| Workspace-local skills | *(no Tier 1)* | `<mgmtRoot>/.claude/skills/*` | `~/.claude/skills/*` | Claude CLI slash commands |
+| Claude settings | `workflow/templates/claude-settings.json` | *(no Tier 2)* | `~/.claude/settings.json` | Claude CLI |
+
+Skills today skip Tier 2 — the executor copies directly from the workflow
+repo. That stays as-is; we are not adding a per-workspace skill sync. (Workspaces
+can still drop skills into `<mgmtRoot>/.claude/skills/` and the executor merges
+them, which is the existing "workspace-local skills take precedence" path.)
+
+#### Hermes — the symmetric flow (new)
+
+| Content | Tier 1 (workflow) | Tier 2 (workspace) | Tier 3 (executor) | Read by |
+|---|---|---|---|---|
+| Workspace rules | `workflow/hermes/HERMES.shared.md` | `<mgmtRoot>/HERMES.md` | `<implDir>/HERMES.md` *(+`.git/info/exclude`)* | Hermes CLI auto-load from cwd |
+| Agent identity | `workflow/hermes/SOUL.md` | *(no Tier 2 — workspace-agnostic)* | `~/.hermes/SOUL.md` | Hermes CLI identity injection |
+| Workflow skills | `workflow/hermes/workflow_skills/*` | *(no Tier 2)* | `~/.hermes/skills/*` | Hermes CLI slash commands |
+| Technical skills | `workflow/hermes/technical_skills/*` | *(no Tier 2)* | `~/.hermes/skills/*` | Hermes CLI slash commands |
+
+Notes on the Hermes column:
+
+- **HERMES.md goes through Tier 2** for the same reason CLAUDE.md does: each
+  workspace must be able to add project-local context (project name, purpose,
+  any Hermes-relevant project-specific rules) without forking the workflow
+  template. The executor never reads `workflow/hermes/HERMES.shared.md`
+  directly at task spawn time — it reads `<mgmtRoot>/HERMES.md` (which
+  carries the synced Tier 1 content plus workspace additions).
+- **SOUL.md skips Tier 2.** Agent identity is workspace-agnostic; the
+  executor copies the workflow template straight to the agent's native
+  location. (If workspace-level identity customisation is needed later,
+  Tier 2 can be added without restructuring the rest.)
+- **Skills skip Tier 2 in the same way Claude's do today** — the executor
+  copies directly from the workflow repo. Workspace-local Hermes skill
+  overrides (analogous to `.claude/skills/`) are out of scope for this
+  feature.
 
 Both wrappers behave identically structurally: a setup phase that copies a
-small set of files from `workflow/<self>/` into the agent's native locations,
-then the spawn. The wrappers do not read each other's directories and have
-no shared imports for staging logic.
+small set of files from Tier 1 / Tier 2 sources into the agent's native
+locations, then the spawn. The wrappers do not read each other's directories
+and have no shared imports for staging logic.
+
+### 4.2a Compatibility with `claude-md-rule-index`
+
+The `claude-md-rule-index` feature (currently in design — not yet shipped)
+will slim `CLAUDE.shared.md` to ~50 lines and move detailed rules into
+`workflow/rules/<topic>.md` fragment files, lazy-loaded on demand by agents.
+
+This feature is forward-compatible without coordination:
+
+- **HERMES.shared.md mirrors CLAUDE.shared.md's structure today** — same
+  marker convention, same Tier 1/Tier 2 split, same `sync-workspace-rules`
+  pathway. When `claude-md-rule-index` slims one, the same slimming pattern
+  applies to the other.
+- **Rule fragments**: when `claude-md-rule-index` ships, *its* design will
+  decide whether the rule fragments live at `workflow/rules/` (shared between
+  executors) or `workflow/claude/rules/` + `workflow/hermes/rules/`
+  (per-executor). Either choice is reachable from the layout this feature
+  ships. We do not preempt that decision here.
+- **No new artifact lock-in.** This feature does not produce any artifact
+  that `claude-md-rule-index` would have to undo. HERMES.shared.md is
+  initially "full-fat" (mirroring today's CLAUDE.shared.md) and is slimmed
+  later by the same feature that slims CLAUDE.shared.md.
+
+Ship order is therefore independent — neither feature blocks the other.
 
 ### 4.3 `AGENT_RUNTIME=1` rename
 
@@ -473,17 +563,22 @@ Phase 3 (write config.yaml) and Phase 4 (build briefing):
 
 ```typescript
 // Phase 3.5: Hermes context + skill staging
+// Pulls Tier 1 content from the workflow repo for SOUL.md and skills.
+// Pulls Tier 2 content from the management repo clone for HERMES.md
+// (the per-workspace file, already synced by sync-workspace-rules).
 const workflowLocalPath = process.env.WORKFLOW_LOCAL_PATH ?? "";
 if (workflowLocalPath) {
   const hermesSrc = join(workflowLocalPath, "hermes");
 
-  // 3.5a — SOUL.md → ~/.hermes/SOUL.md
+  // 3.5a — Tier 1 → Tier 3: SOUL.md → ~/.hermes/SOUL.md
+  // SOUL.md skips Tier 2 (workspace-agnostic).
   const soulSrc = join(hermesSrc, "SOUL.md");
   if (existsSync(soulSrc)) {
     copyFileSync(soulSrc, join(hermesHome, "SOUL.md"));
   }
 
-  // 3.5b — workflow_skills/ + technical_skills/ → ~/.hermes/skills/
+  // 3.5b — Tier 1 → Tier 3: workflow_skills/ + technical_skills/ → ~/.hermes/skills/
+  // Skills skip Tier 2 (matches Claude executor's existing pattern).
   const targetSkillsDir = join(hermesHome, "skills");
   if (existsSync(targetSkillsDir)) rmSync(targetSkillsDir, { recursive: true, force: true });
   mkdirSync(targetSkillsDir, { recursive: true });
@@ -498,21 +593,43 @@ if (workflowLocalPath) {
     }
   }
 
-  // 3.5c — HERMES.shared.md → implDir/HERMES.md (auto-loaded by Hermes from cwd)
-  const hermesMdSrc = join(hermesSrc, "HERMES.shared.md");
-  if (existsSync(hermesMdSrc)) {
-    copyFileSync(hermesMdSrc, join(implDir, "HERMES.md"));
+  // 3.5c — Tier 2 → Tier 3: <mgmtRoot>/HERMES.md → <implDir>/HERMES.md
+  // Hermes auto-loads from cwd; cwd is the impl repo.
+  // The workspace HERMES.md was synced from workflow/hermes/HERMES.shared.md
+  // by sync-workspace-rules (Tier 1 → Tier 2 transition).
+  const workspaceHermesMd = join(mgmtDir, "HERMES.md");
+  if (existsSync(workspaceHermesMd)) {
+    copyFileSync(workspaceHermesMd, join(implDir, "HERMES.md"));
 
     // 3.5d — local-only ignore so Phase 6 git add -A does not stage HERMES.md
+    // .git/info/exclude is local to this clone and not committed; safe to append.
     const excludePath = join(implDir, ".git", "info", "exclude");
     if (existsSync(dirname(excludePath))) {
-      appendFileSync(excludePath, "\n# Hermes auto-loaded workspace rules\nHERMES.md\n");
+      appendFileSync(excludePath, "\n# Hermes auto-loaded workspace rules (local-only)\nHERMES.md\n");
     }
+  } else {
+    // Tier 2 file missing — workspace has not yet run sync-workspace-rules.
+    // Emit a warning event but do not block; Hermes will still run with just
+    // SOUL.md and skills (degraded but functional).
+    emit({ type: "phase_3_5_workspace_hermes_missing", workspace_hermes_md: workspaceHermesMd });
   }
 
-  emit({ type: "phase_done", phase: 3.5, hermes_src: hermesSrc });
+  emit({ type: "phase_done", phase: 3.5, hermes_src: hermesSrc, mgmt_src: mgmtDir });
 }
 ```
+
+**Path summary for Phase 3.5:**
+
+| Step | Tier | Source path (resolved at runtime) | Destination path |
+|---|---|---|---|
+| 3.5a | T1 → T3 | `$WORKFLOW_LOCAL_PATH/hermes/SOUL.md` | `$HERMES_HOME/SOUL.md` |
+| 3.5b | T1 → T3 | `$WORKFLOW_LOCAL_PATH/hermes/{workflow_skills,technical_skills}/*` | `$HERMES_HOME/skills/*` |
+| 3.5c | T2 → T3 | `<mgmtDir>/HERMES.md` *(already cloned in Phase 1)* | `<implDir>/HERMES.md` |
+| 3.5d | — | *(no read)* | append to `<implDir>/.git/info/exclude` |
+
+The executor reads `<mgmtDir>/HERMES.md` (not the workflow template) so each
+workspace's project-local Hermes context flows through to the agent. This
+mirrors how the Claude executor reads `<mgmtDir>/CLAUDE.md`.
 
 **Spawn changes:**
 
@@ -582,6 +699,53 @@ AGENT_RUNTIME: "1",
 No other changes to the Claude executor — the rest of `index.ts`
 (repo materialisation, briefing, recovery, etc.) stays as-is.
 
+### 4.7 `sync-workspace-rules` skill — extend to handle HERMES.md
+
+The skill currently lives at `workflow/workflow_skills/sync-workspace-rules/SKILL.md`
+(moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md` in T2).
+It currently performs the **Tier 1 → Tier 2** transition for the Claude side
+only: reads `workflow/CLAUDE.shared.md` (→ `workflow/claude/CLAUDE.shared.md`
+after T2), updates `<projectRoot>/CLAUDE.md` between the
+`<!-- BEGIN SHARED WORKFLOW RULES -->` / `<!-- END SHARED WORKFLOW RULES -->`
+markers, preserving content outside the markers.
+
+Extension: add an analogous step for HERMES.md.
+
+**Two-pass logic in the skill body:**
+
+```
+Step A (existing) — CLAUDE.md sync:
+  Read workflow/claude/CLAUDE.shared.md
+  Read <projectRoot>/CLAUDE.md
+  Replace content between BEGIN/END markers in <projectRoot>/CLAUDE.md
+  Preserve content above the opening marker and below the closing marker.
+
+Step B (new) — HERMES.md sync:
+  Read workflow/hermes/HERMES.shared.md
+  If <projectRoot>/HERMES.md does not exist:
+    Create it from a template:
+      # <project name> — Hermes operating rules
+      <!-- BEGIN SHARED WORKFLOW RULES -->
+      <content of workflow/hermes/HERMES.shared.md>
+      <!-- END SHARED WORKFLOW RULES -->
+  Otherwise:
+    Read <projectRoot>/HERMES.md
+    Replace content between BEGIN/END markers
+    Preserve content above/below the markers.
+```
+
+Both steps run on every invocation of the skill. They are independent — if
+`workflow/hermes/HERMES.shared.md` does not exist (workflows that have not
+adopted Hermes yet), Step B becomes a no-op and emits a `hermes_shared_missing`
+event without failing.
+
+This is a small extension to one skill file. No new skill is introduced — keeps
+the "one place to sync workspace rules" convention.
+
+The first workspace owner who runs the updated skill creates the workspace's
+`HERMES.md`. From then on, sync keeps it aligned with the workflow template,
+the same way CLAUDE.md is kept aligned today.
+
 **`sync-workspace-rules` skill** (`workflow/workflow_skills/sync-workspace-rules/SKILL.md`,
 which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md`):
 
@@ -645,7 +809,7 @@ T2: Workflow repo reorg + AGENT_RUNTIME rename (single atomic PR)
     - mv workflow/workflow_skills/      → workflow/claude/workflow_skills/
     - mv workflow/technical_skills/     → workflow/claude/technical_skills/
     - Update Claude executor index.ts: source paths + env var name
-    - Update sync-workspace-rules skill: source path
+    - Update sync-workspace-rules skill: source path for CLAUDE.shared.md
     - Rename CLAUDE_AGENT_RUNTIME → AGENT_RUNTIME everywhere
     - Update CLAUDE.shared.md "Agent-runtime detection rule" text
   └── Can begin now — no blockers
@@ -654,6 +818,14 @@ T2: Workflow repo reorg + AGENT_RUNTIME rename (single atomic PR)
 T3: workflow/hermes/SOUL.md + HERMES.shared.md authoring
   └── Can begin now — content is workspace-agnostic; covered in §4.4
   └── No code dependency on T1 or T2
+
+T3b: Extend sync-workspace-rules to also sync HERMES.md (Tier 1 → Tier 2)
+     - Add Step B to the skill body (see §4.7)
+     - When workspace HERMES.md does not exist, create it from the template
+     - Idempotent; degrades gracefully when HERMES.shared.md absent
+  └── BLOCKED on T2 (skill source path for CLAUDE.shared.md is in T2)
+  └── BLOCKED on T3 (HERMES.shared.md must exist to sync from)
+  └── Lightweight task — combined with one of T2/T3 if it fits in scope
 
 T4: workflow/hermes/workflow_skills/ — Hermes-flavoured workflow skills
     (start-implementation, rag-context, review-pr)
@@ -667,7 +839,8 @@ T5: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
        frontmatter schema for all)
 
 T6: Hermes executor Phase 3.5 implementation
-    - index.ts: copy SOUL.md, skills, HERMES.md
+    - index.ts: copy SOUL.md, skills (from workflow/hermes/) — Tier 1 → Tier 3
+    - index.ts: copy HERMES.md (from <mgmtDir>/HERMES.md) — Tier 2 → Tier 3
     - index.ts: append HERMES.md to .git/info/exclude
     - index.ts: drop --ignore-rules; set AGENT_RUNTIME=1
     - briefing.ts: skill index + revised scope language
@@ -675,6 +848,8 @@ T6: Hermes executor Phase 3.5 implementation
   └── BLOCKED on T2 (Claude executor must have already moved to
        AGENT_RUNTIME=1 — keeps both executors aligned in one direction)
   └── BLOCKED on T3 (SOUL.md + HERMES.shared.md must exist to copy)
+  └── BLOCKED on T3b (workspace HERMES.md must be reachable for at
+       least the validation workspace — without it, Phase 3.5c is a no-op)
   └── BLOCKED on T4, T5 (skills must exist to copy)
 
 T7: Validation — real impl + real review task on Hermes, before/after quality comparison
@@ -683,13 +858,17 @@ T7: Validation — real impl + real review task on Hermes, before/after quality 
 
 **Wave ordering:**
 - Wave 1 (parallel): T1, T2, T3
-- Wave 2 (parallel): T4, T5 (after T1 finishes)
-- Wave 3: T6 (after T2, T3, T4, T5)
+- Wave 2 (parallel): T3b, T4, T5 (T3b after T2+T3; T4/T5 after T1)
+- Wave 3: T6 (after T2, T3, T3b, T4, T5)
 - Wave 4: T7 (after T6)
 
 T2 is in Wave 1 because the path move + env var rename can proceed
 independently of the Hermes content work — it only depends on the
 existing Claude codebase, which is already complete.
+
+After T3b lands, the workspace owner runs the updated `sync-workspace-rules`
+once to materialise `<mgmtRoot>/HERMES.md` for the validation workspace.
+This is a one-time setup step per workspace, not a recurring task.
 
 ---
 
