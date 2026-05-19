@@ -909,24 +909,82 @@ which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKIL
 | `sync-workspace-rules` reads new path | resolved in T2 | Path change is part of the move task |
 | `AGENT_RUNTIME` rename does not break old skills | resolved in T2 | Atomic rename across all referencing files in one PR |
 
-**Unresolved items (must close in T1 before downstream tasks):**
+**Items previously unresolved — closed during design (no longer T1 blockers):**
 
-- Exact Hermes MCP invocation syntax for `gitnexus` and `rag` servers.
-- Exact Hermes skill frontmatter required-tool values.
-- Confirm: does Hermes loading `HERMES.md` from cwd respect `.git/info/exclude`?
-  (i.e. does Hermes read the file? — yes, the exclude is a git-side
-  mechanism that does not affect file readability.) This is a sanity check,
-  not a real risk.
+1. **Hermes MCP tool naming convention** — **CLOSED**. Hermes registers MCP
+   tools as `mcp_<server>_<tool>` (single underscores, hyphens and dots
+   sanitised to `_`). Source: Hermes `tools/mcp_tool.py` (`_refresh_tools`
+   method) and `website/docs/reference/mcp-config-reference.md`.
+
+   For our MCP servers, the exact tool names the agent must call are:
+
+   | MCP server (config.yaml key) | Tool exposed | Hermes tool name |
+   |---|---|---|
+   | `rag` | `rag_query` | `mcp_rag_rag_query` |
+   | `gitnexus` | `query` | `mcp_gitnexus_query` |
+   | `gitnexus` | `context` | `mcp_gitnexus_context` |
+   | `gitnexus` | `impact` | `mcp_gitnexus_impact` |
+   | `gitnexus` | `detect_changes` | `mcp_gitnexus_detect_changes` |
+
+   This is the exact form to use in the `rag-context` and `gitnexus-mcp`
+   skills (T4 + T5). Note this is single-underscore, NOT Claude's
+   `mcp__server__tool` double-underscore prefix.
+
+2. **Skill frontmatter required-tool values** — **CLOSED**. There is no
+   generic `requires:` key. Hermes uses two distinct fields:
+
+   - `metadata.hermes.requires_toolsets: [<toolset>, ...]` — required
+     toolset names
+   - `metadata.hermes.requires_tools: [<tool>, ...]` — required individual
+     tool names
+
+   Valid toolset values for our skills (from `website/docs/reference/tools-reference.md`):
+   `terminal`, `file`, `web`, `code_execution`, `delegation`, `session_search`,
+   plus others not relevant here. For technical/coding skills like
+   `backend-engineer`, `typescript-best-practices`, etc., the right
+   frontmatter is:
+
+   ```yaml
+   metadata:
+     hermes:
+       requires_toolsets: [terminal, file]
+   ```
+
+   Per GitHub Issue #416 in the Hermes repo, invalid values are silently
+   accepted (no validation); the skill simply never activates. Source:
+   Hermes `agent/skill_utils.py` `extract_skill_conditions()` line 233.
+
+3. **`.git/info/exclude` vs Hermes file read** — **CLOSED by mechanics**.
+   `.git/info/exclude` is git's local-only ignore mechanism (parallel to
+   `.gitignore` but never committed). It affects `git status`, `git add`,
+   `git ls-files`, and other git plumbing. It does **not** touch the
+   filesystem — the file at `<implDir>/HERMES.md` is fully readable by
+   any non-git tool (including Hermes). No probe needed; this is a
+   guaranteed property of `info/exclude`'s implementation.
+
+**Remaining open items** (none that block design — all are operator-
+config matters for T6/T7):
+
+- Operator config to set `WORKFLOW_LOCAL_PATH` and `GITNEXUS_MCP_URL`
+  in the Hermes executor's `extraEnv`. Trivial — same value the Claude
+  executor already gets.
 
 ---
 
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Audit
-    Probe Hermes MCP syntax, frontmatter schema, HERMES.md vs CLAUDE.md
-    precedence; produce audit.md.
+T1: Audit (scope reduced — primary unknowns resolved during design; see §5)
+    - Classify every existing Claude technical_skills/* skill as
+      portable | adapt | hermes-variant (informs T5 content work)
+    - Verify HERMES.md vs CLAUDE.md precedence by inspection — both
+      files would be in cwd? we only write HERMES.md, but document the
+      observed ordering for future reference
+    - Produce docs/features/hermes-skill-adaptation/audit.md
   └── Can begin now — no blockers
+  └── MCP naming (mcp_<server>_<tool>) and frontmatter schema
+       (requires_toolsets, requires_tools) are already resolved in §5
+       — T1 no longer probes these
 
 T2: Workflow repo reorg + AGENT_RUNTIME rename (single atomic PR)
     - mv workflow/CLAUDE.shared.md      → workflow/claude/CLAUDE.shared.md
@@ -953,14 +1011,18 @@ T3b: Extend sync-workspace-rules to also sync HERMES.md (Tier 1 → Tier 2)
 
 T4: workflow/hermes/workflow_skills/ — Hermes-flavoured workflow skills
     (start-implementation, rag-context, review-pr)
-  └── BLOCKED on T1 (need MCP invocation form for rag-context;
-       need confirmed scope boundary for start-implementation/review-pr)
+    Use `mcp_rag_rag_query` for RAG invocation (resolved in §5)
+  └── Can begin now — MCP form known, scope boundary documented in §4.4
 
 T5: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
     (backend-engineer, typescript-best-practices, go-best-practices,
     python-best-practices, gitnexus-mcp, frontend-engineer)
-  └── BLOCKED on T1 (need MCP form for gitnexus-mcp; need confirmed
-       frontmatter schema for all)
+    Use `mcp_gitnexus_query`/`mcp_gitnexus_context`/`mcp_gitnexus_impact`
+    in gitnexus-mcp. Use `requires_toolsets: [terminal, file]` in
+    frontmatter (resolved in §5)
+  └── Can begin now — MCP form and frontmatter schema known
+  └── Soft-blocked on T1 only if portability classification matters for
+       which Claude content to copy as the starting point
 
 T6: Hermes executor Phase 3.5 implementation
     - index.ts: copy SOUL.md, skills (from workflow/hermes/) — Tier 1 → Tier 3
@@ -981,8 +1043,9 @@ T7: Validation — real impl + real review task on Hermes, before/after quality 
 ```
 
 **Wave ordering:**
-- Wave 1 (parallel): T1, T2, T3
-- Wave 2 (parallel): T3b, T4, T5 (T3b after T2+T3; T4/T5 after T1)
+- Wave 1 (parallel): T1, T2, T3, T4, T5 (all five can start immediately
+  now that the design-time unknowns are resolved)
+- Wave 2: T3b (after T2 + T3)
 - Wave 3: T6 (after T2, T3, T3b, T4, T5)
 - Wave 4: T7 (after T6)
 
