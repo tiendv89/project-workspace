@@ -1,16 +1,16 @@
 id: T8
 title: Validation — real impl + real review, before/after comparison
 repo: management-repo
-status: ready
+status: in_progress
 depends_on:
   - T7
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/hermes-skill-adaptation-T8
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-19T15:19:13.955Z
 pr:
   url: ""
   status: not_created
@@ -24,3 +24,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-19T15:17:11.320Z
     note: Task activated — dependency T7 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T15:19:13.955Z
+    note: Claimed via git-based claim protocol.
