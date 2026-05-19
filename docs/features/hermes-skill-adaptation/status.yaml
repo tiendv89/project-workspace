@@ -1,17 +1,21 @@
 feature_id: hermes-skill-adaptation
 title: Hermes Skill Adaptation — Convert workflow and technical skills for Hermes executor
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec to proceed to technical design.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Produce technical-design.md and submit for approval.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-19T11:00:23+0700
+    review_comment: Approved — proceed to technical design.
+    review_history:
+      - review_status: approved
+        reviewed_by: matthew@swellnetwork.io
+        reviewed_at: 2026-05-19T11:00:23+0700
+        review_comment: Approved — proceed to technical design.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -36,6 +40,10 @@ history:
     by: matthew@swellnetwork.io
     at: 2026-05-19T10:54:58+0700
     note: Feature initialized — product spec drafted for Hermes skill adaptation.
+  - action: product_spec_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T11:00:23+0700
+    note: Product spec approved — feature advanced to in_tdd.
 
 revalidation:
   product_spec_required: false
