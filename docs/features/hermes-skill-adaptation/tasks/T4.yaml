@@ -1,7 +1,7 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T2
   - T3
@@ -42,3 +42,7 @@ log:
       github.com/tiendv89/agent-workflow/pull/184"
     rag_query: Extend sync-workspace-rules with HERMES.md Step B hermes-skill-adaptation
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T21:25:01+0700
+    note: Manual reset to ready — previous claim abandoned before implementation began.
