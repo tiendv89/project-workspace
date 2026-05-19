@@ -245,47 +245,76 @@ For skills that are pure coding standards (e.g. `go-best-practices`,
 
 ### 4.1 Repository structure
 
-After this feature, the workflow repo looks like:
+Reading guide: the tree below is rooted at **the workflow repo root**
+(`/path/to/workflow/`, i.e. what `WORKFLOW_LOCAL_PATH` points at). The
+top-level `workflow/` label is the repo itself, not a subdirectory inside
+some other parent. Every line is annotated with its status — only the
+[NEW], [MOVED], and [EDITED] lines are part of this feature's diff.
 
 ```
-workflow/
-├── claude/                                    # Claude executor staging content
-│   ├── CLAUDE.shared.md                       # (moved from workflow/CLAUDE.shared.md)
-│   ├── workflow_skills/                       # (moved from workflow/workflow_skills/)
-│   │   ├── start-implementation/SKILL.md
-│   │   ├── pr-create/SKILL.md
-│   │   ├── rag-context/SKILL.md
-│   │   └── …
-│   └── technical_skills/                      # (moved from workflow/technical_skills/)
-│       ├── backend-engineer/SKILL.md
-│       ├── typescript-best-practices/SKILL.md
-│       └── …
+workflow/                                                # workflow repo root (= WORKFLOW_LOCAL_PATH)
 │
-├── hermes/                                    # NEW — Hermes executor staging content
-│   ├── SOUL.md                                # agent identity (no Claude equivalent)
-│   ├── HERMES.shared.md                       # workspace rules — Hermes-flavoured
-│   ├── workflow_skills/                       # workflow skills — Hermes-flavoured
-│   │   ├── start-implementation/SKILL.md      # writes "stop before PR; wrapper handles it"
-│   │   ├── rag-context/SKILL.md
-│   │   └── …                                  # no pr-create — wrapper owns PR
-│   └── technical_skills/                      # technical skills — Hermes-flavoured
-│       ├── backend-engineer/SKILL.md
-│       ├── typescript-best-practices/SKILL.md
-│       └── …
+├── CLAUDE.shared.md                                     [DELETED — moves into claude/]
+├── workflow_skills/                                     [DELETED — moves into claude/]
+├── technical_skills/                                    [DELETED — moves into claude/]
 │
-├── runtime/
-│   ├── orchestrator/                          # unchanged
-│   └── executors/
-│       ├── claude/src/index.ts                # CHANGED — paths point at workflow/claude/, sets AGENT_RUNTIME=1
-│       └── hermes/src/index.ts                # CHANGED — Phase 3.5 stages workflow/hermes/, sets AGENT_RUNTIME=1, drops --ignore-rules
+├── claude/                                              [NEW directory]
+│   ├── CLAUDE.shared.md                                 [MOVED from workflow/CLAUDE.shared.md]
+│   ├── workflow_skills/                                 [MOVED from workflow/workflow_skills/]
+│   │   ├── start-implementation/SKILL.md                [MOVED — content unchanged in T2; later T6 may EDIT for AGENT_RUNTIME rename]
+│   │   ├── pr-create/SKILL.md                           [MOVED + EDITED — AGENT_RUNTIME rename]
+│   │   └── …                                            [MOVED]
+│   └── technical_skills/                                [MOVED from workflow/technical_skills/]
+│       └── …                                            [MOVED — content unchanged]
 │
-└── templates/                                 # unchanged
-    └── claude-settings.json                   # Claude-specific (could be moved to workflow/claude/templates/ later — out of scope)
+├── hermes/                                              [NEW directory tree]
+│   ├── SOUL.md                                          [NEW — agent identity, no Claude equivalent]
+│   ├── HERMES.shared.md                                 [NEW — workspace rules, Hermes-flavoured]
+│   ├── workflow_skills/                                 [NEW directory]
+│   │   ├── start-implementation/SKILL.md                [NEW — Hermes-flavoured; "stop before PR"]
+│   │   ├── rag-context/SKILL.md                         [NEW — Hermes MCP form]
+│   │   └── review-pr/SKILL.md                           [NEW — Hermes-flavoured]
+│   └── technical_skills/                                [NEW directory]
+│       ├── backend-engineer/SKILL.md                    [NEW — Hermes-flavoured copy]
+│       ├── typescript-best-practices/SKILL.md           [NEW]
+│       ├── go-best-practices/SKILL.md                   [NEW]
+│       ├── python-best-practices/SKILL.md               [NEW]
+│       ├── gitnexus-mcp/SKILL.md                        [NEW — Hermes MCP form]
+│       └── frontend-engineer/SKILL.md                   [NEW]
+│
+├── product_skills/                                      [UNCHANGED — human-only skills, not executor-loaded]
+├── schemas/                                             [UNCHANGED]
+├── scripts/                                             [UNCHANGED]
+├── docs/                                                [UNCHANGED]
+├── handoffs/                                            [UNCHANGED]
+│
+├── templates/                                           [UNCHANGED]
+│   └── claude-settings.json                             [UNCHANGED — still loaded by Claude executor]
+│
+└── runtime/                                             [UNCHANGED structure — only EDITS inside]
+    ├── abi/                                             [UNCHANGED]
+    ├── orchestrator/                                    [UNCHANGED]
+    └── executors/                                       [EXISTING — established by adding-hermes-executor]
+        ├── claude/                                      [EXISTING directory]
+        │   └── src/
+        │       └── index.ts                             [EDITED — see §4.6: source path strings + env var rename]
+        │
+        └── hermes/                                      [EXISTING directory]
+            └── src/
+                ├── index.ts                             [EDITED — see §4.5: add Phase 3.5; drop --ignore-rules; set AGENT_RUNTIME=1]
+                └── briefing.ts                          [EDITED — see §4.5: skill index section + revised scope language]
 ```
 
-The two executor subdirectories are **siblings of equal status**. Neither
-imports from the other. Each executor's wrapper reads only from its own
-subdirectory.
+**Important — what is NOT in this feature's diff:**
+
+- `runtime/executors/` is **not new**. It already exists; this feature touches code inside two files but adds no new directories under `runtime/`.
+- `runtime/executors/claude/` and `runtime/executors/hermes/` were created by `adding-hermes-executor` (already shipped). This feature edits files inside both; it does not change the sibling structure.
+- There is **no `workflow/runtime/executors/`** as a separate or new path. The `runtime/` directory in the diagram is the existing one at the workflow repo root.
+
+The two **content-staging subdirectories** (`workflow/claude/` and
+`workflow/hermes/`) are **siblings of equal status**. Each is owned by
+its executor's setup phase (the code that already lives in
+`runtime/executors/<exec>/src/index.ts`) and never touched by the other.
 
 ### 4.2 Setup-phase responsibility (per executor)
 
@@ -433,10 +462,14 @@ the Claude version with:
 These are physical copies — they may drift from Claude's versions over
 time and that is acceptable.
 
-### 4.5 Hermes executor changes
+### 4.5 Hermes executor changes — edits to existing files
 
-**`runtime/executors/hermes/src/index.ts`** — new Phase 3.5 between Phase 3
-(write config.yaml) and Phase 4 (build briefing):
+The Hermes executor already exists at `workflow/runtime/executors/hermes/`
+(established by `adding-hermes-executor`). This section describes edits to
+files inside that existing directory — no new files, no new subdirectories.
+
+**`workflow/runtime/executors/hermes/src/index.ts`** — new Phase 3.5 between
+Phase 3 (write config.yaml) and Phase 4 (build briefing):
 
 ```typescript
 // Phase 3.5: Hermes context + skill staging
@@ -516,17 +549,38 @@ A new `## Available skills` section lists the slash commands present in
 `~/.hermes/skills/` (built by scanning the staged dir for SKILL.md
 frontmatter).
 
-### 4.6 Claude executor changes
+### 4.6 Claude executor changes — edits to existing files
 
-**`runtime/executors/claude/src/index.ts`:**
+The Claude executor already exists at `workflow/runtime/executors/claude/`.
+This section describes edits to files inside that existing directory — no
+new files, no new subdirectories.
 
-- `setupGlobalSkills`: change source paths from
-  `join(workflowLocalPath, "workflow_skills")` and
-  `join(workflowLocalPath, "technical_skills")` to
-  `join(workflowLocalPath, "claude", "workflow_skills")` and
-  `join(workflowLocalPath, "claude", "technical_skills")`.
-- Rename env var: `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` in the spawn
-  env.
+**`workflow/runtime/executors/claude/src/index.ts`** (current state today,
+lines 270–271):
+
+```typescript
+copySkillsFrom(join(workflowLocalPath, "technical_skills"));
+copySkillsFrom(join(workflowLocalPath, "workflow_skills"));
+```
+
+This becomes:
+
+```typescript
+copySkillsFrom(join(workflowLocalPath, "claude", "technical_skills"));
+copySkillsFrom(join(workflowLocalPath, "claude", "workflow_skills"));
+```
+
+And the spawn env block (search for `CLAUDE_AGENT_RUNTIME` in the file):
+
+```typescript
+// Before:
+CLAUDE_AGENT_RUNTIME: "1",
+// After:
+AGENT_RUNTIME: "1",
+```
+
+No other changes to the Claude executor — the rest of `index.ts`
+(repo materialisation, briefing, recovery, etc.) stays as-is.
 
 **`sync-workspace-rules` skill** (`workflow/workflow_skills/sync-workspace-rules/SKILL.md`,
 which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md`):
