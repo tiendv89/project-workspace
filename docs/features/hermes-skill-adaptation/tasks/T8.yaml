@@ -1,8 +1,9 @@
 id: T8
 title: Validation — real impl + real review, before/after comparison
 repo: management-repo
-status: todo
-depends_on: [T7]
+status: ready
+depends_on:
+  - T7
 blocked_reason: null
 blocked_context: null
 branch: ""
@@ -19,3 +20,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:27:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-19T15:17:11.320Z
+    note: Task activated — dependency T7 merged and marked done.
