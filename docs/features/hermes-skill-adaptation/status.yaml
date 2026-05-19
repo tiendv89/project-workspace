@@ -70,3 +70,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/hermes-skill-adaptation
 feature_branch_base_sha: 72200b25d05de4713885eaaff60e20f2d1852b5a
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/266
