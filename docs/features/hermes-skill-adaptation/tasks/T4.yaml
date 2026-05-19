@@ -1,15 +1,17 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: ready
-depends_on: [T2, T3]
+status: in_progress
+depends_on:
+  - T2
+  - T3
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/hermes-skill-adaptation-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-19T11:19:56.971Z
 pr:
   url: ""
   status: not_created
@@ -22,6 +24,9 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-19T18:18:47+0700
-    note: >-
-      Auto-ready: depends_on [T2, T3] both done. T3 was previously regressed to
-      ready by T2's bad merge resolution and has since been restored to done.
+    note: "Auto-ready: depends_on [T2, T3] both done. T3 was previously regressed to
+      ready by T2's bad merge resolution and has since been restored to done."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T11:19:56.971Z
+    note: Claimed via git-based claim protocol.
