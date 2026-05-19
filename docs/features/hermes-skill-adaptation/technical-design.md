@@ -486,8 +486,17 @@ Content focus:
   questions, exit cleanly)
 - Boundary of responsibility (wrapper owns git push, PR creation,
   result.json; agent owns code changes + tests + local commits)
-- Tooling reality (use the Hermes tool registry; no Claude tool names; no
-  `mcp__server__tool` prefix; use Hermes MCP invocation form)
+- Tooling reality:
+  - Use the Hermes tool registry (file tools, terminal, etc.)
+  - **MCP tools are available**: `rag` (project knowledge retrieval) and
+    `gitnexus` (structural code-graph lookups) are configured in
+    `HERMES_HOME/config.yaml` by the executor (see §4.5). Invoke them
+    using Hermes's MCP invocation form (NOT Claude's
+    `mcp__<server>__<tool>` prefix naming).
+  - Use the RAG MCP **before** opening files for lookups; use the
+    GitNexus MCP **before** grep for structural code questions.
+    Detailed lookup-order rules live in HERMES.md (workspace rules)
+    and in the per-skill `rag-context` and `gitnexus-mcp` skills.
 
 #### `workflow/hermes/HERMES.shared.md` — Workspace rules, Hermes-flavoured
 
@@ -708,6 +717,77 @@ A new `## Available skills` section lists the slash commands present in
 `~/.hermes/skills/` (built by scanning the staged dir for SKILL.md
 frontmatter).
 
+**Phase 3 (config.yaml) — extend to wire GitNexus MCP:**
+
+Today the Hermes executor's `writeHermesConfig()` writes an optional `rag`
+MCP server stanza when `RAG_MCP_URL` is set. It does NOT yet support
+GitNexus, but Hermes is fully capable of consuming MCP — the existing RAG
+plumbing proves it. We extend the config writer to also wire `gitnexus`
+when its URL is present.
+
+```typescript
+// Current (excerpt from runtime/executors/hermes/src/index.ts ~line 303):
+if (config.ragMcpUrl) {
+  configObj.mcp_servers = {
+    rag: {
+      url: config.ragMcpUrl,
+      ...(config.ragMcpToken ? { headers: { Authorization: `Bearer ${config.ragMcpToken}` } } : {}),
+    },
+  };
+}
+
+// Extended:
+if (config.ragMcpUrl || config.gitnexusMcpUrl) {
+  configObj.mcp_servers = {};
+  if (config.ragMcpUrl) {
+    configObj.mcp_servers.rag = {
+      url: config.ragMcpUrl,
+      ...(config.ragMcpToken ? { headers: { Authorization: `Bearer ${config.ragMcpToken}` } } : {}),
+    };
+  }
+  if (config.gitnexusMcpUrl) {
+    configObj.mcp_servers.gitnexus = {
+      url: config.gitnexusMcpUrl,
+    };
+  }
+}
+```
+
+And in `main()`, read the new env var alongside the existing ones:
+
+```typescript
+const gitnexusMcpUrl = process.env.GITNEXUS_MCP_URL;
+// …
+writeHermesConfig(hermesHome, {
+  provider: hermesProvider,
+  model: hermesModel,
+  ragMcpUrl,
+  ragMcpToken,
+  gitnexusMcpUrl,        // NEW
+});
+```
+
+**Env var contract additions for the Hermes executor (operator-injected
+via `SubProcessAdapterOpts.extraEnv`):**
+
+| Variable | Status | Purpose |
+|---|---|---|
+| `RAG_MCP_URL` | already supported | Wires `rag` MCP server in config.yaml |
+| `RAG_MCP_TOKEN` | already supported | Optional auth header for RAG MCP |
+| `GITNEXUS_MCP_URL` | **NEW** | Wires `gitnexus` MCP server in config.yaml |
+| `WORKFLOW_LOCAL_PATH` | already passed for Claude; need for Hermes | Phase 3.5 reads `workflow/hermes/` from here |
+| `AGENT_RUNTIME=1` | NEW (set by executor, not operator) | Tells skills they are headless |
+
+Operator workflow: the orchestrator config that already sets
+`GITNEXUS_MCP_URL` for the Claude executor needs the same value forwarded
+to the Hermes executor's `extraEnv`. One-line config change, no orchestrator
+code change.
+
+Figma MCP is not wired in this feature — the Claude executor uses it
+because its `--mcp-config` flow supports stdio-spawned MCPs; the Hermes
+config.yaml form requires confirming the exact stanza shape. Defer to a
+follow-up if Figma-driven tasks become a real Hermes target.
+
 ### 4.6 Claude executor changes — edits to existing files
 
 The Claude executor already exists at `workflow/runtime/executors/claude/`.
@@ -822,7 +902,9 @@ which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKIL
 | `executor-self-briefing` (executor owns briefing) | done | Briefing builder lives in executor |
 | `executor-capability` (impl + review) | done | Review path wired |
 | `WORKFLOW_LOCAL_PATH` in Hermes `extraEnv` | needs operator config | Already passed for Claude; Hermes operator config must add it |
-| Hermes MCP invocation syntax | unresolved | T1 audit confirms exact form before T6 writes Hermes MCP skills |
+| `RAG_MCP_URL` in Hermes `extraEnv` | already supported by Hermes executor | Operator already sets this for Hermes (existing wiring in writeHermesConfig) |
+| `GITNEXUS_MCP_URL` in Hermes `extraEnv` | NEW — needs operator config + executor extension (T6) | Mirror the Claude executor's existing GitNexus wiring; same env var name |
+| Hermes MCP invocation syntax (how skills should call the tools) | unresolved | T1 audit confirms exact form before T4/T5 write rag-context and gitnexus-mcp skills |
 | Hermes skill frontmatter (`metadata.hermes.requires`) values | unresolved | T1 audit confirms exact tool-name strings |
 | `sync-workspace-rules` reads new path | resolved in T2 | Path change is part of the move task |
 | `AGENT_RUNTIME` rename does not break old skills | resolved in T2 | Atomic rename across all referencing files in one PR |
