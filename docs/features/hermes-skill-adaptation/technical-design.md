@@ -987,13 +987,16 @@ T1: Audit (scope reduced — primary unknowns resolved during design; see §5)
        — T1 no longer probes these
 
 T2: Workflow repo reorg + AGENT_RUNTIME rename (single atomic PR)
-    - mv workflow/CLAUDE.shared.md      → workflow/claude/CLAUDE.shared.md
-    - mv workflow/workflow_skills/      → workflow/claude/workflow_skills/
-    - mv workflow/technical_skills/     → workflow/claude/technical_skills/
-    - Update Claude executor index.ts: source paths + env var name
-    - Update sync-workspace-rules skill: source path for CLAUDE.shared.md
-    - Rename CLAUDE_AGENT_RUNTIME → AGENT_RUNTIME everywhere
-    - Update CLAUDE.shared.md "Agent-runtime detection rule" text
+    Full file list in §7.2; one-line summary here:
+    - 3 directory moves (CLAUDE.shared.md + workflow_skills/ + technical_skills/ → claude/)
+    - Update Claude executor index.ts (2 path strings, 1 env var)
+    - Update Claude executor tests
+    - Update sync-workspace-rules skill (1 source path)
+    - Rename CLAUDE_AGENT_RUNTIME → AGENT_RUNTIME across skill files
+    - Update workflow/scripts/{bootstrap,install}.sh (path strings)
+    - Update workflow/README.md (3 path mentions)
+    - Update workflow/claude/CLAUDE.shared.md (2 path mentions + 1 env-var mention)
+    - Inspect docker-compose templates and OPERATOR-GUIDE.md (expected no-op)
   └── Can begin now — no blockers
   └── Must land as one PR; partial state breaks the Claude executor.
 
@@ -1025,12 +1028,19 @@ T5: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
        which Claude content to copy as the starting point
 
 T6: Hermes executor Phase 3.5 implementation
-    - index.ts: copy SOUL.md, skills (from workflow/hermes/) — Tier 1 → Tier 3
-    - index.ts: copy HERMES.md (from <mgmtDir>/HERMES.md) — Tier 2 → Tier 3
-    - index.ts: append HERMES.md to .git/info/exclude
-    - index.ts: drop --ignore-rules; set AGENT_RUNTIME=1
+    Full file list in §7.2; one-line summary here:
+    - index.ts: Phase 3.5 body (SOUL.md + skills from Tier 1; HERMES.md
+       from Tier 2; .git/info/exclude); drop --ignore-rules; set
+       AGENT_RUNTIME=1; pass gitnexusMcpUrl to writeHermesConfig()
     - briefing.ts: skill index + revised scope language
-    - Unit tests
+    - Update hermes-config.test.ts (gitnexus stanza)
+    - Update briefing.test.ts
+    - New phase3_5.test.ts
+    - Inspect docker-compose templates (expected no-op — no Hermes
+       service block today; Hermes runs as SubProcess of orchestrator)
+    - Update .env.template with Hermes env-var documentation
+       (HERMES_INFERENCE_MODEL, HERMES_INFERENCE_PROVIDER,
+        HERMES_MAX_TURNS, RAG_MCP_URL, RAG_MCP_TOKEN, GITNEXUS_MCP_URL)
   └── BLOCKED on T2 (Claude executor must have already moved to
        AGENT_RUNTIME=1 — keeps both executors aligned in one direction)
   └── BLOCKED on T3 (SOUL.md + HERMES.shared.md must exist to copy)
@@ -1061,19 +1071,118 @@ This is a one-time setup step per workspace, not a recurring task.
 
 ## 7. Repository Impact
 
-| Repo | Changes | Why |
-|---|---|---|
-| `workflow` | `mv CLAUDE.shared.md, workflow_skills/, technical_skills/` into `workflow/claude/` | Per-executor staging directory layout |
-| `workflow` | New `workflow/hermes/` tree: `SOUL.md`, `HERMES.shared.md`, `workflow_skills/`, `technical_skills/` | Hermes executor staging content |
-| `workflow` | `runtime/executors/claude/src/index.ts` — source paths + env var name updates | Adapt to new layout and renamed env var |
-| `workflow` | `runtime/executors/hermes/src/index.ts` — new Phase 3.5; drop `--ignore-rules`; set `AGENT_RUNTIME=1`; briefing language update | Hermes setup phase + actually load staged content |
-| `workflow` | `runtime/executors/hermes/src/briefing.ts` — skill index + revised scope language | Briefing reflects staged context |
-| `workflow` (skills) | `sync-workspace-rules/SKILL.md` — source path update | Read from `workflow/claude/CLAUDE.shared.md` |
-| `workflow` (skills) | `start-implementation/SKILL.md`, `pr-create/SKILL.md`, others — `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` | Env var rename |
-| Each project workspace's `CLAUDE.md` | Re-synced via `sync-workspace-rules` after T2 lands | Workspaces pick up the renamed env var |
+### 7.1 High-level summary
 
-No changes to: orchestrator, ABI types, any implementation repo, any
-management repo workflow/task schema.
+| Repo | Areas touched |
+|---|---|
+| `workflow` | Top-level directory move; new `hermes/` tree; two executor code edits; scripts; docs; tests |
+| Each project workspace (management repo) | One re-sync run produces `CLAUDE.md` (env-var rename) + new `HERMES.md` |
+| Any implementation repo | None |
+
+No changes to: orchestrator code, ABI types, schemas, or any
+implementation repo source.
+
+### 7.2 Operational artifacts checklist (audited, exhaustive)
+
+Every file that needs to change, mapped to the task that owns it. This
+exists so nothing operational is forgotten between design and
+implementation.
+
+#### Owned by **T2** (workflow reorg + AGENT_RUNTIME rename — atomic PR)
+
+| File | Change kind | Detail |
+|---|---|---|
+| `workflow/CLAUDE.shared.md` | MOVE | → `workflow/claude/CLAUDE.shared.md` |
+| `workflow/workflow_skills/` | MOVE | → `workflow/claude/workflow_skills/` |
+| `workflow/technical_skills/` | MOVE | → `workflow/claude/technical_skills/` |
+| `workflow/claude/CLAUDE.shared.md` | EDIT (after move) | Rename `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` (currently 1 mention, line 504); update 2 path mentions of `workflow_skills/` and `technical_skills/` (lines 424, 446) |
+| `workflow/claude/workflow_skills/start-implementation/SKILL.md` | EDIT | `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` |
+| `workflow/claude/workflow_skills/pr-create/SKILL.md` | EDIT | `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` |
+| Any other skill grep-matching `CLAUDE_AGENT_RUNTIME` | EDIT | Same rename |
+| `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md` | EDIT | Source path → `workflow/claude/CLAUDE.shared.md` |
+| `workflow/runtime/executors/claude/src/index.ts` | EDIT | (a) `setupGlobalSkills` source paths → `claude/workflow_skills`, `claude/technical_skills`; (b) spawn env: `CLAUDE_AGENT_RUNTIME` → `AGENT_RUNTIME` |
+| `workflow/runtime/executors/claude/tests/*.test.ts` | EDIT | Path-string and env-var assertions |
+| `workflow/scripts/bootstrap.sh` | EDIT | `WORKFLOW_SKILLS_DIR="$WORKFLOW_ROOT/claude/workflow_skills"` |
+| `workflow/scripts/install.sh` | EDIT | `SHARED_WORKFLOW_SKILLS_DIR` + `SHARED_TECHNICAL_SKILLS_DIR` paths add `claude/` segment |
+| `workflow/README.md` | EDIT | Three path references (lines 7, 8, 46) — `workflow_skills/` and `technical_skills/` now under `claude/` |
+| `workflow/runtime/orchestrator/templates/docker-compose.yml` | INSPECT-ONLY | No change expected — orchestrator passes `AGENT_RUNTIME` via SubProcessAdapter, not via compose. Confirm no stale `CLAUDE_AGENT_RUNTIME` literal exists in the file. |
+| `workflow/runtime/orchestrator/templates/docker-compose.local-docker.yml` | INSPECT-ONLY | Same check |
+| `workflow/runtime/orchestrator/docs/OPERATOR-GUIDE.md` | EDIT if affected | Search for `CLAUDE_AGENT_RUNTIME` and `workflow_skills/` and update; no-op if absent |
+
+#### Owned by **T3** (SOUL.md + HERMES.shared.md authoring)
+
+| File | Change kind |
+|---|---|
+| `workflow/hermes/SOUL.md` | NEW |
+| `workflow/hermes/HERMES.shared.md` | NEW |
+
+#### Owned by **T3b** (sync-workspace-rules extension)
+
+| File | Change kind |
+|---|---|
+| `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md` | EDIT — add Step B (HERMES.md sync) |
+
+#### Owned by **T4** (Hermes workflow_skills authoring)
+
+| File | Change kind |
+|---|---|
+| `workflow/hermes/workflow_skills/start-implementation/SKILL.md` | NEW |
+| `workflow/hermes/workflow_skills/rag-context/SKILL.md` | NEW — uses `mcp_rag_rag_query` |
+| `workflow/hermes/workflow_skills/review-pr/SKILL.md` | NEW |
+
+#### Owned by **T5** (Hermes technical_skills authoring)
+
+| File | Change kind |
+|---|---|
+| `workflow/hermes/technical_skills/backend-engineer/SKILL.md` | NEW |
+| `workflow/hermes/technical_skills/typescript-best-practices/SKILL.md` | NEW |
+| `workflow/hermes/technical_skills/go-best-practices/SKILL.md` | NEW |
+| `workflow/hermes/technical_skills/python-best-practices/SKILL.md` | NEW |
+| `workflow/hermes/technical_skills/gitnexus-mcp/SKILL.md` | NEW — uses `mcp_gitnexus_*` |
+| `workflow/hermes/technical_skills/frontend-engineer/SKILL.md` | NEW |
+
+All T4/T5 skill files use Hermes frontmatter (`requires_toolsets: [terminal, file]` where appropriate).
+
+#### Owned by **T6** (Hermes executor implementation)
+
+| File | Change kind | Detail |
+|---|---|---|
+| `workflow/runtime/executors/hermes/src/index.ts` | EDIT | Phase 3.5 body; drop `--ignore-rules`; set `AGENT_RUNTIME=1`; pass `gitnexusMcpUrl` to `writeHermesConfig()` |
+| `workflow/runtime/executors/hermes/src/briefing.ts` | EDIT | Add `## Available skills` index; revise scope language to permit incremental commits |
+| `workflow/runtime/executors/hermes/src/hermes-config.test.ts` | EDIT | Add tests for gitnexus stanza in `config.yaml` |
+| `workflow/runtime/executors/hermes/src/briefing.test.ts` | EDIT | Skill index section + revised scope language |
+| `workflow/runtime/executors/hermes/src/phase3_5.test.ts` | NEW | Unit tests for the new Phase 3.5 setup |
+| `workflow/runtime/orchestrator/templates/docker-compose.yml` | INSPECT/EDIT | If the file declares a Hermes executor service block, ensure `WORKFLOW_LOCAL_PATH`, `RAG_MCP_URL`, `GITNEXUS_MCP_URL` are forwarded. Currently no `hermes` service block exists (Hermes runs as a SubProcess from the orchestrator), so this is likely a no-op — but document the inspection result in T6's log. |
+| `workflow/runtime/orchestrator/templates/docker-compose.local-docker.yml` | INSPECT/EDIT | Same as above |
+| `workflow/.env.template` | EDIT | Add documented entries: `HERMES_INFERENCE_MODEL`, `HERMES_INFERENCE_PROVIDER`, `HERMES_MAX_TURNS`, `RAG_MCP_URL`, `RAG_MCP_TOKEN`, `GITNEXUS_MCP_URL`. The current template lacks Hermes-specific guidance (verified — grep returns no Hermes/RAG lines). |
+| `workflow/ENV_EXAMPLE.md` | EDIT | Optional — add a section for Hermes env vars if the operator guide rendering benefits from it |
+
+#### Owned by **T7** (validation) — read-only
+
+Documentation outputs only:
+- `docs/features/hermes-skill-adaptation/handoffs/handoff.md` — captures before/after quality comparison for a real impl + review run
+
+#### Per-workspace files (NOT in workflow repo, materialised by operator/agent post-merge)
+
+| File | Change kind | When |
+|---|---|---|
+| `<each mgmtRoot>/CLAUDE.md` | RE-SYNC | Operator runs `sync-workspace-rules` after T2 lands; picks up `AGENT_RUNTIME` rename |
+| `<each mgmtRoot>/HERMES.md` | NEW on first sync | Operator runs the same skill after T3 + T3b land; materialised from `workflow/hermes/HERMES.shared.md` template |
+
+### 7.3 Tests added or modified
+
+- Claude executor: 2 existing test files updated for path + env-var rename (T2)
+- Hermes executor: 2 existing test files updated (`hermes-config`, `briefing`); 1 new test file `phase3_5.test.ts` (T6)
+- `sync-workspace-rules` skill: behaviour is text-only; no automated test infrastructure for skills today. Manual verification in T3b's task notes.
+
+### 7.4 Things explicitly NOT in scope (so they aren't missed by omission)
+
+- **No new Docker image.** Hermes runs as a SubProcess from the orchestrator container; no `hermes-executor` service block in docker-compose.
+- **No orchestrator code changes.** Adapter selection, briefing transport, ABI types — all unchanged.
+- **No ABI version bump.** The ABI contract is unchanged (env-var renames at the wrapper level are internal to the executor wrapper).
+- **No new MCP server.** Reuses existing `rag-server` and `gitnexus` MCP servers already deployed for Claude.
+- **No Figma MCP wiring for Hermes.** Deferred until Figma-driven Hermes tasks become a real need.
+- **No per-workspace HERMES.md customisation tooling beyond markers.** Workspaces add project-local Hermes context above/below the `<!-- BEGIN/END SHARED WORKFLOW RULES -->` markers using the same convention as CLAUDE.md.
 
 ---
 
