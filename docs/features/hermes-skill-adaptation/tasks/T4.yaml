@@ -1,7 +1,7 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -11,7 +11,7 @@ branch: feature/hermes-skill-adaptation-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T11:19:56.971Z
+  last_updated_at: 2026-05-19T14:31:36.372Z
 pr:
   url: ""
   status: not_created
@@ -45,4 +45,9 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-19T21:25:01+0700
-    note: Manual reset to ready — previous claim abandoned before implementation began.
+    note: Manual reset to ready — previous claim abandoned before implementation
+      began.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:31:36.372Z
+    note: Claimed via git-based claim protocol.
