@@ -1,0 +1,21 @@
+id: T4
+title: Extend sync-workspace-rules with HERMES.md Step B
+repo: workflow
+status: todo
+depends_on: [T2, T3]
+blocked_reason: null
+blocked_context: null
+branch: ""
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T15:27:04+0700
+    note: Task created from approved task breakdown.
