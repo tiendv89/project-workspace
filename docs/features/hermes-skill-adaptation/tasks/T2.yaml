@@ -1,7 +1,7 @@
 id: T2
 title: Workflow repo reorg + AGENT_RUNTIME rename (atomic)
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/hermes-skill-adaptation-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T09:02:49.514Z
+  last_updated_at: 2026-05-19T09:14:25.805Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/185
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/270
   status: open
