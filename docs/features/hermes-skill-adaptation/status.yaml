@@ -69,10 +69,19 @@ history:
     at: 2026-05-20T02:03:09+0700
     note: >-
       All implementation tasks terminal — T1–T7 done, T8 cancelled. Workspace
-      handoff PR project-workspace#266 retitled and promoted from draft.
-      Workflow handoff PR agent-workflow#192 opened (needs merge of main into
-      the workflow feature branch before it is mergeable — see PR body).
+      feature → main PR project-workspace#266 retitled and promoted from draft.
+      Workflow feature → main PR agent-workflow#192 opened (needs merge of main
+      into the workflow feature branch before it is mergeable — see PR body).
       Stage advanced to handoff; feature_status → in_handoff.
+  - action: handoff_pr_opened
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T02:15:00+0700
+    note: >-
+      Canonical handoff PR opened — project-workspace#277, head
+      handoff/feature-hermes-skill-adaptation → base
+      feature/hermes-skill-adaptation. handoff.md generated under
+      docs/features/hermes-skill-adaptation/handoffs/. status.yaml updated to
+      split workspace_feature_pr_url (#266) from handoff_pr_url (#277).
 revalidation:
   product_spec_required: false
   technical_design_required: false
@@ -80,7 +89,8 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/hermes-skill-adaptation
 feature_branch_base_sha: 72200b25d05de4713885eaaff60e20f2d1852b5a
-handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/266
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/266
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/277
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/192
