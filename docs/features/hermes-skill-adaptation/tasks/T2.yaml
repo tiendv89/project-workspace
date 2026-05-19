@@ -1,19 +1,21 @@
 id: T2
 title: Workflow repo reorg + AGENT_RUNTIME rename (atomic)
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/hermes-skill-adaptation-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-19T09:23:44.408Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/185
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/270
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -21,5 +23,58 @@ log:
     note: Task created from approved task breakdown.
   - action: ready
     by: matthew@swellnetwork.io
-    at: 2026-05-19T08:30:43Z
+    at: 2026-05-19 08:30:43+00:00
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19 08:44:20.520000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-19 08:44:29.242000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-runtime-split/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/44,
+      github.com/tiendv89/project-workspace/pull/19"
+    rag_query: Workflow repo reorg + AGENT_RUNTIME rename (atomic) hermes-skill-adaptation
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-19T08:47:37+0000
+    note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-19T08:57:56.706Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:02:49.514Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:03:04.237Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/265,
+      docs/features/hermes-skill-adaptation/technical-design.md"
+    rag_query: Workflow repo reorg + AGENT_RUNTIME rename (atomic) hermes-skill-adaptation
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/185"
+    token_usage:
+      input: 179
+      output: 15323
+      model: claude-sonnet-4-6
+    cost_usd: 0.230382
+    at: 2026-05-19T09:14:35.354Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:16:41.861Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:23:44.408Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

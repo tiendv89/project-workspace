@@ -1,13 +1,12 @@
 feature_id: hermes-skill-adaptation
-title: Hermes Skill Adaptation — Convert workflow and technical skills for Hermes executor
-
-feature_status: ready_for_implementation
-current_stage: tasks
+title: Hermes Skill Adaptation — Convert workflow and technical skills for
+  Hermes executor
+feature_status: in_handoff
+current_stage: handoff
 next_action: >-
-  Implementation in progress — Wave 1 tasks (T1, T2, T3, T5, T6) are ready and
-  may be claimed by agents. T4 unblocks once T2 and T3 are done; T7 unblocks
-  after T2–T6; T8 unblocks after T7.
-
+  All implementation tasks terminal (T1–T7 done; T8 cancelled). Handoff PRs
+  opened — workspace project-workspace#266 and workflow agent-workflow#192.
+  Awaiting human merge.
 stages:
   product_spec:
     review_status: approved
@@ -40,12 +39,11 @@ stages:
         reviewed_at: 2026-05-19T15:30:43+0700
         review_comment: Approved — Wave 1 tasks activated to ready.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - action: created
     by: matthew@swellnetwork.io
@@ -58,19 +56,42 @@ history:
   - action: technical_design_approved
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:20:25+0700
-    note: >-
-      Technical design approved — feature stays in_tdd while task breakdown is
+    note: Technical design approved — feature stays in_tdd while task breakdown is
       produced (tech-lead Phase 2). Stage advanced to tasks.
   - action: tasks_approved
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:30:43+0700
+    note: Tasks approved — feature advanced to ready_for_implementation. Wave 1
+      tasks (T1, T2, T3, T5, T6 — all with empty depends_on) activated from todo
+      to ready. T4, T7, T8 remain todo pending their upstream dependencies.
+  - action: handoff_opened
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T02:03:09+0700
     note: >-
-      Tasks approved — feature advanced to ready_for_implementation. Wave 1
-      tasks (T1, T2, T3, T5, T6 — all with empty depends_on) activated from
-      todo to ready. T4, T7, T8 remain todo pending their upstream dependencies.
-
+      All implementation tasks terminal — T1–T7 done, T8 cancelled. Workspace
+      feature → main PR project-workspace#266 retitled and promoted from draft.
+      Workflow feature → main PR agent-workflow#192 opened (needs merge of main
+      into the workflow feature branch before it is mergeable — see PR body).
+      Stage advanced to handoff; feature_status → in_handoff.
+  - action: handoff_pr_opened
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T02:15:00+0700
+    note: >-
+      Canonical handoff PR opened — project-workspace#277, head
+      handoff/feature-hermes-skill-adaptation → base
+      feature/hermes-skill-adaptation. handoff.md generated under
+      docs/features/hermes-skill-adaptation/handoffs/. status.yaml updated to
+      split workspace_feature_pr_url (#266) from handoff_pr_url (#277).
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/hermes-skill-adaptation
+feature_branch_base_sha: 72200b25d05de4713885eaaff60e20f2d1852b5a
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/266
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/277
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/192
+    status: open

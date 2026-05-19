@@ -1,15 +1,16 @@
 id: T8
 title: Validation — real impl + real review, before/after comparison
 repo: management-repo
-status: todo
-depends_on: [T7]
+status: cancelled
+depends_on:
+  - T7
 blocked_reason: null
 blocked_context: null
 branch: ""
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-20T01:33:22+0700
 pr:
   url: ""
   status: not_created
@@ -19,3 +20,14 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:27:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-19T15:17:11.320Z
+    note: Task activated — dependency T7 merged and marked done.
+  - action: cancelled
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T01:33:22+0700
+    note: >-
+      Cancelled — validation is a human verification step (real implementation
+      run + real reviewer run + before/after comparison), not an agent task.
+      Will be performed manually by the human after handoff.

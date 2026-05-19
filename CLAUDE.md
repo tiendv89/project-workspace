@@ -167,7 +167,7 @@ execution:
 - Humans review, validate, and decide whether work becomes `done`; reviewer agents may also mark `done` when CI and the quality rubric both pass
 - Reviewer agents may set `change_requested` when posting a `REQUEST_CHANGES` GitHub review
 - Agents do not approve stages
-- Agents do not mark tasks `done` for tasks with `execution.requires_human_review: true`
+- Agents do not mark tasks `done` for tasks with `execution.requires_human_review: true` — the reviewer still posts APPROVE but skips the PR merge, and the orchestrator waits for the human to merge the PR before marking the task `done` (via the existing in_review PR poll)
 
 ## Commit-before-block rule
 
@@ -387,7 +387,8 @@ management repos, and the workflow repo itself.
 - **Always run the full test suite before opening a PR.** This applies to every task, every workflow, every agent context.
 - Use whatever test commands the implementation repo specifies — check the README, `package.json`, `Makefile`, `go.mod`, or equivalent build config. Do not assume a specific test runner or language.
 - All tests must pass before invoking `pr-create`. Fix any failures and re-run until clean.
-- Do not open a PR for failing tests.
+- **Default (interactive runs):** do not open a PR for failing tests. Hard-stop, set `status: blocked`, write `blocked_reason: tests_failed`, surface to the user.
+- **Agent-runtime exception (`CLAUDE_AGENT_RUNTIME=1`):** if tests cannot be made to pass after **3 attempts**, the agent **must still open a draft PR** documenting the failed attempt, and write `result.json` with `terminal_status: blocked, blocked_reason: tests_failed, pr_url: <URL>`. Rationale: in agent-runtime mode the PR is the durable handover — without it, the next agent has no branch to inherit and the failed attempt is invisible. The orchestrator routes the blocked result to a fix agent / reviewer on the next cycle. This carve-out is product-vision sanctioned (revised D5 in the orchestrator design); do not read the default rule as forbidding it.
 
 ## PR creation rule
 
