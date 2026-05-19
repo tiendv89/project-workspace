@@ -261,7 +261,7 @@ workflow/                                                # workflow repo root (=
 ├── claude/                                              [NEW directory]
 │   ├── CLAUDE.shared.md                                 [MOVED from workflow/CLAUDE.shared.md]
 │   ├── workflow_skills/                                 [MOVED from workflow/workflow_skills/]
-│   │   ├── start-implementation/SKILL.md                [MOVED — content unchanged in T2; later T6 may EDIT for AGENT_RUNTIME rename]
+│   │   ├── start-implementation/SKILL.md                [MOVED — content unchanged in T2; later T7 may EDIT for AGENT_RUNTIME rename]
 │   │   ├── pr-create/SKILL.md                           [MOVED + EDITED — AGENT_RUNTIME rename]
 │   │   └── …                                            [MOVED]
 │   └── technical_skills/                                [MOVED from workflow/technical_skills/]
@@ -629,11 +629,11 @@ if (workflowLocalPath) {
 
 **Path summary for Phase 3.5:**
 
-| Step | Tier | Source path (resolved at runtime) | Destination path |
+| Step | Tier flow | Source path (resolved at runtime) | Destination path |
 |---|---|---|---|
-| 3.5a | T1 → T3 | `$WORKFLOW_LOCAL_PATH/hermes/SOUL.md` | `$HERMES_HOME/SOUL.md` |
-| 3.5b | T1 → T3 | `$WORKFLOW_LOCAL_PATH/hermes/{workflow_skills,technical_skills}/*` | `$HERMES_HOME/skills/*` |
-| 3.5c | T2 → T3 | `<mgmtDir>/HERMES.md` *(already cloned in Phase 1)* | `<implDir>/HERMES.md` |
+| 3.5a | Tier 1 → Tier 3 | `$WORKFLOW_LOCAL_PATH/hermes/SOUL.md` | `$HERMES_HOME/SOUL.md` |
+| 3.5b | Tier 1 → Tier 3 | `$WORKFLOW_LOCAL_PATH/hermes/{workflow_skills,technical_skills}/*` | `$HERMES_HOME/skills/*` |
+| 3.5c | Tier 2 → Tier 3 | `<mgmtDir>/HERMES.md` *(already cloned in Phase 1)* | `<implDir>/HERMES.md` |
 | 3.5d | — | *(no read)* | append to `<implDir>/.git/info/exclude` |
 
 The executor reads `<mgmtDir>/HERMES.md` (not the workflow template) so each
@@ -903,8 +903,8 @@ which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKIL
 | `executor-capability` (impl + review) | done | Review path wired |
 | `WORKFLOW_LOCAL_PATH` in Hermes `extraEnv` | needs operator config | Already passed for Claude; Hermes operator config must add it |
 | `RAG_MCP_URL` in Hermes `extraEnv` | already supported by Hermes executor | Operator already sets this for Hermes (existing wiring in writeHermesConfig) |
-| `GITNEXUS_MCP_URL` in Hermes `extraEnv` | NEW — needs operator config + executor extension (T6) | Mirror the Claude executor's existing GitNexus wiring; same env var name |
-| Hermes MCP invocation syntax (how skills should call the tools) | unresolved | T1 audit confirms exact form before T4/T5 write rag-context and gitnexus-mcp skills |
+| `GITNEXUS_MCP_URL` in Hermes `extraEnv` | NEW — needs operator config + executor extension (T7) | Mirror the Claude executor's existing GitNexus wiring; same env var name |
+| Hermes MCP invocation syntax (how skills should call the tools) | unresolved | T1 audit confirms exact form before T5/T6 write rag-context and gitnexus-mcp skills |
 | Hermes skill frontmatter (`metadata.hermes.requires`) values | unresolved | T1 audit confirms exact tool-name strings |
 | `sync-workspace-rules` reads new path | resolved in T2 | Path change is part of the move task |
 | `AGENT_RUNTIME` rename does not break old skills | resolved in T2 | Atomic rename across all referencing files in one PR |
@@ -927,7 +927,7 @@ which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKIL
    | `gitnexus` | `detect_changes` | `mcp_gitnexus_detect_changes` |
 
    This is the exact form to use in the `rag-context` and `gitnexus-mcp`
-   skills (T4 + T5). Note this is single-underscore, NOT Claude's
+   skills (T5 + T6). Note this is single-underscore, NOT Claude's
    `mcp__server__tool` double-underscore prefix.
 
 2. **Skill frontmatter required-tool values** — **CLOSED**. There is no
@@ -963,7 +963,7 @@ which itself moves to `workflow/claude/workflow_skills/sync-workspace-rules/SKIL
    guaranteed property of `info/exclude`'s implementation.
 
 **Remaining open items** (none that block design — all are operator-
-config matters for T6/T7):
+config matters for T7/T8):
 
 - Operator config to set `WORKFLOW_LOCAL_PATH` and `GITNEXUS_MCP_URL`
   in the Hermes executor's `extraEnv`. Trivial — same value the Claude
@@ -976,7 +976,7 @@ config matters for T6/T7):
 ```
 T1: Audit (scope reduced — primary unknowns resolved during design; see §5)
     - Classify every existing Claude technical_skills/* skill as
-      portable | adapt | hermes-variant (informs T5 content work)
+      portable | adapt | hermes-variant (informs T6 content work)
     - Verify HERMES.md vs CLAUDE.md precedence by inspection — both
       files would be in cwd? we only write HERMES.md, but document the
       observed ordering for future reference
@@ -1004,7 +1004,7 @@ T3: workflow/hermes/SOUL.md + HERMES.shared.md authoring
   └── Can begin now — content is workspace-agnostic; covered in §4.4
   └── No code dependency on T1 or T2
 
-T3b: Extend sync-workspace-rules to also sync HERMES.md (Tier 1 → Tier 2)
+T4: Extend sync-workspace-rules to also sync HERMES.md (Tier 1 → Tier 2)
      - Add Step B to the skill body (see §4.7)
      - When workspace HERMES.md does not exist, create it from the template
      - Idempotent; degrades gracefully when HERMES.shared.md absent
@@ -1012,12 +1012,12 @@ T3b: Extend sync-workspace-rules to also sync HERMES.md (Tier 1 → Tier 2)
   └── BLOCKED on T3 (HERMES.shared.md must exist to sync from)
   └── Lightweight task — combined with one of T2/T3 if it fits in scope
 
-T4: workflow/hermes/workflow_skills/ — Hermes-flavoured workflow skills
+T5: workflow/hermes/workflow_skills/ — Hermes-flavoured workflow skills
     (start-implementation, rag-context, review-pr)
     Use `mcp_rag_rag_query` for RAG invocation (resolved in §5)
   └── Can begin now — MCP form known, scope boundary documented in §4.4
 
-T5: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
+T6: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
     (backend-engineer, typescript-best-practices, go-best-practices,
     python-best-practices, gitnexus-mcp, frontend-engineer)
     Use `mcp_gitnexus_query`/`mcp_gitnexus_context`/`mcp_gitnexus_impact`
@@ -1027,7 +1027,7 @@ T5: workflow/hermes/technical_skills/ — Hermes-flavoured technical skills
   └── Soft-blocked on T1 only if portability classification matters for
        which Claude content to copy as the starting point
 
-T6: Hermes executor Phase 3.5 implementation
+T7: Hermes executor Phase 3.5 implementation
     Full file list in §7.2; one-line summary here:
     - index.ts: Phase 3.5 body (SOUL.md + skills from Tier 1; HERMES.md
        from Tier 2; .git/info/exclude); drop --ignore-rules; set
@@ -1044,26 +1044,26 @@ T6: Hermes executor Phase 3.5 implementation
   └── BLOCKED on T2 (Claude executor must have already moved to
        AGENT_RUNTIME=1 — keeps both executors aligned in one direction)
   └── BLOCKED on T3 (SOUL.md + HERMES.shared.md must exist to copy)
-  └── BLOCKED on T3b (workspace HERMES.md must be reachable for at
+  └── BLOCKED on T4 (workspace HERMES.md must be reachable for at
        least the validation workspace — without it, Phase 3.5c is a no-op)
-  └── BLOCKED on T4, T5 (skills must exist to copy)
+  └── BLOCKED on T5, T6 (skills must exist to copy)
 
-T7: Validation — real impl + real review task on Hermes, before/after quality comparison
-  └── BLOCKED on T6
+T8: Validation — real impl + real review task on Hermes, before/after quality comparison
+  └── BLOCKED on T7
 ```
 
 **Wave ordering:**
-- Wave 1 (parallel): T1, T2, T3, T4, T5 (all five can start immediately
+- Wave 1 (parallel): T1, T2, T3, T5, T6 (all five can start immediately
   now that the design-time unknowns are resolved)
-- Wave 2: T3b (after T2 + T3)
-- Wave 3: T6 (after T2, T3, T3b, T4, T5)
-- Wave 4: T7 (after T6)
+- Wave 2: T4 (after T2 + T3)
+- Wave 3: T7 (after T2, T3, T4, T5, T6)
+- Wave 4: T8 (after T7)
 
 T2 is in Wave 1 because the path move + env var rename can proceed
 independently of the Hermes content work — it only depends on the
 existing Claude codebase, which is already complete.
 
-After T3b lands, the workspace owner runs the updated `sync-workspace-rules`
+After T4 lands, the workspace owner runs the updated `sync-workspace-rules`
 once to materialise `<mgmtRoot>/HERMES.md` for the validation workspace.
 This is a one-time setup step per workspace, not a recurring task.
 
@@ -1116,13 +1116,13 @@ implementation.
 | `workflow/hermes/SOUL.md` | NEW |
 | `workflow/hermes/HERMES.shared.md` | NEW |
 
-#### Owned by **T3b** (sync-workspace-rules extension)
+#### Owned by **T4** (sync-workspace-rules extension)
 
 | File | Change kind |
 |---|---|
 | `workflow/claude/workflow_skills/sync-workspace-rules/SKILL.md` | EDIT — add Step B (HERMES.md sync) |
 
-#### Owned by **T4** (Hermes workflow_skills authoring)
+#### Owned by **T5** (Hermes workflow_skills authoring)
 
 | File | Change kind |
 |---|---|
@@ -1130,7 +1130,7 @@ implementation.
 | `workflow/hermes/workflow_skills/rag-context/SKILL.md` | NEW — uses `mcp_rag_rag_query` |
 | `workflow/hermes/workflow_skills/review-pr/SKILL.md` | NEW |
 
-#### Owned by **T5** (Hermes technical_skills authoring)
+#### Owned by **T6** (Hermes technical_skills authoring)
 
 | File | Change kind |
 |---|---|
@@ -1141,9 +1141,9 @@ implementation.
 | `workflow/hermes/technical_skills/gitnexus-mcp/SKILL.md` | NEW — uses `mcp_gitnexus_*` |
 | `workflow/hermes/technical_skills/frontend-engineer/SKILL.md` | NEW |
 
-All T4/T5 skill files use Hermes frontmatter (`requires_toolsets: [terminal, file]` where appropriate).
+All T5/T6 skill files use Hermes frontmatter (`requires_toolsets: [terminal, file]` where appropriate).
 
-#### Owned by **T6** (Hermes executor implementation)
+#### Owned by **T7** (Hermes executor implementation)
 
 | File | Change kind | Detail |
 |---|---|---|
@@ -1152,12 +1152,12 @@ All T4/T5 skill files use Hermes frontmatter (`requires_toolsets: [terminal, fil
 | `workflow/runtime/executors/hermes/src/hermes-config.test.ts` | EDIT | Add tests for gitnexus stanza in `config.yaml` |
 | `workflow/runtime/executors/hermes/src/briefing.test.ts` | EDIT | Skill index section + revised scope language |
 | `workflow/runtime/executors/hermes/src/phase3_5.test.ts` | NEW | Unit tests for the new Phase 3.5 setup |
-| `workflow/runtime/orchestrator/templates/docker-compose.yml` | INSPECT/EDIT | If the file declares a Hermes executor service block, ensure `WORKFLOW_LOCAL_PATH`, `RAG_MCP_URL`, `GITNEXUS_MCP_URL` are forwarded. Currently no `hermes` service block exists (Hermes runs as a SubProcess from the orchestrator), so this is likely a no-op — but document the inspection result in T6's log. |
+| `workflow/runtime/orchestrator/templates/docker-compose.yml` | INSPECT/EDIT | If the file declares a Hermes executor service block, ensure `WORKFLOW_LOCAL_PATH`, `RAG_MCP_URL`, `GITNEXUS_MCP_URL` are forwarded. Currently no `hermes` service block exists (Hermes runs as a SubProcess from the orchestrator), so this is likely a no-op — but document the inspection result in T7's log. |
 | `workflow/runtime/orchestrator/templates/docker-compose.local-docker.yml` | INSPECT/EDIT | Same as above |
 | `workflow/.env.template` | EDIT | Add documented entries: `HERMES_INFERENCE_MODEL`, `HERMES_INFERENCE_PROVIDER`, `HERMES_MAX_TURNS`, `RAG_MCP_URL`, `RAG_MCP_TOKEN`, `GITNEXUS_MCP_URL`. The current template lacks Hermes-specific guidance (verified — grep returns no Hermes/RAG lines). |
 | `workflow/ENV_EXAMPLE.md` | EDIT | Optional — add a section for Hermes env vars if the operator guide rendering benefits from it |
 
-#### Owned by **T7** (validation) — read-only
+#### Owned by **T8** (validation) — read-only
 
 Documentation outputs only:
 - `docs/features/hermes-skill-adaptation/handoffs/handoff.md` — captures before/after quality comparison for a real impl + review run
@@ -1167,13 +1167,13 @@ Documentation outputs only:
 | File | Change kind | When |
 |---|---|---|
 | `<each mgmtRoot>/CLAUDE.md` | RE-SYNC | Operator runs `sync-workspace-rules` after T2 lands; picks up `AGENT_RUNTIME` rename |
-| `<each mgmtRoot>/HERMES.md` | NEW on first sync | Operator runs the same skill after T3 + T3b land; materialised from `workflow/hermes/HERMES.shared.md` template |
+| `<each mgmtRoot>/HERMES.md` | NEW on first sync | Operator runs the same skill after T3 + T4 land; materialised from `workflow/hermes/HERMES.shared.md` template |
 
 ### 7.3 Tests added or modified
 
 - Claude executor: 2 existing test files updated for path + env-var rename (T2)
-- Hermes executor: 2 existing test files updated (`hermes-config`, `briefing`); 1 new test file `phase3_5.test.ts` (T6)
-- `sync-workspace-rules` skill: behaviour is text-only; no automated test infrastructure for skills today. Manual verification in T3b's task notes.
+- Hermes executor: 2 existing test files updated (`hermes-config`, `briefing`); 1 new test file `phase3_5.test.ts` (T7)
+- `sync-workspace-rules` skill: behaviour is text-only; no automated test infrastructure for skills today. Manual verification in T4's task notes.
 
 ### 7.4 Things explicitly NOT in scope (so they aren't missed by omission)
 
@@ -1243,16 +1243,16 @@ Documentation outputs only:
 
 1. T2 merges (path reorg + env var rename). Claude executor continues
    to work; behaviour is identical to before.
-2. T3, T4, T5 merge (Hermes staging content). Hermes still spawns with
+2. T3, T5, T6 merge (Hermes staging content). Hermes still spawns with
    `--ignore-rules` at this point, so no behaviour change.
-3. T6 merges (Phase 3.5 + drop `--ignore-rules`). Hermes now loads the
+3. T7 merges (Phase 3.5 + drop `--ignore-rules`). Hermes now loads the
    staged context. Quality improvement is observable from this PR
    onward.
-4. T7 runs validation against a real task; if regression vs the current
-   broken baseline is detected (unlikely), T6 can be partially reverted
-   without touching T2–T5.
+4. T8 runs validation against a real task; if regression vs the current
+   broken baseline is detected (unlikely), T7 can be partially reverted
+   without touching T2–T6.
 
 The feature can be turned off without removing files: revert just the
-`--ignore-rules` removal in T6 and the executor falls back to its
+`--ignore-rules` removal in T7 and the executor falls back to its
 current (limited) behaviour, with staged content harmlessly present
 on disk.
