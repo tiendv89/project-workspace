@@ -1,7 +1,7 @@
 id: T7
 title: Hermes executor Phase 3.5 + spawn changes + .env.template + tests
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -14,10 +14,10 @@ branch: feature/hermes-skill-adaptation-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T14:57:26+0000
+  last_updated_at: 2026-05-19T15:08:32.834Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/190
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/274
   status: open
