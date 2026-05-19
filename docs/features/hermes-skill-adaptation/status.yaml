@@ -1,9 +1,12 @@
 feature_id: hermes-skill-adaptation
 title: Hermes Skill Adaptation — Convert workflow and technical skills for Hermes executor
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown (tasks.md + tasks/T<n>.yaml files) via tech-lead Phase 2.
+next_action: >-
+  Implementation in progress — Wave 1 tasks (T1, T2, T3, T5, T6) are ready and
+  may be claimed by agents. T4 unblocks once T2 and T3 are done; T7 unblocks
+  after T2–T6; T8 unblocks after T7.
 
 stages:
   product_spec:
@@ -27,11 +30,15 @@ stages:
         reviewed_at: 2026-05-19T15:20:25+0700
         review_comment: Approved — proceed to task breakdown.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-19T15:30:43+0700
+    review_comment: Approved — Wave 1 tasks activated to ready.
+    review_history:
+      - review_status: approved
+        reviewed_by: matthew@swellnetwork.io
+        reviewed_at: 2026-05-19T15:30:43+0700
+        review_comment: Approved — Wave 1 tasks activated to ready.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -54,6 +61,13 @@ history:
     note: >-
       Technical design approved — feature stays in_tdd while task breakdown is
       produced (tech-lead Phase 2). Stage advanced to tasks.
+  - action: tasks_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T15:30:43+0700
+    note: >-
+      Tasks approved — feature advanced to ready_for_implementation. Wave 1
+      tasks (T1, T2, T3, T5, T6 — all with empty depends_on) activated from
+      todo to ready. T4, T7, T8 remain todo pending their upstream dependencies.
 
 revalidation:
   product_spec_required: false

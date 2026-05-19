@@ -1,7 +1,7 @@
 id: T6
 title: workflow/hermes/technical_skills/ — backend, TS, Go, Python, gitnexus-mcp, frontend
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -19,3 +19,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:27:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T08:30:43Z
+    note: Task activated on tasks-stage approval — dependencies met.
