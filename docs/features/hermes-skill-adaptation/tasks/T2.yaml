@@ -51,3 +51,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-19T09:02:49.514Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:03:04.237Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/265,
+      docs/features/hermes-skill-adaptation/technical-design.md"
+    rag_query: Workflow repo reorg + AGENT_RUNTIME rename (atomic) hermes-skill-adaptation
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
