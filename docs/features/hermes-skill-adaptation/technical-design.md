@@ -60,11 +60,13 @@ not to an inherent capability difference.
 
 ### Hermes's native context system (from docs)
 
-Hermes has a skill and context system almost structurally identical to Claude's:
+Hermes has a skill and context system almost structurally identical to Claude's,
+plus one concept Claude does not have (`SOUL.md` for agent identity):
 
 | Concept | Claude | Hermes |
 |---|---|---|
-| Project rules file | `CLAUDE.md` (auto-injected) | `HERMES.md` or `AGENTS.md` (auto-injected unless `--ignore-rules`) |
+| Project rules file | `CLAUDE.md` (auto-injected) | `HERMES.md` / `.hermes.md` / `AGENTS.md` (auto-injected unless `--ignore-rules`) |
+| Agent identity file | — (no equivalent; identity baked into briefing) | `~/.hermes/SOUL.md` (auto-injected unless `--ignore-rules`) |
 | Global skills dir | `~/.claude/skills/` | `~/.hermes/skills/` |
 | Skill file format | `SKILL.md` with YAML frontmatter | `SKILL.md` with YAML frontmatter (different frontmatter keys) |
 | Skill invocation | `/start-implementation <args>` | `/start-implementation <args>` (same slash-command pattern) |
@@ -76,18 +78,32 @@ name: Skill Name
 description: What the skill does
 metadata:
   hermes:
-    config: [list of config keys]      # optional
-    platforms: [platform hints]        # optional
-    requires: [required tools]         # optional
+    config: [list of config keys]      # optional — config keys this skill needs
+    platforms: [platform hints]        # optional — platform compatibility
+    requires: [required tools]         # optional — tools or toolsets required
 ```
 
 Context loading order (auto-injection, highest priority first):
-1. `HERMES.md` or `HERMES.md` (walks to git root)
-2. `AGENTS.md` / `agents.md` (current dir)
-3. `CLAUDE.md` (current dir — Hermes reads this too)
-4. `.cursorrules`
+1. `~/.hermes/SOUL.md` (agent identity — global, persona-style)
+2. `HERMES.md` / `.hermes.md` (walks to git root from cwd — project rules)
+3. `AGENTS.md` / `agents.md` (current dir)
+4. `CLAUDE.md` (current dir — Hermes reads this too as a fallback)
+5. `.cursorrules`
 
 All files are threat-scanned and truncated to 20,000 chars before injection.
+
+The three layers serve distinct purposes:
+- **SOUL.md** answers *"who am I?"* — agent identity, role, behavioural defaults.
+  Global; same for every task.
+- **HERMES.md** answers *"what rules does this project enforce?"* — workspace
+  conventions, code quality rules, MCP lookup priority. Per-workspace; same for
+  every task in this workspace.
+- **Skills** answer *"what can I do on demand?"* — invocable capabilities (slash
+  commands). Per-skill; activated when relevant.
+
+Treating these as separate layers prevents the temptation to dump everything into
+one 20,000-char file. Each layer has a focused role; combined they reconstruct the
+context Claude gets from CLAUDE.md + skills auto-loading.
 
 ---
 
@@ -95,19 +111,26 @@ All files are threat-scanned and truncated to 20,000 chars before injection.
 
 **What specifically needs to change:**
 
-Three things are broken in the current Hermes executor, in order of impact:
+Four things are broken in the current Hermes executor, in order of impact:
 
 1. **`--ignore-rules` disables all native context loading.** Hermes has a context system
    designed to work exactly like Claude's — it just needs to be engaged. The flag
-   blocks it unconditionally.
+   blocks `SOUL.md`, `HERMES.md`, `AGENTS.md`, `.cursorrules`, memory entries, and
+   preloaded skills all at once.
 
-2. **`~/.hermes/skills/` is never populated.** Even if `--ignore-rules` were removed,
-   Hermes would find no skills because the executor never stages them. The Claude
-   executor has an explicit `setupGlobalSkills()` step; Hermes has no equivalent.
+2. **No identity file (`SOUL.md`) exists.** Even with `--ignore-rules` removed,
+   Hermes would default to its generic agent identity — it would not know that it is
+   operating in headless executor mode, that the wrapper owns git/PR/result.json,
+   or how it should differ from a normal Hermes chat session.
 
-3. **The briefing contains no workflow guidance or coding standards.** Without CLAUDE.md
-   and skills, all guidance must come from the briefing — but the current briefing only
-   passes raw task content.
+3. **`~/.hermes/skills/` is never populated.** Even if `--ignore-rules` were removed,
+   Hermes would find no workflow or technical skills because the executor never
+   stages them. The Claude executor has an explicit `setupGlobalSkills()` step;
+   Hermes has no equivalent.
+
+4. **The briefing contains no workflow guidance or coding standards.** Without
+   SOUL.md, HERMES.md, and skills, all guidance must come from the briefing — but
+   the current briefing only passes raw task content.
 
 **What must remain stable:**
 
@@ -123,13 +146,26 @@ Three things are broken in the current Hermes executor, in order of impact:
 
 **Fixed assumptions:**
 
-- Hermes reads `HERMES.md` from `cwd` (the task repo path) at startup — the executor
+- Hermes reads `HERMES.md` from `cwd` upward to the git root at startup — the
+  executor must write this file before spawning Hermes.
+- Hermes reads `~/.hermes/SOUL.md` at startup for identity injection — the executor
   must write this file before spawning Hermes.
 - Hermes discovers `SKILL.md` files from `~/.hermes/skills/` automatically once the
   flag is removed.
 - Hermes skills use slash commands identically to Claude (`/skill-name <args>`).
-- The Hermes wrapper already owns git/PR/result.json — skills for Hermes must NOT
-  include those steps (they are Claude-only concerns in the workflow_skills context).
+- The Hermes wrapper already owns git push, PR creation, and result.json writing —
+  skills for Hermes must NOT include those steps (they are Claude-only concerns in
+  the workflow_skills context). Incremental commits *during* implementation are
+  allowed and encouraged (crash safety); only the final push and PR are wrapper-owned.
+- Writing `HERMES.md` to the impl repo root would normally make it visible to
+  `git add -A` in the wrapper's Phase 6, polluting every Hermes PR with the file.
+  The executor must add `HERMES.md` to `.git/info/exclude` before Hermes spawn so
+  Hermes can still read it while git ignores it locally.
+- Memory (Mem0) integration remains out of scope. With `--ignore-rules` removed,
+  memory will still be inactive unless `mcp_servers.memory` is configured in
+  `HERMES_HOME/config.yaml` — which only `hermes-workspace-memory` does. No
+  explicit disable is required, but the executor must not accidentally add a
+  memory stanza here.
 
 ---
 
@@ -219,11 +255,12 @@ workflow/
 workflow/
 └── templates/
     └── hermes/
-        └── HERMES.md          # NEW — Hermes equivalent of CLAUDE.md
+        ├── SOUL.md            # NEW — agent identity (copied to ~/.hermes/SOUL.md)
+        └── HERMES.md          # NEW — project rules (copied to taskRepoPath/HERMES.md)
 
 runtime/executors/hermes/src/
-├── index.ts                   # CHANGED — new Phase 3.5, drop --ignore-rules
-└── briefing.ts                # CHANGED — load task-relevant Hermes skill content
+├── index.ts                   # CHANGED — new Phase 3.5, drop --ignore-rules, allow incremental commits
+└── briefing.ts                # CHANGED — kind-aware (impl vs review); load task-relevant Hermes skill content
 ```
 
 No changes to the orchestrator, Claude executor, or ABI.
@@ -250,27 +287,33 @@ Phase 1: clone mgmt repo
 Phase 2: clone impl repo
 Phase 3: write HERMES_HOME/config.yaml
 Phase 3.5: NEW
-         read workflow/hermes_skills/ from WORKFLOW_LOCAL_PATH
-         copy hermes_skills/ → ~/.hermes/skills/   (Hermes discovers these)
-         write HERMES.md → taskRepoPath/HERMES.md  (Hermes auto-loads from cwd)
-Phase 4: build briefing (expanded)
+         copy SOUL.md      → ~/.hermes/SOUL.md          (Hermes injects as identity)
+         copy hermes_skills → ~/.hermes/skills/         (Hermes discovers these)
+         write HERMES.md   → taskRepoPath/HERMES.md     (Hermes auto-loads from cwd)
+         append HERMES.md  → taskRepoPath/.git/info/exclude (local-only ignore — keeps PR clean)
+Phase 4: build briefing (expanded, kind-aware)
          → task YAML + tasks section + technical design
          → "Available skills: /start-implementation — ..." (skill index)
          → load task-relevant technical skill content inline (fallback for skills
            not yet ported to hermes_skills/)
+         → for kind=review: skip start-implementation; include review-pr instead
 Phase 5: spawn hermes chat --query <briefing> --quiet
          (--ignore-rules REMOVED)
+         └─ Hermes reads ~/.hermes/SOUL.md → identity in system prompt
          └─ Hermes reads HERMES.md from cwd → workflow rules in system prompt
          └─ Hermes discovers ~/.hermes/skills/ → slash commands available
-         └─ /start-implementation runs: read spec → code → test
-         └─ (git, PR, result.json handled by wrapper)
-Phase 6: wrapper: commit + push + open PR + write result.json
+         └─ /start-implementation runs: read spec → code → test (commits allowed)
+         └─ (push, PR, result.json handled by wrapper)
+Phase 6: wrapper: stage leftovers + commit + push + open PR + write result.json
 ```
 
 **The key structural difference:** Claude's skill for `start-implementation` includes
-git, PR creation, and result.json writing. The Hermes version of `start-implementation`
-must explicitly **stop** before those steps — the wrapper owns them. The briefing and
-the HERMES.md must both make this boundary clear.
+git push, PR creation, and result.json writing. The Hermes version of
+`start-implementation` must explicitly **stop** before push/PR/result — the wrapper
+owns them. Incremental local commits during the work phase are explicitly allowed
+(for crash safety), and the wrapper's Phase 6 catches any leftover unstaged changes
+with one final commit before pushing. SOUL.md, HERMES.md, and the skill text must
+all reinforce this boundary consistently.
 
 ### 4.3 Skill classification — what needs adapting
 
@@ -418,40 +461,137 @@ wrapper should own this — so the Hermes `review-pr` skill should:
 
 This mirrors the same scope boundary as `start-implementation`.
 
-#### HERMES.md — the workflow rules file
-The HERMES.md template carries the subset of CLAUDE.md rules that are relevant to
-Hermes's scope (code changes only). It explicitly excludes:
+#### SOUL.md — the agent identity file
+
+SOUL.md is Hermes-specific — Claude has no equivalent. It is injected at the
+*identity* level of the system prompt, separate from project rules. The right
+content here is everything that describes *who the agent is* and *how it behaves*,
+independent of any workspace.
+
+Because SOUL.md is one global file (lives at `~/.hermes/SOUL.md`), it must be
+workspace-agnostic. Workspace-specific rules go into HERMES.md.
+
+Proposed content (concise; well under the 20,000-char limit):
+
+```markdown
+# Agent identity
+
+You are an autonomous coding agent operating in headless executor mode for a
+workflow-driven engineering workspace. You receive tasks from an orchestrator
+and work alone; there is no human in the loop during your run.
+
+## Operating mode
+
+- You are NOT Claude Code, Cursor, or any IDE assistant. There is no chat
+  partner. You execute the task and exit.
+- You do not ask clarifying questions. Implement exactly what is specified.
+- You read the task spec, technical design, and tasks.md section before
+  writing any code.
+- You commit incrementally with descriptive messages
+  (`feat(<featureId>/<taskId>): <what>`) — never batch many changes into one
+  giant commit. Crash safety depends on this.
+- You run the project's test suite before declaring the work complete.
+- You stop cleanly when the work is done. You do not announce completion;
+  the wrapper detects your exit.
+
+## Boundary of responsibility
+
+A wrapper process spawned you and will run after you exit. It owns:
+- final `git add -A` (catches anything you forgot to stage)
+- `git push origin <branch>`
+- opening the implementation PR
+- writing `result.json`
+
+You must NOT:
+- run `git push`
+- open a PR
+- write a `result.json` file
+- modify task YAML files in the management repo
+
+If you try any of these, you are duplicating work the wrapper will do —
+and corrupting state if your version disagrees with the wrapper's.
+
+## Tooling reality
+
+- You use the Hermes tool registry (file tools, terminal, etc.).
+- You do NOT have Claude's `Read`, `Edit`, `Bash` tools by those names.
+- You do NOT have `mcp__<server>__<tool>` prefixed tool names. Use the
+  Hermes MCP invocation form for any MCP-backed tool.
+```
+
+This content is stable across all workspaces and all task kinds. It changes only
+when the executor architecture itself changes (e.g. if a future runtime begins
+letting the agent open its own PRs).
+
+#### HERMES.md — the workspace rules file
+
+HERMES.md is the workspace-specific complement to SOUL.md. It carries rules and
+conventions that are true *for this workspace*, not for every Hermes session.
+
+Hermes truncates HERMES.md to 20,000 chars on load, so HERMES.md must be a
+focused subset — not a copy of the full `CLAUDE.md` (which contains many rules
+irrelevant to Hermes's code-only scope and would blow the budget).
+
+It explicitly excludes:
 - Task lifecycle / status transition rules (orchestrator handles these)
-- Git protocol (wrapper handles commits/push)
-- PR creation rules (wrapper handles these)
-- Slash command invocation rules (replaced with Hermes equivalents)
+- Git push / PR protocol (wrapper handles these)
+- PR title format rules (wrapper sets the title)
+- Slash command catalogue for Claude (replaced with Hermes skill index in the briefing)
+- Anything from CLAUDE.md that targets a human operator (e.g. how to run
+  `/init-workspace`)
 
 It includes:
-- Code quality rules (test-before-PR equivalent: "test before declaring done")
-- Coding conventions (from relevant technical skills)
-- Checkpoint discipline (commit incrementally; do not batch into one commit)
-- MCP lookup rules (RAG-first, GitNexus-first — adapted for Hermes MCP syntax)
+- Code quality rules (test-before-declaring-done; lint expectations)
+- Workspace-specific coding conventions (file structure, naming, import patterns)
+- Checkpoint discipline (commit incrementally — reinforces SOUL.md)
+- MCP lookup rules (RAG-first, GitNexus-first — adapted to Hermes MCP syntax)
+- Figma propagation rule (when Figma URLs appear in the task — adapted to Hermes
+  MCP form for the Figma MCP)
+- The repo identity table (which repos exist, which are read-only, which `repo`
+  values are valid for `tasks/T<n>.yaml`)
+
+If HERMES.md content approaches 20,000 chars, prefer offloading detail to a
+specific skill in `~/.hermes/skills/` and reference the skill by name in
+HERMES.md (`see /backend-engineer for backend rules`).
 
 ### 4.5 Executor changes
 
-**`runtime/executors/hermes/src/index.ts`** — new Phase 3.5:
+**`runtime/executors/hermes/src/index.ts`** — new Phase 3.5 (runs after Phase 3
+writes `HERMES_HOME/config.yaml` and before Phase 4 builds the briefing):
 
 ```typescript
-// Phase 3.5: Hermes skill setup
+// Phase 3.5: Hermes context + skill setup
 const workflowLocalPath = process.env.WORKFLOW_LOCAL_PATH ?? "";
 if (workflowLocalPath) {
+  const templatesDir   = join(workflowLocalPath, "templates", "hermes");
   const hermesSkillsDir = join(workflowLocalPath, "hermes_skills");
-  const hermesHome = /* already resolved */;
-  const targetSkillsDir = join(hermesHome, "skills");
-  if (existsSync(hermesSkillsDir)) {
-    copyDirRecursive(hermesSkillsDir, targetSkillsDir);
-    emit({ type: "phase_done", phase: "3.5a", target: targetSkillsDir });
+
+  // 3.5a — SOUL.md → ~/.hermes/SOUL.md (agent identity, global)
+  const soulSrc = join(templatesDir, "SOUL.md");
+  if (existsSync(soulSrc)) {
+    copyFileSync(soulSrc, join(hermesHome, "SOUL.md"));
+    emit({ type: "phase_done", phase: "3.5a", dest: join(hermesHome, "SOUL.md") });
   }
-  // Write HERMES.md to task repo cwd so Hermes auto-loads it
-  const hermesMdSrc = join(workflowLocalPath, "templates", "hermes", "HERMES.md");
+
+  // 3.5b — hermes_skills/ → ~/.hermes/skills/ (slash-command skills)
+  if (existsSync(hermesSkillsDir)) {
+    copyDirRecursive(hermesSkillsDir, join(hermesHome, "skills"));
+    emit({ type: "phase_done", phase: "3.5b", dest: join(hermesHome, "skills") });
+  }
+
+  // 3.5c — HERMES.md → implDir/HERMES.md (workspace rules, auto-loaded from cwd)
+  const hermesMdSrc = join(templatesDir, "HERMES.md");
   if (existsSync(hermesMdSrc)) {
     copyFileSync(hermesMdSrc, join(implDir, "HERMES.md"));
-    emit({ type: "phase_done", phase: "3.5b", dest: join(implDir, "HERMES.md") });
+
+    // 3.5d — Add HERMES.md to .git/info/exclude so the wrapper's Phase 6
+    // git add -A does not stage it. This is local-only (does not touch the
+    // repo's .gitignore) and keeps every Hermes PR free of the file.
+    const excludePath = join(implDir, ".git", "info", "exclude");
+    if (existsSync(dirname(excludePath))) {
+      appendFileSync(excludePath, "\n# Hermes executor — auto-loaded workspace rules\nHERMES.md\n");
+    }
+    emit({ type: "phase_done", phase: "3.5c", dest: join(implDir, "HERMES.md") });
   }
 }
 ```
@@ -466,20 +606,47 @@ if (workflowLocalPath) {
 ["chat", "--query", briefing, "--quiet"]
 ```
 
-**`runtime/executors/hermes/src/briefing.ts`** — updated `buildBriefing()`:
+Removing `--ignore-rules` unblocks four things at once: SOUL.md, HERMES.md,
+`~/.hermes/skills/` discovery, and memory entries. Memory is intentionally
+inert because `HERMES_HOME/config.yaml` does not declare a memory backend in
+this feature's scope (`hermes-workspace-memory` adds that separately).
 
-```typescript
-// Add a skills index section to the briefing so Hermes knows what's available
-const skillsSection = buildAvailableSkillsIndex(hermesSkillsDir);
-// Add task-relevant technical skill content inline (for any skill not yet in hermes_skills/)
-const technicalSkillContent = loadTaskTechnicalSkills(mgmtDir, featureId, taskId, hermesSkillsDir);
-```
+**Briefing scope language must change** (`buildBriefing()`):
+
+The current closing line of the briefing reads:
+
+> *"Make the required code changes and save the files. Do not commit, push, open a
+> pull request, or write any result file — those steps are handled outside your
+> session. When your changes are saved, you are done."*
+
+This is too restrictive. **Local commits during work are valuable** (crash safety,
+incremental reviewability) — the wrapper's Phase 6 already does a final
+`git add -A` to catch any unstaged residue. The new language should read:
+
+> *"Make the required code changes and commit them incrementally on the current
+> branch with `feat(<featureId>/<taskId>): <what>` messages. Do NOT run
+> `git push`, do NOT open a pull request, and do NOT write any result file —
+> the wrapper handles those steps after you exit. Run the project's test suite
+> before you stop. When tests pass, exit cleanly — do not announce completion."*
+
+**`runtime/executors/hermes/src/briefing.ts`** — kind-aware briefing:
+
+`buildBriefing()` gains a `kind` parameter (`"impl" | "review"`) so it can
+load the right skill set and emit the right scope language. For `kind="review"`
+it includes the PR diff and references `/review-pr` instead of
+`/start-implementation`. The current code base already has a parallel review
+path for Hermes (delivered by `executor-capability`); T6 verifies and updates
+both.
 
 The briefing gains two new sections after the task context:
 - `## Available skills` — a short index of `/skill-name — description` for each skill
-  in `~/.hermes/skills/`
-- `## Technical guidance` — inlined content of technical skills declared in tasks.md
-  that are not yet ported to `hermes_skills/` (fallback for portables)
+  in `~/.hermes/skills/`. Built by scanning the staged skill directory and reading
+  each SKILL.md's frontmatter (`name`, `description`).
+- `## Technical guidance` — inlined content of technical skills declared in
+  tasks.md's `### Required skills` for this task that are not yet ported to
+  `hermes_skills/`. This is the fallback path during the rollout: portable
+  skills get ported gradually, and any not-yet-ported skill is inlined from
+  `technical_skills/<slug>/SKILL.md`.
 
 ### 4.6 Env var additions
 
@@ -500,10 +667,23 @@ No new ABI env vars. One new `extraEnv` entry:
 | Hermes CLI installed in executor env | assumed present | No change required |
 | `WORKFLOW_LOCAL_PATH` in executor env | partially present (Claude only) | Operator must add to Hermes `extraEnv` |
 | Hermes MCP invocation syntax (exact) | unresolved | T1 (audit) must pin the exact form before T5 (MCP skill variants) can be written |
+| Hermes skill frontmatter required values | unresolved | T1 must confirm exact `metadata.hermes.requires` tool names (`terminal`, `file_tools`, etc.) before T4 commits to a frontmatter format |
+| `--ignore-rules` regression risk | low | SOUL.md + HERMES.md + `~/.hermes/skills/` must land in the same PR as the flag removal; T6 enforces this |
+| Memory accidentally activates after flag removal | low | `HERMES_HOME/config.yaml` (Phase 3) is the only enable path; it does not declare a memory backend in this feature. `hermes-workspace-memory` adds the backend separately. |
 
-**Unresolved:** The exact Hermes MCP tool invocation syntax for `gitnexus` and `rag`
-MCP servers is not fully confirmed from docs. T1 (audit) must run a probe to confirm
-the tool call shape before T5 writes the MCP skill variants.
+**Unresolved items (must close in T1 before downstream tasks proceed):**
+
+- Exact Hermes MCP tool invocation syntax for `gitnexus` and `rag` MCP servers.
+  Docs describe an `mcp_tool.py` abstraction but not the user-visible call form.
+  Resolution path: run `hermes chat --query "list tools"` in a sandbox with the
+  MCP servers configured, observe the tool names and call shape, document in
+  `docs/features/hermes-skill-adaptation/audit.md`.
+- Exact `metadata.hermes.requires` schema — confirm valid tool-name values for
+  `terminal`, file operations, and MCP-dependent skills.
+- Behaviour when SOUL.md AND HERMES.md AND CLAUDE.md all exist at once.
+  Hermes's loading order lists CLAUDE.md as a fallback — we want HERMES.md to
+  take precedence over any stray CLAUDE.md left in the impl repo. T1 confirms
+  by inspection or probe.
 
 ---
 
@@ -511,10 +691,14 @@ the tool call shape before T5 writes the MCP skill variants.
 
 ```
 T1: Skill gap audit — classify all skills, write audit.md, probe Hermes MCP syntax
+    and frontmatter schema, verify HERMES.md precedence over CLAUDE.md
   └── Can begin now — no blockers
   │
-T2: HERMES.md template + hermes_skills/ scaffold (directory + placeholder files)
-  └── Can begin now — no blockers (structure is independent of audit results)
+T2: SOUL.md + HERMES.md templates + hermes_skills/ scaffold
+    (templates/hermes/SOUL.md, templates/hermes/HERMES.md, hermes_skills/ dir
+     with placeholder files)
+  └── Can begin now — no blockers (structure is independent of audit results;
+       SOUL.md content is workspace-agnostic and drafted in 4.4 already)
   │
   T3: Hermes-variant core workflow skills (start-implementation, review-pr)
       └── BLOCKED on T1 (audit must confirm tool name references and scope boundary)
@@ -522,8 +706,9 @@ T2: HERMES.md template + hermes_skills/ scaffold (directory + placeholder files)
       T3 and T4 run in parallel
   │
   T4: Portable technical skills — copy + frontmatter update
+      └── BLOCKED on T1 (frontmatter `metadata.hermes.requires` schema must be pinned)
       └── BLOCKED on T2 (hermes_skills/ directory must exist)
-      T4 can begin as soon as T2 is done (does not need T1 — portables need no content review)
+      T4 can begin as soon as T1 + T2 are done
   │
   T5: Hermes-variant MCP skills (gitnexus-mcp, rag-context)
       └── BLOCKED on T1 (exact MCP invocation syntax must be confirmed)
@@ -551,9 +736,11 @@ T7 is blocked on T6.
 
 | Repo | Changes | Why |
 |---|---|---|
-| `workflow` | Add `hermes_skills/` directory tree; add `templates/hermes/HERMES.md`; minor content updates to ported skills | New skill directory for Hermes; HERMES.md template |
-| `workflow` | `runtime/executors/hermes/src/index.ts` — Phase 3.5 added; `--ignore-rules` removed | Executor skill setup and Hermes context loading |
-| `workflow` | `runtime/executors/hermes/src/briefing.ts` — skills index + technical skill inline sections | Briefing expansion |
+| `workflow` | Add `hermes_skills/` directory tree | Native Hermes skill discovery |
+| `workflow` | Add `templates/hermes/SOUL.md` | Agent identity (no Claude equivalent) |
+| `workflow` | Add `templates/hermes/HERMES.md` | Workspace rules file (Hermes equivalent of CLAUDE.md, focused subset) |
+| `workflow` | `runtime/executors/hermes/src/index.ts` — Phase 3.5 added; `--ignore-rules` removed; briefing-spawn cwd unchanged | Executor stages SOUL.md + skills + HERMES.md and enables auto-loading |
+| `workflow` | `runtime/executors/hermes/src/briefing.ts` — kind-aware (impl vs review); skills index + technical skill inline sections; revised scope language permitting incremental commits | Briefing expansion |
 
 No changes to: orchestrator, Claude executor, ABI types, management repo structure,
 or any implementation repos.
@@ -565,9 +752,14 @@ or any implementation repos.
 ### Testing expectations
 
 - Unit tests for Phase 3.5 in `runtime/executors/hermes/src/index.test.ts`:
+  - SOUL.md copied to `~/.hermes/SOUL.md` when `WORKFLOW_LOCAL_PATH` is set
   - `hermes_skills/` copied to `~/.hermes/skills/` when `WORKFLOW_LOCAL_PATH` is set
-  - `HERMES.md` written to task repo
+  - HERMES.md written to task repo root
+  - HERMES.md appended to `.git/info/exclude` (verify with regex match on the file)
   - `--ignore-rules` absent from spawn args
+  - Phase 3.5 is a no-op (no throw, no partial write) when `WORKFLOW_LOCAL_PATH` is unset
+  - Phase 3.5 is a no-op for any file that doesn't exist in `templates/hermes/`
+    (graceful degradation — never block the spawn on a missing template)
 
 - Functional test: run a real `kind=impl` task through the adapted Hermes executor on
   a simple target task (e.g. a docs update or small backend change). Confirm:
@@ -581,14 +773,27 @@ or any implementation repos.
   - GitHub review API call succeeds (APPROVE or REQUEST_CHANGES)
   - `result.json` written correctly
 
+- PR cleanliness test: after a successful Hermes impl run, inspect the resulting
+  PR. Confirm the PR's file list does NOT contain `HERMES.md` — the
+  `.git/info/exclude` entry must have kept it out of `git add -A`. A regression
+  here pollutes every Hermes PR with the rules file.
+
+- Identity injection test: spawn Hermes with `--query "describe your role in one sentence"`
+  in a sandbox using the staged SOUL.md. The response should reference "headless
+  executor mode" or equivalent identity language from SOUL.md — proves the file
+  is being read.
+
 ### Backward compatibility
 
 - The Claude executor is entirely unchanged — no regression risk.
 - The `--ignore-rules` removal only affects Hermes spawns. Hermes behaviour with
-  context files enabled is well-defined; HERMES.md and skills will be in place before
-  the flag is removed (Phase 3.5 runs before Phase 5).
+  context files enabled is well-defined; SOUL.md, HERMES.md, and skills will all
+  be in place before the flag is removed (Phase 3.5 runs before Phase 5).
 - `WORKFLOW_LOCAL_PATH` is optional: if absent, Phase 3.5 is a no-op and the executor
   falls back to the current (limited) behaviour. No hard failure on missing path.
+- Each Phase 3.5 sub-step (`3.5a`, `3.5b`, `3.5c`, `3.5d`) is independently
+  guarded by `existsSync` — a partial install (e.g. SOUL.md present but HERMES.md
+  missing) still works for whichever pieces are available.
 
 ### Rollout
 
