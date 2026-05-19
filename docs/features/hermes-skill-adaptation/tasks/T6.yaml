@@ -2,7 +2,7 @@ id: T6
 title: workflow/hermes/technical_skills/ — backend, TS, Go, Python,
   gitnexus-mcp, frontend
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ branch: feature/hermes-skill-adaptation-T6
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T09:01:43+0000
+  last_updated_at: 2026-05-19T09:08:53.701Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/agent-workflow/pull/187
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/269
   status: open
