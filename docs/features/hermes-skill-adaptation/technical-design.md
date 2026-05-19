@@ -631,6 +631,48 @@ The executor reads `<mgmtDir>/HERMES.md` (not the workflow template) so each
 workspace's project-local Hermes context flows through to the agent. This
 mirrors how the Claude executor reads `<mgmtDir>/CLAUDE.md`.
 
+#### Why `.git/info/exclude` — design justification
+
+The HERMES.md placement is dictated by Hermes itself, not by us. Hermes's
+context loader looks for `HERMES.md` by **walking from cwd up to the
+nearest git root**. The Hermes process must run with cwd = the impl repo
+(otherwise file tools and terminal commands target the wrong tree), so
+HERMES.md must land somewhere inside the impl repo's working tree for
+Hermes to find it.
+
+The wrapper's Phase 6 then runs `git add -A` over that same tree as part
+of committing the agent's code changes. Without protection, HERMES.md
+ends up in every Hermes PR.
+
+Three alternatives were considered:
+
+1. **Inline HERMES.md into the briefing** — content delivered via
+   `--query` string instead of a file. **Rejected**: Hermes's docs are
+   explicit that project-context files (HERMES.md, AGENTS.md, etc.)
+   are loaded into the **system prompt** which is built once and
+   restored on resume for prefix-caching efficiency. Inlining into the
+   briefing puts the content in the first user message, taking it out
+   of the layer Hermes explicitly designed for stable, cacheable
+   context. For a 150-iteration tool-use loop, this is a meaningful
+   cost difference (HERMES.md tokens potentially paid per-iteration
+   instead of once per session).
+
+2. **Write HERMES.md to `<implDir>`, then `rm` it before `git add -A`** —
+   ephemeral file, lives only during Hermes's session. **Rejected**:
+   couples Phase 6 to Phase 3.5 (Phase 6 has to know about HERMES.md
+   as a cleanup item). Adds a TOCTOU consideration if Hermes is still
+   running. Uses an unintended mechanism (rm) where git already
+   provides the right one.
+
+3. **`.git/info/exclude`** (chosen) — git's own local-only ignore
+   mechanism. `info/exclude` is git's documented hook for ignore
+   patterns that should NOT be committed (unlike `.gitignore`, which
+   IS committed). The append is local to the executor's clone and
+   never reaches origin. This is exactly the use case the file was
+   designed for. Hermes uses its native auto-load (preserving the
+   system-prompt caching benefit); the PR stays clean; no Phase 6
+   coupling.
+
 **Spawn changes:**
 
 ```typescript
