@@ -1,12 +1,15 @@
 feature_id: hermes-skill-adaptation
 title: Hermes Skill Adaptation — Convert workflow and technical skills for
   Hermes executor
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: >-
-  All implementation tasks terminal (T1–T7 done; T8 cancelled). Handoff PRs
-  opened — workspace project-workspace#266 and workflow agent-workflow#192.
-  Awaiting human merge.
+  Feature complete. All three handoff PRs merged — workflow agent-workflow#192,
+  workspace handoff project-workspace#277, and workspace feature → main
+  project-workspace#266. Outstanding: rebuild the Hermes executor container so
+  the new claude/-prefixed paths and AGENT_RUNTIME env var are picked up, then
+  perform the manual T8 validation pass (real impl + real review, before/after
+  comparison).
 stages:
   product_spec:
     review_status: approved
@@ -39,11 +42,19 @@ stages:
         reviewed_at: 2026-05-19T15:30:43+0700
         review_comment: Approved — Wave 1 tasks activated to ready.
   handoff:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-05-20T02:40:46+0700
+    review_comment: >-
+      Approved — workflow agent-workflow#192, workspace handoff
+      project-workspace#277, and workspace project-workspace#266 all merged.
+      Feature complete on both repos' main.
+    review_history:
+      - review_status: approved
+        reviewed_by: matthew@swellnetwork.io
+        reviewed_at: 2026-05-20T02:40:46+0700
+        review_comment: >-
+          Approved — three handoff PRs merged (#192, #277, #266).
 history:
   - action: created
     by: matthew@swellnetwork.io
@@ -82,6 +93,15 @@ history:
       feature/hermes-skill-adaptation. handoff.md generated under
       docs/features/hermes-skill-adaptation/handoffs/. status.yaml updated to
       split workspace_feature_pr_url (#266) from handoff_pr_url (#277).
+  - action: handoff_approved
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T02:40:46+0700
+    note: >-
+      All three handoff PRs merged — agent-workflow#192 (workflow feature →
+      main), project-workspace#277 (handoff → feature), and
+      project-workspace#266 (workspace feature → main). Per-task workspace_pr
+      statuses flipped open → merged for T2–T7. feature_status → done;
+      stages.handoff.review_status → approved.
 revalidation:
   product_spec_required: false
   technical_design_required: false
@@ -94,4 +114,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/277
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/192
-    status: open
+    status: merged
