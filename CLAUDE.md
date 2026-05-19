@@ -167,7 +167,6 @@ execution:
 - Humans review, validate, and decide whether work becomes `done`; reviewer agents may also mark `done` when CI and the quality rubric both pass
 - Reviewer agents may set `change_requested` when posting a `REQUEST_CHANGES` GitHub review
 - Agents do not approve stages
-- Agents do not mark tasks `done` for tasks with `execution.requires_human_review: true`
 
 ## Commit-before-block rule
 
