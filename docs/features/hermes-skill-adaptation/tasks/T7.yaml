@@ -1,8 +1,13 @@
 id: T7
 title: Hermes executor Phase 3.5 + spawn changes + .env.template + tests
 repo: workflow
-status: todo
-depends_on: [T2, T3, T4, T5, T6]
+status: ready
+depends_on:
+  - T2
+  - T3
+  - T4
+  - T5
+  - T6
 blocked_reason: null
 blocked_context: null
 branch: ""
@@ -19,3 +24,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:27:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:50:13.279Z
+    note: Task activated — dependency T4 merged and marked done.

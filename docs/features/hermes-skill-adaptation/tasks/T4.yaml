@@ -1,19 +1,23 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: ready
-depends_on: [T2, T3]
+status: done
+depends_on:
+  - T2
+  - T3
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/hermes-skill-adaptation-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-19T14:50:12.755Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/189
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/272
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -22,6 +26,59 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-19T18:18:47+0700
-    note: >-
-      Auto-ready: depends_on [T2, T3] both done. T3 was previously regressed to
-      ready by T2's bad merge resolution and has since been restored to done.
+    note: "Auto-ready: depends_on [T2, T3] both done. T3 was previously regressed to
+      ready by T2's bad merge resolution and has since been restored to done."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T11:19:56.971Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-19T11:20:14.233Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/265,
+      github.com/tiendv89/agent-workflow/pull/184"
+    rag_query: Extend sync-workspace-rules with HERMES.md Step B hermes-skill-adaptation
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T21:25:01+0700
+    note: Manual reset to ready — previous claim abandoned before implementation
+      began.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:31:36.372Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:31:43.543Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/265,
+      github.com/tiendv89/agent-workflow/pull/184"
+    rag_query: Extend sync-workspace-rules with HERMES.md Step B hermes-skill-adaptation
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:36:03+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/189"
+    token_usage:
+      input: 218
+      output: 29377
+      model: claude-sonnet-4-6
+    cost_usd: 0.441309
+    at: 2026-05-19T14:44:21.075Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:46:28.561Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:50:12.755Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
