@@ -39,3 +39,7 @@ log:
     rag_query: workflow/hermes/SOUL.md + HERMES.shared.md authoring
       hermes-skill-adaptation
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-19T08:48:30+0000
+    note: executor work phase begun.
