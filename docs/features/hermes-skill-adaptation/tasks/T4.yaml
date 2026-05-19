@@ -1,7 +1,7 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/hermes-skill-adaptation-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T14:46:28.561Z
+  last_updated_at: 2026-05-19T14:50:12.755Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/189
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/272
   status: open
@@ -78,3 +78,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-19T14:46:28.561Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:50:12.755Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
