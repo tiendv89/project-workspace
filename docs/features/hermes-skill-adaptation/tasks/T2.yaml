@@ -1,7 +1,7 @@
 id: T2
 title: Workflow repo reorg + AGENT_RUNTIME rename (atomic)
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/hermes-skill-adaptation-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-19T08:57:56.706Z
+  last_updated_at: 2026-05-19T09:02:49.514Z
 pr:
   url: ""
   status: not_created
@@ -45,3 +45,7 @@ log:
     by: norepy@tiendv.dev
     note: Max-turns block reset to ready (attempt 1 of 3).
     at: 2026-05-19T08:57:56.706Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T09:02:49.514Z
+    note: Claimed via git-based claim protocol.
