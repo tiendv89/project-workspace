@@ -1,7 +1,7 @@
 id: T4
 title: Extend sync-workspace-rules with HERMES.md Step B
 repo: workflow
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -19,3 +19,9 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-19T15:27:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-19T18:18:47+0700
+    note: >-
+      Auto-ready: depends_on [T2, T3] both done. T3 was previously regressed to
+      ready by T2's bad merge resolution and has since been restored to done.
