@@ -1,7 +1,7 @@
 id: T7
 title: Hermes executor Phase 3.5 + spawn changes + .env.template + tests
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -10,11 +10,11 @@ depends_on:
   - T6
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/hermes-skill-adaptation-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-19T14:52:51.039Z
 pr:
   url: ""
   status: not_created
@@ -28,3 +28,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-19T14:50:13.279Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-19T14:52:51.039Z
+    note: Claimed via git-based claim protocol.
