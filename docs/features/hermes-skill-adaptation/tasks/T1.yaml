@@ -12,10 +12,10 @@ execution:
   last_updated_at: 2026-05-19T15:03:56.923Z
 pr:
   url: https://github.com/tiendv89/project-workspace/pull/273
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/273
-  status: open
+  status: merged
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -76,3 +76,11 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-05-19T15:03:56.923Z
+  - action: pr_status_updated
+    by: matthew@swellnetwork.io
+    at: 2026-05-20T01:53:50+0700
+    note: >-
+      Manual cleanup: human-fixed two stale env-var references in audit.md
+      (CLAUDE_AGENT_RUNTIME → AGENT_RUNTIME, post-T2 rename) and pre-marked
+      pr/workspace_pr status as merged. Human will squash-merge PR #273 to
+      bring this T1 audit + the CLAUDE.md sync into feature/hermes-skill-adaptation.
