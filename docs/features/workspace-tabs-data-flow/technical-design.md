@@ -185,8 +185,8 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081";
 export type ApiError = {
   code: string;
   message: string;
-  source: "github" | "database" | "parser" | "adapter" | "validation";
   retryable: boolean;
+  path?: string;
   cached_data?: unknown;
 };
 
@@ -203,11 +203,15 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const text = await res.text();
   const body = text ? JSON.parse(text) : null;
 
-  if (!res.ok) {
-    throw body as ApiError;
+  if (!res.ok || body?.success === false) {
+    throw (body?.error ?? {
+      code: "UNKNOWN_ERROR",
+      message: "Unknown backend API error",
+      retryable: false,
+    }) as ApiError;
   }
 
-  return body as T;
+  return body?.data as T;
 }
 ```
 
@@ -229,14 +233,17 @@ Client rules:
 
 - Prefix every path with the configured API base.
 - Always parse response text before checking `res.ok`.
-- Throw `ApiError` for non-2xx responses.
-- Preserve backend `code`, `source`, `message`, and `retryable`.
+- Unwrap successful `{ success, data }` responses before returning typed DTOs.
+- Throw `ApiError` for non-2xx responses or `{ success: false }` envelopes.
+- Preserve backend `code`, `message`, `retryable`, and optional `path` / `cached_data`.
 - Use `URLSearchParams` for filters.
 - Never coerce public UUID route ids into display/source labels.
 
 ### Backend Route Contract
 
-The frontend consumes these routes exactly:
+The canonical frontend integration reference lives at [`references/backend-api.md`](references/backend-api.md). That file owns the public endpoint list, common response envelope, HTTP statuses, route identifier rules, query parameters, sort values, and DTO examples.
+
+This technical design maps the current feature surfaces to the backend routes they consume:
 
 | UI use case                    | Method and path                                                                                              | Success type              |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------- |
