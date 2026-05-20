@@ -3,11 +3,11 @@
 ## Feature
 
 - Feature ID: `workspace-tabs-data-flow`
-- Title: `Workspace Tabs and End-to-End Workspace Data Flow`
+- Title: `Workspace Tabs and Backend API Data Flow`
 
 ## References
 
-Visual references are stored in `docs/features/workspace-tabs-data-flow/references/`. The workspace, feature, and task tab references are the visual source for the user-facing surfaces.
+Visual references are stored in `docs/features/workspace-tabs-data-flow/references/`. The workspace, feature, and task tab references remain the visual source for the user-facing surfaces.
 
 ### Workspace dropdown
 
@@ -59,34 +59,44 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ## Dependencies
 
-- **`workspace-data-backend`** — provides the backend read APIs and workspace sync layer this feature's UI consumes.
+- **`workspace-data-backend`** delivers the `workflow-backend` frontend API contract consumed by this feature.
+- **`workflow-backend` `api-service`** is the HTTP source of truth. Local default base URL is `http://localhost:8081`; public routes are under `/api`.
+- **`digital-factory-ui`** owns the workspace switcher, import modal, board, task tabs, feature tabs, frontend API client, and browser QA.
 
 ## Problem
 
-The current dashboard has no tab-based navigation. Viewing a task or feature means leaving the board entirely, with no way to return to the same context or keep multiple items open at once. There is no distinction between a quick glance at a task and a persistent work session — every navigation is destructive.
+The dashboard needs persistent workspace, feature, and task navigation without parsing workflow repository files in the browser. The backend now exposes saved workspaces, workspace detail, import, sync, feature detail, task detail, search/filter, and activity routes. The frontend must use that contract directly so the UI displays the same normalized workspace state that `workflow-backend` serves.
 
-Users need a tab shell that lets them hold their place on the board, open task and feature work sessions alongside it, and move between them without losing context. Single click, double click, and context menu entry points each need a distinct, predictable behavior so users can navigate confidently.
+Users need to switch workspaces, import repositories, refresh source data, open persistent task and feature tabs, and inspect activity while preserving context. These flows must work from backend payloads, including stale-cache and structured-error responses, instead of from frontend-only fixtures, local storage, direct GitHub reads, or raw YAML parsing.
 
 ## Goals
 
-- Keep the workspace tab as the way back to the current workspace board.
-- Let users switch between saved workspaces from the workspace tab control.
-- Let users import or sync a workspace from a GitHub repository through a modal form.
-- Let the UI render workspace board, feature tabs, and task tabs from backend payloads only.
-- Let users inspect tasks and features quickly without opening persistent sessions.
-- Let users open persistent task and feature tabs when they want deeper work context.
-- Keep task and feature tab behavior predictable across single click, double click, and context menu actions.
-- Keep the board sidebar limited to the workspace board, not task or feature tabs.
-- Show loading, empty, stale, and error states clearly when backend reads fail.
+- Load saved workspaces from `GET /api/workspaces`.
+- Import a workspace with `POST /api/workspaces/import` and navigate to the returned `WorkspaceDetail`.
+- Render the workspace dashboard from `GET /api/workspaces/:workspaceId`.
+- Refresh workspace data with `POST /api/workspaces/:workspaceId/sync`.
+- Render workspace feature and task lists through the backend list/search routes.
+- Open quick task detail and task tabs through `GET /api/workspaces/:workspaceId/tasks/:taskId`.
+- Open feature tabs through `GET /api/workspaces/:workspaceId/features/:featureId`.
+- Render feature-scoped tasks and task detail through the feature-scoped task routes where the UI is already inside a feature.
+- Render workspace, feature, and task activity from `GET /api/workspaces/:workspaceId/activity`.
+- Use backend identifier rules consistently:
+  - `workspaceId` is a workspace UUID.
+  - `featureId` is the public feature UUID from `feature_id`.
+  - `taskId` is the public task UUID from `task_id`.
+  - `feature_name` and `task_name` are display/source labels, not route ids.
+- Preserve the current workspace board when switching between board, task tab, and feature tab surfaces.
+- Keep stale cached data visible when backend responses mark `source_state.stale=true`.
+- Show backend error source and retryability in user-facing loading, empty, stale, and error states.
 
 ## Non-goals
 
-- No backend changes — sync, import, caching, and read APIs are provided by `workspace-data-backend`.
-- No agent write path changes — task claims, transitions, and approvals are unchanged.
+- No new backend API design in this feature; the frontend integrates with the provided `workflow-backend` API contract.
+- No direct GitHub file fetching or raw YAML/markdown parsing inside frontend UI components.
+- No frontend-only durable source of truth for imported workspace data.
+- No workflow state write-path changes for claims, approvals, branch updates, or task transitions.
 - No agent, chat, model selector, composer, skill mention, image attachment, conversation persistence, or LLM surface.
-- No direct GitHub file parsing inside frontend UI components.
-- No frontend-only source of truth for imported workspace data.
-- No broad dashboard redesign outside workspace switching, work item tabs, and source-backed detail views.
+- No broad dashboard redesign outside workspace switching, backend-backed board data, task tabs, and feature tabs.
 - No `deployment-checklist.md` at this stage.
 
 ## User Journeys
@@ -122,18 +132,23 @@ Users need a tab shell that lets them hold their place on the board, open task a
 
 ## Acceptance Criteria
 
-- The workspace tab returns the user from any task or feature tab to the current workspace board.
-- The workspace switcher loads saved workspaces from the backend and supports search, switch, and cancel.
-- Workspace import sends repository input to the backend and does not parse GitHub files in the UI.
-- Sync failures keep cached data visible when available and mark the source state clearly in the UI.
+- First app load can list saved workspaces from `GET /api/workspaces`.
+- Selecting a workspace loads `GET /api/workspaces/:workspaceId` and renders board data from the returned `WorkspaceDetail`.
+- Workspace import sends `repo_url`, optional `default_branch`, and optional `name` to `POST /api/workspaces/import`; `200 OK` navigates to the returned workspace detail.
+- Manual sync calls `POST /api/workspaces/:workspaceId/sync` and replaces the local workspace cache with the returned `WorkspaceDetail`.
+- Sync failure with stale backend data keeps the current workspace visible and clearly marks `source_state.stale=true` and `source_state.error_code`.
+- Feature Mode fetches or refreshes feature data through `GET /api/workspaces/:workspaceId/features` with supported query params.
+- Task Mode fetches or refreshes task data through `GET /api/workspaces/:workspaceId/tasks` with supported query params.
+- Search and filter controls map to backend query params exactly: feature title uses `title`, task name uses `task_id`, task title uses `title`, statuses use comma-separated `status`, and natural task order uses `sort=task_id_asc`.
 - Single-clicking a task or feature opens quick inspection rather than a persistent tab.
-- Double-clicking a task opens or focuses a task tab.
-- Double-clicking a feature opens or focuses a feature tab only in Feature Mode.
+- Double-clicking a task opens or focuses a task tab backed by `TaskDetail`.
+- Double-clicking a feature opens or focuses a feature tab only in Feature Mode and backs it with `FeatureDetail`.
 - Task and feature context menus provide a clear path to open work item tabs where supported.
 - Sidebar task items follow the same task inspection and task tab behavior as board task cards.
-- Task tabs and feature tabs preserve work sessions and can be activated, closed, and navigated predictably.
-- The sidebar is visible on the workspace board and hidden in task and feature tabs.
-- Task tabs let the user understand task identity, state, related work, and history from backend data.
-- Feature tabs let the user understand feature identity, stage state, source documents, tasks, and history from backend data.
-- Opening a task from a feature tab lets the user return to the originating feature tab when possible.
+- Task tabs and feature tabs preserve work sessions, can be activated and closed, and do not show the workspace board sidebar.
+- Task tabs show task identity, status, repository, branch, dependencies, execution metadata, PR refs, and activity from backend data.
+- Feature tabs show feature identity, current stage, source documents, feature-scoped task list, task counts, activity, and source state from backend data.
+- Opening a task from a feature tab preserves originating feature context and can use the feature-scoped task detail route.
+- Structured backend errors render source-specific messages and retry affordances based on `retryable`.
+- Empty arrays from backend list/search routes render empty states rather than errors.
 - Agent, chat, model, composer, and conversation controls are absent from this feature.

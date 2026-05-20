@@ -3,694 +3,634 @@
 ## Feature
 
 - Feature ID: `workspace-tabs-data-flow`
-- Title: `Workspace Tabs and End-to-End Workspace Data Flow`
+- Title: `Workspace Tabs and Backend API Data Flow`
 
 ## 1. Current State
 
-There is no backend layer today. The dashboard calls the GitHub API directly from the browser, parses workspace YAML files in the browser, and stores the active workspace configuration in `localStorage`. There is no server-side database, no cache, and no multi-workspace support.
+`digital-factory-ui` currently treats workspace data as a browser-owned concern. The UI path this feature replaces is direct GitHub access from the browser, local parsing, and ephemeral workspace state.
 
 ```text
-Current system (what exists now):
+Today:
 
-  UI (browser)
-    → api.github.com (direct: Contents API, Pulls API)
-      → yaml-parser.ts (browser-side YAML parse)
-        → localStorage (single workspace, ephemeral)
-          → board components
+  digital-factory-ui (browser)
+    -> api.github.com       (direct GitHub API calls)
+    -> frontend parsers     (workflow YAML and markdown handling)
+    -> localStorage         (single active workspace/session state)
 ```
 
-Key files that implement this today:
+The backend contract now exists in `workflow-backend` `api-service`. The frontend must move to that contract:
 
-- `src/services/github.ts` — direct `fetch` calls to `https://api.github.com`
-- `src/services/yaml-parser.ts` — browser-side YAML and markdown parsing
-- `src/services/workspace-store.ts` — `localStorage` get/set/clear
-- `src/features/board/data/load-board-data.ts` — board loader built on the GitHub client above
+```text
+Target:
 
-This feature replaces that direct-GitHub path. After this feature:
+  digital-factory-ui
+    -> workflow-backend api-service
+      -> /api/workspaces...
+        -> normalized workspace, feature, task, activity,
+           source-state, and structured error payloads
+```
 
-- The UI never calls GitHub directly.
-- GitHub is used only for import and sync operations, handled entirely by the backend.
-- All UI reads come from a backend-managed Supabase Postgres database.
-- When a sync fails, the backend returns the last cached snapshot with a stale marker.
-- Workspace configuration is stored server-side, not in `localStorage`.
+Key constraints:
 
-The dashboard still needs workspace, task tab, and feature tab surfaces, but all source data must arrive through backend contracts. UI components should not own GitHub parsing, raw YAML parsing, database shape assumptions, agent state, model selection, or conversation behavior.
-
-Fixed constraints:
-
-- Workspace board remains the default workspace surface.
-- Workspace dropdown opens only from the workspace tab control.
-- Sidebar is visible only on the workspace board, not inside Task tab or Feature tab pages.
-- Task tab and Feature tab may be route-backed pages.
-- Work item data comes from normalized backend payloads.
-- GitHub and database source differences are hidden behind adapters.
-- Agent, chat, model, composer, and conversation controls are not part of this feature.
+- `workflow-backend` is the read-side API service for the dashboard. Local default base URL is `http://localhost:8081`; public routes use `/api`.
+- `workspace-github-adapter` owns GitHub ingestion, webhook/task sync, and write-side database updates. The frontend does not call it directly.
+- `digital-factory-ui` is the UI consumer. It must call `workflow-backend` and stop treating GitHub, YAML, local storage, or database rows as the durable workspace source of truth.
+- GitHub still owns workflow state writes. This feature introduces UI reads and tab/session behavior only.
+- Backend identifiers are already normalized: `workspaceId`, `featureId`, and `taskId` are UUID route ids; `feature_name` and `task_name` are display/source labels.
 
 ## 2. Problem Framing
 
-The system must support three connected workflows:
+Two things must be built in the frontend:
 
-1. Source ingestion: import or refresh workflow data from GitHub and store reusable workspace snapshots in the database.
-2. Source normalization: expose a common workspace model regardless of whether the read came from GitHub or database cache.
-3. UI consumption: render workspace board, task tabs, and feature tabs from backend payloads with stable loading, empty, stale, and error states.
+1. **Backend API integration**: replace direct GitHub/local parsing paths with a typed `workflow-backend` client for workspace list, import, workspace detail, sync, feature search/detail, task search/detail, and activity routes.
+2. **Workspace tab data flow**: use those backend payloads to drive the workspace board, workspace switcher, import modal, task quick view, task tab, feature quick view, feature tab, activity timeline, search/filter controls, and stale/error states.
+
+The UI always reads from the backend API. It does not need to know whether the underlying data came from a fresh sync or a cached database projection. That distinction belongs to `source_state` and structured `ApiError` payloads, not to separate frontend code paths.
 
 What must remain stable:
 
-- Existing workflow lifecycle, approval gates, task status, and task YAML ownership remain unchanged.
-- The management repo only stores feature planning artifacts.
-- `workflow-backend` owns source adapters, backend routes, cache reads/writes, and error mapping.
-- `digital-factory-ui` owns workspace/tab UI, frontend API client, interaction behavior, and browser QA.
-- Task execution still starts only after task-stage approval and task activation.
+- Existing task YAML ownership, agent claim protocol, approval gates, and workflow lifecycle are unchanged.
+- No frontend write path to task state.
+- No direct GitHub file parsing inside UI components.
+- No backend route or database schema work in this feature unless implementation finds the deployed service differs from the documented API.
 
 ## 3. Options Considered
 
-### Option A - Frontend reads GitHub directly
+### Option A - Keep frontend direct-GitHub reads
 
-This approach keeps the dashboard responsible for fetching and parsing GitHub files.
+The frontend continues to call GitHub APIs and parse workspace files in the browser.
 
 Pros:
 
-- Smallest backend change.
-- Can reuse existing frontend parsing experiments if present.
+- Lowest short-term frontend change.
+- Existing experimental parsing code could remain in place.
 
 Cons:
 
-- Conflicts with the requested end-to-end architecture.
-- Keeps GitHub, database, and YAML shape details inside UI code.
-- Makes database fallback and source freshness harder to reason about.
-- Keeps access-token and rate-limit handling close to the browser.
+- Conflicts with the delivered backend API contract.
+- Keeps token, rate-limit, YAML, and source-shape handling in the browser.
+- Cannot share saved workspaces across sessions/devices reliably.
+- Makes stale-cache fallback harder to represent.
+- Duplicates backend normalization logic in the UI.
+
+Implementation impact:
+
+- Leaves current GitHub/YAML parsing seams in place and requires additional defensive code for auth, rate limits, parser failures, and stale UI states.
+- Does not create the API client boundary required by the new backend contract.
+
+Dependency impact:
+
+- Keeps the frontend coupled to GitHub availability and source file layout.
+- Bypasses `workflow-backend`, so the UI cannot reliably consume saved workspace state from the backend.
 
 Not chosen.
 
-### Option B - Backend source adapters with a stable UI API
+### Option B - Backend API client with route-by-route integration
 
-This approach places GitHub and database reads behind backend adapters. The UI consumes only normalized backend DTOs.
+The frontend adds a typed API client and progressively wires each workspace surface to the documented `workflow-backend` routes.
 
 Pros:
 
-- Matches the requested `GitHub/DB -> adapter -> BE -> UI` flow.
-- Gives source parsing and source freshness one backend boundary.
-- Lets the UI stay focused on presentation and interaction.
-- Supports cached workspace reopen without re-importing every time.
-- Keeps future source additions behind the same adapter contract.
+- Matches the backend contract and service split.
+- Keeps the UI focused on view state, interactions, and rendering.
+- Gives a small, testable boundary for structured errors and source-state handling.
+- Allows component tests to mock the same DTOs that production uses.
 
 Cons:
 
-- Requires backend and frontend work in the same feature.
-- Requires explicit DTO mapping and source-status semantics.
-- May need database schema or persistence updates depending on the current backend storage model.
+- Requires replacing existing GitHub/local parsing assumptions across several UI surfaces.
+- Requires careful identifier handling so UUID route ids are not confused with source labels like `T1`.
+
+Implementation impact:
+
+- Adds a focused client/types layer first, then migrates workspace, task, feature, activity, sync, and import surfaces route by route.
+- Lets tests mock the documented backend DTOs while browser QA runs against a live `workflow-backend` instance.
+
+Dependency impact:
+
+- Depends on the documented `workflow-backend` route set and `VITE_API_BASE_URL` configuration.
+- Does not depend on frontend access to GitHub tokens, YAML files, or database details.
 
 Chosen.
 
-## 4. Chosen Design
+### Option C - Graph/cache layer in the frontend
 
-Choose Option B: backend source adapters plus a stable UI-facing API.
+The frontend builds a client-side normalized cache that abstracts the backend routes behind a local graph model.
+
+Pros:
+
+- Can reduce duplicate fetches across board, task tab, and feature tab surfaces.
+- Can make optimistic UI transitions easier later.
+
+Cons:
+
+- Adds abstraction before the backend integration is stable.
+- Risks hiding backend source-state and error semantics.
+- Over-scopes this feature; persistent workspace state already belongs to the backend.
+
+Implementation impact:
+
+- Requires designing and maintaining a local normalized cache in addition to backend DTOs and view state.
+- Increases the amount of migration work before the UI proves the backend route integration.
+
+Dependency impact:
+
+- Still depends on the same backend API contract while adding a second frontend contract to keep in sync.
+- Makes stale/error behavior harder to trace back to backend `source_state` and `ApiError`.
+
+Not chosen for this feature. A small query cache from the existing frontend stack is acceptable, but it must not become a second source of truth.
+
+## 4. Chosen Design
 
 ### Architecture
 
+`digital-factory-ui` consumes `workflow-backend` directly. All backend calls go through one typed client.
+
 ```text
-GitHub repository
-  -> GitHubWorkspaceAdapter
-    -> WorkspaceSourceService
-      -> Workspace API routes
-        -> Frontend API client
-          -> Workspace shell, board, task tabs, feature tabs
-
-Database cache
-  -> DbWorkspaceAdapter
-    -> WorkspaceSourceService
-      -> Workspace API routes
-        -> Frontend API client
-          -> Workspace shell, board, task tabs, feature tabs
+┌─────────────────────────────────────────────────────────┐
+│ digital-factory-ui                                      │
+│                                                         │
+│ Workspace shell                                         │
+│   ├─ Workspace switcher       -> GET /api/workspaces    │
+│   ├─ Import modal             -> POST /api/workspaces/import
+│   ├─ Workspace board          -> GET /api/workspaces/:workspaceId
+│   ├─ Feature Mode/search      -> GET /api/workspaces/:workspaceId/features
+│   ├─ Task Mode/search         -> GET /api/workspaces/:workspaceId/tasks
+│   ├─ Task quick view/tab      -> GET /api/workspaces/:workspaceId/tasks/:taskId
+│   ├─ Feature tab              -> GET /api/workspaces/:workspaceId/features/:featureId
+│   └─ Activity timelines       -> GET /api/workspaces/:workspaceId/activity
+│                                                         │
+│ Owns: UI state, open tabs, search params, loading,      │
+│       empty, stale, and error presentation              │
+└─────────────────────────────────────────────────────────┘
+                          │ HTTP JSON
+┌─────────────────────────────────────────────────────────┐
+│ workflow-backend api-service                            │
+│                                                         │
+│ Serves normalized WorkspaceDetail, FeatureDetail,       │
+│ TaskDetail, ActivityEvent, SourceState, and ApiError    │
+│ payloads from the backend data layer.                   │
+└─────────────────────────────────────────────────────────┘
 ```
-
-Adapters are NestJS backend modules inside `workflow-backend`. They must expose clear service interfaces so GitHub parsing and database reads do not leak into controllers or frontend components.
-
-### Backend Technology Stack
-
-Backend implementation is standardized on:
-
-- Runtime: Node.js-compatible TypeScript service.
-- Framework: NestJS.
-- API layer: NestJS controllers and DTO validation.
-- Service layer: NestJS injectable services for GitHub source adapter, database adapter, and workspace source orchestration.
-- Database host: Supabase Postgres.
-- ORM and migration tool: Prisma Client plus Prisma Migrate.
-- Database naming: lowercase `snake_case` table, column, index, and constraint names.
-- Source parsing: `yaml` npm package or an equivalent YAML parser approved in implementation.
-- Tests: NestJS-compatible unit/integration tests, plus Prisma migration/schema validation.
-
-Supabase is the Postgres host, not a frontend data source. The frontend talks only to the backend API. Backend code talks to Supabase Postgres through Prisma.
-
-Prisma model names may use PascalCase in TypeScript, but database objects must use `@@map` and `@map` where needed so the physical Supabase schema stays lowercase `snake_case`.
-
-Connection configuration:
-
-- `DATABASE_URL` is used by the deployed NestJS backend for runtime Prisma queries.
-- `DIRECT_DATABASE_URL` is used for Prisma migrations when Supabase provides separate pooled and direct connection strings.
-- Migration operations must use the direct Supabase Postgres connection, not a transaction pooler URL.
-- Runtime may use Supabase's pooled connection URL when compatible with the Prisma configuration chosen during implementation.
-
-### Source Adapter Contract
-
-The backend should define a typed adapter boundary similar to:
-
-```ts
-type WorkspaceSourceKind = "github" | "database";
-
-interface WorkspaceSourceAdapter {
-  kind: WorkspaceSourceKind;
-  listWorkspaces(): Promise<WorkspaceSummary[]>;
-  getWorkspace(workspaceId: string): Promise<WorkspaceDetail>;
-  getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>;
-  getTask(workspaceId: string, taskId: string): Promise<TaskDetail>;
-  listFeatureTasks(workspaceId: string, featureId: string): Promise<TaskSummary[]>;
-  listActivity(workspaceId: string, scope: ActivityScope): Promise<ActivityEvent[]>;
-}
-```
-
-GitHub import and sync can be modeled as service operations rather than generic adapter methods if the existing backend structure fits better:
-
-```ts
-importWorkspaceFromGitHub(input): Promise<WorkspaceDetail>
-syncWorkspaceFromGitHub(workspaceId): Promise<WorkspaceDetail>
-```
-
-The exact function names can follow the backend codebase, but the boundary must keep source parsing outside UI and route presentation code.
-
-### Canonical Backend DTOs
-
-The UI-facing contract should include:
-
-- `WorkspaceSummary`: id, name, repo URL, source state, updated time.
-- `WorkspaceDetail`: summary, board columns/groups, feature summaries, task summaries, source state.
-- `FeatureSummary`: feature id, title, status, current stage, updated time, task counts.
-- `FeatureDetail`: summary, product spec markdown, technical design markdown, tasks, logs, source state.
-- `TaskSummary`: task id, feature id, title, status, priority, repo, branch, next action, blocked state.
-- `TaskDetail`: summary, dependencies, execution context, PR refs, blocked context, activity.
-- `PullRequestRef`: label, url, status, repo.
-- `ActivityEvent`: action, stage/scope, actor, timestamp, note.
-- `SourceState`: source kind, freshness, last synced time, stale flag, partial flag, user-facing error when relevant.
-
-DTO names do not have to be exact, but this information must be represented without frontend raw-YAML parsing.
-
-### GitHub Adapter
-
-GitHub adapter responsibilities:
-
-- Validate repository URL and access input.
-- Fetch or download repository content using the backend's preferred GitHub strategy.
-- Discover `docs/features/*/status.yaml`.
-- Read feature-level `product-spec.md`, `technical-design.md`, `tasks.md`, and `tasks/T*.yaml` where available.
-- Parse YAML and markdown into backend DTOs.
-- Preserve raw markdown strings for document views.
-- Map missing optional files to empty states instead of hard failures.
-- Treat missing required feature status, invalid YAML, inaccessible repositories, rate limits, and network failures as structured source errors.
-- Return source metadata so the backend can mark freshness and partial data.
-
-### Database Adapter
-
-Database adapter responsibilities:
-
-- List saved workspaces.
-- Read cached workspace detail.
-- Read cached feature and task detail.
-- Write or update workspace snapshots after successful GitHub import or sync.
-- Preserve last successful sync metadata.
-- Return stale cached data when a fresh GitHub sync fails and cache exists.
-- Never expose stored secrets or implementation-specific database records to the UI.
-
-If the current backend does not yet have the required persistence table/collection, the backend task must add the schema below. Database object names use lowercase `snake_case`.
-
-### Database Schema Design
-
-The database must store normalized workspace state as queryable records, not only one opaque snapshot blob. Raw source documents are preserved separately so the UI can render the same feature and task information that exists in the imported workspace repository.
-
-#### `workspaces`
-
-One row per saved workspace.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Stable backend workspace id used by UI routes. |
-| `slug` | text unique | yes | Human-readable workspace key, usually derived from imported repo or workspace folder name. |
-| `name` | text | yes | Display name from `workspace.yaml` or import metadata. |
-| `repo_url` | text | yes | Canonical GitHub repository URL used for import/sync. |
-| `repo_owner` | text | yes | Parsed GitHub owner/org. |
-| `repo_name` | text | yes | Parsed GitHub repo name. |
-| `default_branch` | text | no | Branch used for sync when not explicitly overridden. |
-| `workspace_config` | JSON | no | Parsed `workspace.yaml`, including `workspace_id`, approval, git branch pattern, environments, roles, model policy, automation, orchestrator, management repo, and repos. |
-| `active_snapshot_id` | UUID/string FK | no | Points to the currently visible snapshot after a successful import or sync. |
-| `source_state` | JSON | yes | Current source status shown by UI: source kind, stale flag, partial flag, last synced time, and last error summary. |
-| `created_at` | timestamp | yes | Backend creation time. |
-| `updated_at` | timestamp | yes | Backend update time. |
-
-Indexes and constraints:
-
-- Unique `slug`.
-- Unique `repo_owner + repo_name` if the product allows only one saved workspace per GitHub repo.
-- Index `updated_at`.
-- Index `active_snapshot_id`.
-
-#### `workspace_repositories`
-
-One row per repository declared in `workspace.yaml -> repos[]`. This keeps current workspace repo information queryable without forcing the UI to parse `workspace_config`.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Repository row id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `repo_id` | text | yes | Repo id from `workspace.yaml`, for example `management-repo` or `digital-factory-ui`. |
-| `github` | text | no | GitHub SSH/HTTPS URL from config. |
-| `local_path_ref` | text | no | Env reference or local path string from config, never expanded to secret values in UI DTOs. |
-| `base_branch` | text | no | Repo base branch from config. |
-| `owner_role` | text | no | Owner role from config. |
-| `raw_config` | JSON | yes | Original repo object from `workspace.yaml`. |
-| `created_at` | timestamp | yes | Backend creation time. |
-| `updated_at` | timestamp | yes | Backend update time. |
-
-Indexes and constraints:
-
-- Unique `workspace_id + repo_id`.
-- Index `workspace_id + owner_role`.
-
-#### `workspace_snapshots`
-
-One row per import/sync result. A snapshot is immutable after creation; a successful import or sync updates `workspaces.active_snapshot_id` to the new snapshot. Keeping snapshots versioned lets the backend serve stale data after a failed sync.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Snapshot id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `source_kind` | enum/text | yes | `github` or `database`. |
-| `source_ref` | text | yes | Branch/ref/tag used for this snapshot. |
-| `commit_sha` | text | no | Git commit SHA when known. |
-| `tree_sha` | text | no | Git tree/archive id when known. |
-| `status` | enum/text | yes | `fresh`, `partial`, `stale`, or `failed`. |
-| `started_at` | timestamp | yes | Sync/import start time. |
-| `completed_at` | timestamp | no | Sync/import completion time. |
-| `error_code` | text | no | Machine-readable failure code. |
-| `error_message` | text | no | User-readable error summary. |
-| `metadata` | JSON | no | Counts, parser warnings, rate-limit metadata, skipped files, and source diagnostics. |
-| `created_at` | timestamp | yes | Backend creation time. |
-
-Indexes and constraints:
-
-- Index `workspace_id + created_at`.
-- Index `workspace_id + status`.
-- Index `workspace_id + commit_sha`.
-
-#### `workspace_features`
-
-One row per feature in a snapshot. It mirrors the current `status.yaml` feature payload while keeping status, stage, and next action queryable.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Feature row id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `snapshot_id` | FK `workspace_snapshots.id` | yes | Snapshot this feature belongs to. |
-| `feature_id` | text | yes | Feature id from `status.yaml` or folder name. |
-| `title` | text | yes | Feature title from `status.yaml`. |
-| `feature_status` | text | no | Value from `feature_status`. |
-| `current_stage` | text | no | Value from `current_stage`. |
-| `next_action` | text | no | Value from `next_action`. |
-| `stages` | JSON | no | Full parsed `stages` object. |
-| `history` | JSON | no | Full parsed `history` array. |
-| `revalidation` | JSON | no | Parsed `revalidation` object when present. |
-| `source_path` | text | yes | Example `docs/features/<feature_id>/status.yaml`. |
-| `source_hash` | text | no | Hash of source status content for change detection. |
-| `created_at` | timestamp | yes | Backend creation time. |
-| `updated_at` | timestamp | yes | Backend update time. |
-
-Indexes and constraints:
-
-- Unique `snapshot_id + feature_id`.
-- Index `workspace_id + feature_id`.
-- Index `workspace_id + feature_status`.
-- Index `workspace_id + current_stage`.
-
-#### `workspace_feature_documents`
-
-One row per feature document. This preserves the current raw document surfaces exactly as the UI needs them.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Document row id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `snapshot_id` | FK `workspace_snapshots.id` | yes | Snapshot this document belongs to. |
-| `feature_id` | text | yes | Feature id. |
-| `document_type` | enum/text | yes | `status_yaml`, `product_spec`, `technical_design`, or `tasks_md`. |
-| `source_path` | text | yes | Source file path in repo. |
-| `content` | text | no | Raw YAML or markdown file content. |
-| `content_hash` | text | no | Hash for change detection. |
-| `created_at` | timestamp | yes | Backend creation time. |
-
-Indexes and constraints:
-
-- Unique `snapshot_id + feature_id + document_type`.
-- Index `workspace_id + feature_id`.
-
-#### `workspace_tasks`
-
-One row per task YAML file in a snapshot. It stores the current task API fields fully, including execution, PR, log, workspace PR, and blocked context.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Task row id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `snapshot_id` | FK `workspace_snapshots.id` | yes | Snapshot this task belongs to. |
-| `feature_id` | text | yes | Parent feature id. |
-| `task_id` | text | yes | Task id from task YAML, for example `T1`. |
-| `title` | text | yes | Task title. |
-| `repo` | text | no | Implementation repo id. |
-| `status` | text | no | Task lifecycle state. |
-| `depends_on` | JSON | yes | Array of task ids. Empty array when absent. |
-| `blocked_reason` | text | no | Value from `blocked_reason`. |
-| `blocked_context` | JSON | no | Full parsed `blocked_context`. |
-| `branch` | text | no | Task branch. |
-| `execution` | JSON | no | Full parsed `execution` object. |
-| `pr` | JSON | no | Full parsed implementation PR object. |
-| `workspace_pr` | JSON | no | Full parsed workspace PR object. |
-| `log` | JSON | no | Full parsed task log array. |
-| `source_path` | text | yes | Example `docs/features/<feature_id>/tasks/T1.yaml`. |
-| `source_hash` | text | no | Hash of source task YAML. |
-| `created_at` | timestamp | yes | Backend creation time. |
-| `updated_at` | timestamp | yes | Backend update time. |
-
-Indexes and constraints:
-
-- Unique `snapshot_id + feature_id + task_id`.
-- Index `workspace_id + feature_id`.
-- Index `workspace_id + status`.
-- Index `workspace_id + repo`.
-- Index `workspace_id + branch`.
-
-#### `workspace_activity_events`
-
-Derived timeline rows from feature `history[]` and task `log[]`. This table lets the UI fetch timelines without scanning all JSON arrays.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Activity event id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `snapshot_id` | FK `workspace_snapshots.id` | yes | Snapshot this event belongs to. |
-| `scope_type` | enum/text | yes | `workspace`, `feature`, or `task`. |
-| `feature_id` | text | no | Feature id for feature/task events. |
-| `task_id` | text | no | Task id for task events. |
-| `action` | text | no | Event action. |
-| `stage` | text | no | Feature stage when present. |
-| `actor` | text | no | `by` value from source event. |
-| `occurred_at` | timestamp/text | no | Source event timestamp; keep raw parseable value if timestamp parsing fails. |
-| `note` | text | no | Source note/comment. |
-| `source_path` | text | yes | Source file that produced the event. |
-| `sequence` | integer | yes | Stable order within the source array. |
-| `raw_event` | JSON | yes | Full original event object. |
-| `created_at` | timestamp | yes | Backend creation time. |
-
-Indexes and constraints:
-
-- Index `workspace_id + scope_type + occurred_at`.
-- Index `workspace_id + feature_id + occurred_at`.
-- Index `workspace_id + feature_id + task_id + occurred_at`.
-
-#### `workspace_sync_runs`
-
-One row per import or refresh attempt, including failed runs that do not create a fresh active snapshot.
-
-| Column | Type | Required | Notes |
-|---|---|---:|---|
-| `id` | UUID/string PK | yes | Sync run id. |
-| `workspace_id` | FK `workspaces.id` | yes | Parent workspace. |
-| `trigger` | enum/text | yes | `import`, `manual_refresh`, `webhook`, or `scheduled`. |
-| `source_kind` | enum/text | yes | Usually `github`. |
-| `source_ref` | text | no | Branch/ref used. |
-| `status` | enum/text | yes | `running`, `success`, `partial`, or `failed`. |
-| `snapshot_id` | FK `workspace_snapshots.id` | no | Snapshot created by this run when available. |
-| `started_at` | timestamp | yes | Run start time. |
-| `finished_at` | timestamp | no | Run finish time. |
-| `error_code` | text | no | Machine-readable failure code. |
-| `error_message` | text | no | User-readable error summary. |
-| `metadata` | JSON | no | Counts, warnings, rate-limit details, and skipped paths. |
-
-Indexes and constraints:
-
-- Index `workspace_id + started_at`.
-- Index `workspace_id + status`.
-
-#### Snapshot write rules
-
-- Import/sync writes a new `workspace_snapshots` row and all related feature, document, task, and activity rows inside one transaction when the selected DB supports transactions.
-- `workspaces.active_snapshot_id` changes only after the new snapshot is complete enough to serve.
-- Failed sync creates a `workspace_sync_runs` row and may create a failed `workspace_snapshots` row for diagnostics, but it must not replace `active_snapshot_id`.
-- If sync fails and `active_snapshot_id` exists, backend returns that active snapshot with `SourceState.stale = true`.
-- Raw credentials and expanded local paths are never stored in UI-facing tables or DTOs.
-
-### Workspace Source Service
-
-The source service coordinates adapters:
-
-- Workspace list reads from the database adapter.
-- Import reads from GitHub adapter, then writes normalized snapshot to database adapter.
-- Workspace detail reads from database adapter by default.
-- Refresh/sync reads from GitHub adapter and updates database adapter on success.
-- If refresh/sync fails, return cached database data with `SourceState.stale = true` when available.
-- If no cached data exists, return a structured error.
-
-### Backend API
-
-Representative route shape:
-
-- `GET /api/workspaces`
-- `POST /api/workspaces/import`
-- `GET /api/workspaces/:workspaceId`
-- `POST /api/workspaces/:workspaceId/sync`
-- `GET /api/workspaces/:workspaceId/features/:featureId`
-- `GET /api/workspaces/:workspaceId/features/:featureId/tasks`
-- `GET /api/workspaces/:workspaceId/tasks/:taskId`
-- `GET /api/workspaces/:workspaceId/activity`
-
-Exact paths can follow existing backend conventions. The important contract is that the frontend gets normalized JSON and never consumes GitHub archive contents, raw database rows, or raw YAML as its primary data source.
-
-Error response requirements:
-
-- Stable machine-readable code.
-- Human-readable message.
-- Source kind when relevant: `github`, `database`, or `adapter`.
-- Retryability hint when practical.
-- Existing cached data should be returned separately from the error when safe to show.
 
 ### Frontend API Client
 
-The frontend should add or update a dedicated workspace API client:
+Add or update a dedicated `workflow-backend` client in `digital-factory-ui`, following the repo's existing service/query conventions.
 
-- Fetch saved workspaces.
-- Import workspace.
-- Fetch workspace detail.
-- Sync workspace.
-- Fetch feature detail.
-- Fetch task detail.
-- Normalize backend errors into UI states without hiding source context.
+```ts
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081";
 
-Components should depend on frontend view models derived from backend DTOs, not source-specific parsing helpers.
+export type ApiError = {
+  code: string;
+  message: string;
+  source: "github" | "database" | "parser" | "adapter" | "validation";
+  retryable: boolean;
+  cached_data?: unknown;
+};
 
-### Workspace Shell
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: {
+      Accept: "application/json",
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+      ...(init?.headers || {}),
+    },
+  });
 
-The workspace shell owns:
+  const text = await res.text();
+  const body = text ? JSON.parse(text) : null;
 
-- Current workspace identity.
-- Saved workspace list from backend.
-- Active top-level surface: board, task tab, or feature tab.
-- Open work item tabs for the active workspace only.
-- Active task/feature session metadata.
-- Cleanup behavior when workspace changes or is deleted.
-- Source state banners or inline notices when data is stale or partially loaded.
+  if (!res.ok) {
+    throw body as ApiError;
+  }
 
-The default board view keeps the sidebar visible. Task and Feature tab pages render without the sidebar.
+  return body as T;
+}
+```
 
-### Workspace Dropdown and Import Modal
+Required methods:
 
-The workspace tab itself navigates back to the board. The right-side dropdown icon opens the switcher.
+```ts
+listWorkspaces(): Promise<WorkspaceSummary[]>
+importWorkspace(body: ImportWorkspaceRequest): Promise<WorkspaceDetail>
+getWorkspace(workspaceId: string): Promise<WorkspaceDetail>
+searchFeatures(workspaceId: string, params?: URLSearchParams): Promise<FeatureSummary[]>
+searchWorkspaceTasks(workspaceId: string, params?: URLSearchParams): Promise<TaskSummary[]>
+getWorkspaceTask(workspaceId: string, taskId: string): Promise<TaskDetail>
+syncWorkspace(workspaceId: string): Promise<WorkspaceDetail>
+getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>
+searchFeatureTasks(workspaceId: string, featureId: string, params?: URLSearchParams): Promise<TaskSummary[]>
+getFeatureTask(workspaceId: string, featureId: string, taskId: string): Promise<TaskDetail>
+listActivity(workspaceId: string, params?: URLSearchParams): Promise<ActivityEvent[]>
+```
 
-Dropdown behavior:
+Client rules:
 
-- Title: `Switch workspace`.
-- Search input auto-focuses.
-- Workspace list filters immediately.
-- Active workspace shows a check icon.
-- Empty state: `No workspace matches this search.`
-- Footer action opens `Import workspace`.
+- Prefix every path with the configured API base.
+- Always parse response text before checking `res.ok`.
+- Throw `ApiError` for non-2xx responses.
+- Preserve backend `code`, `source`, `message`, and `retryable`.
+- Use `URLSearchParams` for filters.
+- Never coerce public UUID route ids into display/source labels.
 
-Import modal behavior:
+### Backend Route Contract
 
-- Modal title: `Import workspace`.
-- Description: `Import a repository to create a new workspace.`
-- Form fields: repository URL and GitHub Personal Access Token when private access is needed.
-- Repository URL is required.
-- Token is password type and never displayed after entry.
-- Submit calls the backend import route.
-- Duplicate workspace, invalid URL, missing/invalid token, private repo access, adapter validation, and network errors render inline without closing the modal.
+The frontend consumes these routes exactly:
 
-### Work Item Interaction Model
+| UI use case | Method and path | Success type |
+|---|---|---|
+| Saved workspace list | `GET /api/workspaces` | `WorkspaceSummary[]` |
+| Import workspace | `POST /api/workspaces/import` | `WorkspaceDetail` |
+| Workspace dashboard | `GET /api/workspaces/:workspaceId` | `WorkspaceDetail` |
+| Feature list/search | `GET /api/workspaces/:workspaceId/features` | `FeatureSummary[]` |
+| Workspace task list/search | `GET /api/workspaces/:workspaceId/tasks` | `TaskSummary[]` |
+| Workspace-scoped task detail | `GET /api/workspaces/:workspaceId/tasks/:taskId` | `TaskDetail` |
+| Manual sync | `POST /api/workspaces/:workspaceId/sync` | `WorkspaceDetail` |
+| Feature detail | `GET /api/workspaces/:workspaceId/features/:featureId` | `FeatureDetail` |
+| Feature-scoped task list | `GET /api/workspaces/:workspaceId/features/:featureId/tasks` | `TaskSummary[]` |
+| Feature-scoped task detail | `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId` | `TaskDetail` |
+| Activity timeline | `GET /api/workspaces/:workspaceId/activity` | `ActivityEvent[]` |
+
+`POST /api/workspaces/import` succeeds with `200 OK` and a persisted `WorkspaceDetail`. The frontend must not treat `202 Accepted` as the success case for this route.
+
+Common headers:
+
+- GET requests send `Accept: application/json`.
+- POST requests with JSON send `Accept: application/json` and `Content-Type: application/json`.
+
+Structured errors:
+
+| Code | HTTP status | Frontend behavior |
+|---|---:|---|
+| `DATABASE_NOT_FOUND` | 404 | Show not-found state for workspace, feature, or task. |
+| `GITHUB_NOT_FOUND` | 404 | Show source access or missing repository/path state. |
+| `VALIDATION_INVALID_URL` | 400 | Mark import repository URL invalid. |
+| `VALIDATION_MISSING_INPUT` | 400 | Keep modal open and mark the missing field. |
+| `VALIDATION_INVALID_QUERY` | 400 | Show filter error or reset invalid pagination/sort controls. |
+| `GITHUB_UNAUTHORIZED` | 401 | Show source auth/access guidance. |
+| `GITHUB_RATE_LIMIT` | 429 | Show rate-limit message and retry affordance if appropriate. |
+| `ADAPTER_TIMEOUT` | 504 | Show retryable adapter/sync failure. |
+| Other errors | 500 | Show generic backend failure with retry only when `retryable=true`. |
+
+Frontend API use cases:
+
+- Workspace list: `GET /api/workspaces` drives the switcher, landing state, and first app load.
+- Import workspace: `POST /api/workspaces/import` sends `repo_url`, optional `default_branch`, and optional `name`; success navigates to returned `WorkspaceDetail`.
+- Workspace dashboard: `GET /api/workspaces/:workspaceId` returns workspace freshness plus feature and task summaries in one response.
+- Feature list: `GET /api/workspaces/:workspaceId/features` supports `title`, `status`, `sort`, `page`, and `limit`.
+- Workspace task list: `GET /api/workspaces/:workspaceId/tasks` supports `task_id`, `title`, `status`, `repo`, `sort`, `page`, and `limit`.
+- Workspace-scoped task detail: `GET /api/workspaces/:workspaceId/tasks/:taskId` is used when the UI knows a workspace and task UUID but not the feature UUID.
+- Manual sync: `POST /api/workspaces/:workspaceId/sync` returns `WorkspaceDetail`; if sync fails but cached data exists, a `200 OK` response can still contain `source_state.stale=true`.
+- Feature detail: `GET /api/workspaces/:workspaceId/features/:featureId` returns documents, feature-scoped tasks, activity, task counts, and source freshness.
+- Feature-scoped task list/detail: feature pages use `/features/:featureId/tasks` and `/features/:featureId/tasks/:taskId` when the feature UUID is already known.
+- Activity: `GET /api/workspaces/:workspaceId/activity` optionally filters by `featureId` and `taskId`.
+
+### Identifier Contract
+
+| Field | Meaning | Frontend usage |
+|---|---|---|
+| `workspaceId` | Workspace UUID | Route parameter for workspace routes. |
+| `featureId` | Public feature UUID from `feature_id` | Route parameter for feature routes. |
+| `taskId` | Public task UUID from `task_id` | Route parameter for task routes. |
+| `feature_name` | Display/source slug | Display label only. |
+| `task_name` | Display/source label such as `T1` | Display label only. |
+| query `task_id` | Text filter over `task_name` | Task-name search input. |
+
+Open tab identity uses route UUIDs. Visible badges can show `feature_name` and `task_name`.
+
+### Query Strategy
+
+Feature list/search:
+
+```text
+GET /api/workspaces/:workspaceId/features?title=<query>&status=<csv>&sort=title_asc&page=1&limit=20
+```
+
+Workspace task list/search:
+
+```text
+GET /api/workspaces/:workspaceId/tasks?task_id=<taskNameQuery>&title=<titleQuery>&status=<csv>&repo=<repo>&sort=task_id_asc&page=1&limit=20
+```
+
+Feature-scoped task list:
+
+```text
+GET /api/workspaces/:workspaceId/features/:featureId/tasks?status=ready&sort=task_id_asc&page=1&limit=20
+```
+
+Status filtering is exact string matching. The frontend can pass common statuses such as `todo`, `ready`, `in_progress`, `in_review`, `blocked`, `done`, and any additional visible workspace status.
+
+Invalid pagination or sort values return `VALIDATION_INVALID_QUERY`; the UI should show an inline filter error or reset invalid controls.
+
+### Shared DTOs
+
+The frontend should define TypeScript types that match the backend response names. These are the minimum fields the UI depends on:
+
+```ts
+type SourceState = {
+  stale: boolean;
+  last_synced_at?: string;
+  error_code?: string;
+};
+
+type WorkspaceSummary = {
+  id: string;
+  name: string;
+  slug: string;
+  repo_url: string;
+  source_state: SourceState;
+  updated_at: string;
+};
+
+type WorkspaceDetail = WorkspaceSummary & {
+  features: FeatureSummary[];
+  tasks: TaskSummary[];
+};
+
+type FeatureSummary = {
+  id: string;
+  feature_id: string;
+  feature_name: string;
+  title: string;
+  status: string;
+  current_stage: string;
+  stages?: Array<{ id: string; status: string }>;
+  updated_at: string;
+  task_counts: TaskCounts;
+};
+
+type TaskSummary = {
+  id: string;
+  task_id: string;
+  task_name: string;
+  feature_id: string;
+  feature_name: string;
+  title: string;
+  status: string;
+  repo: string;
+  branch: string;
+  is_blocked: boolean;
+  pr: PullRequestRef | null;
+  workspace_pr: PullRequestRef | null;
+};
+```
+
+Detail payload requirements:
+
+- `FeatureDetail` includes `workspace_id`, `documents[]`, `tasks[]`, `activity[]`, `task_counts`, and `source_state`.
+- `TaskDetail` includes `workspace_id`, `depends_on`, `execution`, `pr_refs[]`, and `activity[]`.
+- `ActivityEvent` includes `action`, `scope`, `actor`, `occurred_at`, `note`, `feature_id`, and `task_id`.
+
+### Workspace Shell State
+
+The workspace shell owns UI state only:
+
+| State | Source | Purpose |
+|---|---|---|
+| Saved workspace list | `GET /api/workspaces` | Workspace switcher and first load. |
+| Active workspace detail | `GET /api/workspaces/:workspaceId`, import, or sync response | Board, task list, feature list, source state. |
+| Active surface | UI state | `board`, `task`, or `feature`. |
+| Open work item tabs | UI state keyed by `workspaceId` | Persistent task and feature sessions. |
+| Active task detail | Task detail route | Quick task view and task tab. |
+| Active feature detail | Feature detail route | Quick feature view and feature tab. |
+| Search/filter params | UI state serialized to `URLSearchParams` | List refreshes. |
+
+Switching workspace clears or hides tabs from the previous workspace. If tabs are cached by workspace, only tabs for the active workspace may be visible.
+
+### Use-Case Flows
+
+#### First load and workspace switcher
+
+1. Load `GET /api/workspaces`.
+2. If the response is empty, show the no-workspace empty state and import action.
+3. If workspaces exist, select the current or first workspace and load `GET /api/workspaces/:workspaceId`.
+4. Filter the loaded workspace summaries locally in the switcher.
+5. Selecting another workspace loads its detail and returns to the board.
+
+#### Import workspace
+
+1. Modal collects `repo_url`, optional `default_branch`, and optional `name`.
+2. Submit calls `POST /api/workspaces/import`.
+3. On `200 OK`, store the returned `WorkspaceDetail`, update saved workspaces if needed, close the modal, and navigate to the workspace board.
+4. On validation, GitHub, adapter, or database errors, keep the modal open and render the structured error.
+
+#### Workspace dashboard
+
+`GET /api/workspaces/:workspaceId` drives the board:
+
+- `features[]` powers Feature Mode and progress badges.
+- `tasks[]` powers Task Mode and sidebar task lists.
+- `source_state` powers freshness warnings.
+- `task_counts` powers feature progress summaries.
+
+#### Task detail
+
+Generic task drawer and task tab use:
+
+```text
+GET /api/workspaces/:workspaceId/tasks/:taskId
+```
+
+When the UI is already inside a feature, task drilldown can use:
+
+```text
+GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId
+```
+
+#### Feature detail
+
+Feature tab uses:
+
+```text
+GET /api/workspaces/:workspaceId/features/:featureId
+```
+
+Feature task filtering inside the tab uses the feature-scoped task list route.
+
+#### Activity timeline
+
+Workspace activity:
+
+```text
+GET /api/workspaces/:workspaceId/activity
+```
+
+Feature activity:
+
+```text
+GET /api/workspaces/:workspaceId/activity?featureId=:featureId
+```
+
+Task activity:
+
+```text
+GET /api/workspaces/:workspaceId/activity?featureId=:featureId&taskId=:taskId
+```
+
+Embedded `activity[]` from detail payloads can power initial render; the endpoint is used when the UI needs a refreshed timeline.
+
+#### Manual sync
+
+1. User triggers refresh.
+2. UI calls `POST /api/workspaces/:workspaceId/sync`.
+3. On `200 OK`, replace active workspace detail with the returned `WorkspaceDetail`.
+4. If `source_state.stale=true`, keep data visible and show a warning using `source_state.error_code`.
+5. If no cached data can be returned, render the structured `ApiError`.
+
+### UI Interaction Rules
+
+Workspace shell:
+
+- Workspace tab returns from task or feature tabs to the current workspace board.
+- Workspace dropdown opens from the workspace tab control.
+- Sidebar is visible on the board only.
+- Task and feature tabs are full work sessions without the board sidebar.
 
 Task entry points:
 
-- Single click opens quick task detail modal/sheet.
-- Double click opens or focuses a Task tab.
-- Right click opens a custom context menu with `New tab`.
+- Single click opens quick task inspection.
+- Double click opens or focuses a task tab.
+- Context menu offers `New tab`.
+- Sidebar task items follow the same behavior as board task cards.
 
 Feature entry points:
 
-- In Task Mode, single click opens quick feature detail. Feature double click does not open a Feature tab.
-- In Feature Mode, single click opens quick feature detail, double click opens/focuses a Feature tab, and right click offers `New tab`.
+- Task Mode single click opens quick feature inspection.
+- Task Mode double click does not open a feature tab.
+- Feature Mode single click opens quick feature inspection.
+- Feature Mode double click opens or focuses a feature tab.
+- Feature Mode context menu offers `New tab`.
 
-Use native `dblclick` for double-click handling. Do not delay single-click behavior to infer double-clicks. If both single and double click occur, double click wins the persistent session behavior and the UI must avoid leaving a confusing modal focus state.
+Use native `dblclick`. Do not delay single-click feedback to infer double-clicks. If double-click opens a persistent tab, close or avoid leaving a conflicting quick view open.
 
-### Task Tab Page
+### Source State And Error Handling
 
-Task tab content is a full work session, not a modal. It includes:
+The UI must keep backend source status visible without blanking usable data:
 
-- Back button.
-- Task title.
-- Copy task id icon with temporary check feedback.
-- Task id badge.
-- Status badge, priority badge if available, and updated time if available.
-- Repository, Branch, Next Action, Executed By, Depends On, Blocked Reason, and Blocked Context.
-- Pull Requests section with Workspace PR and Repository PR cards.
-- Activity Timeline with action, timestamp, actor, and note.
-- Optional Done-state footer actions `Approve Workspace` and `Approve Repo` if those actions are available in the existing product surface.
-
-Task tab data comes from backend task detail payloads. Missing values show `None`, except missing execution owner shows `Unassigned`.
-
-### Feature Tab Page
-
-Feature tab content is also a full work session. It includes:
-
-- Back button.
-- Feature title.
-- Copy feature id icon with temporary check feedback.
-- Feature status pill.
-- Current stage pill.
-- Modified time.
-- Short active-view summary.
-- View tabs: `Product Spec`, `Technical Design`, `Tasks`, `Logs`.
-
-Product Spec and Technical Design render backend-provided markdown as readable UI similar to GitHub markdown preview. Tasks view renders backend task summaries. Logs view renders backend activity events and uses empty state `No feature logs are available.`
+- `source_state.stale=false`: normal fresh state.
+- `source_state.stale=true`: warning banner while data stays visible.
+- `source_state.error_code`: compact source warning.
+- `ApiError.retryable=true`: show retry affordance where repeating the request is safe.
+- `VALIDATION_MISSING_INPUT` and `VALIDATION_INVALID_URL`: stay inside the import modal and mark the relevant field.
+- `VALIDATION_INVALID_QUERY`: show filter error or reset invalid controls.
+- Empty arrays are successful responses and render empty states.
 
 ## 5. Dependency Analysis
 
-Internal dependencies:
+### Internal dependencies
 
-- Backend DTO and adapter contracts must exist before frontend API client work can be final.
-- GitHub adapter and database adapter must exist before backend import/sync can be fully validated.
-- Backend workspace detail route must exist before the frontend board can remove fixture/source parsing assumptions.
-- Task and Feature tab pages depend on backend task/feature detail APIs.
-- Source stale/error state must be represented in backend responses before UI can show correct fallback states.
+- T1 is the only wave 1 task. It owns API client, DTOs, error parsing, and query-param helpers.
+- T2 depends on T1. It owns saved workspace list, workspace detail bootstrap, switcher, import modal, and workspace switching.
+- T3 depends on T1 and T2. It owns feature/task search, filters, manual sync, stale-source UX, empty states, and retry affordances.
+- T4 depends on T1, T2, and T3. It owns task quick views, workspace-scoped task drawer, and task tab.
+- T5 depends on T1, T2, and T3. It owns Feature Mode, feature tab, and feature-scoped task drilldown.
+- T6 depends on T4 and T5. It owns activity timelines, document rendering, and copy affordances across task and feature tabs.
+- T7 depends on T1 through T6. It owns browser QA, regression coverage, and final fixes.
 
-External dependencies:
+### External dependencies
 
-- `workflow-backend` implements adapters, source service, API routes, cache reads/writes, and backend tests.
-- `digital-factory-ui` implements workspace shell, API client, tab/session state, views, interactions, and browser QA.
-- GitHub API/network availability may affect import/sync tests.
-- Database availability and schema/storage shape may affect saved workspace tests.
+- `workflow-backend` `api-service` must be reachable from `digital-factory-ui` using the configured API base URL.
+- The backend route set must match the documented contract, including `GET /api/workspaces/:workspaceId/tasks/:taskId`.
+- Test fixtures or mocks must match real backend DTOs exactly when the backend is not running locally.
+- Browser QA needs a workspace with representative features, tasks, documents, activity, stale state, and structured errors.
 
-Blocking decisions:
+### Blocking decisions
 
-- Confirm whether GitHub PAT is transient-only for import/sync or whether an existing secure backend credential pattern should be reused.
-- Product must approve whether Done-state footer actions `Approve Workspace` and `Approve Repo` are active buttons or read-only placeholders if the current UI does not already support those actions.
+- **Backend success status for import**: resolved. Frontend treats `200 OK` with `WorkspaceDetail` as success.
+- **Route identifiers**: resolved. Use UUID route ids from `workspaceId`, `feature_id`, and `task_id`; use `feature_name` and `task_name` only for display.
+- **Frontend durable source**: resolved. Backend payloads are the source of truth; local tab state is view/session state only.
 
-Vendor/tooling choices:
+### Configuration dependencies
 
-- Use existing React/TypeScript stack in `digital-factory-ui`.
-- Implement backend work in `workflow-backend` using NestJS, TypeScript, Prisma, and Supabase Postgres.
-- Use Prisma Migrate for the database schema in the Database Schema Design section.
-- Keep physical database objects lowercase `snake_case`; use Prisma `@map` and `@@map` where TypeScript model names differ.
-- Use an existing YAML parser already present in backend if available; otherwise add one in the NestJS task that owns GitHub parsing.
-- Use existing Markdown rendering approach in the frontend if one exists; otherwise add a small Markdown renderer in the implementation task that owns Feature tab source views.
+- `VITE_API_BASE_URL` or the existing frontend equivalent for `workflow-backend`.
+- Optional mocked API layer for unit/component tests.
 
-Configuration dependencies:
+### Release dependencies
 
-- Backend needs the GitHub access mechanism required by import/sync.
-- Backend needs Supabase Postgres configuration for saved workspace cache: `DATABASE_URL` for runtime and `DIRECT_DATABASE_URL` for Prisma migrations when Supabase provides both pooled and direct URLs.
-- Frontend should only need backend base URL/config already used by the app.
-
-Release dependencies:
-
-- Backend routes and persistence must be deployed or runnable before frontend end-to-end QA.
-- Database migration or storage initialization may be required if saved workspace cache does not exist.
+- `workflow-backend` must be deployed or running locally before full integration QA.
+- Frontend can begin against mocks after T1, but final browser QA requires live backend-compatible responses.
 
 ## 6. Parallelization / Blocking Analysis
 
-External decisions:
+```text
+D1: workflow-backend API availability
+  └── Use contract-faithful mocks for unit/component work; unblock final browser QA by running or deploying api-service.
 
-- D1: Token handling policy may affect T2/T4 but should not block local adapter contract work.
+T1: Frontend API client and shared workflow DTOs
+  └── Can begin now - no blockers
+  │
+  T2: Workspace switcher, import modal, and board bootstrap integration
+    └── BLOCKED on T1 (typed API client, DTOs, and request/error boundary must exist)
+    │
+    T3: Workspace search, filters, refresh, and stale-source UX
+      └── BLOCKED on T1 (query-param helpers and shared error/source-state types must exist)
+      └── BLOCKED on T2 (active workspace detail and shell state must exist before list refresh and sync UX)
+      │
+      T4: Task quick views, workspace-scoped task drawer, and task tab
+      T5: Feature mode, feature tab, and feature-scoped task drilldown
+        └── T4 and T5 run in parallel
+        └── BLOCKED on T1 (TaskSummary, TaskDetail, FeatureSummary, and FeatureDetail types must exist)
+        └── BLOCKED on T2 (workspace shell, active workspace, and tab-session state must exist)
+        └── BLOCKED on T3 (list refresh, stale/error state, and search/filter behavior must exist)
+        │
+        T6: Activity timeline, document rendering, and copy affordances
+          └── BLOCKED on T4 (task detail surface must exist for task activity and task copy behavior)
+          └── BLOCKED on T5 (feature detail surface must exist for documents, logs, and feature copy behavior)
+          │
+          T7: End-to-end browser QA and regression coverage
+            └── BLOCKED on T1 (API client contract must be stable to mock and assert)
+            └── BLOCKED on T2 (workspace list, switcher, import, and board bootstrap must work)
+            └── BLOCKED on T3 (sync, stale-source, empty-state, and retry flows must work)
+            └── BLOCKED on T4 (task behavior must work)
+            └── BLOCKED on T5 (feature behavior must work)
+            └── BLOCKED on T6 (activity, document, and copy behavior must work)
+            └── BLOCKED on D1 (browser QA needs live or contract-faithful workflow-backend responses)
+```
 
-T1: Source adapter contract and canonical DTOs
-  -> Can begin now.
-
-T2: GitHub workspace adapter and import/sync parser
-  -> Blocked on T1 DTO shape.
-
-T3: Database workspace adapter and cache persistence
-  -> Blocked on T1 DTO shape.
-
-T4: Backend workspace API routes and source error contract
-  -> Blocked on T2 and T3 for full behavior.
-
-T5: Frontend backend API client and workspace shell
-  -> Can start against T1/T4 draft contract, final integration blocked on T4.
-
-T6: Task and Feature tabs from backend detail payloads
-  -> Blocked on T5 shell and T4 detail endpoints.
-
-T7: Refresh, stale data, and source-state UX
-  -> Blocked on T4 source-state responses and T5/T6 UI surfaces.
-
-T8: Integration tests and browser QA
-  -> Blocked on T4 through T7.
+T2 and T3 are sequenced because refresh/search UX needs the active workspace shell from T2. T4 and T5 can run in parallel after T3 because task surfaces and feature surfaces have separate UI ownership. T6 is intentionally later because activity and document rendering spans both surfaces. T7 owns final integrated verification.
 
 ## 7. Repository Impact
 
-Affected repos:
+| Repo | Changes |
+|---|---|
+| `digital-factory-ui` | API client, DTOs, query helpers, workspace shell, workspace switcher, import modal, board backend loading, task/feature search, sync/stale UX, task quick view, task tab, feature quick view, feature tab, activity timeline, document rendering, tests, and browser QA. |
+| `management-repo` | Planning artifacts only under `docs/features/workspace-tabs-data-flow/`. |
 
-- `workflow-backend`: NestJS backend modules, source adapter contracts, GitHub adapter, Prisma/Supabase database adapter/cache, workspace API routes, sync/import behavior, backend tests, and Prisma migrations.
-- `digital-factory-ui`: frontend API client, workspace shell, dropdown/import modal, board data loading, task and feature tabs, source-state UI, and browser QA.
-- `management-repo`: planning artifacts under `docs/features/workspace-tabs-data-flow/`.
+Dependency repo:
 
-Unaffected repos:
+| Repo | Role |
+|---|---|
+| `workflow-backend` | Provides the existing frontend API contract. No implementation changes are expected from this feature unless live behavior differs from the documented contract. |
+| `workspace-github-adapter` | Upstream sync/write-side dependency behind `workflow-backend`. The frontend does not call it directly. |
 
-- `workflow`: no shared workflow-skill changes.
-- `rag-service`: no implementation impact.
-- `git-nexus`: no implementation impact.
+Unaffected repos: `workflow`, `rag-service`, and `git-nexus`.
 
 ## 8. Validation and Release Impact
 
-Testing expectations:
+### Testing expectations
 
-- Backend unit tests for GitHub parser/adapter mapping, database adapter mapping, source service fallback behavior, and route error mapping.
-- Backend integration tests for workspace import, saved workspace list/detail, sync success, and sync failure with stale cache fallback.
-- Frontend unit/component tests for API client states, workspace dropdown/import modal, tab creation/focus/close, context menu behavior, stage popover, view switching, source-state banners, and markdown rendering.
-- Browser QA for desktop flows: workspace list, import, sync, workspace switch, task/feature single/double/right click, Task tab, Feature tab, stale/error states, and workspace switch cleanup.
-- Responsive sanity check for tab header overflow and source-state notices.
+- **Unit tests**: API request construction, response parsing, structured `ApiError` handling, query-param serialization, identifier helpers.
+- **Component tests**: workspace switcher, import modal, workspace board bootstrap, search/filter controls, manual sync, stale-source banner, retryable errors, empty states.
+- **Task surface tests**: quick task inspection, task tab open/focus/close, workspace-scoped task detail loading, metadata fallbacks, PR refs, activity timeline, copy feedback, and Back behavior.
+- **Feature surface tests**: Feature Mode gating, feature tab open/focus/close, feature detail loading, document views, feature task list, feature-scoped task drilldown, logs, copy feedback, and Back behavior.
+- **Browser QA**: saved workspace list, import success/failure, sync success/stale failure, workspace switch cleanup, task single/double/right click, feature single/double/right click, task tab, feature tab, source-state notices, and responsive tab overflow.
 
-Migration/config impact:
+### Migration / config impact
 
-- Database migration or storage initialization may be needed for saved workspace summaries and normalized workspace snapshots.
-- Backend GitHub access config may be needed for private repository import/sync.
-- Frontend should not store GitHub source data as the durable source of truth.
+- No database migration in this feature.
+- No backend route implementation in this feature.
+- Frontend runtime config must point to `workflow-backend` through `VITE_API_BASE_URL` or the repo's existing equivalent.
 
-Rollout concerns:
+### Rollout concerns
 
-- Preserve existing board behavior when no work item tabs are open.
-- Ensure workspace switching clears old workspace tabs from the active UI.
-- Ensure stale cached data is visibly marked.
-- Ensure source errors do not blank an otherwise usable cached workspace.
-- Ensure no agent, chat, model, composer, or conversation controls are present in this feature.
+- Keep existing board behavior stable when no work item tabs are open.
+- Ensure stale cached data is visibly marked and not blanked.
+- Ensure workspace switching does not leak tabs or selected detail state across workspaces.
+- Ensure no direct GitHub workspace-data reads remain in browser flows.
+- Ensure no agent, chat, model selector, composer, or conversation controls are introduced by this feature.
 
-Backward compatibility:
+### Backward compatibility
 
-- Existing imported workspace data should be migrated or adapted into the new backend DTO shape when possible.
-- Existing task/feature data shape should be adapted through backend mappers instead of hardcoding frontend mock fields.
-
-Handoff implications:
-
-- After implementation tasks finish, handoff should include backend route test evidence, database/cache verification, browser QA evidence, and screenshots for the reference surfaces.
+- Existing UI paths can coexist during rollout only behind controlled feature work. The final feature behavior must read workspace data through `workflow-backend`.
+- Existing task/feature display conventions should be adapted through frontend view models, not by changing backend DTO semantics.

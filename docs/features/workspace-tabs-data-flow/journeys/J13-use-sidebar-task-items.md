@@ -1,4 +1,4 @@
-# J13 — Use task items from the sidebar
+# J13 - Use task items from the sidebar
 
 1. The user is on the workspace board where the sidebar is visible.
 2. The sidebar shows task groups from backend workspace data.
