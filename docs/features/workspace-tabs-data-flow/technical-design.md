@@ -26,7 +26,7 @@ Target:
   digital-factory-ui
     -> workflow-backend api-service
       -> /api/workspaces...
-        -> normalized workspace, feature, task, activity,
+        -> normalized workspace, feature, task,
            source-state, and structured error payloads
 ```
 
@@ -42,8 +42,8 @@ Key constraints:
 
 Two things must be built in the frontend:
 
-1. **Backend API integration**: replace direct GitHub/local parsing paths with a typed `workflow-backend` client for workspace list, import, workspace detail, sync, feature search/detail, task search/detail, and activity routes.
-2. **Workspace tab data flow**: use those backend payloads to drive the workspace board, workspace switcher, import modal, task quick view, task tab, feature quick view, feature tab, activity timeline, search/filter controls, and stale/error states.
+1. **Backend API integration**: replace direct GitHub/local parsing paths with a typed `workflow-backend` client for workspace list, import, workspace detail, sync, feature search/detail, and task search/detail routes.
+2. **Workspace tab data flow**: use those backend payloads to drive the workspace board, workspace switcher, import modal, task quick view, task tab, feature quick view, feature tab, Kanban board polling, sidebar active-task polling, search/filter controls, and stale/error states.
 
 The UI always reads from the backend API. It does not need to know whether the underlying data came from a fresh sync or a cached database projection. That distinction belongs to `source_state` and structured `ApiError` payloads, not to separate frontend code paths.
 
@@ -103,7 +103,7 @@ Cons:
 
 Implementation impact:
 
-- Adds a focused client/types layer first, then migrates workspace, task, feature, activity, sync, and import surfaces route by route.
+- Adds a focused client/types layer first, then migrates workspace, task, feature, sync, import, board polling, and sidebar polling surfaces route by route.
 - Lets tests mock the documented backend DTOs while browser QA runs against a live `workflow-backend` instance.
 
 Dependency impact:
@@ -156,9 +156,10 @@ Not chosen for this feature. A small query cache from the existing frontend stac
 │   ├─ Workspace board          -> GET /api/workspaces/:workspaceId
 │   ├─ Feature Mode/search      -> GET /api/workspaces/:workspaceId/features
 │   ├─ Task Mode/search         -> GET /api/workspaces/:workspaceId/tasks
+│   ├─ Sidebar active tasks     -> GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready
 │   ├─ Task quick view/tab      -> GET /api/workspaces/:workspaceId/tasks/:taskId
 │   ├─ Feature tab              -> GET /api/workspaces/:workspaceId/features/:featureId
-│   └─ Activity timelines       -> GET /api/workspaces/:workspaceId/activity
+│   └─ Board polling            -> GET /api/workspaces/:workspaceId
 │                                                         │
 │ Owns: UI state, open tabs, search params, loading,      │
 │       empty, stale, and error presentation              │
@@ -168,8 +169,8 @@ Not chosen for this feature. A small query cache from the existing frontend stac
 │ workflow-backend api-service                            │
 │                                                         │
 │ Serves normalized WorkspaceDetail, FeatureDetail,       │
-│ TaskDetail, ActivityEvent, SourceState, and ApiError    │
-│ payloads from the backend data layer.                   │
+│ TaskDetail, SourceState, and ApiError payloads from the │
+│ backend data layer.                                     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -222,7 +223,6 @@ syncWorkspace(workspaceId: string): Promise<WorkspaceDetail>
 getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail>
 searchFeatureTasks(workspaceId: string, featureId: string, params?: URLSearchParams): Promise<TaskSummary[]>
 getFeatureTask(workspaceId: string, featureId: string, taskId: string): Promise<TaskDetail>
-listActivity(workspaceId: string, params?: URLSearchParams): Promise<ActivityEvent[]>
 ```
 
 Client rules:
@@ -245,12 +245,12 @@ The frontend consumes these routes exactly:
 | Workspace dashboard | `GET /api/workspaces/:workspaceId` | `WorkspaceDetail` |
 | Feature list/search | `GET /api/workspaces/:workspaceId/features` | `FeatureSummary[]` |
 | Workspace task list/search | `GET /api/workspaces/:workspaceId/tasks` | `TaskSummary[]` |
+| Board sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | `TaskSummary[]` |
 | Workspace-scoped task detail | `GET /api/workspaces/:workspaceId/tasks/:taskId` | `TaskDetail` |
 | Manual sync | `POST /api/workspaces/:workspaceId/sync` | `WorkspaceDetail` |
 | Feature detail | `GET /api/workspaces/:workspaceId/features/:featureId` | `FeatureDetail` |
 | Feature-scoped task list | `GET /api/workspaces/:workspaceId/features/:featureId/tasks` | `TaskSummary[]` |
 | Feature-scoped task detail | `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId` | `TaskDetail` |
-| Activity timeline | `GET /api/workspaces/:workspaceId/activity` | `ActivityEvent[]` |
 
 `POST /api/workspaces/import` succeeds with `200 OK` and a persisted `WorkspaceDetail`. The frontend must not treat `202 Accepted` as the success case for this route.
 
@@ -280,11 +280,12 @@ Frontend API use cases:
 - Workspace dashboard: `GET /api/workspaces/:workspaceId` returns workspace freshness plus feature and task summaries in one response.
 - Feature list: `GET /api/workspaces/:workspaceId/features` supports `title`, `status`, `sort`, `page`, and `limit`.
 - Workspace task list: `GET /api/workspaces/:workspaceId/tasks` supports `task_id`, `title`, `status`, `repo`, `sort`, `page`, and `limit`.
+- Board sidebar active task list: `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` is a separate sidebar query. Do not derive the sidebar from workspace detail, task detail, feature detail, or another list response.
 - Workspace-scoped task detail: `GET /api/workspaces/:workspaceId/tasks/:taskId` is used when the UI knows a workspace and task UUID but not the feature UUID.
 - Manual sync: `POST /api/workspaces/:workspaceId/sync` returns `WorkspaceDetail`; if sync fails but cached data exists, a `200 OK` response can still contain `source_state.stale=true`.
-- Feature detail: `GET /api/workspaces/:workspaceId/features/:featureId` returns documents, feature-scoped tasks, activity, task counts, and source freshness.
+- Feature detail: `GET /api/workspaces/:workspaceId/features/:featureId` returns documents, feature-scoped tasks, task counts, and source freshness.
 - Feature-scoped task list/detail: feature pages use `/features/:featureId/tasks` and `/features/:featureId/tasks/:taskId` when the feature UUID is already known.
-- Activity: `GET /api/workspaces/:workspaceId/activity` optionally filters by `featureId` and `taskId`.
+- Deferred: `GET /api/workspaces/:workspaceId/activity` exists in the backend contract but is not integrated in this feature phase.
 
 ### Identifier Contract
 
@@ -312,6 +313,14 @@ Workspace task list/search:
 ```text
 GET /api/workspaces/:workspaceId/tasks?task_id=<taskNameQuery>&title=<titleQuery>&status=<csv>&repo=<repo>&sort=task_id_asc&page=1&limit=20
 ```
+
+Board sidebar active task list:
+
+```text
+GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50
+```
+
+The board sidebar owns this request independently. It is not hydrated from `WorkspaceDetail.tasks`, task-tab detail payloads, feature-tab payloads, or Task Mode search results.
 
 Feature-scoped task list:
 
@@ -378,9 +387,9 @@ type TaskSummary = {
 
 Detail payload requirements:
 
-- `FeatureDetail` includes `workspace_id`, `documents[]`, `tasks[]`, `activity[]`, `task_counts`, and `source_state`.
-- `TaskDetail` includes `workspace_id`, `depends_on`, `execution`, `pr_refs[]`, and `activity[]`.
-- `ActivityEvent` includes `action`, `scope`, `actor`, `occurred_at`, `note`, `feature_id`, and `task_id`.
+- `FeatureDetail` includes `workspace_id`, `documents[]`, `tasks[]`, `task_counts`, and `source_state`.
+- `TaskDetail` includes `workspace_id`, `depends_on`, `execution`, and `pr_refs[]`.
+- Backend payloads may include activity fields, but the activity timeline endpoint and activity timeline rendering are deferred and not required for this feature phase.
 
 ### Workspace Shell State
 
@@ -389,7 +398,9 @@ The workspace shell owns UI state only:
 | State | Source | Purpose |
 |---|---|---|
 | Saved workspace list | `GET /api/workspaces` | Workspace switcher and first load. |
-| Active workspace detail | `GET /api/workspaces/:workspaceId`, import, or sync response | Board, task list, feature list, source state. |
+| Active workspace detail | `GET /api/workspaces/:workspaceId`, import, or sync response | Board baseline, feature list, Task Mode defaults, source state. |
+| Sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | Board sidebar only; independent from board/detail/tab data. |
+| Kanban board polling | `GET /api/workspaces/:workspaceId` | Refresh board data while the board is active. |
 | Active surface | UI state | `board`, `task`, or `feature`. |
 | Open work item tabs | UI state keyed by `workspaceId` | Persistent task and feature sessions. |
 | Active task detail | Task detail route | Quick task view and task tab. |
@@ -420,9 +431,35 @@ Switching workspace clears or hides tabs from the previous workspace. If tabs ar
 `GET /api/workspaces/:workspaceId` drives the board:
 
 - `features[]` powers Feature Mode and progress badges.
-- `tasks[]` powers Task Mode and sidebar task lists.
+- `tasks[]` powers Task Mode defaults.
 - `source_state` powers freshness warnings.
 - `task_counts` powers feature progress summaries.
+
+The board sidebar does not use the dashboard payload as its source. It refreshes independently through:
+
+```text
+GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50
+```
+
+Only active work statuses appear in the sidebar: `in_progress`, `in_review`, and `ready`.
+
+#### Board and sidebar polling
+
+Kanban board polling is still required in this phase:
+
+```text
+GET /api/workspaces/:workspaceId
+```
+
+The board polling loop runs only while the workspace board is active. It refreshes the board baseline without replacing task or feature tab session state.
+
+Sidebar task polling is also required and uses its own request:
+
+```text
+GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50
+```
+
+The sidebar polling loop runs only while the board/sidebar is visible. It is independent from Kanban board polling, Task Mode search polling, task detail fetches, and feature detail fetches.
 
 #### Task detail
 
@@ -448,27 +485,15 @@ GET /api/workspaces/:workspaceId/features/:featureId
 
 Feature task filtering inside the tab uses the feature-scoped task list route.
 
-#### Activity timeline
+#### Deferred activity timeline
 
-Workspace activity:
+The backend activity route is not integrated in this phase:
 
 ```text
 GET /api/workspaces/:workspaceId/activity
 ```
 
-Feature activity:
-
-```text
-GET /api/workspaces/:workspaceId/activity?featureId=:featureId
-```
-
-Task activity:
-
-```text
-GET /api/workspaces/:workspaceId/activity?featureId=:featureId&taskId=:taskId
-```
-
-Embedded `activity[]` from detail payloads can power initial render; the endpoint is used when the UI needs a refreshed timeline.
+Do not add the activity timeline client method, polling, tab panel, or tests in this feature. Activity/log surfaces can be planned in a later feature.
 
 #### Manual sync
 
@@ -485,6 +510,7 @@ Workspace shell:
 - Workspace tab returns from task or feature tabs to the current workspace board.
 - Workspace dropdown opens from the workspace tab control.
 - Sidebar is visible on the board only.
+- Sidebar data is fetched with the independent active-task query and must not be coupled to Task Mode search state, task detail state, or feature detail state.
 - Task and feature tabs are full work sessions without the board sidebar.
 
 Task entry points:
@@ -492,7 +518,7 @@ Task entry points:
 - Single click opens quick task inspection.
 - Double click opens or focuses a task tab.
 - Context menu offers `New tab`.
-- Sidebar task items follow the same behavior as board task cards.
+- Sidebar task items come from the independent active-task query and follow the same behavior as board task cards.
 
 Feature entry points:
 
@@ -522,10 +548,10 @@ The UI must keep backend source status visible without blanking usable data:
 
 - T1 is the only wave 1 task. It owns API client, DTOs, error parsing, and query-param helpers.
 - T2 depends on T1. It owns saved workspace list, workspace detail bootstrap, switcher, import modal, and workspace switching.
-- T3 depends on T1 and T2. It owns feature/task search, filters, manual sync, stale-source UX, empty states, and retry affordances.
+- T3 depends on T1 and T2. It owns feature/task search, filters, Kanban board polling, sidebar active-task polling, manual sync, stale-source UX, empty states, and retry affordances.
 - T4 depends on T1, T2, and T3. It owns task quick views, workspace-scoped task drawer, and task tab.
 - T5 depends on T1, T2, and T3. It owns Feature Mode, feature tab, and feature-scoped task drilldown.
-- T6 depends on T4 and T5. It owns activity timelines, document rendering, and copy affordances across task and feature tabs.
+- T6 depends on T4 and T5. It owns document rendering, source-state presentation, and copy affordances across task and feature tabs.
 - T7 depends on T1 through T6. It owns browser QA, regression coverage, and final fixes.
 
 ### External dependencies
@@ -533,7 +559,7 @@ The UI must keep backend source status visible without blanking usable data:
 - `workflow-backend` `api-service` must be reachable from `digital-factory-ui` using the configured API base URL.
 - The backend route set must match the documented contract, including `GET /api/workspaces/:workspaceId/tasks/:taskId`.
 - Test fixtures or mocks must match real backend DTOs exactly when the backend is not running locally.
-- Browser QA needs a workspace with representative features, tasks, documents, activity, stale state, and structured errors.
+- Browser QA needs a workspace with representative features, tasks, documents, stale state, structured errors, and active tasks for sidebar polling.
 
 ### Blocking decisions
 
@@ -574,9 +600,9 @@ T1: Frontend API client and shared workflow DTOs
         └── BLOCKED on T2 (workspace shell, active workspace, and tab-session state must exist)
         └── BLOCKED on T3 (list refresh, stale/error state, and search/filter behavior must exist)
         │
-        T6: Activity timeline, document rendering, and copy affordances
-          └── BLOCKED on T4 (task detail surface must exist for task activity and task copy behavior)
-          └── BLOCKED on T5 (feature detail surface must exist for documents, logs, and feature copy behavior)
+        T6: Document rendering, source state, and copy affordances
+          └── BLOCKED on T4 (task detail surface must exist for task copy behavior)
+          └── BLOCKED on T5 (feature detail surface must exist for documents and feature copy behavior)
           │
           T7: End-to-end browser QA and regression coverage
             └── BLOCKED on T1 (API client contract must be stable to mock and assert)
@@ -584,17 +610,17 @@ T1: Frontend API client and shared workflow DTOs
             └── BLOCKED on T3 (sync, stale-source, empty-state, and retry flows must work)
             └── BLOCKED on T4 (task behavior must work)
             └── BLOCKED on T5 (feature behavior must work)
-            └── BLOCKED on T6 (activity, document, and copy behavior must work)
+            └── BLOCKED on T6 (document, source-state, and copy behavior must work)
             └── BLOCKED on D1 (browser QA needs live or contract-faithful workflow-backend responses)
 ```
 
-T2 and T3 are sequenced because refresh/search UX needs the active workspace shell from T2. T4 and T5 can run in parallel after T3 because task surfaces and feature surfaces have separate UI ownership. T6 is intentionally later because activity and document rendering spans both surfaces. T7 owns final integrated verification.
+T2 and T3 are sequenced because refresh/search/polling UX needs the active workspace shell from T2. T4 and T5 can run in parallel after T3 because task surfaces and feature surfaces have separate UI ownership. T6 is intentionally later because document rendering, source-state display, and copy behavior span both surfaces. T7 owns final integrated verification.
 
 ## 7. Repository Impact
 
 | Repo | Changes |
 |---|---|
-| `digital-factory-ui` | API client, DTOs, query helpers, workspace shell, workspace switcher, import modal, board backend loading, task/feature search, sync/stale UX, task quick view, task tab, feature quick view, feature tab, activity timeline, document rendering, tests, and browser QA. |
+| `digital-factory-ui` | API client, DTOs, query helpers, workspace shell, workspace switcher, import modal, board backend loading, Kanban board polling, sidebar active-task polling, task/feature search, sync/stale UX, task quick view, task tab, feature quick view, feature tab, document rendering, tests, and browser QA. |
 | `management-repo` | Planning artifacts only under `docs/features/workspace-tabs-data-flow/`. |
 
 Dependency repo:
@@ -611,10 +637,10 @@ Unaffected repos: `workflow`, `rag-service`, and `git-nexus`.
 ### Testing expectations
 
 - **Unit tests**: API request construction, response parsing, structured `ApiError` handling, query-param serialization, identifier helpers.
-- **Component tests**: workspace switcher, import modal, workspace board bootstrap, search/filter controls, manual sync, stale-source banner, retryable errors, empty states.
-- **Task surface tests**: quick task inspection, task tab open/focus/close, workspace-scoped task detail loading, metadata fallbacks, PR refs, activity timeline, copy feedback, and Back behavior.
-- **Feature surface tests**: Feature Mode gating, feature tab open/focus/close, feature detail loading, document views, feature task list, feature-scoped task drilldown, logs, copy feedback, and Back behavior.
-- **Browser QA**: saved workspace list, import success/failure, sync success/stale failure, workspace switch cleanup, task single/double/right click, feature single/double/right click, task tab, feature tab, source-state notices, and responsive tab overflow.
+- **Component tests**: workspace switcher, import modal, workspace board bootstrap, Kanban board polling, sidebar active-task polling, search/filter controls, manual sync, stale-source banner, retryable errors, empty states.
+- **Task surface tests**: quick task inspection, task tab open/focus/close, workspace-scoped task detail loading, metadata fallbacks, PR refs, copy feedback, and Back behavior.
+- **Feature surface tests**: Feature Mode gating, feature tab open/focus/close, feature detail loading, document views, feature task list, feature-scoped task drilldown, copy feedback, and Back behavior.
+- **Browser QA**: saved workspace list, import success/failure, sync success/stale failure, workspace switch cleanup, Kanban board polling, sidebar active-task polling, task single/double/right click, feature single/double/right click, task tab, feature tab, source-state notices, and responsive tab overflow.
 
 ### Migration / config impact
 

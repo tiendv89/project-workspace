@@ -51,6 +51,8 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ![Feature tab - logs](<references/feature tab - logs.png>)
 
+This reference remains for later activity/log work. Activity timelines and the `/api/workspaces/:workspaceId/activity` route are deferred and not integrated in this feature phase.
+
 ### Task tab
 
 Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=110-2689&m=dev
@@ -65,9 +67,9 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ## Problem
 
-The dashboard needs persistent workspace, feature, and task navigation without parsing workflow repository files in the browser. The backend now exposes saved workspaces, workspace detail, import, sync, feature detail, task detail, search/filter, and activity routes. The frontend must use that contract directly so the UI displays the same normalized workspace state that `workflow-backend` serves.
+The dashboard needs persistent workspace, feature, and task navigation without parsing workflow repository files in the browser. The backend now exposes saved workspaces, workspace detail, import, sync, feature detail, task detail, and search/filter routes. The frontend must use that contract directly so the UI displays the same normalized workspace state that `workflow-backend` serves.
 
-Users need to switch workspaces, import repositories, refresh source data, open persistent task and feature tabs, and inspect activity while preserving context. These flows must work from backend payloads, including stale-cache and structured-error responses, instead of from frontend-only fixtures, local storage, direct GitHub reads, or raw YAML parsing.
+Users need to switch workspaces, import repositories, refresh source data, open persistent task and feature tabs, and keep active board/sidebar data refreshed while preserving context. These flows must work from backend payloads, including stale-cache and structured-error responses, instead of from frontend-only fixtures, local storage, direct GitHub reads, or raw YAML parsing.
 
 ## Goals
 
@@ -75,11 +77,13 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 - Import a workspace with `POST /api/workspaces/import` and navigate to the returned `WorkspaceDetail`.
 - Render the workspace dashboard from `GET /api/workspaces/:workspaceId`.
 - Refresh workspace data with `POST /api/workspaces/:workspaceId/sync`.
+- Poll the Kanban board data from `GET /api/workspaces/:workspaceId` while the board is active.
 - Render workspace feature and task lists through the backend list/search routes.
+- Render the board sidebar from its own active-task query: `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50`.
+- Poll the sidebar active-task query independently from the board/detail payloads.
 - Open quick task detail and task tabs through `GET /api/workspaces/:workspaceId/tasks/:taskId`.
 - Open feature tabs through `GET /api/workspaces/:workspaceId/features/:featureId`.
 - Render feature-scoped tasks and task detail through the feature-scoped task routes where the UI is already inside a feature.
-- Render workspace, feature, and task activity from `GET /api/workspaces/:workspaceId/activity`.
 - Use backend identifier rules consistently:
   - `workspaceId` is a workspace UUID.
   - `featureId` is the public feature UUID from `feature_id`.
@@ -95,6 +99,7 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 - No direct GitHub file fetching or raw YAML/markdown parsing inside frontend UI components.
 - No frontend-only durable source of truth for imported workspace data.
 - No workflow state write-path changes for claims, approvals, branch updates, or task transitions.
+- No activity timeline or `/api/workspaces/:workspaceId/activity` integration in this phase.
 - No agent, chat, model selector, composer, skill mention, image attachment, conversation persistence, or LLM surface.
 - No broad dashboard redesign outside workspace switching, backend-backed board data, task tabs, and feature tabs.
 - No `deployment-checklist.md` at this stage.
@@ -136,18 +141,20 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 - Selecting a workspace loads `GET /api/workspaces/:workspaceId` and renders board data from the returned `WorkspaceDetail`.
 - Workspace import sends `repo_url`, optional `default_branch`, and optional `name` to `POST /api/workspaces/import`; `200 OK` navigates to the returned workspace detail.
 - Manual sync calls `POST /api/workspaces/:workspaceId/sync` and replaces the local workspace cache with the returned `WorkspaceDetail`.
+- Kanban board polling refreshes `GET /api/workspaces/:workspaceId` while the workspace board is active and does not run from task or feature tabs.
 - Sync failure with stale backend data keeps the current workspace visible and clearly marks `source_state.stale=true` and `source_state.error_code`.
 - Feature Mode fetches or refreshes feature data through `GET /api/workspaces/:workspaceId/features` with supported query params.
 - Task Mode fetches or refreshes task data through `GET /api/workspaces/:workspaceId/tasks` with supported query params.
+- The board sidebar fetches and polls active tasks independently through `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50`; it does not derive from workspace detail, Task Mode search, feature detail, or task detail data.
 - Search and filter controls map to backend query params exactly: feature title uses `title`, task name uses `task_id`, task title uses `title`, statuses use comma-separated `status`, and natural task order uses `sort=task_id_asc`.
 - Single-clicking a task or feature opens quick inspection rather than a persistent tab.
 - Double-clicking a task opens or focuses a task tab backed by `TaskDetail`.
 - Double-clicking a feature opens or focuses a feature tab only in Feature Mode and backs it with `FeatureDetail`.
 - Task and feature context menus provide a clear path to open work item tabs where supported.
-- Sidebar task items follow the same task inspection and task tab behavior as board task cards.
+- Sidebar task items follow the same task inspection and task tab behavior as board task cards while using their own active-task API source.
 - Task tabs and feature tabs preserve work sessions, can be activated and closed, and do not show the workspace board sidebar.
-- Task tabs show task identity, status, repository, branch, dependencies, execution metadata, PR refs, and activity from backend data.
-- Feature tabs show feature identity, current stage, source documents, feature-scoped task list, task counts, activity, and source state from backend data.
+- Task tabs show task identity, status, repository, branch, dependencies, execution metadata, and PR refs from backend data.
+- Feature tabs show feature identity, current stage, source documents, feature-scoped task list, task counts, and source state from backend data.
 - Opening a task from a feature tab preserves originating feature context and can use the feature-scoped task detail route.
 - Structured backend errors render source-specific messages and retry affordances based on `retryable`.
 - Empty arrays from backend list/search routes render empty states rather than errors.

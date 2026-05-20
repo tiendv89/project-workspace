@@ -1,5 +1,5 @@
 id: T6
-title: Activity timeline, document rendering, and copy affordances
+title: Document rendering, source state, and copy affordances
 repo: digital-factory-ui
 status: todo
 depends_on:
@@ -18,4 +18,4 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for backend activity timelines, feature document rendering, empty states, source-state display, and copy feedback.
+    note: Task rewritten for feature document rendering, empty states, source-state display, and copy feedback. Activity timeline integration is deferred.

@@ -11,7 +11,7 @@ Feature status reference: `ready_for_implementation`; stage status: `tasks/appro
 | T3 | 2 | Workspace search, filters, refresh, and stale-source UX | [T1, T2] |
 | T4 | 3 | Task quick views, workspace-scoped task drawer, and task tab | [T1, T2, T3] |
 | T5 | 4 | Feature mode, feature tab, and feature-scoped task drilldown | [T1, T2, T3] |
-| T6 | 5 | Activity timeline, document rendering, and copy affordances | [T4, T5] |
+| T6 | 5 | Document rendering, source state, and copy affordances | [T4, T5] |
 | T7 | 6 | End-to-end browser QA and regression coverage | [T1, T2, T3, T4, T5, T6] |
 
 ---
@@ -26,8 +26,8 @@ This task owns the API client, request helper, normalized error type, and the fr
 
 Deliverables:
 
-- Define typed client methods for workspace list, import, detail, sync, feature detail, feature tasks, task detail, workspace tasks, and activity routes.
-- Define shared frontend DTOs for workspace summaries, workspace detail, feature summaries, feature detail, task summaries, task detail, pull request refs, activity events, source state, and error payloads.
+- Define typed client methods for workspace list, import, detail, sync, feature detail, feature tasks, task detail, workspace tasks, Kanban board polling, and sidebar active-task polling.
+- Define shared frontend DTOs for workspace summaries, workspace detail, feature summaries, feature detail, task summaries, task detail, pull request refs, source state, and error payloads.
 - Define `ApiError` parsing and retryability handling.
 - Define backend identifier helpers for `workspaceId`, `featureId`, `taskId`, `feature_name`, and `task_name`.
 - Define query-param helpers for feature/task search and pagination.
@@ -100,6 +100,7 @@ Deliverables:
 
 - Feature search against `GET /api/workspaces/:workspaceId/features`.
 - Workspace task search against `GET /api/workspaces/:workspaceId/tasks`.
+- Sidebar active-task list against `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50`.
 - Search param mapping for `title`, `task_id`, `status`, `repo`, `page`, `limit`, and `sort`.
 - Manual refresh button wired to `POST /api/workspaces/:workspaceId/sync`.
 - Stale-data banner and source-state warning handling.
@@ -115,6 +116,7 @@ Deliverables:
 
 - [ ] Add feature search and filter wiring.
 - [ ] Add workspace task search and filter wiring.
+- [ ] Add the board sidebar active-task query and keep it separate from Task Mode data.
 - [ ] Map UI search controls to backend query params exactly.
 - [ ] Add the manual sync action.
 - [ ] Render stale-data and source-state warnings from backend payloads.
@@ -129,17 +131,17 @@ Deliverables:
 
 ### Description
 
-Build the task experience from backend `TaskSummary`, `TaskDetail`, and activity payloads.
+Build the task experience from backend `TaskSummary` and `TaskDetail` payloads.
 
 This task depends on T1, T2, and T3 because the task surfaces rely on the shared client, workspace shell, and board data.
 
 Deliverables:
 
-- Single-click task quick inspection from board and sidebar rows.
+- Single-click task quick inspection from board and sidebar rows, where sidebar rows come from the independent active-task query.
 - Double-click task tab open/focus behavior.
 - Workspace-scoped task drawer and task tab backed by `GET /api/workspaces/:workspaceId/tasks/:taskId`.
 - Task header with copy-id affordance, status, repo, branch, and updated metadata.
-- Task detail sections for dependencies, execution metadata, PR refs, and activity.
+- Task detail sections for dependencies, execution metadata, and PR refs.
 - Back behavior to the originating feature tab when present.
 - No sidebar inside the task tab surface.
 
@@ -153,7 +155,7 @@ Deliverables:
 - [ ] Build the task quick-inspection surface.
 - [ ] Wire task tab open/focus behavior from board and sidebar entries.
 - [ ] Fetch workspace-scoped task detail.
-- [ ] Render task metadata, dependencies, PR refs, and activity.
+- [ ] Render task metadata, dependencies, and PR refs.
 - [ ] Implement copy-id feedback and back behavior.
 - [ ] Keep the task tab surface free of the board sidebar.
 - [ ] Add tests for click behavior, task tab rendering, metadata fallbacks, and back navigation.
@@ -175,7 +177,7 @@ Deliverables:
 - Feature Mode feature tab open/focus behavior.
 - Feature tab backed by `GET /api/workspaces/:workspaceId/features/:featureId`.
 - Feature header with copy-id affordance, current stage, status, updated time, and task counts.
-- Product Spec, Technical Design, Tasks, and Logs views driven by backend data.
+- Product Spec, Technical Design, and Tasks views driven by backend data.
 - Feature-scoped task drilldown through `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId` when the UI already knows the feature.
 - No sidebar inside the feature tab surface.
 
@@ -190,7 +192,7 @@ Deliverables:
 - [ ] Gate feature tab open/focus behavior by Feature Mode.
 - [ ] Fetch feature detail payloads from the backend.
 - [ ] Render the feature header, status, stage, task counts, and copy feedback.
-- [ ] Wire the Product Spec, Technical Design, Tasks, and Logs views.
+- [ ] Wire the Product Spec, Technical Design, and Tasks views.
 - [ ] Add feature-scoped task drilldown.
 - [ ] Keep the feature tab surface free of the board sidebar.
 - [ ] Add tests for Feature Mode gating, feature tab rendering, drilldown, and back behavior.
@@ -198,21 +200,21 @@ Deliverables:
 
 ---
 
-## T6 - Activity timeline, document rendering, and copy affordances
+## T6 - Document rendering, source state, and copy affordances
 
 ### Description
 
-Render the backend-provided documents and activity timelines cleanly across task and feature tabs.
+Render backend-provided documents, source state, and copy affordances cleanly across task and feature tabs.
 
 This task depends on T4 and T5 because it builds on the task and feature detail surfaces.
 
 Deliverables:
 
-- Workspace, feature, and task activity rendering from backend data.
 - Feature document rendering for product spec and technical design markdown.
-- Empty-state handling for missing optional documents, empty activity, and missing PR refs.
+- Empty-state handling for missing optional documents and missing PR refs.
 - Copy affordances for `task_id` and `feature_id`.
 - Source-state and updated-time presentation where the backend includes those fields.
+- Activity timeline rendering and `/api/workspaces/:workspaceId/activity` integration are deferred.
 
 ### Required skills
 
@@ -221,12 +223,11 @@ Deliverables:
 
 ### Subtasks
 
-- [ ] Render activity timelines from embedded and endpoint-provided payloads.
 - [ ] Render product spec and technical design markdown from backend content.
 - [ ] Handle empty and missing document states cleanly.
 - [ ] Add copy affordances for task and feature identifiers.
 - [ ] Add source-state and freshness presentation where needed.
-- [ ] Add tests for markdown rendering, activity rendering, and copy feedback.
+- [ ] Add tests for markdown rendering, source-state display, and copy feedback.
 - [ ] Typecheck passes.
 
 ---
@@ -243,6 +244,7 @@ Deliverables:
 
 - Workspace list, switcher, import, and sync flows verified in the browser.
 - Task single-click, double-click, context menu, sidebar, and tab flows verified.
+- Sidebar active-task query verified separately from workspace detail and Task Mode search.
 - Feature single-click, Feature Mode gating, double-click, context menu, and tab flows verified.
 - Stale-source, retryable-error, loading, and empty-state behavior verified.
 - No direct GitHub workspace-data network access from the browser.
@@ -263,6 +265,7 @@ Deliverables:
 - [ ] Verify manual sync and stale-source handling in the browser.
 - [ ] Verify task and feature click, double-click, and context-menu behavior.
 - [ ] Verify task tab and feature tab rendering, back behavior, and no-sidebar layout.
+- [ ] Verify the board sidebar uses the active-task query and not another list payload.
 - [ ] Verify no direct GitHub reads remain in browser workspace flows.
 - [ ] Capture browser QA notes or screenshots for the key surfaces.
 - [ ] Fix regressions found during QA.

@@ -19,4 +19,4 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for task quick inspection, workspace-scoped task detail, task tab sessions, PR refs, dependencies, and activity rendering.
+    note: Task rewritten for task quick inspection, workspace-scoped task detail, task tab sessions, PR refs, and dependencies.
