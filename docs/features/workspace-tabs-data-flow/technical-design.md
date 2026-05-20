@@ -34,7 +34,7 @@ Key constraints:
 
 - `workflow-backend` is the read-side API service for the dashboard. Local default base URL is `http://localhost:8081`; public routes use `/api`.
 - `workspace-github-adapter` owns GitHub ingestion, webhook/task sync, and write-side database updates. The frontend does not call it directly.
-- `digital-factory-ui` is the UI consumer. It must call `workflow-backend` and stop treating GitHub, YAML, local storage, or database rows as the durable workspace source of truth.
+- `digital-factory-ui` is the UI consumer. It must call `workflow-backend` for durable workspace data and stop treating GitHub, YAML, browser storage, or database rows as the workspace source of truth. Browser-local storage is allowed only for private picker metadata and the current selected workspace id.
 - GitHub still owns workflow state writes. This feature introduces UI reads and tab/session behavior only.
 - Backend identifiers are already normalized: `workspaceId`, `featureId`, and `taskId` are UUID route ids; `feature_name` and `task_name` are display/source labels.
 
@@ -42,17 +42,17 @@ Key constraints:
 
 Two things must be built in the frontend:
 
-1. **Backend API integration**: replace direct GitHub/local parsing paths with a typed `workflow-backend` client for workspace list, import, workspace detail, sync, feature search/detail, and task search/detail routes.
+1. **Backend API integration**: replace direct GitHub/local parsing paths with a typed `workflow-backend` client for import, workspace detail, sync, feature search/detail, and task search/detail routes.
 2. **Workspace tab data flow**: use those backend payloads to drive the workspace board, workspace switcher, import modal, task quick view, task tab, feature quick view, feature tab, Kanban board polling, sidebar active-task polling, search/filter controls, and stale/error states.
 
-The UI always reads from the backend API. It does not need to know whether the underlying data came from a fresh sync or a cached database projection. That distinction belongs to `source_state` and structured `ApiError` payloads, not to separate frontend code paths.
+The UI reads durable workspace, feature, task, sync, source-state, and error data from the backend API. Browser-local storage is not a durable data source; it only stores the current selected workspace id and short workspace summaries for the private switcher. The UI does not need to know whether backend data came from a fresh sync or a cached database projection. That distinction belongs to `source_state` and structured `ApiError` payloads, not to separate frontend code paths.
 
 What must remain stable:
 
 - Existing task YAML ownership, agent claim protocol, approval gates, and workflow lifecycle are unchanged.
 - No frontend write path to task state.
 - No direct GitHub file parsing inside UI components.
-- No backend route or database schema work in this feature unless implementation finds the deployed service differs from the documented API.
+- This feature owns the frontend integration with `workflow-backend` APIs, including request wiring, UI state, loading/error/stale handling, and browser QA. Backend route implementation and database schema changes are separate backend work; if the deployed service differs from the documented API, treat that as a backend dependency blocker or follow-up.
 
 ## 3. Options Considered
 
@@ -69,7 +69,7 @@ Cons:
 
 - Conflicts with the delivered backend API contract.
 - Keeps token, rate-limit, YAML, and source-shape handling in the browser.
-- Cannot share saved workspaces across sessions/devices reliably.
+- Blurs browser-local picker metadata with durable workspace data, making privacy boundaries and stale-cache behavior unclear.
 - Makes stale-cache fallback harder to represent.
 - Duplicates backend normalization logic in the UI.
 
@@ -81,7 +81,7 @@ Implementation impact:
 Dependency impact:
 
 - Keeps the frontend coupled to GitHub availability and source file layout.
-- Bypasses `workflow-backend`, so the UI cannot reliably consume saved workspace state from the backend.
+- Bypasses `workflow-backend`, so the UI cannot consume authoritative workspace detail, source state, and tab payloads from the backend contract.
 
 Not chosen.
 
@@ -151,7 +151,8 @@ Not chosen for this feature. A small query cache from the existing frontend stac
 │ digital-factory-ui                                      │
 │                                                         │
 │ Workspace shell                                         │
-│   ├─ Workspace switcher       -> GET /api/workspaces    │
+│   ├─ Workspace switcher       -> browser-local summaries│
+│   ├─ Current workspace id     -> browser-local selection│
 │   ├─ Import modal             -> POST /api/workspaces/import
 │   ├─ Workspace board          -> GET /api/workspaces/:workspaceId
 │   ├─ Feature Mode/search      -> GET /api/workspaces/:workspaceId/features
@@ -213,7 +214,6 @@ export async function request<T>(path: string, init?: RequestInit): Promise<T> {
 Required methods:
 
 ```ts
-listWorkspaces(): Promise<WorkspaceSummary[]>
 importWorkspace(body: ImportWorkspaceRequest): Promise<WorkspaceDetail>
 getWorkspace(workspaceId: string): Promise<WorkspaceDetail>
 searchFeatures(workspaceId: string, params?: URLSearchParams): Promise<FeatureSummary[]>
@@ -240,7 +240,7 @@ The frontend consumes these routes exactly:
 
 | UI use case | Method and path | Success type |
 |---|---|---|
-| Saved workspace list | `GET /api/workspaces` | `WorkspaceSummary[]` |
+| Workspace switcher summaries | Browser-local storage | `LocalWorkspaceSummary[]` |
 | Import workspace | `POST /api/workspaces/import` | `WorkspaceDetail` |
 | Workspace dashboard | `GET /api/workspaces/:workspaceId` | `WorkspaceDetail` |
 | Feature list/search | `GET /api/workspaces/:workspaceId/features` | `FeatureSummary[]` |
@@ -275,8 +275,8 @@ Structured errors:
 
 Frontend API use cases:
 
-- Workspace list: `GET /api/workspaces` drives the switcher, landing state, and first app load.
-- Import workspace: `POST /api/workspaces/import` sends `repo_url`, optional `default_branch`, and optional `name`; success navigates to returned `WorkspaceDetail`.
+- Workspace switcher summaries: browser-local storage drives the switcher, landing state, first app load, and current selected workspace id. Do not call a global `GET /api/workspaces` for the user-visible picker.
+- Import workspace: `POST /api/workspaces/import` sends `repo_url`, optional `default_branch`, and optional `name`; success persists the workspace in the backend database, saves or updates the browser-local summary used by the switcher, and navigates to the returned `WorkspaceDetail`.
 - Workspace dashboard: `GET /api/workspaces/:workspaceId` returns workspace freshness plus feature and task summaries in one response.
 - Feature list: `GET /api/workspaces/:workspaceId/features` supports `title`, `status`, `sort`, `page`, and `limit`.
 - Workspace task list: `GET /api/workspaces/:workspaceId/tasks` supports `task_id`, `title`, `status`, `repo`, `sort`, `page`, and `limit`.
@@ -352,6 +352,14 @@ type WorkspaceSummary = {
   updated_at: string;
 };
 
+type LocalWorkspaceSummary = {
+  workspaceId: string;
+  name: string;
+  repo_url: string;
+  default_branch: string;
+  last_opened_at: string;
+};
+
 type WorkspaceDetail = WorkspaceSummary & {
   features: FeatureSummary[];
   tasks: TaskSummary[];
@@ -391,13 +399,22 @@ Detail payload requirements:
 - `TaskDetail` includes `workspace_id`, `depends_on`, `execution`, and `pr_refs[]`.
 - Backend payloads may include activity fields, but the activity timeline endpoint and activity timeline rendering are deferred and not required for this feature phase.
 
+### Browser-Local Workspace Summary Lifecycle
+
+Imported workspaces are stored in two places for different reasons:
+
+- **Backend database**: `POST /api/workspaces/import` persists the normalized workspace and returns `WorkspaceDetail`. All durable workspace data, board data, feature data, task data, sync state, stale state, and structured errors come from backend routes.
+- **Browser-local storage**: after a successful import, the browser saves or updates a short `LocalWorkspaceSummary` and the current selected `workspaceId`. This local data is private to the current browser profile and exists only to populate the workspace switcher and remember the selected workspace.
+
+The workspace switcher loads only browser-local summaries. It must not call a global `GET /api/workspaces` to discover every workspace stored in the backend database. Selecting a local summary calls `GET /api/workspaces/:workspaceId` to load the authoritative workspace detail. Removing a browser-local summary only removes that workspace from the local picker; it is not a backend delete.
+
 ### Workspace Shell State
 
 The workspace shell owns UI state only:
 
 | State | Source | Purpose |
 |---|---|---|
-| Saved workspace list | `GET /api/workspaces` | Workspace switcher and first load. |
+| Saved workspace summaries | Browser-local storage | Private workspace switcher, first load, and current selected workspace id. |
 | Active workspace detail | `GET /api/workspaces/:workspaceId`, import, or sync response | Board baseline, feature list, Task Mode defaults, source state. |
 | Sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | Board sidebar only; independent from board/detail/tab data. |
 | Kanban board polling | `GET /api/workspaces/:workspaceId` | Refresh board data while the board is active. |
@@ -413,17 +430,17 @@ Switching workspace clears or hides tabs from the previous workspace. If tabs ar
 
 #### First load and workspace switcher
 
-1. Load `GET /api/workspaces`.
-2. If the response is empty, show the no-workspace empty state and import action.
-3. If workspaces exist, select the current or first workspace and load `GET /api/workspaces/:workspaceId`.
-4. Filter the loaded workspace summaries locally in the switcher.
-5. Selecting another workspace loads its detail and returns to the board.
+1. Load browser-local workspace summaries and the current selected workspace id.
+2. If no local summaries exist, show the no-workspace empty state and import action.
+3. If local summaries exist, select the current local workspace id or the most recently opened summary and load `GET /api/workspaces/:workspaceId`.
+4. Filter the browser-local workspace summaries locally in the switcher.
+5. Selecting another workspace updates the local selected workspace id, loads its backend detail, and returns to the board.
 
 #### Import workspace
 
 1. Modal collects `repo_url`, optional `default_branch`, and optional `name`.
 2. Submit calls `POST /api/workspaces/import`.
-3. On `200 OK`, store the returned `WorkspaceDetail`, update saved workspaces if needed, close the modal, and navigate to the workspace board.
+3. On `200 OK`, store the returned `WorkspaceDetail` in view/query state, save or update the short browser-local workspace summary, set the current selected workspace id locally, close the modal, and navigate to the workspace board.
 4. On validation, GitHub, adapter, or database errors, keep the modal open and render the structured error.
 
 #### Workspace dashboard
@@ -547,7 +564,7 @@ The UI must keep backend source status visible without blanking usable data:
 ### Internal dependencies
 
 - T1 is the only wave 1 task. It owns API client, DTOs, error parsing, and query-param helpers.
-- T2 depends on T1. It owns saved workspace list, workspace detail bootstrap, switcher, import modal, and workspace switching.
+- T2 depends on T1. It owns browser-local saved workspace summaries, current workspace selection, workspace detail bootstrap, switcher, import modal, and workspace switching.
 - T3 depends on T1 and T2. It owns feature/task search, filters, Kanban board polling, sidebar active-task polling, manual sync, stale-source UX, empty states, and retry affordances.
 - T4 depends on T1, T2, and T3. It owns task quick views, workspace-scoped task drawer, and task tab.
 - T5 depends on T1, T2, and T3. It owns Feature Mode, feature tab, and feature-scoped task drilldown.
@@ -606,7 +623,7 @@ T1: Frontend API client and shared workflow DTOs
           │
           T7: End-to-end browser QA and regression coverage
             └── BLOCKED on T1 (API client contract must be stable to mock and assert)
-            └── BLOCKED on T2 (workspace list, switcher, import, and board bootstrap must work)
+            └── BLOCKED on T2 (browser-local workspace summaries, switcher, import, and board bootstrap must work)
             └── BLOCKED on T3 (sync, stale-source, empty-state, and retry flows must work)
             └── BLOCKED on T4 (task behavior must work)
             └── BLOCKED on T5 (feature behavior must work)
@@ -640,13 +657,14 @@ Unaffected repos: `workflow`, `rag-service`, and `git-nexus`.
 - **Component tests**: workspace switcher, import modal, workspace board bootstrap, Kanban board polling, sidebar active-task polling, search/filter controls, manual sync, stale-source banner, retryable errors, empty states.
 - **Task surface tests**: quick task inspection, task tab open/focus/close, workspace-scoped task detail loading, metadata fallbacks, PR refs, copy feedback, and Back behavior.
 - **Feature surface tests**: Feature Mode gating, feature tab open/focus/close, feature detail loading, document views, feature task list, feature-scoped task drilldown, copy feedback, and Back behavior.
-- **Browser QA**: saved workspace list, import success/failure, sync success/stale failure, workspace switch cleanup, Kanban board polling, sidebar active-task polling, task single/double/right click, feature single/double/right click, task tab, feature tab, source-state notices, and responsive tab overflow.
+- **Browser QA**: browser-local saved workspace summaries, import success/failure, sync success/stale failure, workspace switch cleanup, Kanban board polling, sidebar active-task polling, task single/double/right click, feature single/double/right click, task tab, feature tab, source-state notices, and responsive tab overflow.
 
 ### Migration / config impact
 
-- No database migration in this feature.
-- No backend route implementation in this feature.
+- No database schema migration is owned by this frontend feature.
+- No new backend route implementation is owned by this feature; the feature integrates the existing `workflow-backend` API contract end to end.
 - Frontend runtime config must point to `workflow-backend` through `VITE_API_BASE_URL` or the repo's existing equivalent.
+- If a required backend route is missing or differs from the contract during QA, treat it as a dependency blocker or separate backend follow-up, not as an in-scope frontend implementation task.
 
 ### Rollout concerns
 

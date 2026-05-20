@@ -67,14 +67,17 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
 ## Problem
 
-The dashboard needs persistent workspace, feature, and task navigation without parsing workflow repository files in the browser. The backend now exposes saved workspaces, workspace detail, import, sync, feature detail, task detail, and search/filter routes. The frontend must use that contract directly so the UI displays the same normalized workspace state that `workflow-backend` serves.
+The dashboard needs persistent workspace, feature, and task navigation without parsing workflow repository files in the browser. The backend now exposes workspace detail, import, sync, feature detail, task detail, and search/filter routes. The frontend must use that contract directly so the UI displays the same normalized workspace state that `workflow-backend` serves.
 
-Users need to switch workspaces, import repositories, refresh source data, open persistent task and feature tabs, and keep active board/sidebar data refreshed while preserving context. These flows must work from backend payloads, including stale-cache and structured-error responses, instead of from frontend-only fixtures, local storage, direct GitHub reads, or raw YAML parsing.
+Users need to switch workspaces, import repositories, refresh source data, open persistent task and feature tabs, and keep active board/sidebar data refreshed while preserving context. Workspace choices shown to the user must come from a browser-local saved workspace list so a workspace imported by user A in one browser profile is not exposed to user B through an unscoped backend workspace list. Workspace details, features, tasks, sync results, stale-cache states, and structured errors still come from backend payloads instead of frontend-only fixtures, direct GitHub reads, or raw YAML parsing.
 
 ## Goals
 
-- Load saved workspaces from `GET /api/workspaces`.
-- Import a workspace with `POST /api/workspaces/import` and navigate to the returned `WorkspaceDetail`.
+- Redesign the workspace dropdown, import modal, backend-backed board data, task tabs, and feature tabs according to the visual references in this spec.
+- Integrate all backend APIs to replace the current frontend data flows, covering workspace load/import/sync, board polling, feature/task list and detail routes, sidebar active-task polling, stale-cache handling, and structured error states.
+- Load saved workspace choices from browser-local workspace summaries, not from a global `GET /api/workspaces` response.
+- Import a workspace with `POST /api/workspaces/import`, persist the workspace in the backend database, save a short browser-local workspace summary, and navigate to the returned `WorkspaceDetail`.
+- Keep browser-local workspace summaries private to the current browser/user profile and limited to picker metadata such as `workspaceId`, display name, repository URL, default branch, and last-opened timestamp.
 - Render the workspace dashboard from `GET /api/workspaces/:workspaceId`.
 - Refresh workspace data with `POST /api/workspaces/:workspaceId/sync`.
 - Poll the Kanban board data from `GET /api/workspaces/:workspaceId` while the board is active.
@@ -95,13 +98,11 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 
 ## Non-goals
 
-- No new backend API design in this feature; the frontend integrates with the provided `workflow-backend` API contract.
 - No direct GitHub file fetching or raw YAML/markdown parsing inside frontend UI components.
-- No frontend-only durable source of truth for imported workspace data.
+- No user-visible workspace switcher populated from an unscoped/global `GET /api/workspaces` response.
 - No workflow state write-path changes for claims, approvals, branch updates, or task transitions.
 - No activity timeline or `/api/workspaces/:workspaceId/activity` integration in this phase.
-- No agent, chat, model selector, composer, skill mention, image attachment, conversation persistence, or LLM surface.
-- No broad dashboard redesign outside workspace switching, backend-backed board data, task tabs, and feature tabs.
+- No redesign of unrelated dashboard modules outside the referenced workspace and tab surfaces.
 - No `deployment-checklist.md` at this stage.
 
 ## User Journeys
@@ -137,10 +138,13 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 
 ## Acceptance Criteria
 
-- First app load can list saved workspaces from `GET /api/workspaces`.
-- Selecting a workspace loads `GET /api/workspaces/:workspaceId` and renders board data from the returned `WorkspaceDetail`.
-- Workspace import sends `repo_url`, optional `default_branch`, and optional `name` to `POST /api/workspaces/import`; `200 OK` navigates to the returned workspace detail.
-- Manual sync calls `POST /api/workspaces/:workspaceId/sync` and replaces the local workspace cache with the returned `WorkspaceDetail`.
+- First app load lists saved workspace choices from browser-local workspace summaries.
+- The user-visible workspace switcher does not call or depend on `GET /api/workspaces` unless that backend route is explicitly user-scoped in a later contract.
+- Selecting a browser-saved workspace loads `GET /api/workspaces/:workspaceId` and renders board data from the returned `WorkspaceDetail`.
+- Workspace import sends `repo_url`, optional `default_branch` defaulting to `main`, and optional `name` to `POST /api/workspaces/import`; `200 OK` persists the workspace in the backend database, saves or updates the browser-local workspace summary, and navigates to the returned workspace detail.
+- Browser-local workspace summaries contain only short picker metadata and do not store features, tasks, source documents, raw workflow files, access tokens, or full `WorkspaceDetail` payloads.
+- A workspace imported in one browser/user profile is not shown in another browser/user profile solely because it exists in the backend database.
+- Manual sync calls `POST /api/workspaces/:workspaceId/sync` and replaces the active workspace detail/view cache with the returned `WorkspaceDetail`; browser-local workspace summaries remain limited to picker metadata.
 - Kanban board polling refreshes `GET /api/workspaces/:workspaceId` while the workspace board is active and does not run from task or feature tabs.
 - Sync failure with stale backend data keeps the current workspace visible and clearly marks `source_state.stale=true` and `source_state.error_code`.
 - Feature Mode fetches or refreshes feature data through `GET /api/workspaces/:workspaceId/features` with supported query params.
@@ -158,4 +162,3 @@ Users need to switch workspaces, import repositories, refresh source data, open 
 - Opening a task from a feature tab preserves originating feature context and can use the feature-scoped task detail route.
 - Structured backend errors render source-specific messages and retry affordances based on `retryable`.
 - Empty arrays from backend list/search routes render empty states rather than errors.
-- Agent, chat, model, composer, and conversation controls are absent from this feature.

@@ -3,14 +3,14 @@ title: Workspace Tabs and Backend API Data Flow
 
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
-next_action: T1 is ready to claim. T2 waits for T1; T3 waits for T1 and T2; T4 and T5 wait for T1, T2, and T3; T6 waits for T4 and T5; T7 waits for T1 through T6.
+next_action: Start implementation of T1.
 
 stages:
   product_spec:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-20T11:49:04+07:00
-    review_comment: Product spec approved after rewriting the feature around the workflow-backend frontend API contract.
+    reviewed_at: 2026-05-20T14:08:06+0700
+    review_comment: Product spec approved after redesigning the scope around UI redesign and full backend API replacement.
     review_history:
       - status: approved
         by: minhkienn203@gmail.com
@@ -36,11 +36,19 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:49:04+07:00
         comment: Product spec approved after rewriting the feature around the workflow-backend frontend API contract.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:03:04+0700
+        comment: Product spec redesigned around UI redesign and full backend API replacement. Awaiting re-approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:08:06+0700
+        comment: Product spec approved after redesigning the scope around UI redesign and full backend API replacement.
   technical_design:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-20T12:43:19+07:00
-    review_comment: Technical design approved for workflow-backend API integration. Feature advances to task planning.
+    reviewed_at: 2026-05-20T14:22:56+0700
+    review_comment: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -78,10 +86,22 @@ stages:
         by: minhkienn203@gmail.com
         at: 2026-05-20T12:43:19+07:00
         comment: Technical design approved for workflow-backend API integration. Feature advances to task planning.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:11:39+0700
+        comment: Technical design revised so the workspace switcher and current selected workspace come from browser-local summaries while backend APIs replace durable data flows.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:15:41+0700
+        comment: Technical design clarified that imported workspaces persist in both backend DB and browser-local summaries, while the switcher loads only browser-local data.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:22:56+0700
+        comment: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
   tasks:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-05-20T12:46:30+07:00
+    reviewed_at: 2026-05-20T14:27:38+0700
     review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
     review_history:
       - status: draft
@@ -123,6 +143,18 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T12:46:30+07:00
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:11:39+0700
+        comment: Task breakdown revised for browser-local workspace summaries and current selection. Requires re-approval after technical design approval.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:22:56+0700
+        comment: Task breakdown submitted for approval after technical design approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-20T14:27:38+0700
         comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
   handoff:
     review_status: draft
@@ -274,4 +306,47 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T12:46:30+07:00
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: product_spec
+    action: reset
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:03:04+0700
+    note: >-
+      Product spec redesigned around UI redesign and full backend API replacement.
+      Feature reset to product_spec for re-review; technical design and tasks need
+      revalidation after approval.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:08:06+0700
+    note: Product spec approved after redesign. Feature advances to in_tdd; technical design and tasks remain flagged for revalidation.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:11:39+0700
+    note: Technical design updated so the workspace switcher and current selected workspace use browser-local summaries while all durable workspace data comes from workflow-backend APIs.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:15:41+0700
+    note: Technical design clarified that imported workspaces are stored in both backend DB and browser-local summaries, and the switcher reads only browser-local data.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:22:56+0700
+    note: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:22:56+0700
+    note: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:11:39+0700
+    note: Task breakdown updated for browser-local workspace summaries and current selection; tasks require approval before activation.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T14:27:38+0700
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.

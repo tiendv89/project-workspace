@@ -8,7 +8,7 @@ branch: feature/workspace-tabs-data-flow-T1
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-20T05:46:30Z
+  last_updated_at: 2026-05-20T07:27:38Z
 pr:
   url: null
   status: null
@@ -20,4 +20,12 @@ log:
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-20T05:46:30Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: reset
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T07:11:39Z
+    note: Task returned to todo because technical design and task breakdown require re-approval after the product spec redesign.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-20T07:27:38Z
     note: Task activated on tasks-stage approval — dependencies met.

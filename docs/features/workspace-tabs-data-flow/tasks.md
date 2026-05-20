@@ -1,6 +1,6 @@
 # Tasks - Workspace Tabs and Backend API Data Flow
 
-Feature status reference: `ready_for_implementation`; stage status: `tasks/approved`. Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
+Feature status reference: `in_tdd`; stage status: `technical_design/awaiting_approval`, `tasks/draft`. Machine state lives in `tasks/T<n>.yaml`; this file is narrative only.
 
 ## Index
 
@@ -26,8 +26,8 @@ This task owns the API client, request helper, normalized error type, and the fr
 
 Deliverables:
 
-- Define typed client methods for workspace list, import, detail, sync, feature detail, feature tasks, task detail, workspace tasks, Kanban board polling, and sidebar active-task polling.
-- Define shared frontend DTOs for workspace summaries, workspace detail, feature summaries, feature detail, task summaries, task detail, pull request refs, source state, and error payloads.
+- Define typed client methods for import, detail, sync, feature detail, feature tasks, task detail, workspace tasks, Kanban board polling, and sidebar active-task polling.
+- Define shared frontend DTOs for browser-local workspace summaries, workspace detail, feature summaries, feature detail, task summaries, task detail, pull request refs, source state, and error payloads.
 - Define `ApiError` parsing and retryability handling.
 - Define backend identifier helpers for `workspaceId`, `featureId`, `taskId`, `feature_name`, and `task_name`.
 - Define query-param helpers for feature/task search and pagination.
@@ -54,19 +54,19 @@ Deliverables:
 
 ### Description
 
-Wire the workspace shell to the backend saved-workspace list, import route, and workspace detail route.
+Wire the workspace shell to browser-local workspace summaries, the import route, and the workspace detail route.
 
 This task depends on T1 because the workspace shell should only consume typed backend payloads.
 
 Deliverables:
 
-- Load saved workspaces from `GET /api/workspaces` on first app load.
+- Load saved workspace summaries and the current selected workspace id from browser-local storage on first app load.
 - Use backend workspace detail data to bootstrap the active workspace board.
 - Workspace tab returns to the current workspace board.
 - Workspace switcher opens from the workspace tab control.
-- Workspace selection loads the selected workspace detail and clears or hides tabs from the previous workspace.
+- Workspace selection updates browser-local current selection, loads the selected workspace detail, and clears or hides tabs from the previous workspace.
 - Import modal submits to `POST /api/workspaces/import`.
-- Import success navigates to the returned workspace detail.
+- Import success saves or updates the short browser-local workspace summary, sets the current selected workspace id locally, and navigates to the returned workspace detail.
 - Import validation and backend errors render inline without losing modal state.
 
 ### Required skills
@@ -77,11 +77,11 @@ Deliverables:
 ### Subtasks
 
 - [ ] Inspect the current workspace shell and routing/state entry points.
-- [ ] Load saved workspaces from the backend on app start.
+- [ ] Load saved workspace summaries and current selection from browser-local storage on app start.
 - [ ] Wire the workspace tab to return to the board surface.
-- [ ] Build or update the workspace switcher against backend workspace summaries.
+- [ ] Build or update the workspace switcher against browser-local workspace summaries.
 - [ ] Wire the import modal to the backend import route.
-- [ ] Handle import success and structured error states.
+- [ ] Handle import success by saving the local summary/current selection and rendering structured error states on failure.
 - [ ] Clear or hide previous-workspace tabs when the active workspace changes.
 - [ ] Add tests for first load, workspace switching, and import behavior.
 - [ ] Typecheck passes.
@@ -104,7 +104,7 @@ Deliverables:
 - Search param mapping for `title`, `task_id`, `status`, `repo`, `page`, `limit`, and `sort`.
 - Manual refresh button wired to `POST /api/workspaces/:workspaceId/sync`.
 - Stale-data banner and source-state warning handling.
-- Empty-state handling for empty workspace lists, feature lists, task lists, and search results.
+- Empty-state handling for empty local workspace summaries, feature lists, task lists, and search results.
 - Retry affordances for retryable backend errors.
 
 ### Required skills
@@ -261,7 +261,7 @@ Deliverables:
 - [ ] Run frontend unit/component tests.
 - [ ] Run TypeScript typecheck.
 - [ ] Run production build where applicable.
-- [ ] Verify workspace list and import flows in the browser.
+- [ ] Verify browser-local workspace summary, current selection, and import flows in the browser.
 - [ ] Verify manual sync and stale-source handling in the browser.
 - [ ] Verify task and feature click, double-click, and context-menu behavior.
 - [ ] Verify task tab and feature tab rendering, back behavior, and no-sidebar layout.
