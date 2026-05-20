@@ -388,7 +388,7 @@ management repos, and the workflow repo itself.
 - Use whatever test commands the implementation repo specifies — check the README, `package.json`, `Makefile`, `go.mod`, or equivalent build config. Do not assume a specific test runner or language.
 - All tests must pass before invoking `pr-create`. Fix any failures and re-run until clean.
 - **Default (interactive runs):** do not open a PR for failing tests. Hard-stop, set `status: blocked`, write `blocked_reason: tests_failed`, surface to the user.
-- **Agent-runtime exception (`CLAUDE_AGENT_RUNTIME=1`):** if tests cannot be made to pass after **3 attempts**, the agent **must still open a draft PR** documenting the failed attempt, and write `result.json` with `terminal_status: blocked, blocked_reason: tests_failed, pr_url: <URL>`. Rationale: in agent-runtime mode the PR is the durable handover — without it, the next agent has no branch to inherit and the failed attempt is invisible. The orchestrator routes the blocked result to a fix agent / reviewer on the next cycle. This carve-out is product-vision sanctioned (revised D5 in the orchestrator design); do not read the default rule as forbidding it.
+- **Agent-runtime exception (`AGENT_RUNTIME=1`):** if tests cannot be made to pass after **3 attempts**, the agent **must still open a draft PR** documenting the failed attempt, and write `result.json` with `terminal_status: blocked, blocked_reason: tests_failed, pr_url: <URL>`. Rationale: in agent-runtime mode the PR is the durable handover — without it, the next agent has no branch to inherit and the failed attempt is invisible. The orchestrator routes the blocked result to a fix agent / reviewer on the next cycle. This carve-out is product-vision sanctioned (revised D5 in the orchestrator design); do not read the default rule as forbidding it.
 
 ## PR creation rule
 
@@ -430,7 +430,7 @@ Rules:
 
 ## Per-task required skills
 
-Technical skills are declared per task, not per agent or per role. Each task's `## T<n>` section in `tasks.md` includes a `### Required skills` subsection listing the skill slugs the task needs. Skill slugs must match directory names under `workflow/technical_skills/`.
+Technical skills are declared per task, not per agent or per role. Each task's `## T<n>` section in `tasks.md` includes a `### Required skills` subsection listing the skill slugs the task needs. Skill slugs must match directory names under `workflow/claude/technical_skills/`.
 
 At run-task time, the agent reads the declared skills and loads their `SKILL.md` content into its system prompt. This is the only capability-matching mechanism — there is no agent-side role or skills list.
 
@@ -452,7 +452,7 @@ If workspace-level changes are discovered as needed (e.g. missing repo entries, 
 
 Examples of changes that must be surfaced, not applied:
 - Edits to `workspace.yaml`, `CLAUDE.md`, `.env`, `.env.template`
-- Creating or modifying skills under `technical_skills/`
+- Creating or modifying skills under `claude/technical_skills/`
 - Registering new repos or roles
 - Any file outside `docs/features/<feature_id>/product-spec.md`
 
@@ -510,7 +510,7 @@ The assistant must still ask before running commands that:
 Before implementing any code autonomously, check whether you are running inside the agent runtime:
 
 ```bash
-printenv CLAUDE_AGENT_RUNTIME
+printenv AGENT_RUNTIME
 ```
 
 - If the output is `1` — you are inside the agent runtime. Proceed with autonomous implementation as instructed by the task.
