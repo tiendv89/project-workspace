@@ -32,7 +32,7 @@ Target:
 
 Key constraints:
 
-- `workflow-backend` is the read-side API service for the dashboard. Local default base URL is `http://localhost:8081`; public routes use `/api`.
+- `workflow-backend` is the read-side API service for the dashboard. The frontend loads the API base URL from environment configuration; public routes use `/api`.
 - `workspace-github-adapter` owns GitHub ingestion, webhook/task sync, and write-side database updates. The frontend does not call it directly.
 - `digital-factory-ui` is the UI consumer. It must call `workflow-backend` for durable workspace data and stop treating GitHub, YAML, browser storage, or database rows as the workspace source of truth. Browser-local storage is allowed only for private picker metadata and the current selected workspace id.
 - GitHub still owns workflow state writes. This feature introduces UI reads and tab/session behavior only.
@@ -180,7 +180,11 @@ Not chosen for this feature. A small query cache from the existing frontend stac
 Add or update a dedicated `workflow-backend` client in `digital-factory-ui`, following the repo's existing service/query conventions.
 
 ```ts
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8081";
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE) {
+  throw new Error("VITE_API_BASE_URL is required for workflow-backend API calls");
+}
 
 export type ApiError = {
   code: string;

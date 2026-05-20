@@ -5,10 +5,10 @@ Only call the public endpoints listed below.
 
 ## Base URL
 
-Default local URL:
+The frontend must load the backend API base URL from environment configuration, for example `VITE_API_BASE_URL` or the repo's existing equivalent.
 
 ```text
-http://localhost:8081
+VITE_API_BASE_URL=<workflow-backend-api-base-url>
 ```
 
 API prefix:

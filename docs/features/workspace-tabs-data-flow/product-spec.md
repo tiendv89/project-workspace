@@ -62,7 +62,7 @@ Figma: https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 ## Dependencies
 
 - **`workspace-data-backend`** delivers the `workflow-backend` frontend API contract consumed by this feature.
-- **`workflow-backend` `api-service`** is the HTTP source of truth. Local default base URL is `http://localhost:8081`; public routes are under `/api`.
+- **`workflow-backend` `api-service`** is the HTTP source of truth. The frontend loads the API base URL from environment configuration; public routes are under `/api`.
 - **`digital-factory-ui`** owns the workspace switcher, import modal, board, task tabs, feature tabs, frontend API client, and browser QA.
 
 ## Problem
