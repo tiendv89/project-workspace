@@ -238,19 +238,19 @@ Client rules:
 
 The frontend consumes these routes exactly:
 
-| UI use case | Method and path | Success type |
-|---|---|---|
-| Workspace switcher summaries | Browser-local storage | `LocalWorkspaceSummary[]` |
-| Import workspace | `POST /api/workspaces/import` | `WorkspaceDetail` |
-| Workspace dashboard | `GET /api/workspaces/:workspaceId` | `WorkspaceDetail` |
-| Feature list/search | `GET /api/workspaces/:workspaceId/features` | `FeatureSummary[]` |
-| Workspace task list/search | `GET /api/workspaces/:workspaceId/tasks` | `TaskSummary[]` |
-| Board sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | `TaskSummary[]` |
-| Workspace-scoped task detail | `GET /api/workspaces/:workspaceId/tasks/:taskId` | `TaskDetail` |
-| Manual sync | `POST /api/workspaces/:workspaceId/sync` | `WorkspaceDetail` |
-| Feature detail | `GET /api/workspaces/:workspaceId/features/:featureId` | `FeatureDetail` |
-| Feature-scoped task list | `GET /api/workspaces/:workspaceId/features/:featureId/tasks` | `TaskSummary[]` |
-| Feature-scoped task detail | `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId` | `TaskDetail` |
+| UI use case                    | Method and path                                                                                              | Success type              |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------- |
+| Workspace switcher summaries   | Browser-local storage                                                                                        | `LocalWorkspaceSummary[]` |
+| Import workspace               | `POST /api/workspaces/import`                                                                                | `WorkspaceDetail`         |
+| Workspace dashboard            | `GET /api/workspaces/:workspaceId`                                                                           | `WorkspaceDetail`         |
+| Feature list/search            | `GET /api/workspaces/:workspaceId/features`                                                                  | `FeatureSummary[]`        |
+| Workspace task list/search     | `GET /api/workspaces/:workspaceId/tasks`                                                                     | `TaskSummary[]`           |
+| Board sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | `TaskSummary[]`           |
+| Workspace-scoped task detail   | `GET /api/workspaces/:workspaceId/tasks/:taskId`                                                             | `TaskDetail`              |
+| Manual sync                    | `POST /api/workspaces/:workspaceId/sync`                                                                     | `WorkspaceDetail`         |
+| Feature detail                 | `GET /api/workspaces/:workspaceId/features/:featureId`                                                       | `FeatureDetail`           |
+| Feature-scoped task list       | `GET /api/workspaces/:workspaceId/features/:featureId/tasks`                                                 | `TaskSummary[]`           |
+| Feature-scoped task detail     | `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId`                                         | `TaskDetail`              |
 
 `POST /api/workspaces/import` succeeds with `200 OK` and a persisted `WorkspaceDetail`. The frontend must not treat `202 Accepted` as the success case for this route.
 
@@ -261,17 +261,17 @@ Common headers:
 
 Structured errors:
 
-| Code | HTTP status | Frontend behavior |
-|---|---:|---|
-| `DATABASE_NOT_FOUND` | 404 | Show not-found state for workspace, feature, or task. |
-| `GITHUB_NOT_FOUND` | 404 | Show source access or missing repository/path state. |
-| `VALIDATION_INVALID_URL` | 400 | Mark import repository URL invalid. |
-| `VALIDATION_MISSING_INPUT` | 400 | Keep modal open and mark the missing field. |
-| `VALIDATION_INVALID_QUERY` | 400 | Show filter error or reset invalid pagination/sort controls. |
-| `GITHUB_UNAUTHORIZED` | 401 | Show source auth/access guidance. |
-| `GITHUB_RATE_LIMIT` | 429 | Show rate-limit message and retry affordance if appropriate. |
-| `ADAPTER_TIMEOUT` | 504 | Show retryable adapter/sync failure. |
-| Other errors | 500 | Show generic backend failure with retry only when `retryable=true`. |
+| Code                       | HTTP status | Frontend behavior                                                   |
+| -------------------------- | ----------: | ------------------------------------------------------------------- |
+| `DATABASE_NOT_FOUND`       |         404 | Show not-found state for workspace, feature, or task.               |
+| `GITHUB_NOT_FOUND`         |         404 | Show source access or missing repository/path state.                |
+| `VALIDATION_INVALID_URL`   |         400 | Mark import repository URL invalid.                                 |
+| `VALIDATION_MISSING_INPUT` |         400 | Keep modal open and mark the missing field.                         |
+| `VALIDATION_INVALID_QUERY` |         400 | Show filter error or reset invalid pagination/sort controls.        |
+| `GITHUB_UNAUTHORIZED`      |         401 | Show source auth/access guidance.                                   |
+| `GITHUB_RATE_LIMIT`        |         429 | Show rate-limit message and retry affordance if appropriate.        |
+| `ADAPTER_TIMEOUT`          |         504 | Show retryable adapter/sync failure.                                |
+| Other errors               |         500 | Show generic backend failure with retry only when `retryable=true`. |
 
 Frontend API use cases:
 
@@ -289,14 +289,14 @@ Frontend API use cases:
 
 ### Identifier Contract
 
-| Field | Meaning | Frontend usage |
-|---|---|---|
-| `workspaceId` | Workspace UUID | Route parameter for workspace routes. |
-| `featureId` | Public feature UUID from `feature_id` | Route parameter for feature routes. |
-| `taskId` | Public task UUID from `task_id` | Route parameter for task routes. |
-| `feature_name` | Display/source slug | Display label only. |
-| `task_name` | Display/source label such as `T1` | Display label only. |
-| query `task_id` | Text filter over `task_name` | Task-name search input. |
+| Field           | Meaning                               | Frontend usage                        |
+| --------------- | ------------------------------------- | ------------------------------------- |
+| `workspaceId`   | Workspace UUID                        | Route parameter for workspace routes. |
+| `featureId`     | Public feature UUID from `feature_id` | Route parameter for feature routes.   |
+| `taskId`        | Public task UUID from `task_id`       | Route parameter for task routes.      |
+| `feature_name`  | Display/source slug                   | Display label only.                   |
+| `task_name`     | Display/source label such as `T1`     | Display label only.                   |
+| query `task_id` | Text filter over `task_name`          | Task-name search input.               |
 
 Open tab identity uses route UUIDs. Visible badges can show `feature_name` and `task_name`.
 
@@ -377,6 +377,13 @@ type FeatureSummary = {
   task_counts: TaskCounts;
 };
 
+type PullRequestRef = {
+  label: string;
+  status: string;
+  repo: string;
+  url: string;
+};
+
 type TaskSummary = {
   id: string;
   task_id: string;
@@ -412,17 +419,17 @@ The workspace switcher loads only browser-local summaries. It must not call a gl
 
 The workspace shell owns UI state only:
 
-| State | Source | Purpose |
-|---|---|---|
-| Saved workspace summaries | Browser-local storage | Private workspace switcher, first load, and current selected workspace id. |
-| Active workspace detail | `GET /api/workspaces/:workspaceId`, import, or sync response | Board baseline, feature list, Task Mode defaults, source state. |
-| Sidebar active task list | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | Board sidebar only; independent from board/detail/tab data. |
-| Kanban board polling | `GET /api/workspaces/:workspaceId` | Refresh board data while the board is active. |
-| Active surface | UI state | `board`, `task`, or `feature`. |
-| Open work item tabs | UI state keyed by `workspaceId` | Persistent task and feature sessions. |
-| Active task detail | Task detail route | Quick task view and task tab. |
-| Active feature detail | Feature detail route | Quick feature view and feature tab. |
-| Search/filter params | UI state serialized to `URLSearchParams` | List refreshes. |
+| State                     | Source                                                                                                       | Purpose                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| Saved workspace summaries | Browser-local storage                                                                                        | Private workspace switcher, first load, and current selected workspace id. |
+| Active workspace detail   | `GET /api/workspaces/:workspaceId`, import, or sync response                                                 | Board baseline, feature list, Task Mode defaults, source state.            |
+| Sidebar active task list  | `GET /api/workspaces/:workspaceId/tasks?status=in_progress,in_review,ready&sort=task_id_asc&page=1&limit=50` | Board sidebar only; independent from board/detail/tab data.                |
+| Kanban board polling      | `GET /api/workspaces/:workspaceId`                                                                           | Refresh board data while the board is active.                              |
+| Active surface            | UI state                                                                                                     | `board`, `task`, or `feature`.                                             |
+| Open work item tabs       | UI state keyed by `workspaceId`                                                                              | Persistent task and feature sessions.                                      |
+| Active task detail        | Task detail route                                                                                            | Quick task view and task tab.                                              |
+| Active feature detail     | Feature detail route                                                                                         | Quick feature view and feature tab.                                        |
+| Search/filter params      | UI state serialized to `URLSearchParams`                                                                     | List refreshes.                                                            |
 
 Switching workspace clears or hides tabs from the previous workspace. If tabs are cached by workspace, only tabs for the active workspace may be visible.
 
@@ -431,10 +438,11 @@ Switching workspace clears or hides tabs from the previous workspace. If tabs ar
 #### First load and workspace switcher
 
 1. Load browser-local workspace summaries and the current selected workspace id.
-2. If no local summaries exist, show the no-workspace empty state and import action.
-3. If local summaries exist, select the current local workspace id or the most recently opened summary and load `GET /api/workspaces/:workspaceId`.
-4. Filter the browser-local workspace summaries locally in the switcher.
-5. Selecting another workspace updates the local selected workspace id, loads its backend detail, and returns to the board.
+2. Treat existing workspaces as the browser-local summaries only; backend-only workspaces are not shown until imported.
+3. If no local summaries exist, show the no-workspace empty state and import action.
+4. If local summaries exist, select the current local workspace id or the most recently opened summary and load `GET /api/workspaces/:workspaceId`.
+5. Filter the browser-local workspace summaries locally in the switcher.
+6. Selecting another workspace updates the local selected workspace id, loads its backend detail, and returns to the board.
 
 #### Import workspace
 
@@ -597,9 +605,6 @@ The UI must keep backend source status visible without blanking usable data:
 ## 6. Parallelization / Blocking Analysis
 
 ```text
-D1: workflow-backend API availability
-  └── Use contract-faithful mocks for unit/component work; unblock final browser QA by running or deploying api-service.
-
 T1: Frontend API client and shared workflow DTOs
   └── Can begin now - no blockers
   │
@@ -628,24 +633,22 @@ T1: Frontend API client and shared workflow DTOs
             └── BLOCKED on T4 (task behavior must work)
             └── BLOCKED on T5 (feature behavior must work)
             └── BLOCKED on T6 (document, source-state, and copy behavior must work)
-            └── BLOCKED on D1 (browser QA needs live or contract-faithful workflow-backend responses)
 ```
 
 T2 and T3 are sequenced because refresh/search/polling UX needs the active workspace shell from T2. T4 and T5 can run in parallel after T3 because task surfaces and feature surfaces have separate UI ownership. T6 is intentionally later because document rendering, source-state display, and copy behavior span both surfaces. T7 owns final integrated verification.
 
 ## 7. Repository Impact
 
-| Repo | Changes |
-|---|---|
+| Repo                 | Changes                                                                                                                                                                                                                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `digital-factory-ui` | API client, DTOs, query helpers, workspace shell, workspace switcher, import modal, board backend loading, Kanban board polling, sidebar active-task polling, task/feature search, sync/stale UX, task quick view, task tab, feature quick view, feature tab, document rendering, tests, and browser QA. |
-| `management-repo` | Planning artifacts only under `docs/features/workspace-tabs-data-flow/`. |
+| `management-repo`    | Planning artifacts only under `docs/features/workspace-tabs-data-flow/`.                                                                                                                                                                                                                                 |
 
 Dependency repo:
 
-| Repo | Role |
-|---|---|
+| Repo               | Role                                                                                                                                                             |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `workflow-backend` | Provides the existing frontend API contract. No implementation changes are expected from this feature unless live behavior differs from the documented contract. |
-| `workspace-github-adapter` | Upstream sync/write-side dependency behind `workflow-backend`. The frontend does not call it directly. |
 
 Unaffected repos: `workflow`, `rag-service`, and `git-nexus`.
 
