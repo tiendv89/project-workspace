@@ -1,7 +1,7 @@
 id: T2
 title: Workspace switcher, import modal, and board bootstrap integration
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -17,8 +17,15 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for saved workspace list, workspace detail bootstrap, workspace switching, and import modal integration with workflow-backend routes.
+    note: Task rewritten for saved workspace list, workspace detail bootstrap,
+      workspace switching, and import modal integration with workflow-backend
+      routes.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T07:11:39Z
-    note: Task revised so the workspace switcher and current selected workspace come from browser-local summaries instead of a global workspace list API.
+    note: Task revised so the workspace switcher and current selected workspace come
+      from browser-local summaries instead of a global workspace list API.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-21T09:08:00.327Z
+    note: Task activated — dependency T1 merged and marked done.
