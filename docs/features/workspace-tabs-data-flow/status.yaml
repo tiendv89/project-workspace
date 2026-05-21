@@ -407,3 +407,4 @@ history:
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
 feature_branch: feature/workspace-tabs-data-flow
 feature_branch_base_sha: c14f2220115321e429e55bd3516eb10a7f2c67db
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/281
