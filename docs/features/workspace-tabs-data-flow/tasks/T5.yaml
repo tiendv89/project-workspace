@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T18:10:50.351Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-21T18:12:40.865Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/45
   status: open
@@ -128,3 +128,7 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.18333600000000003
     at: 2026-05-21T18:10:50.351Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T18:12:40.865Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
