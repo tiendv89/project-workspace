@@ -1,16 +1,15 @@
 feature_id: workspace-tabs-data-flow
 title: Workspace Tabs and Backend API Data Flow
-
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
 next_action: Start implementation of T1.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
     reviewed_at: 2026-05-20T14:08:06+0700
-    review_comment: Product spec approved after redesigning the scope around UI redesign and full backend API replacement.
+    review_comment: Product spec approved after redesigning the scope around UI
+      redesign and full backend API replacement.
     review_history:
       - status: approved
         by: minhkienn203@gmail.com
@@ -19,36 +18,45 @@ stages:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-14T18:25:49+07:00
-        comment: Revised to require GitHub/DB -> adapter -> backend -> UI end-to-end data flow.
+        comment: Revised to require GitHub/DB -> adapter -> backend -> UI end-to-end
+          data flow.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:09:09+07:00
-        comment: Renamed feature id to workspace-tabs-data-flow to match the final end-to-end data-flow scope.
+        comment: Renamed feature id to workspace-tabs-data-flow to match the final
+          end-to-end data-flow scope.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:34:08+07:00
-        comment: Revised product spec approved for workspace-tabs-data-flow end-to-end data flow.
+        comment: Revised product spec approved for workspace-tabs-data-flow end-to-end
+          data flow.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:34:28+07:00
-        comment: Product spec rewritten around the workflow-backend frontend API contract.
+        comment: Product spec rewritten around the workflow-backend frontend API
+          contract.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:49:04+07:00
-        comment: Product spec approved after rewriting the feature around the workflow-backend frontend API contract.
+        comment: Product spec approved after rewriting the feature around the
+          workflow-backend frontend API contract.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:03:04+0700
-        comment: Product spec redesigned around UI redesign and full backend API replacement. Awaiting re-approval.
+        comment: Product spec redesigned around UI redesign and full backend API
+          replacement. Awaiting re-approval.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:08:06+0700
-        comment: Product spec approved after redesigning the scope around UI redesign and full backend API replacement.
+        comment: Product spec approved after redesigning the scope around UI redesign
+          and full backend API replacement.
   technical_design:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
     reviewed_at: 2026-05-20T14:22:56+0700
-    review_comment: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
+    review_comment: Technical design approved after clarifying UI redesign scope,
+      backend API integration ownership, and browser-local workspace switcher
+      behavior.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -61,15 +69,18 @@ stages:
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T18:43:41+07:00
-        comment: Added concrete database schema for workspace, feature, task, document, activity, snapshot, and sync-run persistence.
+        comment: Added concrete database schema for workspace, feature, task, document,
+          activity, snapshot, and sync-run persistence.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:09:09+07:00
-        comment: Removed extension wording and kept the design scoped to workspace, feature, task, adapter, backend, and database flow.
+        comment: Removed extension wording and kept the design scoped to workspace,
+          feature, task, adapter, backend, and database flow.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:19:26+07:00
-        comment: Standardized backend implementation stack on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+        comment: Standardized backend implementation stack on NestJS, Supabase Postgres,
+          Prisma Client, and Prisma Migrate.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-15T00:13:07+07:00
@@ -77,27 +88,36 @@ stages:
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:34:28+07:00
-        comment: Technical design rewritten to consume the existing workflow-backend API instead of designing backend implementation work.
+        comment: Technical design rewritten to consume the existing workflow-backend API
+          instead of designing backend implementation work.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:52:32+07:00
-        comment: Technical design rewritten for the workflow-backend frontend API contract and awaits approval.
+        comment: Technical design rewritten for the workflow-backend frontend API
+          contract and awaits approval.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T12:43:19+07:00
-        comment: Technical design approved for workflow-backend API integration. Feature advances to task planning.
+        comment: Technical design approved for workflow-backend API integration. Feature
+          advances to task planning.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:11:39+0700
-        comment: Technical design revised so the workspace switcher and current selected workspace come from browser-local summaries while backend APIs replace durable data flows.
+        comment: Technical design revised so the workspace switcher and current selected
+          workspace come from browser-local summaries while backend APIs replace
+          durable data flows.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:15:41+0700
-        comment: Technical design clarified that imported workspaces persist in both backend DB and browser-local summaries, while the switcher loads only browser-local data.
+        comment: Technical design clarified that imported workspaces persist in both
+          backend DB and browser-local summaries, while the switcher loads only
+          browser-local data.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:22:56+0700
-        comment: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
+        comment: Technical design approved after clarifying UI redesign scope, backend
+          API integration ownership, and browser-local workspace switcher
+          behavior.
   tasks:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
@@ -107,23 +127,28 @@ stages:
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T17:41:48+07:00
-        comment: Task breakdown drafted from technical design. Tasks remain todo until technical design and tasks-stage approvals.
+        comment: Task breakdown drafted from technical design. Tasks remain todo until
+          technical design and tasks-stage approvals.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T18:25:49+07:00
-        comment: Task breakdown rewritten for backend adapters, backend APIs, frontend integration, and end-to-end QA.
+        comment: Task breakdown rewritten for backend adapters, backend APIs, frontend
+          integration, and end-to-end QA.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T18:43:41+07:00
-        comment: Database task updated to require schema/migration, constraints, indexes, raw document storage, and derived activity rows.
+        comment: Database task updated to require schema/migration, constraints,
+          indexes, raw document storage, and derived activity rows.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:09:09+07:00
-        comment: Task branch metadata updated to use feature/workspace-tabs-data-flow-Tn.
+        comment: Task branch metadata updated to use
+          feature/workspace-tabs-data-flow-Tn.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-14T19:19:26+07:00
-        comment: Backend tasks updated to require NestJS modules/controllers/services and Supabase Postgres with Prisma schema/migrations.
+        comment: Backend tasks updated to require NestJS modules/controllers/services
+          and Supabase Postgres with Prisma schema/migrations.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-15T00:13:07+07:00
@@ -131,11 +156,13 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-15T00:15:49+07:00
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1
+          activated.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-20T11:34:28+07:00
-        comment: Task breakdown rewritten for digital-factory-ui integration with workflow-backend API routes.
+        comment: Task breakdown rewritten for digital-factory-ui integration with
+          workflow-backend API routes.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T12:43:19+07:00
@@ -143,11 +170,14 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T12:46:30+07:00
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1
+          activated.
       - status: draft
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:11:39+0700
-        comment: Task breakdown revised for browser-local workspace summaries and current selection. Requires re-approval after technical design approval.
+        comment: Task breakdown revised for browser-local workspace summaries and
+          current selection. Requires re-approval after technical design
+          approval.
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:22:56+0700
@@ -155,26 +185,26 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-20T14:27:38+0700
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1
+          activated.
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
-
 history:
   - stage: product_spec
     action: created
     by: minhkienn203@gmail.com
     at: 2026-05-14T14:01:39+07:00
-    note: Feature scaffold created for workspace switching, feature tabs, and task tabs.
+    note: Feature scaffold created for workspace switching, feature tabs, and task
+      tabs.
   - stage: product_spec
     action: approved
     by: minhkienn203@gmail.com
@@ -189,42 +219,50 @@ history:
     action: drafted
     by: minhkienn203@gmail.com
     at: 2026-05-14T17:41:48+07:00
-    note: Task breakdown drafted from the technical design. Tasks remain todo until technical design and tasks-stage approvals.
+    note: Task breakdown drafted from the technical design. Tasks remain todo until
+      technical design and tasks-stage approvals.
   - stage: product_spec
     action: revision_submitted
     by: minhkienn203@gmail.com
     at: 2026-05-14T18:25:49+07:00
-    note: Product spec rewritten to require GitHub/DB -> adapter -> backend -> UI end-to-end flow.
+    note: Product spec rewritten to require GitHub/DB -> adapter -> backend -> UI
+      end-to-end flow.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T18:25:49+07:00
-    note: Technical design rewritten for backend source adapters, normalized API contracts, and frontend backend consumption.
+    note: Technical design rewritten for backend source adapters, normalized API
+      contracts, and frontend backend consumption.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T18:25:49+07:00
-    note: Tasks rewritten around backend adapters, backend APIs, frontend integration, source-state UX, and end-to-end QA.
+    note: Tasks rewritten around backend adapters, backend APIs, frontend
+      integration, source-state UX, and end-to-end QA.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T18:43:41+07:00
-    note: Added concrete database schema for workspace, repositories, snapshots, features, feature documents, tasks, activity events, and sync runs.
+    note: Added concrete database schema for workspace, repositories, snapshots,
+      features, feature documents, tasks, activity events, and sync runs.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T18:43:41+07:00
-    note: Updated database implementation task to require schema/migration, constraints, indexes, raw document storage, and activity projection.
+    note: Updated database implementation task to require schema/migration,
+      constraints, indexes, raw document storage, and activity projection.
   - stage: product_spec
     action: renamed
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:09:09+07:00
-    note: Feature renamed to workspace-tabs-data-flow to match the final end-to-end data-flow scope.
+    note: Feature renamed to workspace-tabs-data-flow to match the final end-to-end
+      data-flow scope.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:09:09+07:00
-    note: Kept the design scoped to workspace, feature, task, adapter, backend, and database flow.
+    note: Kept the design scoped to workspace, feature, task, adapter, backend, and
+      database flow.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
@@ -234,17 +272,20 @@ history:
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:19:26+07:00
-    note: Standardized backend implementation stack on NestJS, Supabase Postgres, Prisma Client, and Prisma Migrate.
+    note: Standardized backend implementation stack on NestJS, Supabase Postgres,
+      Prisma Client, and Prisma Migrate.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:19:26+07:00
-    note: Updated backend tasks to require NestJS modules/controllers/services, Prisma schema/migrations, and Supabase Postgres configuration.
+    note: Updated backend tasks to require NestJS modules/controllers/services,
+      Prisma schema/migrations, and Supabase Postgres configuration.
   - stage: product_spec
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-14T19:34:08+07:00
-    note: Revised product spec approved. Feature advances to in_tdd; technical design and tasks still require approval.
+    note: Revised product spec approved. Feature advances to in_tdd; technical
+      design and tasks still require approval.
   - stage: technical_design
     action: approved
     by: minhkienn203@gmail.com
@@ -254,7 +295,8 @@ history:
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-15T00:13:07+07:00
-    note: Task breakdown submitted for approval. Tasks remain todo until tasks-stage approval.
+    note: Task breakdown submitted for approval. Tasks remain todo until tasks-stage
+      approval.
   - stage: tasks
     action: approved
     by: minhkienn203@gmail.com
@@ -264,9 +306,9 @@ history:
     action: reset
     by: matthew@swellnetwork.io
     at: 2026-05-15T00:31:25+0700
-    note: >-
-      Feature reset to product_spec stage. Technical design, tasks, and downstream
-      artifacts preserved for revalidation. All revalidation flags set to true.
+    note: Feature reset to product_spec stage. Technical design, tasks, and
+      downstream artifacts preserved for revalidation. All revalidation flags
+      set to true.
   - stage: product_spec
     action: revision_submitted
     by: minhkienn203@gmail.com
@@ -276,32 +318,38 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:49:04+07:00
-    note: Product spec approved after rewriting the feature around the workflow-backend frontend API contract.
+    note: Product spec approved after rewriting the feature around the
+      workflow-backend frontend API contract.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Technical design rewritten as a frontend integration plan for workflow-backend API routes, DTOs, source-state, and error handling.
+    note: Technical design rewritten as a frontend integration plan for
+      workflow-backend API routes, DTOs, source-state, and error handling.
   - stage: technical_design
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:52:32+07:00
-    note: Technical design rewritten for the workflow-backend frontend API contract and submitted for approval.
+    note: Technical design rewritten for the workflow-backend frontend API contract
+      and submitted for approval.
   - stage: technical_design
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T12:43:19+07:00
-    note: Technical design approved for workflow-backend API integration. Feature advances to task planning.
+    note: Technical design approved for workflow-backend API integration. Feature
+      advances to task planning.
   - stage: tasks
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-20T12:43:19+07:00
-    note: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+    note: Task breakdown submitted for approval after technical design approval.
+      Tasks remain todo until tasks-stage approval.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task breakdown rewritten as digital-factory-ui work; stale workflow-backend implementation tasks removed.
+    note: Task breakdown rewritten as digital-factory-ui work; stale
+      workflow-backend implementation tasks removed.
   - stage: tasks
     action: approved
     by: minhkienn203@gmail.com
@@ -311,42 +359,51 @@ history:
     action: reset
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:03:04+0700
-    note: >-
-      Product spec redesigned around UI redesign and full backend API replacement.
-      Feature reset to product_spec for re-review; technical design and tasks need
-      revalidation after approval.
+    note: Product spec redesigned around UI redesign and full backend API
+      replacement. Feature reset to product_spec for re-review; technical design
+      and tasks need revalidation after approval.
   - stage: product_spec
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:08:06+0700
-    note: Product spec approved after redesign. Feature advances to in_tdd; technical design and tasks remain flagged for revalidation.
+    note: Product spec approved after redesign. Feature advances to in_tdd;
+      technical design and tasks remain flagged for revalidation.
   - stage: technical_design
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:11:39+0700
-    note: Technical design updated so the workspace switcher and current selected workspace use browser-local summaries while all durable workspace data comes from workflow-backend APIs.
+    note: Technical design updated so the workspace switcher and current selected
+      workspace use browser-local summaries while all durable workspace data
+      comes from workflow-backend APIs.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:15:41+0700
-    note: Technical design clarified that imported workspaces are stored in both backend DB and browser-local summaries, and the switcher reads only browser-local data.
+    note: Technical design clarified that imported workspaces are stored in both
+      backend DB and browser-local summaries, and the switcher reads only
+      browser-local data.
   - stage: technical_design
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:22:56+0700
-    note: Technical design approved after clarifying UI redesign scope, backend API integration ownership, and browser-local workspace switcher behavior.
+    note: Technical design approved after clarifying UI redesign scope, backend API
+      integration ownership, and browser-local workspace switcher behavior.
   - stage: tasks
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:22:56+0700
-    note: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+    note: Task breakdown submitted for approval after technical design approval.
+      Tasks remain todo until tasks-stage approval.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:11:39+0700
-    note: Task breakdown updated for browser-local workspace summaries and current selection; tasks require approval before activation.
+    note: Task breakdown updated for browser-local workspace summaries and current
+      selection; tasks require approval before activation.
   - stage: tasks
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-20T14:27:38+0700
     note: Tasks approved. Feature advances to ready_for_implementation. T1 activated.
+feature_branch: feature/workspace-tabs-data-flow
+feature_branch_base_sha: c14f2220115321e429e55bd3516eb10a7f2c67db
