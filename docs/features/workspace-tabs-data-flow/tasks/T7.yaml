@@ -36,3 +36,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T18:44:29.979Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T18:44:42.270Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/digital-factory-ui/pull/39,
+      github.com/tiendv89/digital-factory-ui/pull/34,
+      docs/features/workspace-tabs-data-flow/technical-design.md"
+    rag_query: End-to-end browser QA and regression coverage workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
