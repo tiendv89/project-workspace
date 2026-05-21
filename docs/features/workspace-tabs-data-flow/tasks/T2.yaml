@@ -45,6 +45,10 @@ log:
       workspace-tabs-data-flow
     note: Runtime pre-flight RAG fetch — written before executor spawn.
 blocked_context: null
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T09:16:42+0000
+    note: executor work phase begun.
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/283
   status: open
