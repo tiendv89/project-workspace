@@ -1,7 +1,7 @@
 id: T3
 title: Workspace search, filters, refresh, and stale-source UX
 repo: digital-factory-ui
-status: in_review
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workspace-tabs-data-flow-T3
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-21T13:27:53.092Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T13:41:14.504Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/43
   status: open
@@ -133,3 +133,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-21T13:27:53.092Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Task search sends dual task_id+title params from single search input
+      (KanbanBoard.context.tsx:130-131). Backend AND semantics means searching
+      'T3' requires BOTH task_name CONTAINS 'T3' AND title CONTAINS 'T3' —
+      breaks task-name searches. Fix: send only task_id from the task-mode
+      search box. Cycle 2 issues (task_id wired, syncError rendered via
+      StaleBanner) are confirmed fixed. CI passed (no check-runs)."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/43#pullrequestreview-4337390590
+    at: 2026-05-21T13:41:14.504Z
