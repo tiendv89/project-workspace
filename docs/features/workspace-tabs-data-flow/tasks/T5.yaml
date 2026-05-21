@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -12,7 +12,7 @@ branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T17:37:15.808Z
+  last_updated_at: 2026-05-21T17:38:48.127Z
 pr:
   url: null
   status: null
@@ -73,3 +73,7 @@ log:
     by: norepy@tiendv.dev
     note: Max-turns block reset to ready (attempt 1 of 3).
     at: 2026-05-21T17:37:15.808Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:38:48.127Z
+    note: Claimed via git-based claim protocol.
