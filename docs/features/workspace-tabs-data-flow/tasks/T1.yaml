@@ -1,24 +1,23 @@
 id: T1
 title: Frontend API client and shared workflow DTOs
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T08:41:10+0000
+  last_updated_at: 2026-05-21T08:48:25.392Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/41
+  status: open
 log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T04:34:28.000Z
-    note: >-
-      Task rewritten for the digital-factory-ui API client and DTO layer that consumes the workflow-backend frontend API
-      contract.
+    note: Task rewritten for the digital-factory-ui API client and DTO layer that
+      consumes the workflow-backend frontend API contract.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-20T05:46:30.000Z
@@ -26,9 +25,8 @@ log:
   - action: reset
     by: minhkienn203@gmail.com
     at: 2026-05-20T07:11:39.000Z
-    note: >-
-      Task returned to todo because technical design and task breakdown require re-approval after the product spec
-      redesign.
+    note: Task returned to todo because technical design and task breakdown require
+      re-approval after the product spec redesign.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-20T07:27:38.000Z
@@ -41,9 +39,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T08:37:12.591Z
     rag_context_injected: true
-    rag_summary: >-
-      Retrieved 5 chunks: docs/features/workspace-tabs-data-flow/product-spec.md,
-      docs/features/workspace-tabs-data-flow/technical-design.md, docs/features/workspace-tabs-data-flow/product-spec.md
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/product-spec.md,
+      docs/features/workspace-tabs-data-flow/technical-design.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
     rag_query: Frontend API client and shared workflow DTOs workspace-tabs-data-flow
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: started
