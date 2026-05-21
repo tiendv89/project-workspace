@@ -7,8 +7,8 @@ blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T1
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T08:48:34.341Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-21T08:50:26.800Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/41
   status: open
@@ -58,6 +58,10 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.38824800000000004
     at: 2026-05-21T08:48:34.341Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T08:50:26.800Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
 blocked_context: null
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/282
