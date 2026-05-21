@@ -1,14 +1,14 @@
 id: T1
 title: Frontend API client and shared workflow DTOs
 repo: digital-factory-ui
-status: in_review
+status: change_requested
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T1
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-21T08:50:26.800Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T08:57:43.285Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/41
   status: open
@@ -62,6 +62,15 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-21T08:50:26.800Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Missing identifier helpers — T1 deliverable 'Define backend identifier
+      helpers for workspaceId, featureId, taskId, feature_name, and task_name'
+      is absent from all PR files (types.ts, client.ts, query-params.ts,
+      index.ts). Fix: add type aliases WorkspaceId, FeatureId, TaskId to
+      types.ts and re-export from index.ts."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/41#pullrequestreview-4335430190
+    at: 2026-05-21T08:57:43.285Z
 blocked_context: null
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/282
