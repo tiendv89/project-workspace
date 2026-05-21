@@ -1,7 +1,7 @@
 id: T3
 title: Workspace search, filters, refresh, and stale-source UX
 repo: digital-factory-ui
-status: in_progress
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -147,3 +147,11 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T13:42:57.713Z
     note: Fix agent claimed.
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-21T21:52:56+0700
+    note: >-
+      Human reset to change_requested — fix agent (cycle 3) crashed before completing.
+      Outstanding issue: task search sends dual task_id+title params from single
+      search input (KanbanBoard.context.tsx:130-131); fix only task_id from task-mode
+      search box.
