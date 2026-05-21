@@ -1,7 +1,7 @@
 id: T2
 title: Workspace switcher, import modal, and board bootstrap integration
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -55,3 +55,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T09:16:42+0000
     note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-21T18:37:42+0700
+    note: >-
+      Reset to ready after YAML key order repair (blocked_context and workspace_pr
+      were displaced after log: by orchestrator bug). Prior claim cleared so agent
+      can re-claim cleanly.
