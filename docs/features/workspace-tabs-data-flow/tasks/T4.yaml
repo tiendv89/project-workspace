@@ -33,3 +33,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T16:03:16.046Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:03:29.344Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/technical-design.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Task quick views, workspace-scoped task drawer, and task tab
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
