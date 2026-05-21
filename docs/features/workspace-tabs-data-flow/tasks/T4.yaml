@@ -1,7 +1,7 @@
 id: T4
 title: Task quick views, workspace-scoped task drawer, and task tab
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -12,7 +12,7 @@ branch: feature/workspace-tabs-data-flow-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T16:42:54.026Z
+  last_updated_at: 2026-05-21T16:44:29.377Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/44
   status: open
@@ -95,3 +95,7 @@ log:
       activeSurface."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/44#pullrequestreview-4338848794
     at: 2026-05-21T16:42:54.026Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:44:29.377Z
+    note: Fix agent claimed.
