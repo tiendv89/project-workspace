@@ -1,7 +1,7 @@
 id: T7
 title: End-to-end browser QA and regression coverage
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -22,4 +22,9 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for final browser QA, regression coverage, and verification against the workflow-backend API integration.
+    note: Task rewritten for final browser QA, regression coverage, and verification
+      against the workflow-backend API integration.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-21T18:43:27.681Z
+    note: Task activated — dependency T6 merged and marked done.
