@@ -1,27 +1,138 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T1
   - T2
   - T3
 blocked_reason: null
+blocked_context: null
 branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-20T11:34:28+07:00
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T18:18:38.124Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/45
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/286
+  status: open
 log:
   - action: revised
     by: minhkienn203@gmail.com
-    at: 2026-05-20T11:34:28+07:00
+    at: 2026-05-20T04:34:28.000Z
     note: Task rewritten for Feature Mode, feature detail tabs, feature-scoped task
       routes, and feature tab session behavior.
   - action: ready
     by: norepy@tiendv.dev
     at: 2026-05-21T16:01:13.770Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:03:35.625Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:03:48.145Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/283,
+      github.com/tiendv89/project-workspace/pull/52,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Feature mode, feature tab, and feature-scoped task drilldown
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:12:15+0000
+    note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-22T00:12:45+0700
+    note: Reset to ready — executor deadlocked agent-1 (pipe buffer full, no impl
+      commits after 58 min). Restart workspace agent containers to clear the
+      stuck process before re-dispatch.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:16:25.524Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:16:32.352Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/285,
+      github.com/tiendv89/project-workspace/pull/284,
+      github.com/tiendv89/project-workspace/pull/283"
+    rag_query: Feature mode, feature tab, and feature-scoped task drilldown
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-21T17:37:15.808Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:38:48.127Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:38:54.173Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/285,
+      github.com/tiendv89/project-workspace/pull/284,
+      github.com/tiendv89/project-workspace/pull/283"
+    rag_query: Feature mode, feature tab, and feature-scoped task drilldown
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:45:25+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/45"
+    token_usage:
+      input: 194
+      output: 16564
+      model: claude-sonnet-4-6
+    cost_usd: 0.24904199999999999
+    at: 2026-05-21T17:48:58.832Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T17:50:27.963Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🟡 Drilldown tests misleadingly named and do not test FeatureTaskDrilldown
+      states (src/__tests__/feature-tab-view.test.ts:645,677). T5 spec requires
+      'tests for drilldown and back behavior' — neither the loading state, error
+      state, content rendering, nor data-back-to-feature affordance are
+      verified. All other T5 deliverables implemented; 618 tests pass; typecheck
+      clean.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/45#pullrequestreview-4339420893
+    at: 2026-05-21T18:02:12.553Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T18:03:29.655Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/45"
+    token_usage:
+      input: 122
+      output: 12198
+      model: claude-sonnet-4-6
+    cost_usd: 0.18333600000000003
+    at: 2026-05-21T18:10:50.351Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T18:12:40.865Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-21T18:18:38.124Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
