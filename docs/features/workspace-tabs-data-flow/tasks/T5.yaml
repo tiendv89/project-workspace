@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T1
   - T2
@@ -47,3 +47,9 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T16:12:15+0000
     note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-22T00:12:45+0700
+    note: >-
+      Reset to ready — executor deadlocked agent-1 (pipe buffer full, no impl commits after 58 min).
+      Restart workspace agent containers to clear the stuck process before re-dispatch.
