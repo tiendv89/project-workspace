@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -19,4 +19,9 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for Feature Mode, feature detail tabs, feature-scoped task routes, and feature tab session behavior.
+    note: Task rewritten for Feature Mode, feature detail tabs, feature-scoped task
+      routes, and feature tab session behavior.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:01:13.770Z
+    note: Task activated — dependency T3 merged and marked done.

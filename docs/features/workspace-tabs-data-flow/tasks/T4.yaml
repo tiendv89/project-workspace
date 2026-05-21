@@ -1,7 +1,7 @@
 id: T4
 title: Task quick views, workspace-scoped task drawer, and task tab
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -19,4 +19,9 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for task quick inspection, workspace-scoped task detail, task tab sessions, PR refs, and dependencies.
+    note: Task rewritten for task quick inspection, workspace-scoped task detail,
+      task tab sessions, PR refs, and dependencies.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:01:13.767Z
+    note: Task activated — dependency T3 merged and marked done.
