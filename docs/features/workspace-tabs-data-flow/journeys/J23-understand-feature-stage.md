@@ -1,8 +1,8 @@
-# J23 — Understand feature stage state
+# J23 - Understand feature stage state
 
 1. The user is inside a feature tab.
-2. The user opens or hovers the current stage summary.
-3. The app shows which feature stages are complete, current, or not yet complete.
-4. The user dismisses the stage summary and remains in the feature tab.
+2. The feature header shows `status`, `current_stage`, and updated time from backend detail data.
+3. The user opens or hovers the current stage summary when the UI exposes one.
+4. The app shows stage state without requiring the user to read raw status files.
 
-**Expected result:** the user can understand the feature stage without reading raw status files.
+**Expected result:** the user can understand feature progress from backend feature detail data.

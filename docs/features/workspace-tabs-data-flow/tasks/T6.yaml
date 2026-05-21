@@ -1,20 +1,21 @@
 id: T6
-title: Task and feature tabs from backend detail payloads
+title: Document rendering, source state, and copy affordances
 repo: digital-factory-ui
 status: todo
 depends_on:
+  - T4
   - T5
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T6
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-14T19:09:09+07:00
+  last_updated_at: 2026-05-20T11:34:28+07:00
 pr:
   url: null
   status: null
 log:
   - action: revised
     by: minhkienn203@gmail.com
-    at: 2026-05-14T18:25:49+07:00
-    note: Task revised for Task and Feature tab pages rendered from backend detail payloads.
+    at: 2026-05-20T11:34:28+07:00
+    note: Task rewritten for feature document rendering, empty states, source-state display, and copy feedback. Activity timeline integration is deferred.

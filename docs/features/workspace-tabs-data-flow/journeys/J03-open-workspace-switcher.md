@@ -1,9 +1,9 @@
-# J03 — Open the workspace switcher
+# J03 - Open the workspace switcher
 
-1. The user is on the dashboard with a workspace selected.
-2. The user opens the workspace switcher from the workspace tab control.
-3. The app shows saved workspaces loaded from the backend and a way to search them.
+1. The user clicks the workspace dropdown.
+2. The app opens the workspace switcher.
+3. The switcher shows the backend-loaded workspace list and search input.
 4. The active workspace is clearly marked.
-5. The user can choose a saved workspace or start importing a new one.
+5. The user can close the switcher, select another workspace, or start import from the footer action.
 
-**Expected result:** the user understands where they are and can move to another workspace from the same header area.
+**Expected result:** the switcher is the place to change workspaces or begin import.

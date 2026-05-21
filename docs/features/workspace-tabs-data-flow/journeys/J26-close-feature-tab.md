@@ -1,4 +1,4 @@
-# J26 — Close a feature tab
+# J26 - Close a feature tab
 
 1. The user closes a feature tab.
 2. The feature tab is removed from the header.

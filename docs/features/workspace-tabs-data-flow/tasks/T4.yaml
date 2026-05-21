@@ -1,8 +1,9 @@
 id: T4
-title: NestJS workspace APIs and source error contract
-repo: workflow-backend
+title: Task quick views, workspace-scoped task drawer, and task tab
+repo: digital-factory-ui
 status: todo
 depends_on:
+  - T1
   - T2
   - T3
 blocked_reason: null
@@ -10,16 +11,12 @@ branch: feature/workspace-tabs-data-flow-T4
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-14T19:19:26+07:00
+  last_updated_at: 2026-05-20T11:34:28+07:00
 pr:
   url: null
   status: null
 log:
   - action: revised
     by: minhkienn203@gmail.com
-    at: 2026-05-14T18:25:49+07:00
-    note: Task revised for backend workspace APIs, source service orchestration, and GitHub/DB error mapping.
-  - action: revised
-    by: minhkienn203@gmail.com
-    at: 2026-05-14T19:19:26+07:00
-    note: Task updated to expose workspace APIs through NestJS controllers and services.
+    at: 2026-05-20T11:34:28+07:00
+    note: Task rewritten for task quick inspection, workspace-scoped task detail, task tab sessions, PR refs, and dependencies.
