@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -12,7 +12,7 @@ branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-21T16:12:15+0000
+  last_updated_at: 2026-05-21T17:16:25.524Z
 pr:
   url: null
   status: null
@@ -23,9 +23,8 @@ log:
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-20T04:34:28.000Z
-    note: >-
-      Task rewritten for Feature Mode, feature detail tabs, feature-scoped task routes, and feature tab session
-      behavior.
+    note: Task rewritten for Feature Mode, feature detail tabs, feature-scoped task
+      routes, and feature tab session behavior.
   - action: ready
     by: norepy@tiendv.dev
     at: 2026-05-21T16:01:13.770Z
@@ -38,10 +37,12 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T16:03:48.145Z
     rag_context_injected: true
-    rag_summary: >-
-      Retrieved 5 chunks: github.com/tiendv89/project-workspace/pull/283, github.com/tiendv89/project-workspace/pull/52,
-      docs/features/workspace-tabs-data-flow/product-spec.md
-    rag_query: Feature mode, feature tab, and feature-scoped task drilldown workspace-tabs-data-flow
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/283,
+      github.com/tiendv89/project-workspace/pull/52,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Feature mode, feature tab, and feature-scoped task drilldown
+      workspace-tabs-data-flow
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: started
     by: norepy@tiendv.dev
@@ -50,6 +51,10 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-22T00:12:45+0700
-    note: >-
-      Reset to ready — executor deadlocked agent-1 (pipe buffer full, no impl commits after 58 min).
-      Restart workspace agent containers to clear the stuck process before re-dispatch.
+    note: Reset to ready — executor deadlocked agent-1 (pipe buffer full, no impl
+      commits after 58 min). Restart workspace agent containers to clear the
+      stuck process before re-dispatch.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:16:25.524Z
+    note: Claimed via git-based claim protocol.
