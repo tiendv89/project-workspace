@@ -77,3 +77,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T17:38:48.127Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T17:38:54.173Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/285,
+      github.com/tiendv89/project-workspace/pull/284,
+      github.com/tiendv89/project-workspace/pull/283"
+    rag_query: Feature mode, feature tab, and feature-scoped task drilldown
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
