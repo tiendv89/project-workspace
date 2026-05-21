@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T1
   - T2
@@ -11,11 +11,11 @@ blocked_context: null
 branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-21T18:12:40.865Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T18:18:38.124Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/45
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/286
   status: open
@@ -132,3 +132,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-21T18:12:40.865Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-21T18:18:38.124Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
