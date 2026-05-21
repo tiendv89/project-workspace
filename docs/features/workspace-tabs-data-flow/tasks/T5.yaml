@@ -1,7 +1,7 @@
 id: T5
 title: Feature mode, feature tab, and feature-scoped task drilldown
 repo: digital-factory-ui
-status: in_review
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/workspace-tabs-data-flow-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-21T17:50:27.963Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T18:02:12.553Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/45
   status: open
@@ -105,3 +105,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-21T17:50:27.963Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🟡 Drilldown tests misleadingly named and do not test FeatureTaskDrilldown
+      states (src/__tests__/feature-tab-view.test.ts:645,677). T5 spec requires
+      'tests for drilldown and back behavior' — neither the loading state, error
+      state, content rendering, nor data-back-to-feature affordance are
+      verified. All other T5 deliverables implemented; 618 tests pass; typecheck
+      clean.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/45#pullrequestreview-4339420893
+    at: 2026-05-21T18:02:12.553Z
