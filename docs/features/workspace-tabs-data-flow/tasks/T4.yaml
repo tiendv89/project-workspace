@@ -1,7 +1,7 @@
 id: T4
 title: Task quick views, workspace-scoped task drawer, and task tab
 repo: digital-factory-ui
-status: in_review
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/workspace-tabs-data-flow-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-21T16:35:02.852Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T16:42:54.026Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/44
   status: open
@@ -84,3 +84,14 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-21T16:35:02.852Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 closeTaskTab logic error
+      (src/features/workspaces/context/WorkspaceContext.tsx): setActiveSurface
+      unconditionally returns 'board' when closing any task tab on the task-tab
+      surface, regardless of whether the closed tab is the active tab. With
+      multiple tabs open, closing a non-active tab incorrectly navigates the
+      user to the board. Fix: check activeTaskTabId === taskId before resetting
+      activeSurface."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/44#pullrequestreview-4338848794
+    at: 2026-05-21T16:42:54.026Z
