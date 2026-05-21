@@ -1,15 +1,15 @@
 id: T2
 title: Workspace switcher, import modal, and board bootstrap integration
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-20T07:11:39Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T09:09:32.086Z
 pr:
   url: null
   status: null
@@ -29,3 +29,8 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-21T09:08:00.327Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T09:09:32.086Z
+    note: Claimed via git-based claim protocol.
+blocked_context: null
