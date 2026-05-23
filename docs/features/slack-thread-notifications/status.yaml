@@ -1,0 +1,72 @@
+feature_id: slack-thread-notifications
+title: Slack Thread Notifications for Feature Runs
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design. Task breakdown is drafted and must remain gated until design approval.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-23T12:12:46+0700
+    review_comment: Approved - proceed to technical design.
+    review_history:
+      - review_status: approved
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-05-23T12:12:46+0700
+        review_comment: Approved - proceed to technical design.
+  technical_design:
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: Technical design drafted and submitted for review.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-05-23T12:16:52+0700
+        review_comment: Technical design drafted and submitted for review.
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: Task breakdown drafted but not submitted for approval until technical design is approved.
+    review_history:
+      - review_status: draft
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-05-23T12:16:52+0700
+        review_comment: Task breakdown drafted from the technical design; human approval is still required later.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-23T11:56:45+0700
+    by: minhkienn203@gmail.com
+    action: feature_created
+    note: >-
+      Created feature scaffold for Slack thread notifications: first feature
+      message creates a Slack thread, Redis stores featureId to thread_ts, task
+      messages post into that thread, and the Redis mapping is deleted when the
+      feature completes.
+  - at: 2026-05-23T12:12:46+0700
+    by: minhkienn203@gmail.com
+    action: product_spec_approved
+    note: Product spec approved. Feature advanced to in_tdd; technical design is ready for review.
+  - at: 2026-05-23T12:16:52+0700
+    by: minhkienn203@gmail.com
+    action: technical_design_submitted
+    note: Technical design drafted by tech-lead and submitted for human review.
+  - at: 2026-05-23T12:16:52+0700
+    by: minhkienn203@gmail.com
+    action: tasks_drafted
+    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain todo pending technical design and tasks approval.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

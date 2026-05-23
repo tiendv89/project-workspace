@@ -1,0 +1,20 @@
+id: T5
+title: Feature lifecycle thread creation and completion cleanup
+repo: workflow
+status: todo
+depends_on:
+  - T3
+blocked_reason: null
+branch: feature/slack-thread-notifications-T5
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-23T12:16:52+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T12:16:52+0700
+    note: Task created by tech-lead planning for feature lifecycle thread creation and completion cleanup.
