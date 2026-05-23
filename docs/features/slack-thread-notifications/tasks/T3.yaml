@@ -1,7 +1,7 @@
 id: T3
 title: Message types and formatters
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -18,10 +18,14 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for the scoped threaded notification service and task notifier adapter.
+    note: Task created by tech-lead planning for the scoped threaded notification
+      service and task notifier adapter.
   - action: scope_clarified
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:33:04+0700
-    note: >-
-      Scope narrowed to message types and formatters only (pure TypeScript, no
+    note: Scope narrowed to message types and formatters only (pure TypeScript, no
       I/O). Stateful service operations moved to T8.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-23T19:41:20.776Z
+    note: Task activated — dependency T2 merged and marked done.
