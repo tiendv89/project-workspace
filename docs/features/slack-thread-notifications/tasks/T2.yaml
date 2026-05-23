@@ -1,17 +1,19 @@
 id: T2
 title: Redis feature/task-thread store
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T07:08:07Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T18:57:38.886Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -24,4 +26,9 @@ log:
   - action: scope_updated
     by: minhkienn203@gmail.com
     at: 2026-05-23T14:08:07+0700
-    note: Expanded Redis store scope from feature-only mappings to feature and task thread mappings.
+    note: Expanded Redis store scope from feature-only mappings to feature and task
+      thread mappings.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T18:57:38.886Z
+    note: Claimed via git-based claim protocol.
