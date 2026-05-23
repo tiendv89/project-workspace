@@ -1,7 +1,7 @@
 id: T4
 title: Task and reviewer notification call-site migration
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T8
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/slack-thread-notifications-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-23T22:10:02.836Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T22:14:59.753Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/210
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/298
   status: open
@@ -122,6 +122,10 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-23T22:10:02.836Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-23T22:14:59.753Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-23T22:09:18.458Z
