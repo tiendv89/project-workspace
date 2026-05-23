@@ -1,0 +1,41 @@
+id: T4
+title: Task and reviewer notification call-site migration
+repo: workflow
+status: todo
+depends_on:
+  - T8
+blocked_reason: null
+branch: feature/slack-thread-notifications-T4
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-23T15:39:57+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T12:16:52+0700
+    note: Task created by tech-lead planning for task and reviewer notification call-site migration.
+  - action: scope_clarified
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T15:39:57+0700
+    note: Feature drift escalation removed from this task; T4 now covers task and task-tied reviewer notification routing only.
+  - action: scope_clarified
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T01:33:04+0700
+    note: >-
+      depends_on updated to T8. T3 narrowed to formatters only; T8 is the new
+      thread management service task. Added TaskNotifierPort adapter removal
+      subtask — old webhook adapter is deleted here, call sites wired directly
+      to ThreadedNotificationService.
+  - action: scope_clarified
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T01:51:47+0700
+    note: >-
+      Hexagonal architecture correction: call sites do NOT wire directly to
+      ThreadedNotificationService. T4 creates ThreadedSlackNotifier (adapter
+      implementing NotificationPort) and wires it at startup. All call sites
+      (dispatchExecutorResult, dispatchReviewResult, escalation handlers)
+      receive NotificationPort and never import Slack or Redis modules directly.

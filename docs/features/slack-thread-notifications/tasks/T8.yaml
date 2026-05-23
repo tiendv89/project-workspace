@@ -1,0 +1,25 @@
+id: T8
+title: Thread management service
+repo: workflow
+status: todo
+depends_on:
+  - T3
+blocked_reason: null
+branch: feature/slack-thread-notifications-T8
+execution:
+  actor_type: agent
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-24T01:33:04+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T01:33:04+0700
+    note: >-
+      Split from original T3. Owns the stateful service implementation —
+      ensureFeatureThread, ensureTaskThread, postFeatureMessage, postTaskMessage,
+      closeFeatureThread, closeTaskThread, lazy fallback, skip behavior, and
+      structured events. Composes T1 Slack client, T2 Redis store, and T3
+      formatters.
