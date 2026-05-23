@@ -107,7 +107,7 @@ It fits the design by isolating the formatting contract from the stateful servic
 
 ### Description
 
-Implement the stateful service that composes the Slack client (T1), the Redis store (T2), and the formatters (T3a). This task owns all thread lifecycle operations and all failure-isolation behavior.
+Implement the stateful service that composes the Slack client (T1), the Redis store (T2), and the formatters (T3). This task owns all thread lifecycle operations and all failure-isolation behavior.
 
 It fits the design as the concrete implementation behind `ThreadedSlackNotifier` (T4's adapter) — T4, T5, and T9 call `NotificationPort` and never import this service directly.
 

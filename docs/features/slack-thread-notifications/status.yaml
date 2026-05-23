@@ -3,7 +3,10 @@ title: Slack Thread Notifications for Feature Runs
 
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
-next_action: T1 and T2 are ready to claim. T3 waits for T1+T2; T4 and T5 wait for T3; T6 waits for T4+T5.
+next_action: >-
+  T1, T2, and T7 are ready to claim (Wave 1, parallel). T3 waits for T1+T2
+  (Wave 2). T8 waits for T3 (Wave 3). T4, T5, and T9 wait for T8 (Wave 4,
+  parallel). T6 waits for T4+T5+T9 (Wave 5).
 
 stages:
   product_spec:

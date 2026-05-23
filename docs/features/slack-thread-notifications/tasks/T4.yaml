@@ -30,3 +30,12 @@ log:
       thread management service task. Added TaskNotifierPort adapter removal
       subtask — old webhook adapter is deleted here, call sites wired directly
       to ThreadedNotificationService.
+  - action: scope_clarified
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T01:51:47+0700
+    note: >-
+      Hexagonal architecture correction: call sites do NOT wire directly to
+      ThreadedNotificationService. T4 creates ThreadedSlackNotifier (adapter
+      implementing NotificationPort) and wires it at startup. All call sites
+      (dispatchExecutorResult, dispatchReviewResult, escalation handlers)
+      receive NotificationPort and never import Slack or Redis modules directly.
