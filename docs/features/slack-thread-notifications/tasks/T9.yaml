@@ -1,7 +1,7 @@
 id: T9
 title: Feature completion and cleanup
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T8
 blocked_reason: null
@@ -17,7 +17,10 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:38:31+0700
-    note: >-
-      Split from T5. Owns handleFeatureDone() wiring for feature_completed via
-      closeFeatureThread(), best-effort task thread key cleanup, and Redis delete
-      failure handling. Runs in parallel with T4 and T5.
+    note: Split from T5. Owns handleFeatureDone() wiring for feature_completed via
+      closeFeatureThread(), best-effort task thread key cleanup, and Redis
+      delete failure handling. Runs in parallel with T4 and T5.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:39:55.035Z
+    note: Task activated — dependency T8 merged and marked done.

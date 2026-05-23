@@ -1,7 +1,7 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T8
 blocked_reason: null
@@ -17,19 +17,26 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for feature lifecycle summary message and cleanup.
+    note: Task created by tech-lead planning for feature lifecycle summary message
+      and cleanup.
   - action: scope_updated
     by: minhkienn203@gmail.com
     at: 2026-05-23T14:08:07+0700
-    note: Added required feature summary message fields and task-thread cleanup expectations.
+    note: Added required feature summary message fields and task-thread cleanup
+      expectations.
   - action: scope_clarified
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:33:04+0700
-    note: depends_on updated to T8. T3 narrowed to formatters only; T8 is the new thread management service task.
+    note: depends_on updated to T8. T3 narrowed to formatters only; T8 is the new
+      thread management service task.
   - action: scope_clarified
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:38:31+0700
-    note: >-
-      Scope narrowed to lifecycle wiring for feature_start, feature_summary_changed,
-      and handoff_submitted only. Feature completion and cleanup moved to T9.
-      Renderer subtasks removed — formatting is T3's responsibility.
+    note: Scope narrowed to lifecycle wiring for feature_start,
+      feature_summary_changed, and handoff_submitted only. Feature completion
+      and cleanup moved to T9. Renderer subtasks removed — formatting is T3's
+      responsibility.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:39:55.032Z
+    note: Task activated — dependency T8 merged and marked done.
