@@ -1,18 +1,20 @@
 id: T8
 title: Thread management service
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T8
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-24T01:33:04+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T20:08:13.677Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -26,3 +28,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-23T20:07:18.777Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:08:13.677Z
+    note: Claimed via git-based claim protocol.
