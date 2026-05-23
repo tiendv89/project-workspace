@@ -1,0 +1,23 @@
+id: T1
+title: Slack Web API client and threaded config
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/slack-thread-notifications-T1
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-23T05:47:29Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T12:16:52+0700
+    note: Task created by tech-lead planning for the Slack Web API client and threaded config.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T05:47:29Z
+    note: Task activated on tasks-stage approval — dependencies met.
