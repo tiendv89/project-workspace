@@ -10,7 +10,7 @@ branch: feature/slack-thread-notifications-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-23T22:07:40.750Z
+  last_updated_at: 2026-05-23T22:09:18.458Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/210
   status: open
@@ -118,3 +118,9 @@ log:
       model: claude-sonnet-4-6
     cost_usd: 0.540609
     at: 2026-05-23T22:07:40.750Z
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-23T22:09:18.458Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/slack-thread-notifications.
