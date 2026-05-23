@@ -1,7 +1,7 @@
 id: T8
 title: Thread management service
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/slack-thread-notifications-T8
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-23T20:32:07.348Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T20:39:54.603Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/209
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/297
   status: open
@@ -61,3 +61,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-23T20:32:07.348Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:39:54.603Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
