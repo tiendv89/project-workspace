@@ -1,7 +1,7 @@
 id: T2
 title: Redis feature/task-thread store
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/slack-thread-notifications-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-23T19:00:14+0000
+  last_updated_at: 2026-05-23T19:15:11.975Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/207
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/294
   status: open
