@@ -1,18 +1,20 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T8
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T14:08:07+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T20:42:21.625Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -40,3 +42,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-23T20:39:55.032Z
     note: Task activated — dependency T8 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:42:21.625Z
+    note: Claimed via git-based claim protocol.
