@@ -175,7 +175,7 @@ base branch (e.g. "main")
 
 "feature/<feature-id>-T<n>"
   → Enqueue via asynq:
-      asynq.NewTask("task:sync", TaskSyncPayload{WorkspaceID, FeatureID, TaskID},
+      asynq.NewTask("task:sync", TaskSyncPayload{WorkspaceID, FeatureName, TaskName},
           asynq.Queue("task-sync"),
           asynq.Unique(24*time.Hour),  // dedup: one pending item per task
           asynq.MaxRetry(3),
@@ -186,7 +186,7 @@ Any other branch
   → Ignore.
 ```
 
-The feature-id and task-id are extracted from the branch name using the workspace `git.branch_pattern` from `workspace.yaml` (`feature/{feature_id}-{work_id}`).
+The source feature name and task name are extracted from the branch name using the workspace `git.branch_pattern` from `workspace.yaml` (`feature/{feature_id}-{work_id}`). These are repository identifiers, not database UUIDs. During persistence, repository `feature_id` values map to `feature_name`, repository `task_id` values map to `task_name`, and the database generates or resolves UUID `feature_id` / `task_id` values for references.
 
 #### Full reconciliation — step by step
 
@@ -196,9 +196,9 @@ The feature-id and task-id are extracted from the branch name using the workspac
 4. Discover all `docs/features/*/status.yaml` paths.
 5. For each feature: read `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`, and all `tasks/T*.yaml` files. Parse into DTOs.
 6. `BEGIN TRANSACTION`
-   - Upsert `workspace_features` on `(workspace_id, feature_id)`.
+   - Upsert `workspace_features` on `(workspace_id, feature_name)` and resolve the UUID `feature_id`.
    - Upsert `workspace_feature_documents` on `(workspace_id, feature_id, document_type)`.
-   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_id)`.
+   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_name)` and resolve the UUID `task_id`.
    - Upsert `workspace_activity_events` on `(workspace_id, feature_id, task_id, sequence)`.
    - Delete rows no longer present in the fetched set (removed features, deleted tasks, etc.).
 7. `COMMIT`.
@@ -210,13 +210,13 @@ On failure:
 
 #### Targeted sync — step by step (feature level)
 
-1. Write `workspace_sync_runs` row: `status: running`, `mode: targeted`, `feature_id`, `started_at: now()`.
+1. Write `workspace_sync_runs` row: `status: running`, `mode: targeted`, source `feature_name`, `started_at: now()`.
 2. Fetch feature artifacts from GitHub: `status.yaml`, `product-spec.md`, `technical-design.md`, `tasks.md`.
 3. `BEGIN TRANSACTION`
-   - Upsert `workspace_features` for this `feature_id`.
+   - Upsert `workspace_features` for this `feature_name` and resolve the UUID `feature_id`.
    - Upsert/delete `workspace_feature_documents` for this `feature_id`.
-   - Upsert/delete `workspace_tasks` for this `feature_id`.
-   - Upsert/delete `workspace_activity_events` for this `feature_id`.
+   - Upsert/delete `workspace_tasks` for this `feature_id`, keyed by `task_name`.
+   - Upsert/delete `workspace_activity_events` for this `feature_id` and each resolved `task_id`.
 4. `COMMIT`.
 5. Update `workspace_sync_runs`: `status: success`, `finished_at: now()`.
 
@@ -226,12 +226,12 @@ On failure: `ROLLBACK`. Only this feature's rows are unchanged.
 
 The task queue is backed by `asynq` (`github.com/hibiken/asynq`) using Redis. No database table is needed.
 
-**Task payload** — the branch is derived from workspace `branch_pattern` + `feature_id` + `task_id` at execution time; it is not stored in the payload:
+**Task payload** — the branch is derived from workspace `branch_pattern` + source `feature_name` + source `task_name` at execution time; it is not stored in the payload:
 ```go
 type TaskSyncPayload struct {
-    WorkspaceID string
-    FeatureID   string
-    TaskID      string
+    WorkspaceID  string
+    FeatureName  string
+    TaskName     string
 }
 ```
 
@@ -246,14 +246,15 @@ task := asynq.NewTask("task:sync", payload,
 client.Enqueue(task)
 ```
 
-`asynq.Unique` ensures only one pending item exists per `(WorkspaceID, FeatureID, TaskID)` for 24 hours. A second webhook for the same task within that window is a no-op — the existing pending item is kept. The worker always fetches current HEAD at execution time, so no branch update is needed on dedup.
+`asynq.Unique` ensures only one pending item exists per `(WorkspaceID, FeatureName, TaskName)` for 24 hours. A second webhook for the same source task within that window is a no-op — the existing pending item is kept. The worker always fetches current HEAD at execution time, so no branch update is needed on dedup.
 
 **Worker** (`adapter-service` asynq server):
-1. Derive branch from `workspace.branch_pattern` + `feature_id` + `task_id`.
+1. Derive branch from `workspace.branch_pattern` + `feature_name` + `task_name`.
 2. Fetch current `HEAD` of branch from GitHub. Parse task YAML into DTO.
 3. `BEGIN TRANSACTION`
-   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_id)`.
-   - Upsert/delete `workspace_activity_events` for this task.
+   - Resolve `feature_id` UUID from `(workspace_id, feature_name)`.
+   - Upsert `workspace_tasks` on `(workspace_id, feature_id, task_name)` and resolve the UUID `task_id`.
+   - Upsert/delete `workspace_activity_events` for this `task_id`.
 4. `COMMIT`.
 
 On failure: asynq retries automatically with backoff up to `MaxRetry`. After max retries the task moves to the dead queue and is visible in `asynqmon`.
@@ -345,9 +346,9 @@ UI-facing contract. Names are indicative — implementation may differ as long a
 
 - `WorkspaceSummary`: id, name, repo URL, source state, updated time.
 - `WorkspaceDetail`: summary, feature summaries, task summaries, source state.
-- `FeatureSummary`: feature id, title, status, current stage, updated time, task counts.
+- `FeatureSummary`: feature id (UUID), feature name (source identifier), title, status, current stage, updated time, task counts.
 - `FeatureDetail`: summary, document links (url per document_type), tasks, logs, source state.
-- `TaskSummary`: task id, feature id, title, status, repo, branch, next action, blocked state.
+- `TaskSummary`: task id (UUID), task name (source identifier), feature id (UUID), feature name (source identifier), title, status, repo, branch, next action, blocked state.
 - `TaskDetail`: summary, dependencies, execution context, PR refs, blocked context, activity log.
 - `PullRequestRef`: label, url, status, repo.
 - `ActivityEvent`: action, scope, actor, timestamp, note.
@@ -420,6 +421,27 @@ The schema is split into two layers:
 
 **GitHub adapter** — GitHub connection config, sync bookkeeping, and the task sync queue. Removable as a unit when the GitHub adapter is replaced.
 
+#### Repository identifier mapping
+
+Repository artifacts use human-readable identifiers because they live in paths and YAML:
+
+- Feature source ID: folder name and `status.yaml` `feature_id`, e.g. `workspace-data-backend`.
+- Task source ID: task YAML identifier / branch suffix, e.g. `T1`.
+
+The database must not use those source identifiers as relational IDs. On ingest, map them into name fields:
+
+| Source value | Stored field | DB identity/reference |
+|---|---|---|
+| repo `feature_id` / `docs/features/<feature_id>` | `workspace_features.feature_name` | `workspace_features.feature_id` UUID |
+| repo `task_id` / `tasks/T*.yaml` | `workspace_tasks.task_name` | `workspace_tasks.task_id` UUID |
+
+Rules:
+- `feature_id` and `task_id` in database tables are UUIDs used as primary keys and foreign-key references.
+- `feature_name` and `task_name` preserve the repository-facing identifiers needed for branch routing, GitHub paths, source links, and UI display.
+- Upserts resolve by `(workspace_id, feature_name)` for features and `(workspace_id, feature_id, task_name)` for tasks, then use the resulting UUIDs everywhere else.
+- API route params named `:featureId` and `:taskId` refer to database UUIDs. DTOs should include both the UUID id and the source name when the UI needs to show repository labels.
+- `workspace_sync_runs` may initially store source names from a webhook before rows are resolved; after a successful upsert it should also store the resolved UUID references when available.
+
 #### Core tables
 
 ##### `workspaces`
@@ -459,9 +481,9 @@ One row per feature. Always reflects current known state — no snapshot version
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
-| `id` | uuid PK | yes | |
+| `feature_id` | uuid PK | yes | Stable database identity for feature references. |
 | `workspace_id` | uuid FK | yes | |
-| `feature_id` | text | yes | Folder name, e.g. `executor-self-briefing`. |
+| `feature_name` | text | yes | Repository feature identifier: folder name and source `status.yaml feature_id`, e.g. `executor-self-briefing`. |
 | `title` | text | yes | |
 | `feature_status` | text | no | From `status.yaml`. |
 | `current_stage` | text | no | From `status.yaml`. |
@@ -472,7 +494,7 @@ One row per feature. Always reflects current known state — no snapshot version
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(workspace_id, feature_id)`; index `(workspace_id, feature_status)`; index `(workspace_id, current_stage)`.
+Indexes: unique `(workspace_id, feature_name)`; index `(workspace_id, feature_status)`; index `(workspace_id, current_stage)`.
 
 ##### `workspace_feature_documents`
 
@@ -482,7 +504,7 @@ One row per feature document. Stores a link to the file on GitHub rather than th
 |---|---|---|---|
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
-| `feature_id` | text | yes | |
+| `feature_id` | uuid FK | yes | References `workspace_features.feature_id`. |
 | `document_type` | text | yes | `product_spec`, `technical_design`, `tasks_md`, or `status_yaml`. |
 | `source_path` | text | yes | Relative path in repo, e.g. `docs/features/x/product-spec.md`. |
 | `url` | text | no | GitHub web URL to the document file. |
@@ -497,14 +519,14 @@ One row per task YAML. Always reflects current known state.
 
 | Column | Type | Req | Notes |
 |---|---|---|---|
-| `id` | uuid PK | yes | |
+| `task_id` | uuid PK | yes | Stable database identity for task references. |
 | `workspace_id` | uuid FK | yes | |
-| `feature_id` | text | yes | |
-| `task_id` | text | yes | e.g. `T1`. |
+| `feature_id` | uuid FK | yes | References `workspace_features.feature_id`. |
+| `task_name` | text | yes | Repository task identifier from task YAML / branch suffix, e.g. `T1`. |
 | `title` | text | yes | |
 | `repo` | text | no | Implementation repo id. Matches `workspace_repos.repo_id`. |
 | `status` | text | no | |
-| `depends_on` | jsonb | yes | Array of task ids. `[]` when none. |
+| `depends_on` | jsonb | yes | Array of source `task_name` values from YAML. `[]` when none. |
 | `blocked_reason` | text | no | |
 | `branch` | text | no | |
 | `execution` | jsonb | no | |
@@ -515,7 +537,7 @@ One row per task YAML. Always reflects current known state.
 | `created_at` | timestamptz | yes | |
 | `updated_at` | timestamptz | yes | |
 
-Indexes: unique `(workspace_id, feature_id, task_id)`; index `(workspace_id, feature_id)`; index `(workspace_id, status)`; index `(workspace_id, repo)`.
+Indexes: unique `(workspace_id, feature_id, task_name)`; index `(workspace_id, feature_id)`; index `(workspace_id, status)`; index `(workspace_id, repo)`.
 
 ##### `workspace_activity_events`
 
@@ -526,8 +548,8 @@ Normalized activity rows sourced from feature `history[]` and task `log[]` durin
 | `id` | uuid PK | yes | |
 | `workspace_id` | uuid FK | yes | |
 | `scope_type` | text | yes | `workspace`, `feature`, or `task`. |
-| `feature_id` | text | no | |
-| `task_id` | text | no | |
+| `feature_id` | uuid FK | no | References `workspace_features.feature_id` when scope is feature or task. |
+| `task_id` | uuid FK | no | References `workspace_tasks.task_id` when scope is task. |
 | `action` | text | no | |
 | `actor` | text | no | |
 | `occurred_at` | text | no | Raw parseable timestamp. |
@@ -569,8 +591,10 @@ One row per sync attempt — full or targeted. Primary source for staleness deri
 | `workspace_id` | uuid FK | yes | |
 | `trigger` | text | yes | `import`, `manual`, `webhook_base`, `webhook_feature`, `webhook_task_queue`. |
 | `branch` | text | no | Branch that triggered the sync. Null for `import` and `manual`. |
-| `feature_id` | text | no | For `webhook_feature` and `webhook_task_queue` triggers. |
-| `task_id` | text | no | For `webhook_task_queue` trigger. |
+| `feature_id` | uuid FK | no | Resolved `workspace_features.feature_id` when available. |
+| `feature_name` | text | no | Source feature identifier from branch/path before or during resolution. |
+| `task_id` | uuid FK | no | Resolved `workspace_tasks.task_id` when available. |
+| `task_name` | text | no | Source task identifier from branch/path before or during resolution. |
 | `mode` | text | yes | `full_reconciliation` or `targeted`. |
 | `status` | text | yes | `running`, `success`, `partial`, `failed`, `skipped`. |
 | `commit_sha` | text | no | Git commit SHA at time of full reconciliation. Null for targeted runs. |
@@ -585,7 +609,7 @@ Indexes: `(workspace_id, started_at)`; `(workspace_id, trigger)`; `(workspace_id
 
 ##### Task sync queue (asynq + Redis — not a DB table)
 
-Task-level webhook events are not stored in PostgreSQL. The queue is backed by `asynq` using Redis. Payload: `{ WorkspaceID, FeatureID, TaskID }`. Dedup via `asynq.Unique(24h)` — one pending item per task at a time. Monitor via `asynqmon`. Requires `REDIS_URL` in environment.
+Task-level webhook events are not stored in PostgreSQL. The queue is backed by `asynq` using Redis. Payload: `{ WorkspaceID, FeatureName, TaskName }`. Dedup via `asynq.Unique(24h)` — one pending item per source task at a time. Monitor via `asynqmon`. Requires `REDIS_URL` in environment.
 
 #### Write rules
 
@@ -645,6 +669,7 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 - T3 owns activity normalization: it must upsert `workspace_activity_events` rows from feature `history[]` and task `log[]` during sync — not T2 or T4.
 - T6 is blocked on T1 (adapter-service Dockerfile) and T4 (api-service Dockerfile). It covers both infra (PostgreSQL, Redis, asynqmon) and service compose entries in one task.
 - T5 is blocked on T2, T3, T4, and T6. T5 and T6 run in parallel in wave 4.
+- T7 is blocked on T2, T3, and T6. It implements the adapter-side webhook runtime that the original task breakdown missed: GitHub signature verification, branch routing, asynq enqueue/drain, task sync worker, and queue clearing before full reconciliation.
 
 ### External dependencies
 
@@ -660,8 +685,10 @@ Every error response must include `code` (machine-readable), `message` (user-rea
 ### Configuration dependencies
 
 - `DATABASE_URL` — PostgreSQL connection string for runtime `pgx` queries and `goose` migrations.
+- `REDIS_URL` — Redis connection string for asynq task queue enqueueing, worker drain, and queue inspection.
 - Optional direct migration URL — only needed if the deployment database uses a pooler that is incompatible with migrations. The exact env var name should follow `workspace-github-adapter` repo conventions (migrations live there).
 - `GITHUB_TOKEN` — GitHub API token for `adapter-service`. Required on `adapter-service` only; `api-service` makes no GitHub calls.
+- `GITHUB_WEBHOOK_SECRET` — shared secret used by `adapter-service` to verify GitHub webhook signatures before accepting push payloads.
 
 ### Release dependencies
 
@@ -700,9 +727,15 @@ T5: Backend integration tests                   [workflow-backend]
 T6: Docker Compose — local infra + service entries [workflow]
   └── BLOCKED on T1 (adapter-service Dockerfile must exist)
   └── BLOCKED on T4 (api-service Dockerfile must exist)
+
+── Wave 5 — correction / follow-up ─────────────────────────────────────────────
+T7: GitHub webhook handler + task sync queue [workspace-github-adapter]
+  └── BLOCKED on T2 (GitHub fetch/parser must support targeted reads)
+  └── BLOCKED on T3 (DB adapter must support feature/task upserts and sync-run audit)
+  └── BLOCKED on T6 (Redis/asynq infra and adapter-service compose config must exist)
 ```
 
-T1 is the only wave 1 task. T2 and T3 run in parallel in wave 2. T4 is wave 3. T5 and T6 run in parallel in wave 4 — T6 depends on T1 and T4; T5 depends on T2, T3, T4, and T6.
+T1 is the only wave 1 task. T2 and T3 run in parallel in wave 2. T4 is wave 3. T5 and T6 run in parallel in wave 4 — T6 depends on T1 and T4; T5 depends on T2, T3, T4, and T6. T7 is a corrective follow-up task for the webhook runtime and can begin after the amended task breakdown is reviewed and approved; its implementation dependencies are T2, T3, and T6.
 
 `workspace-tabs-data-flow` frontend work can begin against the T1/T4 draft API contract; full integration requires T4 deployed and reachable.
 

@@ -1,20 +1,123 @@
 id: T3
 title: PostgreSQL schema and sqlc database adapter
 repo: workspace-github-adapter
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/workspace-data-backend-T3
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-15T14:06:12+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-16T03:06:15.819Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/3
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task created from tech-lead planning for PostgreSQL schema, goose migrations, sqlc queries, and DB adapter work.
+    note: Task created from tech-lead planning for PostgreSQL schema, goose
+      migrations, sqlc queries, and DB adapter work.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:44:37.417Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:46:34.241Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:46:46.317Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md"
+    rag_query: PostgreSQL schema and sqlc database adapter workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    note: executor work phase begun.
+    at: 2026-05-15T19:04:44+0000
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-15T19:10:30.636Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:11:39.985Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:11:46.657Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md"
+    rag_query: PostgreSQL schema and sqlc database adapter workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:14:18+0000
+    note: executor work phase begun — resuming prior WIP.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: result_not_written
+    token_usage:
+      input: 140
+      output: 15413
+    at: 2026-05-15T19:19:33.148Z
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-16T09:37:03+0700
+    note: "Human resolved block: executor exited cleanly (subtype:success) without
+      writing result.json — known bug in pr-self-review skill (fixed in
+      agent-workflow#170). PR already open; resetting to in_review for reviewer
+      dispatch."
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T02:37:51.103Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🔴 GetWorkspaceTask queries (workspace_id, task_id) without feature_id —
+      non-deterministic for multi-feature workspaces
+      (database/queries/workspace_tasks.sql:28). 🟡 N+1 in ListWorkspaces
+      (GetLatestSyncRun per workspace). 🟡 Redundant ListWorkspaceTasks in
+      GetFeature. 🟡 N+1 in GetActiveSnapshot. 🟡 Hardcoded ManagementRepoID in
+      upsertSnapshot.
+    at: 2026-05-16T02:44:15.760Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T02:45:08.423Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/3"
+    token_usage:
+      input: 227
+      output: 34594
+      model: claude-sonnet-4-6
+    cost_usd: 0.519591
+    at: 2026-05-16T02:59:14.341Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:00:07.682Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-16T03:06:15.819Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/246
+  status: open
+conflict_state: resolved
+rebase_log:
+  - at: 2026-05-16T02:38:57.223Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/workspace-data-backend.

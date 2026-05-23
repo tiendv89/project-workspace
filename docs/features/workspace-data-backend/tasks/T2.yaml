@@ -1,20 +1,92 @@
 id: T2
 title: GitHub workspace adapter and parser
 repo: workspace-github-adapter
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
 branch: feature/workspace-data-backend-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-15T14:06:12+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-15T19:23:24.609Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/2
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-15T14:06:12+0700
-    note: Task created from tech-lead planning for the GitHub workspace adapter and parser.
+    note: Task created from tech-lead planning for the GitHub workspace adapter and
+      parser.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:44:37.415Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:45:34.598Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:45:46.699Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: README.md,
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workspace-data-backend/technical-design.md"
+    rag_query: GitHub workspace adapter and parser workspace-data-backend
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T18:48:47+0000
+    note: executor work phase begun.
+    token_usage:
+      input: 0
+      output: 0
+    cost_usd: 0
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/2"
+    token_usage:
+      input: 292
+      output: 46984
+      model: claude-sonnet-4-6
+    cost_usd: 0.7056359999999999
+    at: 2026-05-15T19:01:45.628Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:03:28.439Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Duplicate getCommitSHA API call: getTree (client.go:152) calls
+      getCommitSHA internally but fetchSnapshot (adapter.go:89) already calls it
+      — two GitHub API requests where one suffices, wasting one rate-limit token
+      per import/sync. All T2 subtasks implemented and tests pass."
+    at: 2026-05-15T19:10:11.824Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:12:09.992Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/2"
+    token_usage:
+      input: 124
+      output: 11919
+      model: claude-sonnet-4-6
+    cost_usd: 0.179157
+    at: 2026-05-15T19:18:23.047Z
+  - action: reviewer_started
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:19:09.396Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-15T19:23:24.609Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/245
+  status: open
