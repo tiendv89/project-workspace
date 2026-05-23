@@ -1,7 +1,7 @@
 feature_id: workspace-tabs-data-flow
 title: Workspace Tabs and Backend API Data Flow
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Start implementation of T1.
 stages:
   product_spec:
@@ -413,4 +413,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/289
 impl_feature_prs:
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/48
-    status: open
+    status: merged
