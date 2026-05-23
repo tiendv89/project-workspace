@@ -216,3 +216,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/slack-thread-notifications
 feature_branch_base_sha: bc5b44496dd5ab6f84c1c3c97244341178b55046
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/292
