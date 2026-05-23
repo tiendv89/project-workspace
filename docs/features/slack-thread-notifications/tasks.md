@@ -8,10 +8,13 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 |---|---:|---|---|---|
 | T1 | 1 | workflow | Slack Web API client and threaded config | [] |
 | T2 | 1 | workflow | Redis feature/task-thread store | [] |
-| T3 | 2 | workflow | Scoped threaded notification service and task notifier adapter | [T1, T2] |
-| T4 | 3 | workflow | Task and reviewer notification call-site migration | [T3] |
-| T5 | 3 | workflow | Feature lifecycle summary message and cleanup | [T3] |
-| T6 | 4 | workflow | Tests, templates, and operator documentation | [T4, T5] |
+| T7 | 1 | workspace-github-adapter | Workspace notification settings migration | [] |
+| T3 | 2 | workflow | Message types and formatters | [T1, T2] |
+| T8 | 3 | workflow | Thread management service | [T3] |
+| T4 | 4 | workflow | Task and reviewer notification call-site migration | [T8] |
+| T5 | 4 | workflow | Feature lifecycle wiring — start, summary, handoff | [T8] |
+| T9 | 4 | workflow | Feature completion and cleanup | [T8] |
+| T6 | 5 | workflow | Tests, templates, and operator documentation | [T4, T5, T9] |
 
 ---
 
@@ -19,7 +22,7 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 
 ### Description
 
-Add the Slack Web API boundary needed for threaded notifications. This task owns config parsing for `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`, a focused `chat.postMessage` client, and structured failure behavior for invalid Slack responses.
+Add the Slack Web API boundary needed for threaded notifications. This task owns config parsing for `SLACK_BOT_TOKEN` (env) and `notifications.slack.channel_id` (from workspace.yaml), a focused `chat.postMessage` and `chat.update` client, and structured failure behavior for invalid Slack responses.
 
 It fits the design by replacing the webhook-only send primitive with an API client that can return the Slack message `ts` required for feature and task thread routing.
 
@@ -30,12 +33,16 @@ It fits the design by replacing the webhook-only send primitive with an API clie
 ### Subtasks
 
 - [ ] Inspect current Slack webhook helper and notifier tests.
+- [ ] Add `loadWorkspaceNotificationConfig()` to `runtime/orchestrator/src/config/workspace-config.ts` to parse `notifications.slack.channel_id` from workspace.yaml; return `null` if the field is absent.
 - [ ] Add a Slack Web API client module under `runtime/orchestrator/src`.
-- [ ] Read `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID` through a small config boundary.
+- [ ] Read `SLACK_BOT_TOKEN` from env; read `channel_id` from `WorkspaceConfig.notifications.slack.channel_id` — there is no `SLACK_CHANNEL_ID` env var.
 - [ ] Implement `chat.postMessage` with bearer-token auth and JSON payload support.
-- [ ] Validate Slack responses: require HTTP success, `ok: true`, and a non-empty `ts`.
-- [ ] Ensure missing Slack config is represented as disabled threaded Slack, not as a thrown startup error.
-- [ ] Add unit tests for success, HTTP failure, `ok: false`, missing `ts`, and disabled config.
+- [ ] Implement `chat.update` with bearer-token auth to edit an existing Slack message by `ts`.
+- [ ] Validate Slack responses: require HTTP success, `ok: true`, and a non-empty `ts` on `chat.postMessage`; require HTTP success and `ok: true` on `chat.update`.
+- [ ] Ensure missing `SLACK_BOT_TOKEN` or absent `notifications.slack.channel_id` is represented as disabled threaded Slack, not as a thrown startup error.
+- [ ] Add unit tests for `chat.postMessage`: success, HTTP failure, `ok: false`, missing `ts`, and disabled config.
+- [ ] Add unit tests for `chat.update`: success, HTTP failure, and `ok: false`.
+- [ ] Add unit tests for `loadWorkspaceNotificationConfig`: field present, field absent, malformed yaml.
 - [ ] Run the orchestrator test target for the affected tests.
 
 ---
@@ -60,7 +67,7 @@ It fits the design by keeping Slack routing state transient and outside feature/
 - [ ] Implement a scope-thread store with `getFeature`, `setFeature`, `deleteFeature`, `getTask`, `setTask`, and `deleteTask` operations.
 - [ ] Use key shape `slack:feature_thread:<workspaceId>:<featureId>`.
 - [ ] Use key shape `slack:task_thread:<workspaceId>:<featureId>:<taskId>`.
-- [ ] Support best-effort cleanup of remaining task thread keys for a feature when the feature closes.
+- [ ] Support best-effort scan and delete of all task thread keys for a feature using a workspace/feature-scoped key prefix (used by `closeFeatureThread` in T8 for cleanup on feature completion).
 - [ ] Ensure Redis connection/read/write/delete failures return structured errors to callers.
 - [ ] Add fake/in-memory store support for unit tests.
 - [ ] Add unit tests for feature get/set/delete, task get/set/delete, missing key, connection failure, write failure, delete failure, and feature-scoped task cleanup.
@@ -68,13 +75,13 @@ It fits the design by keeping Slack routing state transient and outside feature/
 
 ---
 
-## T3 - Scoped threaded notification service and task notifier adapter
+## T3 - Message types and formatters
 
 ### Description
 
-Build the service boundary that composes the Slack client and Redis store. This task owns `ensureFeatureThread`, `ensureTaskThread`, scoped task posting, feature posting, `closeTaskThread`, `closeFeatureThread`, lazy thread creation, and the adapter that preserves the existing `TaskNotifierPort` call-site contract.
+Define the service interface and all message formatting logic. This task owns no I/O — it produces only TypeScript types and pure formatter functions that T8 and tests can import directly.
 
-It fits the design by making the rest of the orchestrator call one notification abstraction instead of knowing Slack API or Redis details.
+It fits the design by isolating the formatting contract from the stateful service so formatters can be unit-tested without any Slack or Redis dependencies.
 
 ### Required skills
 
@@ -82,28 +89,47 @@ It fits the design by making the rest of the orchestrator call one notification 
 
 ### Subtasks
 
-- [ ] Define the scoped threaded notification service interface and event payload shapes.
-- [ ] Define feature message types: `feature_start`, `feature_summary_changed`, `handoff_submitted`, and `feature_completed`.
-- [ ] Define task message types: `task_start`, `task_status_changed`, `task_pr_changed`, `task_review_changed`, and `task_completed`.
-- [ ] Implement `ensureFeatureThread(featureId, context)`.
-- [ ] Implement top-level `feature_start` message formatting with title, status, next action, and total task count.
-- [ ] Implement feature-thread reply formatting as changed feature field updates only.
-- [ ] Implement top-level task message formatting with title, status, repo, branch, and execution email from `execution.last_updated_by`.
-- [ ] Implement task-thread reply formatting as changed task field updates only.
-- [ ] Implement status icon rendering on all `Status:` lines using the shared status icon contract.
-- [ ] Ensure absent or irrelevant fields are omitted rather than rendered as placeholder lines.
-- [ ] Implement `ensureTaskThread(featureId, taskId, context)`.
-- [ ] Implement task message posting with Redis task lookup and Slack `thread_ts`.
-- [ ] Implement missing-key fallback: lazily create the correct feature or task thread when Slack and Redis are configured.
-- [ ] Ensure task messages never fall back to the feature thread.
-- [ ] Ensure task status transitions are routed only to the corresponding task thread, not to the feature thread.
-- [ ] Ensure feature messages do not include task logs, task PR/review detail, raw executor output, or runtime internals.
-- [ ] Implement skip behavior for disabled Slack or unavailable Redis.
-- [ ] Implement `closeTaskThread(featureId, taskId, finalMessage)` that posts final task status then deletes the task key.
-- [ ] Implement `closeFeatureThread(featureId, finalMessage)` that posts final status then deletes the key.
-- [ ] Replace or wrap `SlackTaskNotifier` with a threaded adapter that still satisfies `TaskNotifierPort`.
-- [ ] Emit structured events for created, posted, skipped, failed, and deleted outcomes.
-- [ ] Add unit tests for idempotent feature ensure, top-level feature message formatting, feature-thread reply formatting as changed feature field updates, top-level task message formatting, task-thread reply formatting as changed task field updates, status icon rendering, idempotent task ensure, task post into existing task thread, lazy task thread creation, disabled config, and Redis failure.
+- [ ] Define `NotificationPort` — the unified interface that core orchestrator logic depends on. Task methods: `postTaskMessage(featureId, taskId, trigger, context)`, `closeTaskThread(featureId, taskId, context)`. Feature methods: `postFeatureMessage(featureId, trigger, context)`, `closeFeatureThread(featureId, context)`. Core code must never import Slack or Redis modules directly.
+- [ ] Define the `ThreadedNotificationService` interface and all event payload shape types.
+- [ ] Define feature message trigger types: `feature_start`, `feature_summary_changed`, `handoff_submitted`, `feature_completed`.
+- [ ] Define task message trigger types: `task_start`, `task_status_changed`, `task_pr_changed`, `task_review_changed`, `task_completed`.
+- [ ] Implement feature top-level formatter: full current state snapshot — title, status (with icon), next_action (if active), blocked_reason (if blocked), handoff (if in_handoff), feature_pr (if set), total_task_count. Used for both `feature_start` create and all subsequent `chat.update` calls.
+- [ ] Implement feature reply formatter: changed feature fields only for that event (audit trail).
+- [ ] Implement task top-level formatter: full current state snapshot — title, status (with icon), repo, branch, execution.last_updated_by, pr (if set), blocked_reason (if blocked). Used for both `task_start` create and all subsequent `chat.update` calls.
+- [ ] Implement task reply formatter: changed task fields only for that event (audit trail).
+- [ ] Implement status icon rendering for all `Status:` lines using the shared status icon contract.
+- [ ] Implement status-aware field omission: absent or irrelevant fields must be omitted, not rendered as blank lines.
+- [ ] Add unit tests covering: feature top-level formatting for each trigger type, feature reply changed-field extraction, task top-level formatting for each trigger type, task reply changed-field extraction, status icon mapping for every status family, and field omission for absent/irrelevant values.
+
+---
+
+## T8 - Thread management service
+
+### Description
+
+Implement the stateful service that composes the Slack client (T1), the Redis store (T2), and the formatters (T3a). This task owns all thread lifecycle operations and all failure-isolation behavior.
+
+It fits the design as the concrete implementation behind `ThreadedSlackNotifier` (T4's adapter) — T4, T5, and T9 call `NotificationPort` and never import this service directly.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Implement `ensureFeatureThread(featureId, context)`: read Redis key → if absent and Slack+Redis configured, call `chat.postMessage` with the T3 feature top-level formatter output → store returned `ts` → emit `feature_slack_thread_created`.
+- [ ] Implement `ensureTaskThread(featureId, taskId, context)`: same pattern for task thread key.
+- [ ] Implement `postFeatureMessage(featureId, trigger, context)`: for `feature_start` call `ensureFeatureThread` only; for all other triggers call `chat.update` on stored `thread_ts` with top-level formatter output, then call `chat.postMessage` with reply formatter output and `thread_ts`.
+- [ ] Implement `postTaskMessage(featureId, taskId, trigger, context)`: same pattern — `task_start` creates only; subsequent triggers call `chat.update` on task top-level then post a reply.
+- [ ] Implement `closeFeatureThread(featureId, finalContext)`: call `postFeatureMessage` for the terminal event then delete the Redis feature key; emit `feature_slack_thread_deleted` on success or `feature_slack_thread_delete_failed` on failure without blocking completion.
+- [ ] Implement `closeTaskThread(featureId, taskId, finalContext)`: same pattern for the task key.
+- [ ] Implement missing-key fallback: when a non-`task_start` / non-`feature_start` message finds no Redis key, lazily call `ensureFeatureThread` or `ensureTaskThread` before posting.
+- [ ] Ensure task messages never fall back to the feature thread under any code path.
+- [ ] Ensure feature messages never include task logs, task PR/review detail, raw executor output, or runtime internals.
+- [ ] Implement skip behavior: when `SLACK_BOT_TOKEN` is absent or `notifications.slack.channel_id` is not set, emit a structured skip event and return without throwing.
+- [ ] Implement Redis unavailable path: catch Redis errors, emit a structured failure event, and return without throwing.
+- [ ] Emit structured events for every outcome: created, updated, posted, skipped, failed, deleted.
+- [ ] Add unit tests covering: idempotent `ensureFeatureThread` (key already present), idempotent `ensureTaskThread`, `postFeatureMessage` for `feature_start` (create only, no update), `postFeatureMessage` for a subsequent trigger (`chat.update` + reply both called), `postTaskMessage` for `task_start` (create only), `postTaskMessage` for a subsequent trigger (`chat.update` + reply both called), `closeFeatureThread` (update + reply + delete), `closeTaskThread` (update + reply + delete), lazy thread creation on missing key, task message never routes to feature thread, skip on missing config, Redis read failure, Redis delete failure.
 
 ---
 
@@ -111,9 +137,9 @@ It fits the design by making the rest of the orchestrator call one notification 
 
 ### Description
 
-Migrate task-level and review-related notification call sites to the threaded notification service. This task covers executor completion, reviewer pass/done, task PR/review updates, and task-tied reviewer escalation. Feature drift escalation is outside the feature-thread notification scope for this feature.
+Expand `TaskNotifierPort` into the unified `NotificationPort` (defined in T3), replace the old webhook adapter with `ThreadedSlackNotifier`, and migrate task-level call sites to use the injected port.
 
-It fits the design by routing task follow-up messages into task threads while preserving task state transitions and failure isolation.
+It fits the design by keeping the hexagonal boundary intact: core orchestrator logic depends only on `NotificationPort` and never imports Slack or Redis modules directly.
 
 ### Required skills
 
@@ -121,24 +147,26 @@ It fits the design by routing task follow-up messages into task threads while pr
 
 ### Subtasks
 
-- [ ] Update `dispatchExecutorResult()` to use the threaded task notifier for executor-driven task updates.
-- [ ] Update `dispatchReviewResult()` to use the threaded task notifier for review-driven task updates and terminal completion.
-- [ ] Update task-tied reviewer escalation handling to use the task thread instead of direct webhook posting.
-- [ ] Leave feature drift escalation out of feature-thread notification routing; preserve existing reviewer/escalation behavior unless another feature changes it.
-- [ ] Preserve existing structured failure events or replace them with equivalent threaded-event names.
+- [ ] Delete `runtime/orchestrator/src/adapters/slack-task-notifier.ts` and `runtime/orchestrator/src/side-effects/post-task-slack.ts` (webhook adapter and helper — replaced by `ThreadedSlackNotifier`).
+- [ ] Create `ThreadedSlackNotifier` adapter implementing `NotificationPort`; each method delegates to the corresponding `ThreadedNotificationService` method.
+- [ ] Wire startup: instantiate `ThreadedSlackNotifier` (with `ThreadedNotificationService` injected) when Slack+Redis config is present; fall back to a no-op `NullNotifier` adapter when config is absent.
+- [ ] Update all injection sites that previously received `TaskNotifierPort` to accept `NotificationPort` instead — call sites (`dispatchExecutorResult`, `dispatchReviewResult`, escalation handlers) require no further changes beyond the type rename.
+- [ ] Verify `dispatchExecutorResult()` calls `port.postTaskMessage(...)` and `dispatchReviewResult()` calls `port.postTaskMessage(...)` / `port.closeTaskThread(...)` through the injected port.
+- [ ] Verify task-tied reviewer escalation calls `port.postTaskMessage(...)` through the injected port instead of the old direct webhook call.
+- [ ] Leave feature drift escalation unchanged; it stays outside this notification scope.
 - [ ] Ensure notification failures never nack broker completions or block task mutations.
-- [ ] Update existing tests for dispatch, review result, task-tied escalation handler, and post-task Slack behavior.
+- [ ] Update existing tests: inject a mock `NotificationPort`, verify correct port methods are called for dispatch, review result, and escalation paths.
 - [ ] Run the orchestrator unit tests covering these call sites.
 
 ---
 
-## T5 - Feature lifecycle summary message and cleanup
+## T5 - Feature lifecycle wiring — start, summary, handoff
 
 ### Description
 
-Wire feature-level lifecycle events to the scoped threaded notification service. This task creates or ensures the feature thread at the first active feature lifecycle signal, renders the feature summary message, and deletes the Redis mapping after the final feature completion notification.
+Wire the `feature_start`, `feature_summary_changed`, and `handoff_submitted` triggers in the lifecycle manager to the threaded notification service. This task owns the poll-cycle detection logic and the guard rules that prevent spurious Slack messages.
 
-It fits the design by giving each feature a stable feature-only thread and by cleaning transient Redis state when the workflow closes the feature.
+It fits the design by giving the lifecycle manager a clean boundary: detect the condition, call `NotificationPort`, let T3/T8 handle formatting and I/O.
 
 ### Required skills
 
@@ -146,22 +174,38 @@ It fits the design by giving each feature a stable feature-only thread and by cl
 
 ### Subtasks
 
-- [ ] Send `feature_start` on the first lifecycle-manager poll that observes the feature in active orchestration, for example `ready_for_implementation`, and no feature thread mapping exists yet.
-- [ ] Send `feature_summary_changed` after a persisted feature-level state change.
-- [ ] Do not send `feature_summary_changed` for task status transitions alone; those updates must post only into `slack:task_thread:<workspaceId>:<featureId>:<taskId>`.
-- [ ] Send `handoff_submitted` when the handoff document and feature-level PR are created or updated; keep the notification in the feature thread and do not delete the key during handoff.
-- [ ] Update `handleFeatureDone()` to send `feature_completed` through `closeFeatureThread()` after all PRs are merged and before or alongside `feature_done` emission.
-- [ ] Do not add an independent periodic Slack timer; routine poll cycles with no feature-summary change must not send feature Slack messages.
-- [ ] Render top-level feature message as a simple summary.
-- [ ] Render feature-thread replies as changed feature field updates only.
-- [ ] Render top-level task message as a simple summary with execution email from `execution.last_updated_by`.
-- [ ] Render task-thread replies as changed task field updates only.
-- [ ] Render matching status icons on all `Status:` lines.
-- [ ] Best-effort cleanup any remaining task thread keys for the feature after final feature completion.
-- [ ] Ensure already-done or skipped features do not create new Slack threads.
-- [ ] Ensure Redis delete failure is emitted but does not prevent feature completion.
-- [ ] Add tests for feature start/ensure, summary-change notification, no-notification routine poll, handoff non-cleanup, done final message, task-key cleanup, delete success, and delete failure.
-- [ ] Run the orchestrator unit tests covering lifecycle manager and feature done watcher.
+- [ ] Inject `NotificationPort` into the lifecycle manager.
+- [ ] Call `port.postFeatureMessage('feature_start', ...)` on the first lifecycle-manager poll that observes the feature in active orchestration (e.g. `ready_for_implementation`) and no feature thread mapping exists yet.
+- [ ] Call `port.postFeatureMessage('feature_summary_changed', ...)` after a persisted feature-level state change.
+- [ ] Do not call `postFeatureMessage` for task status transitions alone; those route only to `postTaskMessage`.
+- [ ] Call `port.postFeatureMessage('handoff_submitted', ...)` when the handoff document and feature-level PR are created or updated.
+- [ ] Do not add an independent periodic Slack timer; routine poll cycles with no feature-summary change must not call the port.
+- [ ] Ensure already-done or skipped features do not trigger a `feature_start` call.
+- [ ] Add unit tests: inject a mock `NotificationPort`; verify feature_start called on first active poll, feature_summary_changed called after state change, no call on task-only transition, no call on routine poll, handoff_submitted called, no call for already-done feature.
+- [ ] Run the orchestrator unit tests covering the lifecycle manager.
+
+---
+
+## T9 - Feature completion and cleanup
+
+### Description
+
+Wire `feature_completed` in `handleFeatureDone()` to `closeFeatureThread()` and handle best-effort task thread key cleanup after the feature closes.
+
+It fits the design by ensuring transient Redis state is cleaned up at the terminal lifecycle point without blocking feature completion if Redis is unavailable.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Inject `NotificationPort` into `handleFeatureDone()`.
+- [ ] Call `port.closeFeatureThread(featureId, context)` in `handleFeatureDone()` after all required PRs are merged and before or alongside `feature_done` emission; the port delegates to `ThreadedNotificationService` which handles `chat.update`, final reply, and key deletion internally.
+- [ ] Ensure Redis delete failure emits a structured event but does not block or throw in `handleFeatureDone()`.
+- [ ] Ensure `handleFeatureDone()` does not call `closeFeatureThread` more than once (idempotency guard).
+- [ ] Add unit tests: inject a mock `NotificationPort`; verify closeFeatureThread called once, Redis delete failure does not block completion, idempotent call guard.
+- [ ] Run the orchestrator unit tests covering the feature done watcher.
 
 ---
 
@@ -180,11 +224,37 @@ It fits the design by making the feature deployable and understandable without c
 
 ### Subtasks
 
-- [ ] Add `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`, and `REDIS_URL` to relevant `.env.template` files.
-- [ ] Pass the optional Slack threading env vars into local-subprocess and local-docker orchestrator services.
-- [ ] Document webhook fallback as legacy non-threaded behavior.
+- [ ] Add `SLACK_BOT_TOKEN` and `REDIS_URL` to relevant `.env.template` files; `SLACK_CHANNEL_ID` is not an env var — document that it is set via `notifications.slack.channel_id` in `workspace.yaml`.
+- [ ] Remove `SLACK_WEBHOOK_URL` from all `.env.template` files and operator docs (file deletion is handled in T4).
+- [ ] Pass `SLACK_BOT_TOKEN` and `REDIS_URL` into local-subprocess and local-docker orchestrator services.
 - [ ] Document local-docker Redis reuse and local-subprocess Redis requirements.
 - [ ] Add or update operator docs for enabling threaded Slack notifications.
-- [ ] Add an end-to-end unit/integration-style test for `feature_start` -> task thread creation -> task updates routed to task thread only -> feature-level `feature_summary_changed` -> `feature_completed` using mocked Slack and fake Redis.
+- [ ] Add an end-to-end unit/integration-style test covering: `feature_start` (top-level create) → task thread creation → task status transitions (chat.update on task top-level + reply) → feature-level `feature_summary_changed` (chat.update on feature top-level + reply) → `feature_completed` (final chat.update + reply + Redis delete) using mocked Slack and fake Redis.
 - [ ] Run `npm test` or the repo-equivalent orchestrator test command.
 - [ ] Run `npm run build` or `npm run typecheck` for the orchestrator package.
+
+---
+
+## T7 - Workspace notification settings migration
+
+### Description
+
+Add `slack_channel_id` to the `workspaces` table in `workspace-github-adapter` so workspace-level Slack channel config is persisted to the database when workspace.yaml is synced. This ensures the API layer can serve notification settings alongside other workspace data.
+
+It fits the design by making `notifications.slack.channel_id` a first-class workspace property — declared in workspace.yaml, synced to Postgres by the adapter, and readable by any service via the standard workspace query path.
+
+### Required skills
+
+- postgres-best-practices
+- go-best-practices
+
+### Subtasks
+
+- [ ] Add migration `database/migrations/00012_workspace_notification_settings.sql` adding `slack_channel_id TEXT` (nullable, no default) to the `workspaces` table.
+- [ ] Update `database/queries/workspaces.sql`: add `slack_channel_id` to the SELECT column list in `ListWorkspaces`, `GetWorkspace`, and `GetWorkspaceBySlug`.
+- [ ] Update `UpsertWorkspace`: add `slack_channel_id` to the INSERT columns and the `ON CONFLICT DO UPDATE SET` clause.
+- [ ] Update `UpsertWorkspaceByID`: same as `UpsertWorkspace`.
+- [ ] Update `UpdateWorkspaceByID`: add `slack_channel_id` to the SET clause.
+- [ ] Regenerate sqlc types after query changes (`sqlc generate` or equivalent).
+- [ ] Update the adapter's workspace-sync path to read `notifications.slack.channel_id` from the parsed workspace.yaml and pass it to `UpsertWorkspace`/`UpsertWorkspaceByID`.
+- [ ] Run the adapter test suite.

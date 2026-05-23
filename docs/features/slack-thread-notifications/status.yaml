@@ -181,6 +181,51 @@ history:
       cover status, PR, review, and completion updates instead of being
       limited to in_review, blocked, and done.
 
+  - at: 2026-05-24T01:38:31+0700
+    by: matthew@swellnetwork.io
+    action: scope_clarified
+    note: >-
+      T5 split into T5 (lifecycle wiring for feature_start, feature_summary_changed,
+      handoff_submitted) and new T9 (feature completion and cleanup via
+      handleFeatureDone + closeFeatureThread). T4, T5, T9 run in parallel in
+      Wave 4. T6 depends on T4+T5+T9. Renderer subtasks removed from T5 —
+      formatting is T3's responsibility.
+  - at: 2026-05-24T01:33:04+0700
+    by: matthew@swellnetwork.io
+    action: scope_clarified
+    note: >-
+      T3 split into T3 (message types and formatters — pure TypeScript, no I/O)
+      and new T8 (thread management service — stateful, composes T1+T2+T3).
+      TaskNotifierPort adapter removal moved to T4. T4 and T5 now depend on T8.
+      Wave structure is 5 waves: T1+T2+T7 → T3 → T8 → T4+T5+T9 → T6.
+  - at: 2026-05-24T01:28:33+0700
+    by: matthew@swellnetwork.io
+    action: scope_clarified
+    note: >-
+      Added T7 (workspace-github-adapter): slack_channel_id moves from
+      SLACK_CHANNEL_ID env var to workspace.yaml notifications.slack.channel_id,
+      synced to Postgres via a new migration in workspace-github-adapter. T7 runs
+      in parallel with T1 and T2 in Wave 1. Orchestrator reads channel_id from
+      WorkspaceConfig, not from env. Technical design, tasks.md, and T7.yaml
+      added accordingly.
+  - at: 2026-05-24T01:19:51+0700
+    by: matthew@swellnetwork.io
+    action: scope_clarified
+    note: >-
+      Top-level thread messages are now living state: on every event after the
+      initial create, the service calls chat.update on the stored thread_ts so
+      the thread header always reflects current status. Replies are still posted
+      as changed-field audit entries. Product spec, technical design, and task
+      subtasks updated accordingly.
+  - at: 2026-05-24T01:19:51+0700
+    by: matthew@swellnetwork.io
+    action: scope_clarified
+    note: >-
+      Removed the SLACK_WEBHOOK_URL legacy path entirely. The webhook helper
+      and post-task-slack.ts will be deleted as part of this feature. All
+      installations must use bot-token Slack config. T6 updated to include
+      webhook file deletion and env-template cleanup.
+
 revalidation:
   product_spec_required: false
   technical_design_required: false

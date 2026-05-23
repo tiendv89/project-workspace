@@ -5,6 +5,7 @@ status: todo
 depends_on:
   - T4
   - T5
+  - T9
 blocked_reason: null
 branch: feature/slack-thread-notifications-T6
 execution:
@@ -19,3 +20,7 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
     note: Task created by tech-lead planning for tests, templates, and operator documentation.
+  - action: scope_clarified
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T01:38:31+0700
+    note: depends_on updated to [T4, T5, T9] after T5 was split into T5 and T9.

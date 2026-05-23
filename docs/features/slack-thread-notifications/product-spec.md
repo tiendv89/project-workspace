@@ -20,16 +20,18 @@ The desired behavior is scope-separated Slack threading:
 
 Feature-level Slack notifications are sent only for feature lifecycle signals, not for task status changes or every internal task log. In the first version, the feature thread receives messages for: feature start, feature-level summary changes, handoff submission, and final feature completion. Routine poll cycles, task status transitions, task stdout/stderr, executor progress logs, and task-specific PR/review updates do not create feature-thread messages; those belong in task threads, feature-reviewer handling, or structured runtime events.
 
-The top-level `feature_start` message must include only basic feature context: feature title, feature status, next action, and total task count. The first task-thread message must include only basic task context: task title, task status, repo, branch, and execution email from `execution.last_updated_by`. Replies into either thread carry only the fields that changed in that event. Drift details, per-task status updates, task progress counts, task logs, and task-thread detail stay out of the feature thread.
+The top-level message for each feature thread and each task thread is a living state snapshot: it is created on first notification and updated in place via `chat.update` on every subsequent event so the thread header always reflects current state when a viewer opens the thread. Replies into either thread carry only the fields that changed in that event, providing a change history. Drift details, per-task status updates, task progress counts, task logs, and task-thread detail stay out of the feature thread.
 
 ## Message Contract
 
-| Thread | Message shape | Fields |
-|---|---|---|
-| Feature thread top-level | `feature_start` | `title`, `status`, `next_action`, `total_task_count` |
-| Feature thread reply | `feature_summary_changed`, `handoff_submitted`, `feature_completed` | Only changed feature-level fields for that event, such as `status`, `blocked_reason`, `handoff`, `feature_pr`, `last_updated_at` |
-| Task thread top-level | `task_start` | `title`, `status`, `repo`, `branch`, `execution.last_updated_by` |
-| Task thread reply | `task_status_changed`, `task_pr_changed`, `task_review_changed`, `task_completed` | Only changed task-level fields for that event, such as `status`, `pr`, `blocked_reason`, `review_status`, `last_updated_at`, `execution.last_updated_by` |
+| Thread | Operation | Triggered by | Fields |
+|---|---|---|---|
+| Feature thread top-level | `chat.postMessage` (create) | `feature_start` | `title`, `status`, `next_action`, `total_task_count` |
+| Feature thread top-level | `chat.update` (update in place) | `feature_summary_changed`, `handoff_submitted`, `feature_completed` | Full current state: `title`, `status`, `next_action` (if active), `blocked_reason` (if blocked), `handoff` (if in_handoff), `feature_pr` (if set), `total_task_count` |
+| Feature thread reply | `chat.postMessage` (reply) | `feature_summary_changed`, `handoff_submitted`, `feature_completed` | Only changed feature-level fields for that event, such as `status`, `blocked_reason`, `handoff`, `feature_pr`, `last_updated_at` |
+| Task thread top-level | `chat.postMessage` (create) | `task_start` | `title`, `status`, `repo`, `branch`, `execution.last_updated_by` |
+| Task thread top-level | `chat.update` (update in place) | `task_status_changed`, `task_pr_changed`, `task_review_changed`, `task_completed` | Full current state: `title`, `status`, `repo`, `branch`, `execution.last_updated_by`, `pr` (if set), `blocked_reason` (if blocked) |
+| Task thread reply | `chat.postMessage` (reply) | `task_status_changed`, `task_pr_changed`, `task_review_changed`, `task_completed` | Only changed task-level fields for that event, such as `status`, `pr`, `blocked_reason`, `review_status`, `last_updated_at`, `execution.last_updated_by` |
 
 ## Status Icons
 
@@ -52,9 +54,9 @@ When a message renders a `Status` line, prefix the status value with the icon th
 - Store Redis mappings for `featureId -> thread_ts` and `(featureId, taskId) -> task_thread_ts`.
 - Route feature notifications only into the feature thread.
 - Route task notifications, task review escalations, and task PR updates only into the task's own thread.
-- Format the top-level feature message with title, status, next action, and total task count.
-- Format the first task-thread message with task title, status, repo, branch, and execution email from `execution.last_updated_by`.
-- Format feature-thread and task-thread replies as changed-field updates only.
+- Format the top-level feature message with title, status, next action, and total task count; update it in place via `chat.update` on every subsequent feature event so the thread header always reflects current state.
+- Format the first task-thread message with task title, status, repo, branch, and execution email from `execution.last_updated_by`; update it in place via `chat.update` on every subsequent task event so the thread header always reflects current state.
+- Format feature-thread and task-thread replies as changed-field updates only to provide a change history alongside the always-current top-level message.
 - Delete transient Redis mappings after the related feature or task terminal notification is posted or attempted.
 - Keep Slack optional: if Slack config is missing or the Slack API call fails, workflow execution must continue and emit a structured skip/failure event.
 
@@ -78,17 +80,18 @@ As a workflow maintainer, I want thread mappings deleted when their feature or t
 
 - Feature start sends a Slack Web API `chat.postMessage` call and captures the returned message timestamp as `thread_ts`.
 - Redis stores a feature-scoped mapping equivalent to `featureId -> thread_ts`.
-- The top-level feature Slack message includes: title, status, next action, and total task count.
-- Feature-thread replies include only changed feature-level fields for that event and do not repeat unchanged top-level feature fields.
+- The initial top-level feature Slack message includes: title, status, next action, and total task count.
+- On each subsequent feature event (`feature_summary_changed`, `handoff_submitted`, `feature_completed`), the top-level feature message is updated in place via `chat.update` to reflect full current state: title, status, next_action (if active), blocked_reason (if blocked), handoff (if in_handoff), feature_pr (if set), and total_task_count.
+- Feature-thread replies include only changed feature-level fields for that event to provide a change history.
 - Feature-level Slack messages look up the feature mapping and include the feature `thread_ts` when present.
 - First task-level Slack send creates a top-level task message and captures the returned timestamp as `task_thread_ts`.
-- The top-level task Slack message includes: title, status, repo, branch, and execution email from `execution.last_updated_by`.
+- The initial top-level task Slack message includes: title, status, repo, branch, and execution email from `execution.last_updated_by`.
+- On each subsequent task event (`task_status_changed`, `task_pr_changed`, `task_review_changed`, `task_completed`), the top-level task message is updated in place via `chat.update` to reflect full current state: title, status, repo, branch, execution.last_updated_by, pr (if set), and blocked_reason (if blocked).
 - Redis stores task-scoped mappings equivalent to `(featureId, taskId) -> task_thread_ts`.
 - Subsequent task-level Slack sends look up the task mapping and include that task's `task_thread_ts` when present.
-- Task-thread replies include only changed task-level fields for that event and do not repeat unchanged top-level task fields.
+- Task-thread replies include only changed task-level fields for that event to provide a change history.
 - Task-level notifications do not post into the feature thread; task status changes, PR updates, review updates, and completion messages must post only into the corresponding task thread.
 - If a mapping is missing, notifications fall back to a clear configured behavior: lazily create the correct scope thread or emit a structured skip event.
 - Feature completion deletes the Redis mapping for that feature after the final completion notification is posted.
 - Task completion deletes the Redis mapping for that task after the final task notification is posted.
-- The old webhook-only path is not used for threaded notifications because incoming webhooks do not provide the returned `thread_ts` needed for this flow.
-- Tests cover: successful feature thread creation, feature message formatting, successful task thread creation, task post into the task thread, missing Redis key, Slack API failure, Redis failure, task key deletion, and feature key deletion on completion.
+- Tests cover: successful feature thread creation, feature message formatting, chat.update on top-level feature message on subsequent events, successful task thread creation, task post into the task thread, chat.update on top-level task message on subsequent events, missing Redis key, Slack API failure, Redis failure, task key deletion, and feature key deletion on completion.
