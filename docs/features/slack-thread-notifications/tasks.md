@@ -9,7 +9,7 @@ Feature status reference: `ready_for_implementation`; stage status: `technical_d
 | T1 | 1 | workflow | Slack Web API client and threaded config | [] |
 | T2 | 1 | workflow | Redis feature/task-thread store | [] |
 | T3 | 2 | workflow | Scoped threaded notification service and task notifier adapter | [T1, T2] |
-| T4 | 3 | workflow | Task, reviewer, and drift notification call-site migration | [T3] |
+| T4 | 3 | workflow | Task and reviewer notification call-site migration | [T3] |
 | T5 | 3 | workflow | Feature lifecycle summary message and cleanup | [T3] |
 | T6 | 4 | workflow | Tests, templates, and operator documentation | [T4, T5] |
 
@@ -83,28 +83,37 @@ It fits the design by making the rest of the orchestrator call one notification 
 ### Subtasks
 
 - [ ] Define the scoped threaded notification service interface and event payload shapes.
+- [ ] Define feature message types: `feature_start`, `feature_summary_changed`, `handoff_submitted`, and `feature_completed`.
+- [ ] Define task message types: `task_start`, `task_status_changed`, `task_pr_changed`, `task_review_changed`, and `task_completed`.
 - [ ] Implement `ensureFeatureThread(featureId, context)`.
-- [ ] Implement feature message formatting with title, status, next action, task title/status rows, feature identifier, and PR reference.
+- [ ] Implement top-level `feature_start` message formatting with title, status, next action, and total task count.
+- [ ] Implement feature-thread reply formatting as changed feature field updates only.
+- [ ] Implement top-level task message formatting with title, status, repo, branch, and execution email from `execution.last_updated_by`.
+- [ ] Implement task-thread reply formatting as changed task field updates only.
+- [ ] Implement status icon rendering on all `Status:` lines using the shared status icon contract.
+- [ ] Ensure absent or irrelevant fields are omitted rather than rendered as placeholder lines.
 - [ ] Implement `ensureTaskThread(featureId, taskId, context)`.
 - [ ] Implement task message posting with Redis task lookup and Slack `thread_ts`.
 - [ ] Implement missing-key fallback: lazily create the correct feature or task thread when Slack and Redis are configured.
 - [ ] Ensure task messages never fall back to the feature thread.
+- [ ] Ensure task status transitions are routed only to the corresponding task thread, not to the feature thread.
+- [ ] Ensure feature messages do not include task logs, task PR/review detail, raw executor output, or runtime internals.
 - [ ] Implement skip behavior for disabled Slack or unavailable Redis.
 - [ ] Implement `closeTaskThread(featureId, taskId, finalMessage)` that posts final task status then deletes the task key.
 - [ ] Implement `closeFeatureThread(featureId, finalMessage)` that posts final status then deletes the key.
 - [ ] Replace or wrap `SlackTaskNotifier` with a threaded adapter that still satisfies `TaskNotifierPort`.
 - [ ] Emit structured events for created, posted, skipped, failed, and deleted outcomes.
-- [ ] Add unit tests for idempotent feature ensure, idempotent task ensure, feature message formatting, task post into existing task thread, lazy task thread creation, disabled config, and Redis failure.
+- [ ] Add unit tests for idempotent feature ensure, top-level feature message formatting, feature-thread reply formatting as changed feature field updates, top-level task message formatting, task-thread reply formatting as changed task field updates, status icon rendering, idempotent task ensure, task post into existing task thread, lazy task thread creation, disabled config, and Redis failure.
 
 ---
 
-## T4 - Task, reviewer, and drift notification call-site migration
+## T4 - Task and reviewer notification call-site migration
 
 ### Description
 
-Migrate task-level and review-related notification call sites to the threaded notification service. This task covers executor completion, reviewer pass/done, reviewer escalation, and feature drift escalation.
+Migrate task-level and review-related notification call sites to the threaded notification service. This task covers executor completion, reviewer pass/done, task PR/review updates, and task-tied reviewer escalation. Feature drift escalation is outside the feature-thread notification scope for this feature.
 
-It fits the design by routing task follow-up messages into task threads and feature-level follow-up messages into the feature thread while preserving task state transitions and failure isolation.
+It fits the design by routing task follow-up messages into task threads while preserving task state transitions and failure isolation.
 
 ### Required skills
 
@@ -112,13 +121,13 @@ It fits the design by routing task follow-up messages into task threads and feat
 
 ### Subtasks
 
-- [ ] Update `dispatchExecutorResult()` to use the threaded task notifier for `in_review` and `blocked`.
-- [ ] Update `dispatchReviewResult()` to use the threaded task notifier for `done`.
+- [ ] Update `dispatchExecutorResult()` to use the threaded task notifier for executor-driven task updates.
+- [ ] Update `dispatchReviewResult()` to use the threaded task notifier for review-driven task updates and terminal completion.
 - [ ] Update task-tied reviewer escalation handling to use the task thread instead of direct webhook posting.
-- [ ] Update feature drift escalation to post into the feature thread when possible.
+- [ ] Leave feature drift escalation out of feature-thread notification routing; preserve existing reviewer/escalation behavior unless another feature changes it.
 - [ ] Preserve existing structured failure events or replace them with equivalent threaded-event names.
 - [ ] Ensure notification failures never nack broker completions or block task mutations.
-- [ ] Update existing tests for dispatch, review result, escalation handler, feature review cycle, and post-task Slack behavior.
+- [ ] Update existing tests for dispatch, review result, task-tied escalation handler, and post-task Slack behavior.
 - [ ] Run the orchestrator unit tests covering these call sites.
 
 ---
@@ -137,15 +146,21 @@ It fits the design by giving each feature a stable feature-only thread and by cl
 
 ### Subtasks
 
-- [ ] Identify the earliest safe active-feature signal in the lifecycle manager without changing feature status semantics.
-- [ ] Call `ensureFeatureThread()` when an eligible feature enters active orchestration.
-- [ ] Render feature messages with title, status, next action, task title/status rows, feature identifier, and PR reference.
-- [ ] Keep handoff transition notifications in the feature thread but do not delete the key during handoff.
-- [ ] Update `handleFeatureDone()` to call `closeFeatureThread()` after all PRs are merged and before or alongside `feature_done` emission.
+- [ ] Send `feature_start` on the first lifecycle-manager poll that observes the feature in active orchestration, for example `ready_for_implementation`, and no feature thread mapping exists yet.
+- [ ] Send `feature_summary_changed` after a persisted feature-level state change.
+- [ ] Do not send `feature_summary_changed` for task status transitions alone; those updates must post only into `slack:task_thread:<workspaceId>:<featureId>:<taskId>`.
+- [ ] Send `handoff_submitted` when the handoff document and feature-level PR are created or updated; keep the notification in the feature thread and do not delete the key during handoff.
+- [ ] Update `handleFeatureDone()` to send `feature_completed` through `closeFeatureThread()` after all PRs are merged and before or alongside `feature_done` emission.
+- [ ] Do not add an independent periodic Slack timer; routine poll cycles with no feature-summary change must not send feature Slack messages.
+- [ ] Render top-level feature message as a simple summary.
+- [ ] Render feature-thread replies as changed feature field updates only.
+- [ ] Render top-level task message as a simple summary with execution email from `execution.last_updated_by`.
+- [ ] Render task-thread replies as changed task field updates only.
+- [ ] Render matching status icons on all `Status:` lines.
 - [ ] Best-effort cleanup any remaining task thread keys for the feature after final feature completion.
 - [ ] Ensure already-done or skipped features do not create new Slack threads.
 - [ ] Ensure Redis delete failure is emitted but does not prevent feature completion.
-- [ ] Add tests for feature start/ensure, feature message formatting, handoff non-cleanup, done final message, task-key cleanup, delete success, and delete failure.
+- [ ] Add tests for feature start/ensure, summary-change notification, no-notification routine poll, handoff non-cleanup, done final message, task-key cleanup, delete success, and delete failure.
 - [ ] Run the orchestrator unit tests covering lifecycle manager and feature done watcher.
 
 ---
@@ -170,6 +185,6 @@ It fits the design by making the feature deployable and understandable without c
 - [ ] Document webhook fallback as legacy non-threaded behavior.
 - [ ] Document local-docker Redis reuse and local-subprocess Redis requirements.
 - [ ] Add or update operator docs for enabling threaded Slack notifications.
-- [ ] Add an end-to-end unit/integration-style test for feature start -> task thread creation -> task update -> feature summary update -> feature done using mocked Slack and fake Redis.
+- [ ] Add an end-to-end unit/integration-style test for `feature_start` -> task thread creation -> task updates routed to task thread only -> feature-level `feature_summary_changed` -> `feature_completed` using mocked Slack and fake Redis.
 - [ ] Run `npm test` or the repo-equivalent orchestrator test command.
 - [ ] Run `npm run build` or `npm run typecheck` for the orchestrator package.
