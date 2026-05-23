@@ -1,13 +1,10 @@
 feature_id: slack-thread-notifications
 title: Slack Thread Notifications for Feature Runs
-
 feature_status: ready_for_implementation
 current_stage: ready_for_implementation
-next_action: >-
-  T1, T2, and T7 are ready to claim (Wave 1, parallel). T3 waits for T1+T2
-  (Wave 2). T8 waits for T3 (Wave 3). T4, T5, and T9 wait for T8 (Wave 4,
+next_action: T1, T2, and T7 are ready to claim (Wave 1, parallel). T3 waits for
+  T1+T2 (Wave 2). T8 waits for T3 (Wave 3). T4, T5, and T9 wait for T8 (Wave 4,
   parallel). T6 waits for T4+T5+T9 (Wave 5).
-
 stages:
   product_spec:
     review_status: approved
@@ -42,7 +39,8 @@ stages:
       - review_status: draft
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-05-23T12:16:52+0700
-        review_comment: Task breakdown drafted from the technical design; human approval is still required later.
+        review_comment: Task breakdown drafted from the technical design; human approval
+          is still required later.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-05-23T12:45:45+0700
@@ -57,20 +55,19 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-05-23T11:56:45+0700
     by: minhkienn203@gmail.com
     action: feature_created
-    note: >-
-      Created feature scaffold for Slack thread notifications: first feature
+    note: "Created feature scaffold for Slack thread notifications: first feature
       message creates a Slack thread, Redis stores featureId to thread_ts, task
       messages post into that thread, and the Redis mapping is deleted when the
-      feature completes.
+      feature completes."
   - at: 2026-05-23T12:12:46+0700
     by: minhkienn203@gmail.com
     action: product_spec_approved
-    note: Product spec approved. Feature advanced to in_tdd; technical design is ready for review.
+    note: Product spec approved. Feature advanced to in_tdd; technical design is
+      ready for review.
   - at: 2026-05-23T12:16:52+0700
     by: minhkienn203@gmail.com
     action: technical_design_submitted
@@ -78,7 +75,8 @@ history:
   - at: 2026-05-23T12:16:52+0700
     by: minhkienn203@gmail.com
     action: tasks_drafted
-    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain todo pending technical design and tasks approval.
+    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain todo
+      pending technical design and tasks approval.
   - at: 2026-05-23T12:45:45+0700
     by: minhkienn203@gmail.com
     action: technical_design_approved
@@ -86,151 +84,135 @@ history:
   - at: 2026-05-23T12:45:45+0700
     by: minhkienn203@gmail.com
     action: tasks_submitted
-    note: Task breakdown submitted for approval. Tasks remain todo until tasks stage approval.
+    note: Task breakdown submitted for approval. Tasks remain todo until tasks stage
+      approval.
   - at: 2026-05-23T12:47:29+0700
     by: minhkienn203@gmail.com
     action: tasks_approved
-    note: Tasks approved. Feature advanced to ready_for_implementation. Wave 1 tasks T1 and T2 activated.
+    note: Tasks approved. Feature advanced to ready_for_implementation. Wave 1 tasks
+      T1 and T2 activated.
   - at: 2026-05-23T14:08:07+0700
     by: minhkienn203@gmail.com
     action: scope_updated
-    note: >-
-      Updated Slack thread contract after human approval: feature messages stay
+    note: "Updated Slack thread contract after human approval: feature messages stay
       in the feature thread with title, status, next action, task summaries,
-      feature, and PR fields; each task creates and reuses its own task thread.
+      feature, and PR fields; each task creates and reuses its own task thread."
   - at: 2026-05-23T15:20:57+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Clarified when feature Slack messages are sent and what fields they
-      contain: feature messages are lifecycle-driven only, with explicit
-      trigger types and a fixed payload/exclusion contract.
+    note: "Clarified when feature Slack messages are sent and what fields they
+      contain: feature messages are lifecycle-driven only, with explicit trigger
+      types and a fixed payload/exclusion contract."
   - at: 2026-05-23T15:32:13+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Narrowed feature Slack payloads to feature-level information instead of
+    note: Narrowed feature Slack payloads to feature-level information instead of
       per-task progress. Task status transitions must post only to the
       corresponding task thread and must not trigger feature_summary_changed.
   - at: 2026-05-23T15:36:42+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Replaced feature-thread task progress counts with total task count only.
+    note: Replaced feature-thread task progress counts with total task count only.
       Feature messages summarize how many tasks belong to the feature; per-task
       progress remains in task threads.
   - at: 2026-05-23T15:39:57+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Removed feature_drift from feature-thread Slack triggers. Drift remains
+    note: Removed feature_drift from feature-thread Slack triggers. Drift remains
       outside this notification scope and should use existing reviewer or
       structured-event handling.
   - at: 2026-05-23T15:46:53+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Split feature Slack payloads into top-level feature_start summary and
+    note: Split feature Slack payloads into top-level feature_start summary and
       shorter feature-thread replies. Replies include title, status, blocked
       reason, PR, and last_updated_at, and omit next_action.
   - at: 2026-05-23T15:49:37+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Defined status-aware feature Slack field rendering. Top-level and reply
+    note: Defined status-aware feature Slack field rendering. Top-level and reply
       messages now omit absent or irrelevant fields instead of always showing
       every possible field.
   - at: 2026-05-23T15:59:02+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Simplified feature and task Slack messages further: first messages are
-      basic summaries only, replies are short updates, and replies do not
-      repeat the base fields already visible in the thread.
+    note: "Simplified feature and task Slack messages further: first messages are
+      basic summaries only, replies are short updates, and replies do not repeat
+      the base fields already visible in the thread."
   - at: 2026-05-23T16:10:39+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Split Slack message formatting into four explicit contracts: feature
+    note: "Split Slack message formatting into four explicit contracts: feature
       top-level, feature reply, task top-level, and task reply. Replies now
       carry only changed fields for that event, such as feature handoff or task
-      PR/status changes.
+      PR/status changes."
   - at: 2026-05-23T16:30:33+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Clarified that the Slack Execution field must display an email address
-      for both feature and task notifications, and added explicit task trigger
+    note: Clarified that the Slack Execution field must display an email address for
+      both feature and task notifications, and added explicit task trigger
       coverage for task start, status, PR, review, and completion updates.
   - at: 2026-05-23T16:39:36+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Corrected the Execution contract: feature Slack messages do not show an
+    note: "Corrected the Execution contract: feature Slack messages do not show an
       Execution line, and task Slack messages render the email from
-      execution.last_updated_by.
+      execution.last_updated_by."
   - at: 2026-05-23T16:45:09+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Added a shared status icon contract for feature and task Slack messages:
+    note: "Added a shared status icon contract for feature and task Slack messages:
       every Status line now prefixes the raw status with an icon such as
-      warning, review, handoff, or done.
+      warning, review, handoff, or done."
   - at: 2026-05-23T16:59:42+0700
     by: minhkienn203@gmail.com
     action: scope_clarified
-    note: >-
-      Restored the broader task-thread reply contract: task Slack replies now
-      cover status, PR, review, and completion updates instead of being
-      limited to in_review, blocked, and done.
-
+    note: "Restored the broader task-thread reply contract: task Slack replies now
+      cover status, PR, review, and completion updates instead of being limited
+      to in_review, blocked, and done."
   - at: 2026-05-24T01:38:31+0700
     by: matthew@swellnetwork.io
     action: scope_clarified
-    note: >-
-      T5 split into T5 (lifecycle wiring for feature_start, feature_summary_changed,
-      handoff_submitted) and new T9 (feature completion and cleanup via
-      handleFeatureDone + closeFeatureThread). T4, T5, T9 run in parallel in
-      Wave 4. T6 depends on T4+T5+T9. Renderer subtasks removed from T5 —
-      formatting is T3's responsibility.
+    note: T5 split into T5 (lifecycle wiring for feature_start,
+      feature_summary_changed, handoff_submitted) and new T9 (feature completion
+      and cleanup via handleFeatureDone + closeFeatureThread). T4, T5, T9 run in
+      parallel in Wave 4. T6 depends on T4+T5+T9. Renderer subtasks removed from
+      T5 — formatting is T3's responsibility.
   - at: 2026-05-24T01:33:04+0700
     by: matthew@swellnetwork.io
     action: scope_clarified
-    note: >-
-      T3 split into T3 (message types and formatters — pure TypeScript, no I/O)
+    note: "T3 split into T3 (message types and formatters — pure TypeScript, no I/O)
       and new T8 (thread management service — stateful, composes T1+T2+T3).
       TaskNotifierPort adapter removal moved to T4. T4 and T5 now depend on T8.
-      Wave structure is 5 waves: T1+T2+T7 → T3 → T8 → T4+T5+T9 → T6.
+      Wave structure is 5 waves: T1+T2+T7 → T3 → T8 → T4+T5+T9 → T6."
   - at: 2026-05-24T01:28:33+0700
     by: matthew@swellnetwork.io
     action: scope_clarified
-    note: >-
-      Added T7 (workspace-github-adapter): slack_channel_id moves from
+    note: "Added T7 (workspace-github-adapter): slack_channel_id moves from
       SLACK_CHANNEL_ID env var to workspace.yaml notifications.slack.channel_id,
-      synced to Postgres via a new migration in workspace-github-adapter. T7 runs
-      in parallel with T1 and T2 in Wave 1. Orchestrator reads channel_id from
-      WorkspaceConfig, not from env. Technical design, tasks.md, and T7.yaml
-      added accordingly.
+      synced to Postgres via a new migration in workspace-github-adapter. T7
+      runs in parallel with T1 and T2 in Wave 1. Orchestrator reads channel_id
+      from WorkspaceConfig, not from env. Technical design, tasks.md, and
+      T7.yaml added accordingly."
   - at: 2026-05-24T01:19:51+0700
     by: matthew@swellnetwork.io
     action: scope_clarified
-    note: >-
-      Top-level thread messages are now living state: on every event after the
+    note: "Top-level thread messages are now living state: on every event after the
       initial create, the service calls chat.update on the stored thread_ts so
       the thread header always reflects current status. Replies are still posted
       as changed-field audit entries. Product spec, technical design, and task
-      subtasks updated accordingly.
+      subtasks updated accordingly."
   - at: 2026-05-24T01:19:51+0700
     by: matthew@swellnetwork.io
     action: scope_clarified
-    note: >-
-      Removed the SLACK_WEBHOOK_URL legacy path entirely. The webhook helper
-      and post-task-slack.ts will be deleted as part of this feature. All
+    note: Removed the SLACK_WEBHOOK_URL legacy path entirely. The webhook helper and
+      post-task-slack.ts will be deleted as part of this feature. All
       installations must use bot-token Slack config. T6 updated to include
       webhook file deletion and env-template cleanup.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/slack-thread-notifications
+feature_branch_base_sha: bc5b44496dd5ab6f84c1c3c97244341178b55046
