@@ -23,15 +23,19 @@ The management workspace currently has `WORKFLOW_LOCAL_PATH` blank in `.env`, wh
 
 ## Problem Framing
 
-Slack notifications need to become feature-scoped without changing workflow state ownership.
+Slack notifications need to become scope-separated without changing workflow state ownership.
 
 The implementation must:
 
-- Create or reuse one Slack thread per feature.
+- Create or reuse one Slack thread per feature for feature-level notifications.
+- Create or reuse one Slack thread per task for task-level notifications.
 - Capture the Slack `ts` returned by `chat.postMessage` for the first feature message.
+- Capture the Slack `ts` returned by `chat.postMessage` for the first task message.
 - Store transient routing state in Redis, not in YAML or Git.
-- Post task, reviewer escalation, feature drift, handoff, and final completion messages into the feature thread when possible.
-- Delete the thread mapping after the final feature completion notification.
+- Post feature start, feature drift, handoff, feature summary, and final feature completion messages into the feature thread when possible.
+- Post task execution, task review escalation, task review result, and task PR updates into the task's own thread when possible.
+- Render feature messages with title, status, next action, task title/status rows, feature identifier, and PR reference.
+- Delete thread mappings after the final related feature or task notification.
 - Continue workflow execution when Slack or Redis is unavailable.
 
 The implementation must keep these stable:
@@ -74,9 +78,9 @@ Dependency impact:
 
 - No new dependency, but it fails the key Slack API requirement.
 
-### Option B: Slack Web API Client Plus Redis Thread Store in the Orchestrator
+### Option B: Slack Web API Client Plus Redis Scope Thread Store in the Orchestrator
 
-Add a Slack Web API client, a Redis-backed feature-thread store, and a higher-level notification service inside `runtime/orchestrator`.
+Add a Slack Web API client, a Redis-backed feature/task thread store, and a higher-level notification service inside `runtime/orchestrator`.
 
 Pros:
 
@@ -93,7 +97,7 @@ Cons:
 
 Implementation impact:
 
-- Medium. Introduces a notification service boundary and migrates task/reviewer/feature side effects to it.
+- Medium. Introduces a notification service boundary and migrates task/reviewer/feature side effects to scope-aware feature or task threads.
 
 Dependency impact:
 
@@ -148,7 +152,7 @@ Dependency impact:
 
 ## Chosen Design
 
-Use Option B: Slack Web API client plus Redis thread store in the TypeScript orchestrator.
+Use Option B: Slack Web API client plus Redis scope thread store in the TypeScript orchestrator.
 
 Add these runtime boundaries:
 
@@ -157,15 +161,18 @@ Add these runtime boundaries:
   - Takes `SLACK_BOT_TOKEN` and `SLACK_CHANNEL_ID`.
   - Returns the Slack `ts` string and rejects `ok: false` or missing `ts`.
 
-- `FeatureThreadStore`
-  - Owns Redis read/write/delete for feature thread mappings.
+- `NotificationThreadStore`
+  - Owns Redis read/write/delete for feature and task thread mappings.
   - Uses key shape `slack:feature_thread:<workspaceId>:<featureId>`.
-  - Stores only the Slack thread timestamp.
+  - Uses key shape `slack:task_thread:<workspaceId>:<featureId>:<taskId>`.
+  - Stores only Slack thread timestamps.
 
 - `ThreadedNotificationService`
   - Owns `ensureFeatureThread(featureId, context)`.
+  - Owns `ensureTaskThread(featureId, taskId, context)`.
   - Owns `postTaskMessage(featureId, taskContext, messageContext)`.
   - Owns `postFeatureMessage(featureId, messageContext)`.
+  - Owns `closeTaskThread(featureId, taskId, finalMessage)`.
   - Owns `closeFeatureThread(featureId, finalMessage)`.
   - Emits structured skip/failure events and never throws in a way that blocks workflow progression.
 
@@ -173,7 +180,7 @@ Add these runtime boundaries:
   - Keeps the existing task notifier call sites stable.
   - Replaces the webhook-backed notifier with a threaded Slack notifier when threaded config is present.
 
-Thread creation behavior:
+Feature thread creation behavior:
 
 1. Read Redis key `slack:feature_thread:<workspaceId>:<featureId>`.
 2. If present, reuse it.
@@ -181,12 +188,35 @@ Thread creation behavior:
 4. Store the returned `ts` as the thread mapping.
 5. Emit `feature_slack_thread_created`.
 
+Feature message behavior:
+
+1. Build the feature message from the current feature snapshot.
+2. The message includes title, status, next action, task title/status rows, feature identifier, and PR reference.
+3. Look up or lazily create the feature thread.
+4. Post feature-level updates with the feature `thread_ts`.
+5. Do not post task log/progress messages into the feature thread; task state appears there only as a compact summary row.
+
+Task thread creation behavior:
+
+1. Read Redis key `slack:task_thread:<workspaceId>:<featureId>:<taskId>`.
+2. If present, reuse it.
+3. If absent and Slack plus Redis are configured, post the first task message as a top-level Slack message.
+4. Store the returned `ts` as the task thread mapping.
+5. Emit `task_slack_thread_created`.
+
 Task message behavior:
 
-1. Look up the feature thread mapping.
-2. If present, call `chat.postMessage` with `thread_ts`.
-3. If missing, lazily call `ensureFeatureThread()` and then post into the created thread.
+1. Look up the task thread mapping.
+2. If present, call `chat.postMessage` with that task's `thread_ts`.
+3. If missing, lazily call `ensureTaskThread()` and then post into the created task thread.
 4. If Slack or Redis is unavailable, emit a structured skip event and continue.
+5. Never fall back by posting the task message into the feature thread.
+
+Task completion behavior:
+
+1. The final task notification is posted into the task thread if one exists or can be created.
+2. After the final task message attempt, the service deletes the task Redis key.
+3. Delete failure emits `task_slack_thread_delete_failed`; the task transition still completes.
 
 Feature completion behavior:
 
@@ -194,12 +224,13 @@ Feature completion behavior:
 2. The service posts into the existing thread if one exists.
 3. After the final message attempt, the service deletes the Redis key.
 4. Delete failure emits `feature_slack_thread_delete_failed`; the workflow still completes.
+5. Feature completion may also best-effort delete any remaining task thread keys for that feature using a workspace/feature-scoped Redis key scan.
 
 Compatibility:
 
 - `SLACK_WEBHOOK_URL` remains a legacy path for deployments that have not enabled threaded Slack config.
 - Threaded notifications must use `SLACK_BOT_TOKEN`, `SLACK_CHANNEL_ID`, and `REDIS_URL`.
-- If bot/channel config exists, task/reviewer/feature Slack paths should prefer the threaded service, not the webhook helper.
+- If bot/channel config exists, task/reviewer/feature Slack paths should prefer the scoped threaded service, not the webhook helper.
 - If only `SLACK_WEBHOOK_URL` exists, existing webhook behavior may continue, but that is explicitly non-threaded legacy behavior.
 
 Operational impact:
@@ -214,8 +245,8 @@ Internal dependencies:
 
 - `runtime/orchestrator/src/side-effects/post-task-slack.ts` and `slack-task-notifier.ts` are the existing task notification boundary.
 - `dispatchExecutorResult()` and `dispatchReviewResult()` are task notification call sites.
-- `handleEscalation()` is a reviewer escalation call site that currently posts directly to webhook Slack.
-- `runFeatureReviewCycle()` posts feature drift Slack messages directly.
+- `handleEscalation()` is a reviewer escalation call site that currently posts directly to webhook Slack. Task-tied escalations should route to the task thread; feature-level escalations should route to the feature thread.
+- `runFeatureReviewCycle()` posts feature drift Slack messages directly and should route to the feature thread.
 - `handleFeatureDone()` is the final feature completion call site where mapping cleanup belongs.
 - `checkFeatureTasksDone()` is a handoff transition signal; it should not close the Slack thread because the feature is not done yet.
 
@@ -267,18 +298,18 @@ Task dependency diagram:
 T1: Slack Web API client and threaded config - workflow
   └── Can begin now - no implementation blockers after tasks approval
   │
-T2: Redis feature-thread store - workflow
+T2: Redis feature/task-thread store - workflow
   └── Can begin now - no implementation blockers after tasks approval
   └── T1 and T2 run in parallel
   │
-  T3: Threaded notification service and task notifier adapter - workflow
+  T3: Scoped threaded notification service and task notifier adapter - workflow
     └── BLOCKED on T1 (Slack client must return validated message timestamps)
     └── BLOCKED on T2 (thread mapping store must be available)
     │
     T4: Task, reviewer, and drift notification call-site migration - workflow
       └── BLOCKED on T3 (call sites need the service interface and fallback contract)
     │
-    T5: Feature lifecycle thread creation and completion cleanup - workflow
+    T5: Feature lifecycle summary message and cleanup - workflow
       └── BLOCKED on T3 (feature lifecycle needs ensure/close operations)
       └── T4 and T5 run in parallel
       │
@@ -313,11 +344,13 @@ Unaffected repos:
 Testing expectations:
 
 - Unit tests for Slack Web API success, `ok: false`, HTTP failure, and missing `ts`.
-- Unit tests for Redis store get/set/delete and failure handling through fake adapters.
-- Unit tests for lazy thread creation when a task message finds no mapping.
-- Unit tests for task notification events posting with `thread_ts`.
-- Unit tests for reviewer escalation and feature drift using the threaded service instead of direct webhook calls.
+- Unit tests for Redis feature/task store get/set/delete and failure handling through fake adapters.
+- Unit tests for feature message formatting with title, status, next action, task title/status rows, feature identifier, and PR reference.
+- Unit tests for lazy task thread creation when a task message finds no mapping.
+- Unit tests for task notification events posting with the task `thread_ts`.
+- Unit tests for reviewer escalation and feature drift using the scoped threaded service instead of direct webhook calls.
 - Unit tests for `handleFeatureDone()` posting the final message before deleting the Redis mapping.
+- Unit tests for final task notification cleanup deleting the task Redis mapping.
 - Existing orchestrator unit suite should still pass with no Slack or Redis env configured.
 
 Migration/config impact:
@@ -330,7 +363,7 @@ Rollout concerns:
 
 - Missing Slack or Redis config must emit structured skip events and must not fail the orchestration loop.
 - Redis delete failure after feature completion should be observable but non-blocking.
-- Shared Redis deployments need workspace-scoped keys to prevent feature ID collisions.
+- Shared Redis deployments need workspace-scoped feature keys and workspace/feature-scoped task keys to prevent collisions.
 
 Backward compatibility constraints:
 

@@ -88,6 +88,13 @@ history:
     by: minhkienn203@gmail.com
     action: tasks_approved
     note: Tasks approved. Feature advanced to ready_for_implementation. Wave 1 tasks T1 and T2 activated.
+  - at: 2026-05-23T14:08:07+0700
+    by: minhkienn203@gmail.com
+    action: scope_updated
+    note: >-
+      Updated Slack thread contract after human approval: feature messages stay
+      in the feature thread with title, status, next action, task summaries,
+      feature, and PR fields; each task creates and reuses its own task thread.
 
 revalidation:
   product_spec_required: false

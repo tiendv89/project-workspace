@@ -1,5 +1,5 @@
 id: T3
-title: Threaded notification service and task notifier adapter
+title: Scoped threaded notification service and task notifier adapter
 repo: workflow
 status: todo
 depends_on:
@@ -10,7 +10,7 @@ branch: feature/slack-thread-notifications-T3
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T12:16:52+0700
+  last_updated_at: 2026-05-23T14:08:07+0700
 pr:
   url: null
   status: null
@@ -18,4 +18,8 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for the threaded notification service and task notifier adapter.
+    note: Task created by tech-lead planning for the scoped threaded notification service and task notifier adapter.
+  - action: scope_updated
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T14:08:07+0700
+    note: Updated service scope to separate feature-thread and task-thread routing.

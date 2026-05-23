@@ -1,5 +1,5 @@
 id: T2
-title: Redis feature-thread store
+title: Redis feature/task-thread store
 repo: workflow
 status: ready
 depends_on: []
@@ -8,7 +8,7 @@ branch: feature/slack-thread-notifications-T2
 execution:
   actor_type: agent
   last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T05:47:29Z
+  last_updated_at: 2026-05-23T07:08:07Z
 pr:
   url: null
   status: null
@@ -16,8 +16,12 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for the Redis feature-thread store.
+    note: Task created by tech-lead planning for the Redis feature/task-thread store.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-23T05:47:29Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: scope_updated
+    by: minhkienn203@gmail.com
+    at: 2026-05-23T14:08:07+0700
+    note: Expanded Redis store scope from feature-only mappings to feature and task thread mappings.
