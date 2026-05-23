@@ -1,31 +1,98 @@
 id: T1
 title: Frontend API client and shared workflow DTOs
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 branch: feature/workspace-tabs-data-flow-T1
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-20T07:27:38Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T09:07:59.995Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/41
+  status: merged
 log:
   - action: revised
     by: minhkienn203@gmail.com
-    at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for the digital-factory-ui API client and DTO layer that consumes the workflow-backend frontend API contract.
+    at: 2026-05-20T04:34:28.000Z
+    note: Task rewritten for the digital-factory-ui API client and DTO layer that
+      consumes the workflow-backend frontend API contract.
   - action: ready
     by: minhkienn203@gmail.com
-    at: 2026-05-20T05:46:30Z
+    at: 2026-05-20T05:46:30.000Z
     note: Task activated on tasks-stage approval — dependencies met.
   - action: reset
     by: minhkienn203@gmail.com
-    at: 2026-05-20T07:11:39Z
-    note: Task returned to todo because technical design and task breakdown require re-approval after the product spec redesign.
+    at: 2026-05-20T07:11:39.000Z
+    note: Task returned to todo because technical design and task breakdown require
+      re-approval after the product spec redesign.
   - action: ready
     by: minhkienn203@gmail.com
-    at: 2026-05-20T07:27:38Z
+    at: 2026-05-20T07:27:38.000Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T08:36:56.714Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T08:37:12.591Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/product-spec.md,
+      docs/features/workspace-tabs-data-flow/technical-design.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Frontend API client and shared workflow DTOs workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T08:41:10+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/41"
+    token_usage:
+      input: 186
+      output: 25846
+      model: claude-sonnet-4-6
+    cost_usd: 0.38824800000000004
+    at: 2026-05-21T08:48:34.341Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T08:50:26.800Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Missing identifier helpers — T1 deliverable 'Define backend identifier
+      helpers for workspaceId, featureId, taskId, feature_name, and task_name'
+      is absent from all PR files (types.ts, client.ts, query-params.ts,
+      index.ts). Fix: add type aliases WorkspaceId, FeatureId, TaskId to
+      types.ts and re-export from index.ts."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/41#pullrequestreview-4335430190
+    at: 2026-05-21T08:57:43.285Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T08:58:47.835Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/41"
+    token_usage:
+      input: 79
+      output: 5608
+      model: claude-sonnet-4-6
+    cost_usd: 0.084357
+    at: 2026-05-21T09:04:09.635Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T09:04:53.598Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-21T09:07:59.995Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+blocked_context: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/282
+  status: open

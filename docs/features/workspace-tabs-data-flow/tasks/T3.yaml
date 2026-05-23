@@ -1,21 +1,173 @@
 id: T3
 title: Workspace search, filters, refresh, and stale-source UX
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
   - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/workspace-tabs-data-flow-T3
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-20T11:34:28+07:00
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-21T16:01:13.422Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/43
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/284
+  status: open
 log:
   - action: revised
     by: minhkienn203@gmail.com
-    at: 2026-05-20T11:34:28+07:00
-    note: Task rewritten for backend feature/task search params, manual sync, stale source banners, retry behavior, and empty states.
+    at: 2026-05-20T04:34:28.000Z
+    note: Task rewritten for backend feature/task search params, manual sync, stale
+      source banners, retry behavior, and empty states.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:07:13.350Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:08:01.405Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:08:16.259Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/journeys/J09-refresh-workspace-dat\
+      a.md, docs/features/workspace-tabs-data-flow/product-spec.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Workspace search, filters, refresh, and stale-source UX
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:16:15+0000
+    note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-21T12:31:33.764Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:33:07.117Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:33:13.365Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/journeys/J09-refresh-workspace-dat\
+      a.md, docs/features/workspace-tabs-data-flow/product-spec.md,
+      docs/features/workspace-tabs-data-flow/product-spec.md"
+    rag_query: Workspace search, filters, refresh, and stale-source UX
+      workspace-tabs-data-flow
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T12:40:02+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/43"
+    token_usage:
+      input: 222
+      output: 27836
+      model: claude-sonnet-4-6
+    cost_usd: 0.418206
+    at: 2026-05-21T12:47:39.466Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T12:48:25.604Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🟡 Dual task_id+title mapping from single search input breaks task-name
+      searches (KanbanBoard.context.tsx). 🟡 useEffect without dep array and
+      tick===0 guard silently drops sync updates after Retry (useBoardData.ts).
+      CI passed. TypeCheck clean. 543/543 tests pass.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/43#pullrequestreview-4337054843
+    at: 2026-05-21T12:58:33.598Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T13:00:03.399Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/43"
+    token_usage:
+      input: 84
+      output: 6910
+      model: claude-sonnet-4-6
+    cost_usd: 0.10390200000000001
+    at: 2026-05-21T13:05:19.061Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T13:07:08.910Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🟡 task_id param never wired from board search control — task-name
+      searches non-functional (KanbanBoard.context.tsx:130). 🟡 syncError not
+      rendered to user — hard sync failures silently ignored per spec AC
+      (KanbanBoard.tsx).
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/43#pullrequestreview-4337196221
+    at: 2026-05-21T13:16:56.352Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T13:18:37.566Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/43"
+    token_usage:
+      input: 102
+      output: 9422
+      model: claude-sonnet-4-6
+    cost_usd: 0.141636
+    at: 2026-05-21T13:26:59.106Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-21T13:27:53.092Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Task search sends dual task_id+title params from single search input
+      (KanbanBoard.context.tsx:130-131). Backend AND semantics means searching
+      'T3' requires BOTH task_name CONTAINS 'T3' AND title CONTAINS 'T3' —
+      breaks task-name searches. Fix: send only task_id from the task-mode
+      search box. Cycle 2 issues (task_id wired, syncError rendered via
+      StaleBanner) are confirmed fixed. CI passed (no check-runs)."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/43#pullrequestreview-4337390590
+    at: 2026-05-21T13:41:14.504Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T13:42:57.713Z
+    note: Fix agent claimed.
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-21T21:52:56+0700
+    note: "Human reset to change_requested — fix agent (cycle 3) crashed before
+      completing. Outstanding issue: task search sends dual task_id+title params
+      from single search input (KanbanBoard.context.tsx:130-131); fix only
+      task_id from task-mode search box."
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-21T14:55:39.776Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/43"
+    token_usage:
+      input: 82
+      output: 7080
+      model: claude-sonnet-4-6
+    cost_usd: 0.106446
+    at: 2026-05-21T15:01:35.890Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-21T16:01:13.422Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
