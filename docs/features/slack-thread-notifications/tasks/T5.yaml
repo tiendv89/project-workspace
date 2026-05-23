@@ -1,19 +1,19 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: in_progress
+status: blocked
 depends_on:
   - T8
-blocked_reason: null
+blocked_reason: pr_url_wrong_repo
 blocked_context: null
 branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-23T21:19:28.204Z
+  last_updated_at: 2026-05-23T21:33:14.611Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/211
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/299
   status: open
@@ -82,3 +82,6 @@ log:
     rag_query: Feature lifecycle wiring — start, summary, handoff
       slack-thread-notifications
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+blocked_suggestion: pr_url points to tiendv89/project-workspace but the task
+  targets tiendv89/agent-workflow. Ensure pr-create was run against the correct
+  implementation repo and wrote the resulting URL to result.json.
