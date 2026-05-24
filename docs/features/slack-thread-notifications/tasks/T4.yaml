@@ -1,18 +1,22 @@
 id: T4
 title: Task and reviewer notification call-site migration
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T8
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T4
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T15:39:57+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T22:14:59.753Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/210
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/298
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -44,3 +48,87 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-23T20:39:55.029Z
     note: Task activated — dependency T8 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:41:54.279Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:42:06.226Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/product-spec.md,
+      docs/features/slack-thread-notifications/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/123"
+    rag_query: Task and reviewer notification call-site migration
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:48:47+0000
+    note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-23T20:57:03.120Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:05:13.680Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:05:19.494Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/product-spec.md,
+      docs/features/slack-thread-notifications/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/123"
+    rag_query: Task and reviewer notification call-site migration
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 2 of 3).
+    at: 2026-05-23T21:44:19.070Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:45:38.525Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:45:44.465Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/product-spec.md,
+      docs/features/slack-thread-notifications/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/123"
+    rag_query: Task and reviewer notification call-site migration
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:49:44+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/210"
+    token_usage:
+      input: 263
+      output: 35988
+      model: claude-sonnet-4-6
+    cost_usd: 0.540609
+    at: 2026-05-23T22:07:40.750Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-23T22:10:02.836Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-23T22:14:59.753Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-23T22:09:18.458Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/slack-thread-notifications.
