@@ -1,56 +1,29 @@
 id: T3
 title: "HTTP conventions: response package, errorz discipline"
 repo: workflow-backend
-status: done
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T3
+
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-24T08:50:56.399Z
+  last_updated_by: null
+  last_updated_at: null
+
 pr:
-  url: https://github.com/tiendv89/workflow-backend/pull/10
-  status: merged
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/310
-  status: open
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
 log:
   - action: created
     by: tech_lead
-    at: 2026-05-24T08:15:30Z
+    at: "2026-05-24T08:15:30Z"
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: 2026-05-24T08:19:45Z
+    at: "2026-05-24T08:19:45Z"
     note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
-    by: pentative@gmail.com
-    at: 2026-05-24T08:34:09.910Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: pentative@gmail.com
-    at: 2026-05-24T08:34:19.346Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "HTTP conventions: response package, errorz discipline
-      workflow-sync-go-templates"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
-  - action: run_completed
-    by: pentative@gmail.com
-    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/10"
-    token_usage:
-      input: 155
-      output: 22680
-      model: claude-sonnet-4-6
-    cost_usd: 0.340665
-    at: 2026-05-24T08:44:12.455Z
-  - action: reviewer_started
-    by: noreply@tiendv.dev
-    at: 2026-05-24T08:46:03.900Z
-    note: Reviewer dispatch claimed (cycle 1 of 3).
-  - action: done
-    by: pentative@gmail.com
-    at: 2026-05-24T08:50:56.399Z
-    note: Implementation PR merged — automated close-out by pr-merge loop.

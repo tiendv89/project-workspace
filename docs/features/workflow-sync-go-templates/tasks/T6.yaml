@@ -1,74 +1,29 @@
 id: T6
 title: "Config + logging: configs/ package, viper, zerolog"
 repo: workspace-github-adapter
-status: done
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T6
+
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-24T09:00:36.588Z
+  last_updated_by: null
+  last_updated_at: null
+
 pr:
-  url: https://github.com/tiendv89/workspace-github-adapter/pull/16
-  status: merged
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/312
-  status: open
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
 log:
   - action: created
     by: tech_lead
-    at: 2026-05-24T08:15:30Z
+    at: "2026-05-24T08:15:30Z"
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: 2026-05-24T08:19:45Z
+    at: "2026-05-24T08:19:45Z"
     note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
-    by: norepy@tiendv.dev
-    at: 2026-05-24T08:42:09.745Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: norepy@tiendv.dev
-    at: 2026-05-24T08:42:21.956Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      docs/features/workflow-sync-go-templates/technical-design.md,
-      docs/features/workflow-sync-go-templates/technical-design.md,
-      docs/features/workflow-sync-go-templates/product-spec.md"
-    rag_query: "Config + logging: configs/ package, viper, zerolog
-      workflow-sync-go-templates"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
-  - action: started
-    by: norepy@tiendv.dev
-    at: 2026-05-24T08:44:39+0000
-    note: executor work phase begun.
-  - action: run_completed
-    by: norepy@tiendv.dev
-    note: "Implementation PR:
-      https://github.com/tiendv89/workspace-github-adapter/pull/16"
-    token_usage:
-      input: 209
-      output: 36488
-      model: claude-sonnet-4-6
-    cost_usd: 0.5479470000000001
-    at: 2026-05-24T08:54:33.689Z
-  - action: reviewer_started
-    by: noreply@anthropic.com
-    at: 2026-05-24T08:55:33.263Z
-    note: Reviewer dispatch claimed (cycle 1 of 3).
-  - action: rebase_completed
-    by: pentative@gmail.com
-    at: 2026-05-24T08:58:57.202Z
-    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
-  - action: done
-    by: pentative@gmail.com
-    at: 2026-05-24T09:00:36.588Z
-    note: Implementation PR merged — automated close-out by pr-merge loop.
-conflict_state: resolved
-rebase_log:
-  - at: 2026-05-24T08:55:19.180Z
-    action: rebase_started
-    by: pentative@gmail.com
-    note: Rebase claimed; targeting origin/feature/workflow-sync-go-templates.
