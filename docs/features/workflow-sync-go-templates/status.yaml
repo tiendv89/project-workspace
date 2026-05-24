@@ -1,0 +1,61 @@
+feature_id: workflow-sync-go-templates
+title: Workflow Sync — Go Templates
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Wave 1 tasks (T1, T2, T3, T5, T6) are ready for implementation.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-05-24T08:01:59Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-05-24T08:01:59Z"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-05-24T08:13:56Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-05-24T08:13:56Z"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-05-24T08:19:45Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-05-24T08:19:45Z"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - event: product_spec_approved
+    by: pentative@gmail.com
+    at: "2026-05-24T08:01:59Z"
+  - event: technical_design_approved
+    by: pentative@gmail.com
+    at: "2026-05-24T08:13:56Z"
+  - event: tasks_approved
+    by: pentative@gmail.com
+    at: "2026-05-24T08:19:45Z"
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
