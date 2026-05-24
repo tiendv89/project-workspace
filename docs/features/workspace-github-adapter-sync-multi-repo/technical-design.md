@@ -123,21 +123,23 @@ Rejected: doesn't meet the per-workspace isolation goal.
 
 ```go
 type GitHubConfig struct {
-    Token          string   `mapstructure:"token"`
-    WebhookSecrets []string `mapstructure:"webhook_secrets"`
+    Token          string `mapstructure:"token"`
+    WebhookSecrets string `mapstructure:"webhook_secrets"` // comma-separated
 }
 ```
 
-`WebhookSecret string` (the existing scalar) is removed. Operators with a single workspace put their one secret in the list.
+`WebhookSecret string` (the existing scalar) is removed. `WebhookSecrets` is a comma-separated
+string split at startup into `[]string` for the handler. A single secret is just a string with
+no comma.
 
 `config.yaml` example (new shape):
 ```yaml
 github:
   token: "ghp_..."
-  webhook_secrets:
-    - "secret_for_ws_1"
-    - "secret_for_ws_2"
+  webhook_secrets: "secret_for_ws_1,secret_for_ws_2"
 ```
+
+Environment variable override is straightforward: `GITHUB_WEBHOOK_SECRETS=secret1,secret2`.
 
 ### Webhook package
 
@@ -149,7 +151,7 @@ Add `ReadBody(r *http.Request) ([]byte, error)` to `internal/webhook/webhook.go`
 
 ### Handler
 
-`ServiceHandler.WebhookSecret string` → `ServiceHandler.WebhookSecrets []string`.
+`ServiceHandler.WebhookSecret string` → `ServiceHandler.WebhookSecrets []string` (pre-split from config at startup).
 
 New `WebhookHandler` flow:
 1. `body, err := webhook.ReadBody(r)` — read raw body.
@@ -162,16 +164,17 @@ New `WebhookHandler` flow:
 ### Startup wiring (`cmd/api/api.go`)
 
 ```go
-if len(cfg.GitHub.WebhookSecrets) == 0 {
+secrets := strings.Split(cfg.GitHub.WebhookSecrets, ",")
+if cfg.GitHub.WebhookSecrets == "" {
     log.Fatal().Msg("github.webhook_secrets is required")
 }
 h := &handler.ServiceHandler{
     ...
-    WebhookSecrets: cfg.GitHub.WebhookSecrets,
+    WebhookSecrets: secrets,
 }
 ```
 
-Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the slice-length check.
+Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the empty-string check.
 
 ### Affected repositories
 - `workspace-github-adapter` only.
@@ -189,7 +192,7 @@ Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the sli
 |---|---|---|
 | `webhook.VerifySignature` | Stable — no change | Already takes `(secret, header, body)` |
 | `GetGitHubSourceByRepo` | Stable — no change | Already looks up by owner/name |
-| Viper mapstructure | Stable | `[]string` slice is natively supported — no struct needed |
+| Viper mapstructure | Stable | `string` field; comma-split done at startup — no custom decoder needed |
 | No DB migration | ✅ Resolved | Config-only approach removes this dependency |
 | No new external service | ✅ Resolved | In-memory map; no external secret store |
 
@@ -200,7 +203,7 @@ No unresolved dependencies.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Config layer — WebhookSecrets []string, ResolvedWebhookSecrets(), config.yaml, configs_test.go
+T1: Config layer — WebhookSecrets string (comma-sep), config.yaml, configs_test.go
   └── Can begin now — no blockers
 
 T2: Webhook package — ReadBody(), webhook_test.go addition
