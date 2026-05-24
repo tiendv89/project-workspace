@@ -1,7 +1,7 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T8
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-23T21:33:25.693Z
+  last_updated_at: 2026-05-24T04:02:07.151Z
 pr:
   url: null
   status: null
@@ -93,6 +93,10 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-24T11:00:58+0700
-    note: >-
-      Reset to ready by human — discarding stale pr.url (agent-workflow/pull/211)
-      and pr_url_wrong_repo block. New executor will re-claim and open a fresh PR.
+    note: Reset to ready by human — discarding stale pr.url
+      (agent-workflow/pull/211) and pr_url_wrong_repo block. New executor will
+      re-claim and open a fresh PR.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:02:07.151Z
+    note: Claimed via git-based claim protocol.
