@@ -123,3 +123,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T04:28:13.758Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:28:22.483Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/technical-design.md,
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/300"
+    rag_query: Feature lifecycle wiring — start, summary, handoff
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
