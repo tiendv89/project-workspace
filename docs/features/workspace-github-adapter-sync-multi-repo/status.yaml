@@ -1,7 +1,7 @@
 feature_id: workspace-github-adapter-sync-multi-repo
 title: Workspace GitHub Adapter — Sync Multi-Repo
-feature_status: in_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Execute tasks T1 and T2 in parallel, then T3.
 stages:
   product_spec:
@@ -40,6 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/327
 history: []
 revalidation:
   product_spec_required: false
@@ -49,3 +50,8 @@ revalidation:
 feature_branch: feature/workspace-github-adapter-sync-multi-repo
 feature_branch_base_sha: 148d5910c88a87242ff78b7b272ecc926c8d5e8f
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/323
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/327
+impl_feature_prs:
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/23
+    status: open
