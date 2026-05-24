@@ -1,7 +1,7 @@
 feature_id: workflow-migrations-transfer
 title: Workflow Migrations Transfer
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Execute tasks — T1 is ready for implementation.
 stages:
   product_spec:
@@ -40,6 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/307
 history:
   - stage: product_spec
     status: approved
@@ -61,3 +62,11 @@ revalidation:
 feature_branch: feature/workflow-migrations-transfer
 feature_branch_base_sha: 91888ce46b95fd7b0ecb306077fcd18650648895
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/303
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/307
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/8
+    status: open
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/13
+    status: open
