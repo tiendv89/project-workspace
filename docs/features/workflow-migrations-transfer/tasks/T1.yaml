@@ -27,3 +27,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T05:12:35.187Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:12:41.480Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workflow-migrations-transfer/technical-design.md,
+      docs/features/workflow-migrations-transfer/technical-design.md,
+      docs/features/workflow-migrations-transfer/technical-design.md"
+    rag_query: Add migrations and auto-run to workflow-backend
+      workflow-migrations-transfer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
