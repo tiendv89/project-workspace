@@ -14,8 +14,8 @@ pr:
   status: null
   url: null
 workspace_pr:
-  status: open
   url: https://github.com/tiendv89/project-workspace/pull/295
+  status: open
 log:
   - action: created
     at: 2026-05-24T01:28:33+0700
