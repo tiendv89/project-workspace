@@ -1,7 +1,7 @@
 id: T4
 title: "Cobra entrypoint + middleware wiring"
 repo: workflow-backend
-status: todo
+status: ready
 depends_on: [T2, T3]
 blocked_reason: null
 blocked_context: null
@@ -23,3 +23,7 @@ log:
     by: tech_lead
     at: "2026-05-24T08:15:30Z"
     note: Task created from approved task breakdown.
+  - action: ready
+    by: zbotdev
+    at: 2026-05-24T17:04:00+0700
+    note: Auto-readied — dependencies T2 and T3 are both done.
