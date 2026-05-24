@@ -1,29 +1,63 @@
 id: T2
-title: "Webhook package — ReadBody()"
+title: Webhook package — ReadBody()
 repo: workspace-github-adapter
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workspace-github-adapter-sync-multi-repo-T2
-
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: "2026-05-24T21:41:11+0700"
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T15:10:30.537Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/21
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/325
+  status: open
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T21:41:11+0700"
+    at: 2026-05-24T21:41:11+0700
     note: Task created from approved task breakdown.
   - action: ready
     by: tech_lead
-    at: "2026-05-24T21:41:11+0700"
+    at: 2026-05-24T21:41:11+0700
     note: No dependencies — eligible immediately. Runs in parallel with T1.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T14:47:59.434Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T14:48:11.099Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/5,
+      github.com/tiendv89/workspace-github-adapter/pull/2,
+      github.com/tiendv89/project-workspace/pull/264"
+    rag_query: Webhook package — ReadBody() workspace-github-adapter-sync-multi-repo
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T14:49:56+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/21"
+    token_usage:
+      input: 230
+      output: 21596
+      model: claude-sonnet-4-6
+    cost_usd: 0.32463000000000003
+    at: 2026-05-24T15:03:31.166Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T15:05:42.870Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-24T15:10:30.537Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
