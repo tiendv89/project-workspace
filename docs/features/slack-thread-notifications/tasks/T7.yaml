@@ -1,9 +1,9 @@
 id: T7
 title: Workspace notification settings migration
 repo: workspace-github-adapter
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: executor_crashed
+blocked_reason: null
 blocked_context: null
 branch: feature/slack-thread-notifications-T7
 execution:
@@ -52,3 +52,7 @@ log:
       input: 276
       output: 34175
     at: 2026-05-23T19:37:54.508Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T10:56:05+0700
+    note: Reset to ready by human — executor crashed before opening a PR, no implementation work to recover.
