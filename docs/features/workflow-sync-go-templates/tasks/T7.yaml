@@ -3,41 +3,42 @@ title: Handler extraction + entrypoint refactor + HTTP conventions
 repo: workspace-github-adapter
 status: in_progress
 depends_on:
-  - T6
+- T6
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T09:02:33.570Z
+  last_updated_at: 2026-05-24T09:05:55+0000
 pr:
-  url: ""
+  url: ''
   status: not_created
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/313
   status: open
 log:
-  - action: created
-    by: tech_lead
-    at: 2026-05-24T08:15:30Z
-    note: Task created from approved task breakdown.
-  - action: ready
-    by: pentative@gmail.com
-    at: 2026-05-24T09:00:36.605Z
-    note: Task activated — dependency T6 merged and marked done.
-  - action: claimed
-    by: norepy@tiendv.dev
-    at: 2026-05-24T09:02:33.570Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: norepy@tiendv.dev
-    at: 2026-05-24T09:02:46.397Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      docs/features/workflow-sync-go-templates/technical-design.md,
-      docs/features/workflow-sync-go-templates/product-spec.md,
-      github.com/tiendv89/project-workspace/pull/236"
-    rag_query: Handler extraction + entrypoint refactor + HTTP conventions
-      workflow-sync-go-templates
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: tech_lead
+  at: 2026-05-24 08:15:30+00:00
+  note: Task created from approved task breakdown.
+- action: ready
+  by: pentative@gmail.com
+  at: 2026-05-24 09:00:36.605000+00:00
+  note: Task activated — dependency T6 merged and marked done.
+- action: claimed
+  by: norepy@tiendv.dev
+  at: 2026-05-24 09:02:33.570000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: norepy@tiendv.dev
+  at: 2026-05-24 09:02:46.397000+00:00
+  rag_context_injected: true
+  rag_summary: 'Retrieved 5 chunks: docs/features/workflow-sync-go-templates/technical-design.md,
+    docs/features/workflow-sync-go-templates/product-spec.md, github.com/tiendv89/project-workspace/pull/236'
+  rag_query: Handler extraction + entrypoint refactor + HTTP conventions workflow-sync-go-templates
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: norepy@tiendv.dev
+  at: 2026-05-24T09:05:55+0000
+  note: executor work phase begun.
