@@ -1,29 +1,64 @@
 id: T4
-title: "Cobra entrypoint + middleware wiring"
+title: Cobra entrypoint + middleware wiring
 repo: workflow-backend
-status: ready
-depends_on: [T2, T3]
+status: done
+depends_on:
+  - T2
+  - T3
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T4
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T10:48:36.102Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/12
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/317
+  status: open
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T08:15:30Z"
+    at: 2026-05-24T08:15:30Z
     note: Task created from approved task breakdown.
   - action: ready
     by: zbotdev
     at: 2026-05-24T17:04:00+0700
     note: Auto-readied — dependencies T2 and T3 are both done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:22:26.925Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:22:41.123Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/17,
+      docs/features/workflow-sync-go-templates/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/313"
+    rag_query: Cobra entrypoint + middleware wiring workflow-sync-go-templates
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:25:20+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/12"
+    token_usage:
+      input: 288
+      output: 32879
+      model: claude-sonnet-4-6
+    cost_usd: 0.49404899999999996
+    at: 2026-05-24T10:41:47.092Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T10:42:38.221Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:48:36.102Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
