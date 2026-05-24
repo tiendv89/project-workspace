@@ -4,12 +4,17 @@ repo: workflow-backend
 status: blocked
 depends_on: []
 blocked_reason: pr_url_wrong_branch
+blocked_suggestion: 'PR #5 in tiendv89/workflow-backend has head branch
+  "feature/workflow-migrations-transfer-T1" but expected
+  "feature/workflow-sync-go-templates-T1". This usually means the agent linked a
+  PR from a different task or feature. Open a PR from the correct task branch
+  and write its URL to result.json.'
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T08:43:30.111Z
+  last_updated_at: 2026-05-24T08:43:39.134Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/11
   status: open
@@ -42,8 +47,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T08:26:05+0000
     note: executor work phase begun.
-blocked_suggestion: 'PR #5 in tiendv89/workflow-backend has head branch
-  "feature/workflow-migrations-transfer-T1" but expected
-  "feature/workflow-sync-go-templates-T1". This usually means the agent linked a
-  PR from a different task or feature. Open a PR from the correct task branch
-  and write its URL to result.json.'
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: pr_url_wrong_branch
+    token_usage:
+      input: 309
+      output: 32423
+    at: 2026-05-24T08:43:39.134Z
