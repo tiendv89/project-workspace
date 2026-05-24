@@ -1,29 +1,31 @@
 id: T4
-title: "Cobra entrypoint + middleware wiring"
+title: Cobra entrypoint + middleware wiring
 repo: workflow-backend
-status: ready
-depends_on: [T2, T3]
+status: in_progress
+depends_on:
+  - T2
+  - T3
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T4
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T10:22:26.925Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T08:15:30Z"
+    at: 2026-05-24T08:15:30Z
     note: Task created from approved task breakdown.
   - action: ready
     by: zbotdev
     at: 2026-05-24T17:04:00+0700
     note: Auto-readied — dependencies T2 and T3 are both done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:22:26.925Z
+    note: Claimed via git-based claim protocol.
