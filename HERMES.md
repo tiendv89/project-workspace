@@ -42,6 +42,14 @@ If the project has a lint step (`eslint`, `golangci-lint`, `flake8`, `ruff check
 etc.), run it after formatting and fix any errors before committing. Warnings are
 acceptable; errors are not.
 
+**Go projects: `golangci-lint run` is mandatory before every commit.** Zero errors
+required — this matches what CI enforces. Install:
+`go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
+
+### Pre-push checks rule
+
+Before pushing any branch, run all tests and lint checks. Do not push if any tests fail or lint errors exist. Fix all failures and re-run until clean.
+
 ## Commit message conventions
 
 Use the **Conventional Commits** format:

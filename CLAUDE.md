@@ -382,6 +382,16 @@ resolve it (e.g. push, stash, or explicitly confirm discard) before proceeding.
 This rule applies to every repo touched in the workflow — implementation repos,
 management repos, and the workflow repo itself.
 
+## Pre-push checks rule
+
+Before pushing any branch, run all tests and lint checks. Do not push if any tests fail or lint errors exist.
+
+- Detect the test runner from the project (`package.json`, `Makefile`, `go.mod`, `pytest.ini`, etc.). Do not assume a specific runner.
+- Run the full test suite, not a subset.
+- Run the project's lint step (`eslint`, `golangci-lint`, `ruff check`, `flake8`, etc.) and fix all errors. Warnings are acceptable; errors are not.
+- **Go projects**: `golangci-lint run` is mandatory before every commit — zero errors required. Install: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
+- Fix any failures and re-run until clean before pushing.
+
 ## Test-before-PR rule
 
 - **Always run the full test suite before opening a PR.** This applies to every task, every workflow, every agent context.
