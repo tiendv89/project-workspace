@@ -1,18 +1,18 @@
 id: T2
 title: "Config + logging: configs/ package, viper, zerolog"
 repo: workflow-backend
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T2
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-24T08:43:54.452Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-24T08:50:43.457Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/9
-  status: open
+  status: merged
 workspace_pr: null
 log:
   - action: created
@@ -55,3 +55,7 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-24T08:43:54.452Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-24T08:50:43.457Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
