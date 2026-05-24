@@ -1,29 +1,96 @@
 id: T1
 title: "Tooling: Makefile, .golangci.yml, move migrations"
 repo: workflow-backend
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-24T09:37:17.390Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/11
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/314
+  status: open
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T08:15:30Z"
+    at: 2026-05-24 08:15:30+00:00
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-05-24T08:19:45Z"
+    at: 2026-05-24 08:19:45+00:00
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24 08:23:39.439000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24 08:23:45.900000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/11,
+      github.com/tiendv89/agent-workflow/pull/216,
+      docs/features/workflow-migrations-transfer/technical-design.md"
+    rag_query: "Tooling: Makefile, .golangci.yml, move migrations
+      workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:26:05+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: pr_url_wrong_branch
+    token_usage:
+      input: 309
+      output: 32423
+    at: 2026-05-24T08:43:39.134Z
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-24T16:17:19+0700
+    note: Human unblock — pr_url_wrong_branch resolved. Clearing stale impl PR url.
+      Agent to re-run and open a fresh PR from
+      feature/workflow-sync-go-templates-T1.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:19:31.701Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:19:41.996Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/15,
+      docs/features/workflow-sync-go-templates/product-spec.md,
+      github.com/tiendv89/workspace-github-adapter/pull/11"
+    rag_query: "Tooling: Makefile, .golangci.yml, move migrations
+      workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:24:04+0000
+    note: executor work phase begun (re-run after pr_url_wrong_branch block).
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/11"
+    token_usage:
+      input: 231
+      output: 23046
+      model: claude-sonnet-4-6
+    cost_usd: 0.346383
+    at: 2026-05-24T09:31:31.953Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-24T09:32:40.442Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-24T09:37:17.390Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
