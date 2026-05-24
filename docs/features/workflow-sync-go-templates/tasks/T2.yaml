@@ -13,7 +13,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/9
   status: merged
-workspace_pr: https://github.com/tiendv89/project-workspace/pull/315
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/315
+  status: merged
 log:
   - action: created
     by: tech_lead
@@ -59,3 +61,9 @@ log:
     by: pentative@gmail.com
     at: 2026-05-24T08:50:43.457Z
     note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merged
+    by: pentative@gmail.com
+    at: 2026-05-24T16:17:19+0700
+    note: >-
+      Human recovery — workspace PR #315 had conflicts after T5 squash-merged
+      into feature branch. Resolved via merge -X ours; merged manually.
