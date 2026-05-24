@@ -46,6 +46,10 @@ model_policy:
 automation:
   enabled: false
 
+notifications:
+  slack:
+    channel_id: C0B2RDNHGTG
+
 orchestrator:
   poll_interval_seconds: 30
   reviewer_max_cycles: $REVIEWER_MAX_CYCLES   # default 3
