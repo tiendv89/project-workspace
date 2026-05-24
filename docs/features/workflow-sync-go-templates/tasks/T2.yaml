@@ -1,29 +1,29 @@
 id: T2
 title: "Config + logging: configs/ package, viper, zerolog"
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T2
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T08:24:14.597Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T08:15:30Z"
+    at: 2026-05-24T08:15:30Z
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-05-24T08:19:45Z"
+    at: 2026-05-24T08:19:45Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:24:14.597Z
+    note: Claimed via git-based claim protocol.
