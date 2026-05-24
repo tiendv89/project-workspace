@@ -1,0 +1,64 @@
+feature_id: workflow-migrations-transfer
+title: Workflow Migrations Transfer
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks — T1 is ready for implementation.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: "2026-05-24T05:00:23Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pye@swellnetwork.io
+        at: "2026-05-24T05:00:23Z"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: "2026-05-24T05:06:40Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pye@swellnetwork.io
+        at: "2026-05-24T05:06:40Z"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: "2026-05-24T05:08:46Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pye@swellnetwork.io
+        at: "2026-05-24T05:08:46Z"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    status: approved
+    by: pye@swellnetwork.io
+    at: "2026-05-24T05:00:23Z"
+  - stage: technical_design
+    status: approved
+    by: pye@swellnetwork.io
+    at: "2026-05-24T05:06:40Z"
+  - stage: tasks
+    status: approved
+    by: pye@swellnetwork.io
+    at: "2026-05-24T05:08:46Z"
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
