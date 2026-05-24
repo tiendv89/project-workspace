@@ -39,3 +39,7 @@ log:
       docs/features/workflow-sync-go-templates/product-spec.md"
     rag_query: "Tooling: Makefile, .golangci.yml workflow-sync-go-templates"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:37:38+0000
+    note: executor work phase begun.
