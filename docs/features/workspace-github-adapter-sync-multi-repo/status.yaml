@@ -1,8 +1,8 @@
 feature_id: workspace-github-adapter-sync-multi-repo
 title: Workspace GitHub Adapter — Sync Multi-Repo
-feature_status: in_handoff
+feature_status: cancelled
 current_stage: handoff
-next_action: Execute tasks T1 and T2 in parallel, then T3.
+next_action: null
 stages:
   product_spec:
     review_status: approved
