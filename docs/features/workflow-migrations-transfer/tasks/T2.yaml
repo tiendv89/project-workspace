@@ -30,3 +30,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T07:01:24.336Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T07:01:35.863Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workflow-migrations-transfer/technical-design.md,
+      docs/features/workflow-migrations-transfer/product-spec.md,
+      docs/features/workflow-migrations-transfer/technical-design.md"
+    rag_query: Remove migrations and migrate binary from workspace-github-adapter
+      workflow-migrations-transfer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
