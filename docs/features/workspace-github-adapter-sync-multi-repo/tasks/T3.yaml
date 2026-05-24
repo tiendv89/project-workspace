@@ -1,0 +1,27 @@
+id: T3
+title: "Handler + wiring — multi-secret verification"
+repo: workspace-github-adapter
+status: todo
+depends_on: [T1, T2]
+blocked_reason: null
+blocked_context: null
+branch: feature/workspace-github-adapter-sync-multi-repo-T3
+
+execution:
+  actor_type: agent
+  last_updated_by: tech_lead
+  last_updated_at: "2026-05-24T21:41:11+0700"
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: tech_lead
+    at: "2026-05-24T21:41:11+0700"
+    note: >-
+      Task created from approved task breakdown. Blocked on T1 (WebhookSecrets field must
+      exist in config before wiring) and T2 (ReadBody must exist before handler can call it).
