@@ -1,7 +1,7 @@
 id: T1
 title: "Tooling: Makefile, .golangci.yml, move migrations"
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/workflow-sync-go-templates-T1
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-24T16:17:19+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T09:19:31.701Z
 pr:
   url: ""
   status: not_created
@@ -53,6 +53,10 @@ log:
   - action: ready
     by: pentative@gmail.com
     at: 2026-05-24T16:17:19+0700
-    note: >-
-      Human unblock — pr_url_wrong_branch resolved. Clearing stale impl PR url.
-      Agent to re-run and open a fresh PR from feature/workflow-sync-go-templates-T1.
+    note: Human unblock — pr_url_wrong_branch resolved. Clearing stale impl PR url.
+      Agent to re-run and open a fresh PR from
+      feature/workflow-sync-go-templates-T1.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:19:31.701Z
+    note: Claimed via git-based claim protocol.
