@@ -1,7 +1,7 @@
 id: T5
 title: "Tooling: Makefile, .golangci.yml"
 repo: workspace-github-adapter
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/workflow-sync-go-templates-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-24T08:36:07+0000
+  last_updated_at: 2026-05-24T08:44:11.517Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/15
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/311
   status: open
