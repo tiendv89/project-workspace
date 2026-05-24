@@ -31,3 +31,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T10:22:26.925Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T10:22:41.123Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/17,
+      docs/features/workflow-sync-go-templates/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/313"
+    rag_query: Cobra entrypoint + middleware wiring workflow-sync-go-templates
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
