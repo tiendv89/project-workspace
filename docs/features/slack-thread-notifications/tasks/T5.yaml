@@ -1,18 +1,23 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T8
 blocked_reason: null
+blocked_suggestion: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T14:08:07+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T05:10:29.697Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/211
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/299
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -40,3 +45,139 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-23T20:39:55.032Z
     note: Task activated — dependency T8 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:42:21.625Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:42:32.742Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/technical-design.md,
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/174"
+    rag_query: Feature lifecycle wiring — start, summary, handoff
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:49:15+0000
+    note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-05-23T21:05:44.026Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:19:28.204Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T21:19:37.419Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/technical-design.md,
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/297"
+    rag_query: Feature lifecycle wiring — start, summary, handoff
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: pr_url_wrong_repo
+    token_usage:
+      input: 138
+      output: 11224
+    at: 2026-05-23T21:33:25.693Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T11:00:58+0700
+    note: Reset to ready by human — discarding stale pr.url
+      (agent-workflow/pull/211) and pr_url_wrong_repo block. New executor will
+      re-claim and open a fresh PR.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:02:07.151Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:02:13.622Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/technical-design.md,
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/300"
+    rag_query: Feature lifecycle wiring — start, summary, handoff
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:08:20+0000
+    note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 2 of 3).
+    at: 2026-05-24T04:26:40.037Z
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:28:13.758Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:28:22.483Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/technical-design.md,
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/300"
+    rag_query: Feature lifecycle wiring — start, summary, handoff
+      slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:37:28+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/211"
+    token_usage:
+      input: 246
+      output: 22008
+      model: claude-sonnet-4-6
+    cost_usd: 0.330858
+    at: 2026-05-24T04:44:15.846Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T04:46:04.975Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Missing test for `handoff_submitted` notification path — tasks.md
+      subtask explicitly requires 'handoff_submitted called' to be covered; the
+      implementation in check-feature-tasks-done.ts (+222–+248) has no test. 🟢
+      Nit: `env` parameter accepted but unused in readStatusYaml/countTaskFiles.
+      CI passed; all other subtasks implemented correctly."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/211#pullrequestreview-4351825943
+    at: 2026-05-24T04:53:16.292Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T04:54:51.709Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/211"
+    token_usage:
+      input: 131
+      output: 12155
+      model: claude-sonnet-4-6
+    cost_usd: 0.182718
+    at: 2026-05-24T05:04:55.440Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T05:06:27.885Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:10:29.697Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
