@@ -1,29 +1,69 @@
 id: T2
 title: "Config + logging: configs/ package, viper, zerolog"
 repo: workflow-backend
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T2
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-24T08:50:43.457Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/9
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/315
+  status: merged
 log:
   - action: created
     by: tech_lead
-    at: "2026-05-24T08:15:30Z"
+    at: 2026-05-24T08:15:30Z
     note: Task created from approved task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-05-24T08:19:45Z"
+    at: 2026-05-24T08:19:45Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:24:14.597Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:24:21.508Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/discussion-orchestrator-archi\
+      tecture.md, github.com/tiendv89/project-workspace/pull/2,
+      docs/features/workspace-data-backend/handoffs/handoff.md"
+    rag_query: "Config + logging: configs/ package, viper, zerolog
+      workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:26:54+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/9"
+    token_usage:
+      input: 239
+      output: 22287
+      model: claude-sonnet-4-6
+    cost_usd: 0.33502200000000004
+    at: 2026-05-24T08:42:57.761Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-24T08:43:54.452Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-24T08:50:43.457Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merged
+    by: pentative@gmail.com
+    at: 2026-05-24T16:17:19+0700
+    note: >-
+      Human recovery — workspace PR #315 had conflicts after T5 squash-merged
+      into feature branch. Resolved via merge -X ours; merged manually.
