@@ -13,7 +13,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/5
   status: merged
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/305
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
