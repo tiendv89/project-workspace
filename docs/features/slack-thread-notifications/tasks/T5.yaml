@@ -1,13 +1,11 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T8
-blocked_reason: pr_url_wrong_repo
-blocked_suggestion: pr_url points to tiendv89/project-workspace but the task
-  targets tiendv89/agent-workflow. Ensure pr-create was run against the correct
-  implementation repo and wrote the resulting URL to result.json.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/slack-thread-notifications-T5
 execution:
@@ -15,8 +13,8 @@ execution:
   last_updated_by: norepy@tiendv.dev
   last_updated_at: 2026-05-23T21:33:25.693Z
 pr:
-  url: https://github.com/tiendv89/agent-workflow/pull/211
-  status: open
+  url: null
+  status: null
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/299
   status: open
@@ -92,3 +90,9 @@ log:
       input: 138
       output: 11224
     at: 2026-05-23T21:33:25.693Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-24T11:00:58+0700
+    note: >-
+      Reset to ready by human — discarding stale pr.url (agent-workflow/pull/211)
+      and pr_url_wrong_repo block. New executor will re-claim and open a fresh PR.
