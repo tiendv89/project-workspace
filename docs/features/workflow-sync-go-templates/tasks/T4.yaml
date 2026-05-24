@@ -1,7 +1,7 @@
 id: T4
 title: Cobra entrypoint + middleware wiring
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -11,10 +11,10 @@ branch: feature/workflow-sync-go-templates-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T10:25:20+0000
+  last_updated_at: 2026-05-24T10:41:38.097Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workflow-backend/pull/12
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/317
   status: open
