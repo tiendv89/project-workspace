@@ -1,26 +1,69 @@
 id: T6
 title: Tests, templates, and operator documentation
 repo: workflow
-status: todo
+status: done
 depends_on:
   - T4
   - T5
   - T9
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T6
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T12:16:52+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T05:38:29.504Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/214
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/302
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for tests, templates, and operator documentation.
+    note: Task created by tech-lead planning for tests, templates, and operator
+      documentation.
   - action: scope_clarified
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:38:31+0700
     note: depends_on updated to [T4, T5, T9] after T5 was split into T5 and T9.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:10:30.152Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:11:51.905Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:12:03.900Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/209,
+      docs/features/slack-thread-notifications/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/300"
+    rag_query: Tests, templates, and operator documentation slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:17:03+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/214"
+    token_usage:
+      input: 282
+      output: 33306
+      model: claude-sonnet-4-6
+    cost_usd: 0.500436
+    at: 2026-05-24T05:32:32.956Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T05:34:02.577Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:38:29.504Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

@@ -1,27 +1,70 @@
 id: T3
 title: Message types and formatters
 repo: workflow
-status: todo
+status: done
 depends_on:
   - T1
   - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/slack-thread-notifications-T3
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-23T14:08:07+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-23T20:07:18.366Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/208
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/296
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-23T12:16:52+0700
-    note: Task created by tech-lead planning for the scoped threaded notification service and task notifier adapter.
+    note: Task created by tech-lead planning for the scoped threaded notification
+      service and task notifier adapter.
   - action: scope_clarified
     by: matthew@swellnetwork.io
     at: 2026-05-24T01:33:04+0700
-    note: >-
-      Scope narrowed to message types and formatters only (pure TypeScript, no
+    note: Scope narrowed to message types and formatters only (pure TypeScript, no
       I/O). Stateful service operations moved to T8.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-23T19:41:20.776Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-23T19:42:27.086Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-23T19:42:38.633Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/slack-thread-notifications/product-spec.md,
+      github.com/tiendv89/project-workspace/pull/291,
+      docs/features/slack-thread-notifications/technical-design.md"
+    rag_query: Message types and formatters slack-thread-notifications
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-23T19:48:36+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/208"
+    token_usage:
+      input: 203
+      output: 24945
+      model: claude-sonnet-4-6
+    cost_usd: 0.374784
+    at: 2026-05-23T19:59:06.798Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-23T20:00:57.788Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-23T20:07:18.366Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
