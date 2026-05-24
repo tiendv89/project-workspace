@@ -27,3 +27,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T08:24:14.597Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:24:21.508Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/runtime-portable-architecture/discussion-orchestrator-archi\
+      tecture.md, github.com/tiendv89/project-workspace/pull/2,
+      docs/features/workspace-data-backend/handoffs/handoff.md"
+    rag_query: "Config + logging: configs/ package, viper, zerolog
+      workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
