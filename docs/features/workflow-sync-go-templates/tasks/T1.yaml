@@ -14,7 +14,9 @@ execution:
 pr:
   url: ""
   status: not_created
-workspace_pr: https://github.com/tiendv89/project-workspace/pull/314
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/314
+  status: open
 log:
   - action: created
     by: tech_lead
