@@ -1,40 +1,38 @@
 feature_id: workspace-github-adapter-sync-multi-repo
 title: Workspace GitHub Adapter — Sync Multi-Repo
-
-feature_status: in_implementation
-current_stage: tasks
-next_action: Execute tasks T1 and T2 in parallel, then T3.
-
+feature_status: cancelled
+current_stage: handoff
+next_action: null
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T21:22:49+0700"
+    reviewed_at: 2026-05-24T21:22:49+0700
     review_comment: null
     review_history:
       - status: approved
         reviewed_by: pye@swellnetwork.io
-        reviewed_at: "2026-05-24T21:22:49+0700"
+        reviewed_at: 2026-05-24T21:22:49+0700
         review_comment: null
   technical_design:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T21:38:31+0700"
+    reviewed_at: 2026-05-24T21:38:31+0700
     review_comment: null
     review_history:
       - status: approved
         reviewed_by: pye@swellnetwork.io
-        reviewed_at: "2026-05-24T21:38:31+0700"
+        reviewed_at: 2026-05-24T21:38:31+0700
         review_comment: null
   tasks:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T21:43:15+0700"
+    reviewed_at: 2026-05-24T21:43:15+0700
     review_comment: null
     review_history:
       - status: approved
         reviewed_by: pye@swellnetwork.io
-        reviewed_at: "2026-05-24T21:43:15+0700"
+        reviewed_at: 2026-05-24T21:43:15+0700
         review_comment: null
   handoff:
     review_status: draft
@@ -42,11 +40,18 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/327
 history: []
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/workspace-github-adapter-sync-multi-repo
+feature_branch_base_sha: 148d5910c88a87242ff78b7b272ecc926c8d5e8f
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/323
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/327
+impl_feature_prs:
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/23
+    status: open
