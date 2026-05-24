@@ -1,9 +1,9 @@
 feature_id: workspace-github-adapter-sync-multi-repo
 title: Workspace GitHub Adapter — Sync Multi-Repo
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Produce the technical design.
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Produce task breakdown.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         reviewed_at: "2026-05-24T21:22:49+0700"
         review_comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: "2026-05-24T21:38:31+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: "2026-05-24T21:38:31+0700"
+        review_comment: null
   tasks:
     review_status: draft
     reviewed_by: null
