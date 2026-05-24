@@ -4,12 +4,15 @@ repo: workspace-github-adapter
 status: blocked
 depends_on: []
 blocked_reason: pr_url_wrong_repo
+blocked_suggestion: pr_url points to tiendv89/project-workspace but the task
+  targets tiendv89/agent-workflow. Ensure pr-create was run against the correct
+  implementation repo and wrote the resulting URL to result.json.
 blocked_context: null
 branch: feature/workflow-sync-go-templates-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T09:50:54.527Z
+  last_updated_at: 2026-05-24T09:51:03.153Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/18
   status: open
@@ -43,6 +46,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T09:37:38+0000
     note: executor work phase begun.
-blocked_suggestion: pr_url points to tiendv89/project-workspace but the task
-  targets tiendv89/agent-workflow. Ensure pr-create was run against the correct
-  implementation repo and wrote the resulting URL to result.json.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: pr_url_wrong_repo
+    token_usage:
+      input: 330
+      output: 44334
+    at: 2026-05-24T09:51:03.153Z
