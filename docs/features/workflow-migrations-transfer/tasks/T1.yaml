@@ -1,7 +1,7 @@
 id: T1
 title: Add migrations and auto-run to workflow-backend
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/workflow-migrations-transfer-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T05:15:02+0000
+  last_updated_at: 2026-05-24T05:23:08.367Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workflow-backend/pull/5
+  status: open
 workspace_pr: null
 log:
   - action: created
