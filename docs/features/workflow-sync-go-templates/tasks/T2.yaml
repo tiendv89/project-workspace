@@ -13,7 +13,7 @@ execution:
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/9
   status: merged
-workspace_pr: null
+workspace_pr: https://github.com/tiendv89/project-workspace/pull/315
 log:
   - action: created
     by: tech_lead
