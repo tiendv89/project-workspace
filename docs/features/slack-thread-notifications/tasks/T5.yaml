@@ -1,7 +1,7 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T8
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T04:54:51.709Z
+  last_updated_at: 2026-05-24T05:04:46.724Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/211
   status: open
