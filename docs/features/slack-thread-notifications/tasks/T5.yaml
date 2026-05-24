@@ -1,7 +1,7 @@
 id: T5
 title: Feature lifecycle wiring — start, summary, handoff
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T8
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/slack-thread-notifications-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-24T04:08:20+0000
+  last_updated_at: 2026-05-24T04:26:40.037Z
 pr:
   url: null
   status: null
@@ -115,3 +115,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T04:08:20+0000
     note: executor work phase begun.
+  - action: retried
+    by: norepy@tiendv.dev
+    note: Max-turns block reset to ready (attempt 2 of 3).
+    at: 2026-05-24T04:26:40.037Z
