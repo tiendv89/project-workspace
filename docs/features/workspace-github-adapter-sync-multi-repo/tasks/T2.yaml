@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T14:47:59.434Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T14:48:11.099Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/5,
+      github.com/tiendv89/workspace-github-adapter/pull/2,
+      github.com/tiendv89/project-workspace/pull/264"
+    rag_query: Webhook package — ReadBody() workspace-github-adapter-sync-multi-repo
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
