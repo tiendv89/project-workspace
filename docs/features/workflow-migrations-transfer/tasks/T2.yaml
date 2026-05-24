@@ -1,25 +1,65 @@
 id: T2
 title: Remove migrations and migrate binary from workspace-github-adapter
 repo: workspace-github-adapter
-status: todo
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/workflow-migrations-transfer-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-24T07:13:42.950Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/11
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/306
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
-    at: "2026-05-24T05:07:25Z"
+    at: 2026-05-24T05:07:25Z
     note: Task created from approved task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-24T05:30:00.007Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-24T07:01:24.336Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T07:01:35.863Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workflow-migrations-transfer/technical-design.md,
+      docs/features/workflow-migrations-transfer/product-spec.md,
+      docs/features/workflow-migrations-transfer/technical-design.md"
+    rag_query: Remove migrations and migrate binary from workspace-github-adapter
+      workflow-migrations-transfer
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-24T07:03:55+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/11"
+    token_usage:
+      input: 162
+      output: 13454
+      model: claude-sonnet-4-6
+    cost_usd: 0.202296
+    at: 2026-05-24T07:09:36.835Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-24T07:10:18.065Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-24T07:13:42.950Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

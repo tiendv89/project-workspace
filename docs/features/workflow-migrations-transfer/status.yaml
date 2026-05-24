@@ -1,40 +1,38 @@
 feature_id: workflow-migrations-transfer
 title: Workflow Migrations Transfer
-
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: done
+current_stage: done
 next_action: Execute tasks — T1 is ready for implementation.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T05:00:23Z"
+    reviewed_at: 2026-05-24T05:00:23Z
     review_comment: null
     review_history:
       - status: approved
         by: pye@swellnetwork.io
-        at: "2026-05-24T05:00:23Z"
+        at: 2026-05-24T05:00:23Z
         comment: null
   technical_design:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T05:06:40Z"
+    reviewed_at: 2026-05-24T05:06:40Z
     review_comment: null
     review_history:
       - status: approved
         by: pye@swellnetwork.io
-        at: "2026-05-24T05:06:40Z"
+        at: 2026-05-24T05:06:40Z
         comment: null
   tasks:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
-    reviewed_at: "2026-05-24T05:08:46Z"
+    reviewed_at: 2026-05-24T05:08:46Z
     review_comment: null
     review_history:
       - status: approved
         by: pye@swellnetwork.io
-        at: "2026-05-24T05:08:46Z"
+        at: 2026-05-24T05:08:46Z
         comment: null
   handoff:
     review_status: draft
@@ -42,23 +40,33 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/307
 history:
   - stage: product_spec
     status: approved
     by: pye@swellnetwork.io
-    at: "2026-05-24T05:00:23Z"
+    at: 2026-05-24T05:00:23Z
   - stage: technical_design
     status: approved
     by: pye@swellnetwork.io
-    at: "2026-05-24T05:06:40Z"
+    at: 2026-05-24T05:06:40Z
   - stage: tasks
     status: approved
     by: pye@swellnetwork.io
-    at: "2026-05-24T05:08:46Z"
-
+    at: 2026-05-24T05:08:46Z
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/workflow-migrations-transfer
+feature_branch_base_sha: 91888ce46b95fd7b0ecb306077fcd18650648895
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/303
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/307
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/8
+    status: merged
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/13
+    status: merged
