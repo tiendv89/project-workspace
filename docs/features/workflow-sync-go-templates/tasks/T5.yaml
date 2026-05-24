@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T09:35:30.689Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T09:35:42.702Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/workspace-github-adapter/pull/15,
+      github.com/tiendv89/project-workspace/pull/311,
+      docs/features/workflow-sync-go-templates/product-spec.md"
+    rag_query: "Tooling: Makefile, .golangci.yml workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
