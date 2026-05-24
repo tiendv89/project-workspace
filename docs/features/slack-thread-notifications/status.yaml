@@ -1,7 +1,7 @@
 feature_id: slack-thread-notifications
 title: Slack Thread Notifications for Feature Runs
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: T1, T2, and T7 are ready to claim (Wave 1, parallel). T3 waits for
   T1+T2 (Wave 2). T8 waits for T3 (Wave 3). T4, T5, and T9 wait for T8 (Wave 4,
   parallel). T6 waits for T4+T5+T9 (Wave 5).
@@ -222,7 +222,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/304
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/215
-    status: open
+    status: merged
   - repo: workspace-github-adapter
     url: https://github.com/tiendv89/workspace-github-adapter/pull/10
-    status: open
+    status: merged
