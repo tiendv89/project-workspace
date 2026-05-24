@@ -1,7 +1,7 @@
 feature_id: workflow-sync-go-templates
 title: Workflow Sync — Go Templates
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Wave 1 tasks (T1, T2, T3, T5, T6) are ready for implementation.
 stages:
   product_spec:
@@ -63,7 +63,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/318
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/13
-    status: open
+    status: merged
   - repo: workspace-github-adapter
     url: https://github.com/tiendv89/workspace-github-adapter/pull/19
-    status: open
+    status: merged
