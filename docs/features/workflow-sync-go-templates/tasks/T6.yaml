@@ -29,3 +29,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-24T08:42:09.745Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-24T08:42:21.956Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workflow-sync-go-templates/technical-design.md,
+      docs/features/workflow-sync-go-templates/technical-design.md,
+      docs/features/workflow-sync-go-templates/product-spec.md"
+    rag_query: "Config + logging: configs/ package, viper, zerolog
+      workflow-sync-go-templates"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
