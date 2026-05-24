@@ -77,18 +77,17 @@ DB-side, and the per-workspace lookup already works via `GetGitHubSourceByRepo`.
 
 ## 3. Options Considered
 
-### Option A — Config map keyed by `"owner/repo"` (chosen)
-Add `github.webhook_secrets` as a YAML map `"owner/repo" → secret`. This decodes natively into
-`map[string]string` via Viper/mapstructure — no intermediary struct. In the handler, read body,
-JSON-peek `repository.full_name` (which GitHub already formats as `"owner/repo"`), look up map
-directly, verify.
+### Option A — Config list of secrets, try-each verification (chosen)
+Add `github.webhook_secrets` as a YAML list of strings. In the handler, read the raw body, then
+try `VerifySignature` for each secret in order; accept the first match. No key needed — the HMAC
+result itself identifies which secret applies. Workspace lookup (`GetGitHubSourceByRepo`) continues
+after verification, unchanged.
 
-- **Pros**: no DB changes; no new migration; YAML map is the most concise config shape; key
-  matches `repository.full_name` exactly — zero string manipulation needed; no `WebhookSecretEntry`
-  struct; backwards compatible via scalar promotion; `VerifySignature` already exists and is
-  reused as-is.
-- **Cons**: requires restart to add/remove a workspace; secrets live in config file (must be
-  kept out of VCS — same requirement as the existing scalar).
+- **Pros**: no DB changes; no migration; simplest possible config shape — just a list of secrets;
+  no JSON peeking before verification; no map keying; no struct; backwards compatible via scalar
+  promotion; `VerifySignature` already exists and is reused as-is.
+- **Cons**: requires restart to add/remove a secret; on N configured secrets, up to N HMAC
+  operations per request (each is fast and constant-time; not a practical concern for small N).
 - **Implementation impact**: ~4 files changed in `workspace-github-adapter`; no schema change.
 - **Dependency impact**: none external.
 
@@ -122,19 +121,19 @@ Rejected: doesn't meet the per-workspace isolation goal.
 
 ### Config layer
 
-`GitHubConfig` gains one field — a native Go map, no intermediary struct:
+`GitHubConfig` gains one field — a plain string slice:
 
 ```go
 type GitHubConfig struct {
-    Token          string            `mapstructure:"token"`
-    WebhookSecret  string            `mapstructure:"webhook_secret"`  // legacy scalar
-    WebhookSecrets map[string]string `mapstructure:"webhook_secrets"` // "owner/repo" → secret
+    Token          string   `mapstructure:"token"`
+    WebhookSecret  string   `mapstructure:"webhook_secret"`  // legacy scalar
+    WebhookSecrets []string `mapstructure:"webhook_secrets"` // list of secrets
 }
 ```
 
-Add a `ResolvedWebhookSecrets() map[string]string` method on `GitHubConfig`:
-- If `WebhookSecrets` is non-empty: return it directly (caller gets the map as-is).
-- If `WebhookSecrets` is empty and `WebhookSecret` is non-empty: return `map[string]string{"*": WebhookSecret}` — the sentinel key `"*"` signals catch-all for backwards compatibility.
+Add a `ResolvedWebhookSecrets() []string` method on `GitHubConfig`:
+- If `WebhookSecrets` is non-empty: return it.
+- If `WebhookSecrets` is empty and `WebhookSecret` is non-empty: return `[]string{WebhookSecret}` for backwards compatibility.
 - If both empty: return nil (caller treats this as fatal at startup).
 
 `config.yaml` example (new shape):
@@ -146,11 +145,9 @@ github:
 
   # Multi-workspace form:
   webhook_secrets:
-    "tiendv89/project-workspace": "secret_for_ws_1"
-    "tiendv89/other-workspace":   "secret_for_ws_2"
+    - "secret_for_ws_1"
+    - "secret_for_ws_2"
 ```
-
-The YAML map key is `repository.full_name` verbatim — no owner/name splitting anywhere.
 
 ### Webhook package
 
@@ -162,29 +159,26 @@ Add `ReadBody(r *http.Request) ([]byte, error)` to `internal/webhook/webhook.go`
 
 ### Handler
 
-`ServiceHandler.WebhookSecret string` → `ServiceHandler.WebhookSecrets map[string]string`.
+`ServiceHandler.WebhookSecret string` → `ServiceHandler.WebhookSecrets []string`.
 
 New `WebhookHandler` flow:
 1. `body, err := webhook.ReadBody(r)` — read raw body.
-2. JSON-peek `repository.full_name` from body (lightweight unmarshal into a struct with just
-   that field).
-3. Parse `"owner/repo"` → lookup `WebhookSecrets["owner/repo"]`.
-   - If found: use it.
-   - If not found and `WebhookSecrets["*"]` exists (catch-all): use it.
-   - If neither: return 401 `"repo not registered"` — drop before any queue work.
-4. `webhook.VerifySignature(secret, header, body)` — verify with resolved secret.
-5. Continue with existing push-event routing logic (unchanged).
+2. Try `webhook.VerifySignature(secret, header, body)` for each secret in `WebhookSecrets`.
+   - First match: continue.
+   - All fail: return 401 `"signature verification failed"`.
+3. Continue with existing push-event routing logic (unchanged) — `findWorkspaceByRepoURL`
+   still resolves the workspace from the push payload after verification.
 
 ### Startup wiring (`cmd/api/api.go`)
 
 ```go
-secretMap := cfg.GitHub.ResolvedWebhookSecrets()
-if secretMap == nil {
+secrets := cfg.GitHub.ResolvedWebhookSecrets()
+if secrets == nil {
     log.Fatal().Msg("github.webhook_secret or github.webhook_secrets is required")
 }
 h := &handler.ServiceHandler{
     ...
-    WebhookSecrets: secretMap,
+    WebhookSecrets: secrets,
 }
 ```
 
@@ -208,7 +202,7 @@ Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the nil
 |---|---|---|
 | `webhook.VerifySignature` | Stable — no change | Already takes `(secret, header, body)` |
 | `GetGitHubSourceByRepo` | Stable — no change | Already looks up by owner/name |
-| Viper mapstructure | Stable | `map[string]string` is natively supported — no struct needed |
+| Viper mapstructure | Stable | `[]string` slice is natively supported — no struct needed |
 | No DB migration | ✅ Resolved | Config-only approach removes this dependency |
 | No new external service | ✅ Resolved | In-memory map; no external secret store |
 
@@ -219,7 +213,7 @@ No unresolved dependencies.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Config layer — WebhookSecrets map[string]string, ResolvedWebhookSecrets(), config.yaml, configs_test.go
+T1: Config layer — WebhookSecrets []string, ResolvedWebhookSecrets(), config.yaml, configs_test.go
   └── Can begin now — no blockers
 
 T2: Webhook package — ReadBody(), webhook_test.go addition
@@ -246,8 +240,8 @@ T1 and T2 run in parallel.
 ## 8. Validation and Release Impact
 
 ### Tests
-- `configs/configs_test.go`: add cases for `webhook_secrets` map loading, `ResolvedWebhookSecrets()`
-  with map, scalar catch-all fallback, and both-empty nil return.
+- `configs/configs_test.go`: add cases for `webhook_secrets` list loading, `ResolvedWebhookSecrets()`
+  with list, scalar fallback, and both-empty nil return.
 - `internal/webhook/webhook_test.go`: add test for `ReadBody` (happy path, oversized body).
 - `internal/handler/webhook_handler_test.go`: update existing tests to use `WebhookSecrets` map
   instead of `WebhookSecret` string; add cases for unknown repo (→ 401), catch-all secret,
