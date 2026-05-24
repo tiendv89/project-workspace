@@ -15,7 +15,7 @@ pr:
   status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/311
-  status: open
+  status: merged
 log:
   - action: created
     by: tech_lead
@@ -58,3 +58,9 @@ log:
     by: pentative@gmail.com
     at: 2026-05-24T08:51:23.285Z
     note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merged
+    by: pentative@gmail.com
+    at: 2026-05-24T16:17:19+0700
+    note: >-
+      Human recovery — workspace PR merge failed silently on first attempt
+      (transient API failure). Marked merged manually; PR #311 merged via API.
