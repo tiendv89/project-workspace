@@ -1,9 +1,9 @@
 feature_id: workflow-sync-go-templates
 title: Workflow Sync — Go Templates
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown (tasks.md + tasks/T<n>.yaml) and submit for approval.
+next_action: Wave 1 tasks (T1, T2, T3, T5, T6) are ready for implementation.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: "2026-05-24T08:13:56Z"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-05-24T08:19:45Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-05-24T08:19:45Z"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -46,6 +50,9 @@ history:
   - event: technical_design_approved
     by: pentative@gmail.com
     at: "2026-05-24T08:13:56Z"
+  - event: tasks_approved
+    by: pentative@gmail.com
+    at: "2026-05-24T08:19:45Z"
 
 revalidation:
   product_spec_required: false

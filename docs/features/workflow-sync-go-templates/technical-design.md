@@ -1,4 +1,4 @@
-# Technical Design
+    # Technical Design
 
 ## Feature
 - Feature ID: `workflow-sync-go-templates`
