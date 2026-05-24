@@ -54,18 +54,16 @@ DB-side, and the per-workspace lookup already works via `GetGitHubSourceByRepo`.
 ## 2. Problem Framing
 
 ### What needs to change
-1. Config must accept multiple `"owner/repo" → secret` entries.
-2. The webhook handler must read the raw body first, extract repo identity from the JSON, select
-   the correct secret for that repo, then verify — rather than verifying before knowing the repo.
-3. `webhook.ReadAndVerify` must be decomposed: body reading separated from HMAC verification so
-   the handler can interpose the secret-lookup step between them.
-4. The startup guard in `cmd/api/api.go` must accept either the legacy scalar or the new list.
+1. Config must accept a list of secrets — one per watched workspace.
+2. `webhook.ReadAndVerify` must be decomposed: body reading separated from HMAC verification so
+   the handler can try each secret in sequence.
+3. `GitHubConfig.WebhookSecret` (scalar) is removed; `WebhookSecrets []string` replaces it.
+4. The startup guard in `cmd/api/api.go` checks `len(WebhookSecrets) > 0`.
 
 ### What must remain stable
 - `webhook.VerifySignature(secret, header, body)` — public, already tested; keep its signature.
 - `GetGitHubSourceByRepo` — already correct; no change needed.
 - All sync, queue, and branch-routing logic downstream of verification — untouched.
-- Single-workspace operators: zero breaking change; existing config continues to work.
 
 ### Fixed assumptions
 - Secrets are operator-managed via config file or environment variables (no DB secret storage).
@@ -126,24 +124,16 @@ Rejected: doesn't meet the per-workspace isolation goal.
 ```go
 type GitHubConfig struct {
     Token          string   `mapstructure:"token"`
-    WebhookSecret  string   `mapstructure:"webhook_secret"`  // legacy scalar
-    WebhookSecrets []string `mapstructure:"webhook_secrets"` // list of secrets
+    WebhookSecrets []string `mapstructure:"webhook_secrets"`
 }
 ```
 
-Add a `ResolvedWebhookSecrets() []string` method on `GitHubConfig`:
-- If `WebhookSecrets` is non-empty: return it.
-- If `WebhookSecrets` is empty and `WebhookSecret` is non-empty: return `[]string{WebhookSecret}` for backwards compatibility.
-- If both empty: return nil (caller treats this as fatal at startup).
+`WebhookSecret string` (the existing scalar) is removed. Operators with a single workspace put their one secret in the list.
 
 `config.yaml` example (new shape):
 ```yaml
 github:
   token: "ghp_..."
-  # Legacy single-workspace form (still supported — zero config change required):
-  # webhook_secret: "single_secret"
-
-  # Multi-workspace form:
   webhook_secrets:
     - "secret_for_ws_1"
     - "secret_for_ws_2"
@@ -172,26 +162,23 @@ New `WebhookHandler` flow:
 ### Startup wiring (`cmd/api/api.go`)
 
 ```go
-secrets := cfg.GitHub.ResolvedWebhookSecrets()
-if secrets == nil {
-    log.Fatal().Msg("github.webhook_secret or github.webhook_secrets is required")
+if len(cfg.GitHub.WebhookSecrets) == 0 {
+    log.Fatal().Msg("github.webhook_secrets is required")
 }
 h := &handler.ServiceHandler{
     ...
-    WebhookSecrets: secrets,
+    WebhookSecrets: cfg.GitHub.WebhookSecrets,
 }
 ```
 
-Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the nil-map check.
+Remove the existing `cfg.GitHub.WebhookSecret == ""` guard; replace with the slice-length check.
 
 ### Affected repositories
 - `workspace-github-adapter` only.
 
 ### Compatibility
-- Operators with `github.webhook_secret` set and `github.webhook_secrets` absent: zero config
-  change required; the single secret becomes a catch-all.
-- Operators migrating to multi-workspace: add `github.webhook_secrets` list; remove or leave
-  the scalar (it is ignored when the list is non-empty).
+- `github.webhook_secret` (scalar) is removed from the config schema. Operators must move their
+  single secret into `github.webhook_secrets` as a one-element list.
 - No DB migration. No API change. No queue/sync logic change.
 
 ---
@@ -240,22 +227,19 @@ T1 and T2 run in parallel.
 ## 8. Validation and Release Impact
 
 ### Tests
-- `configs/configs_test.go`: add cases for `webhook_secrets` list loading, `ResolvedWebhookSecrets()`
-  with list, scalar fallback, and both-empty nil return.
+- `configs/configs_test.go`: add cases for `webhook_secrets` list loading and empty-list startup failure; remove scalar `webhook_secret` test cases.
 - `internal/webhook/webhook_test.go`: add test for `ReadBody` (happy path, oversized body).
 - `internal/handler/webhook_handler_test.go`: update existing tests to use `WebhookSecrets` map
   instead of `WebhookSecret` string; add cases for unknown repo (→ 401), catch-all secret,
   and per-repo secret routing.
 
 ### Migration / config impact
-- Operators must not store `webhook_secrets` values in VCS — same policy as the existing scalar.
-- Recommended: inject via environment variables using Viper's env-override mechanism
-  (e.g. `GITHUB_WEBHOOK_SECRET` for the scalar; for the list, Docker Compose / K8s secrets
-  are the typical approach since Viper does not natively expand env vars into list entries —
-  operators should use config file mounting with secret injection at build/deploy time).
-- Document in README that `webhook_secrets` entries override `webhook_secret` when both present.
+- `github.webhook_secret` is removed from `config.yaml`. Operators must update their config to
+  use `github.webhook_secrets` (list) before deploying this version.
+- Secrets must not be stored in VCS — inject via Docker Compose / K8s secret mounts or
+  environment-variable-driven config file templating at deploy time.
 
 ### Rollout
-- Deploy is a drop-in replacement: if only `webhook_secret` is set, behaviour is identical.
-- Operators add `webhook_secrets` in config and redeploy to activate multi-workspace mode.
-- No downtime required; no database operation.
+- This is a breaking config change: `webhook_secret` is removed. Operators must update config
+  before deploying.
+- No downtime required beyond the config update and normal redeploy; no database operation.
