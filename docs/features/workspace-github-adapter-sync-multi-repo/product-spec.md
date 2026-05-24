@@ -2,52 +2,51 @@
 
 ## Feature
 - Feature ID: `workspace-github-adapter-sync-multi-repo`
-- Title: Workspace GitHub Adapter — Multi-Repo Webhook Support
+- Title: Workspace GitHub Adapter — Multi-Workspace Webhook Support
 
 ## Problem
 
-The workspace-github-adapter currently supports only a single GitHub repository per workspace and
-a single global `webhook_secret` shared across all webhooks.
+The workspace-github-adapter is designed to serve multiple workspaces (each backed by a GitHub
+management repo), but a single global `webhook_secret` in config prevents it from doing so in
+practice.
 
 Concretely:
 
-1. **Single webhook secret** — `configs/configs.go` defines `GitHubConfig.WebhookSecret string`
-   (one value). Every incoming webhook is verified against this one secret. GitHub issues a
-   per-repository secret when you register a webhook, so if any two repos have different secrets
-   the adapter cannot verify one of them.
+1. **Single global webhook secret** — `configs/configs.go` defines
+   `GitHubConfig.WebhookSecret string` (one scalar). Every incoming push webhook is verified
+   against this one secret, regardless of which workspace sent it. GitHub generates a per-repo
+   secret when you register a webhook, so if two workspaces use different secrets, the adapter
+   can only correctly verify one of them.
 
-2. **Single repo per workspace** — `workspace_github_sources` has an `ON CONFLICT (workspace_id)`
-   constraint that enforces at most one source record per workspace. Real workspace setups (e.g.
-   management-repo, workflow-backend, digital-factory-ui, rag-service, …) involve many repos.
-   Only the management repo is currently watchable via webhook.
+2. **No per-workspace secret routing** — `webhook.ReadAndVerify` receives the global secret
+   before it knows which workspace sent the event. There is no mechanism to select the right
+   secret based on the incoming repo, so operators running multiple workspaces on a single
+   adapter instance must either share one secret across all their GitHub repos (a security
+   anti-pattern) or run a separate adapter instance per workspace.
 
-3. **No per-repo secret routing** — the webhook handler calls `webhook.ReadAndVerify` with the
-   global secret before it knows which repo sent the event. There is no mechanism to select the
-   correct secret based on the incoming repo.
-
-The result: teams that want push-triggered sync on more than one repo must run a separate adapter
-instance per repo, which defeats the point of a shared workspace adapter.
+The result: teams cannot operate a single shared adapter instance that handles push-triggered
+sync for multiple independent workspaces. Each workspace needs its own dedicated deployment,
+which multiplies infrastructure cost and operational burden.
 
 ## Goals
 
-1. Allow operators to configure multiple `(repo_url, webhook_secret)` pairs in `config.yaml` so
-   that each watched repo can carry its own GitHub-issued webhook secret.
-2. Store multiple GitHub sources per workspace in the database — remove the one-source-per-workspace
-   constraint.
-3. Route incoming webhooks to the correct secret by extracting the repo identity from the push
-   payload before signature verification, then looking up the matching secret from config.
-4. Extend the `POST /internal/workspaces/import` endpoint (or add a new registration endpoint) so
-   that additional repos can be attached to an existing workspace with a per-repo webhook secret.
-5. Maintain backwards compatibility: operators with a single repo can continue using the existing
-   `github.webhook_secret` scalar field; the adapter upgrades it to the new multi-repo model
-   transparently.
+1. Allow operators to configure a list of `webhook_secret` entries in `config.yaml` — one per
+   watched workspace — so that each workspace can carry its own GitHub-issued webhook secret.
+2. Route incoming webhooks to the correct secret by extracting the repo identity from the push
+   payload before signature verification, then looking up the matching per-workspace secret.
+3. Maintain backwards compatibility: operators with a single workspace can continue using the
+   existing `github.webhook_secret` scalar; the adapter upgrades it to the new multi-entry
+   model transparently at startup.
+4. Ensure the adapter rejects any webhook whose repo does not match a registered workspace, so
+   unrecognised push events are dropped early (before body processing).
 
 ## Non-goals
 
-- Watching repos that belong to different GitHub accounts/organisations within the same workspace
-  instance (GitHub App support is a separate feature).
-- UI for managing webhook secrets (config file and API only).
-- Automatic GitHub webhook registration (operators register webhooks on GitHub manually or via
-  their own tooling; the adapter only consumes them).
-- Changing the sync logic, task classification, or queue behaviour — this feature is limited to
-  configuration ingestion, webhook routing, and DB schema for multi-repo.
+- Watching repos that are not management repos for a registered workspace (arbitrary repo
+  webhooks are out of scope).
+- UI for managing webhook secrets — config file and/or environment variables only.
+- Automatic GitHub webhook registration — operators register webhooks on GitHub manually;
+  the adapter only consumes them.
+- Changes to sync logic, task classification, branch routing, or queue behaviour — this feature
+  is limited to config ingestion and webhook secret routing.
+- GitHub App support (a separate feature).
