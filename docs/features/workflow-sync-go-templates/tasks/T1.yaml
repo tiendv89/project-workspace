@@ -1,7 +1,7 @@
 id: T1
 title: "Tooling: Makefile, .golangci.yml, move migrations"
 repo: workflow-backend
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/workflow-sync-go-templates-T1
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-24T09:32:40.442Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-24T09:37:17.390Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/11
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/314
   status: open
@@ -90,3 +90,7 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-24T09:32:40.442Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-24T09:37:17.390Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
