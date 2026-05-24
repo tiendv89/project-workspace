@@ -60,3 +60,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/workflow-migrations-transfer
 feature_branch_base_sha: 91888ce46b95fd7b0ecb306077fcd18650648895
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/303
