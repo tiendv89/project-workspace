@@ -1,24 +1,24 @@
 id: T4
-title: "Token/MCP audit — executor_audit propagation"
+title: Token/MCP audit — executor_audit propagation
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
-
 branch: null
-
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-25T05:35:08Z"
-
+  last_updated_at: 2026-05-25T05:35:08Z
 pr:
   url: null
   status: null
-
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:35:08Z"
-    note: "Task created during reviewer-dispatch-hardening task breakdown."
+    at: 2026-05-25T05:35:08Z
+    note: Task created during reviewer-dispatch-hardening task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:50:23.268Z
+    note: Task activated — dependency T2 merged and marked done.
