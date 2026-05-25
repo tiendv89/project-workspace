@@ -1,27 +1,119 @@
 id: T1
-title: "CLAUDE.md — reviewing status + transitions"
+title: CLAUDE.md — reviewing status + transitions
 repo: management-repo
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-
-branch: null
-
+blocked_suggestion: null
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T1
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-25T05:35:08Z"
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T08:03:35.827Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/project-workspace/pull/331
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/331
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:35:08Z"
-    note: "Task created during reviewer-dispatch-hardening task breakdown."
+    at: 2026-05-25T05:35:08Z
+    note: Task created during reviewer-dispatch-hardening task breakdown.
   - action: ready
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:36:28Z"
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-05-25T05:36:28Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:40:25.175Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:40:38.252Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/37,
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/179"
+    rag_query: CLAUDE.md — reviewing status + transitions reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: executor_crashed (exit 1)
+    at: 2026-05-25T05:43:46.614Z
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-25T05:50:45Z
+    note: Reset to ready — executor crash was Hermes workdir bug (fixed in
+      agent-workflow PR
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:10.398Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:18.146Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/37,
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/179"
+    rag_query: CLAUDE.md — reviewing status + transitions reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    at: 2026-05-25T05:58:33.942Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T14:27:44+0700
+    note: "Reset to ready — Hermes briefing fix merged (agent-workflow PR #222).
+      no_changes was a false negative from commitAndPush seeing a clean tree
+      after Hermes committed incrementally."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T07:29:45.196Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T07:29:51.729Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/tasks/tasks.md,
+      github.com/tiendv89/project-workspace/pull/329,
+      docs/features/reviewer-dispatch-hardening/product-spec.md"
+    rag_query: CLAUDE.md — reviewing status + transitions reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/project-workspace/pull/331"
+    at: 2026-05-25T07:37:15.535Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T07:48:28.701Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: norepy@tiendv.dev
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-05-25T07:51:35.823Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T07:56:33.823Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: review_blocked
+    by: norepy@tiendv.dev
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-05-25T07:59:05.281Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T08:01:02.508Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: review_blocked
+    by: norepy@tiendv.dev
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-05-25T08:03:35.827Z
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T00:11:17+0700
+    note: Marked done — PR #331 merged. review_incomplete was reviewer executor exits; work accepted.

@@ -1,0 +1,191 @@
+id: T8
+title: openImplPR fallback — derive PR title from task YAML
+repo: workflow
+status: done
+depends_on: []
+blocked_reason: null
+blocked_suggestion: null
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T8
+execution:
+  actor_type: agent
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T11:06:32.875Z
+pr:
+  url: https://github.com/tiendv89/agent-workflow/pull/225
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/334
+  status: merged
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T15:41:44+0700
+    note: 'Task added post-approval — when Hermes exits before opening the PR, the
+      wrapper fallback (openImplPR) creates a generic title
+      "feat(featureId/taskId): hermes agent implementation". Fix: read the task
+      YAML title field from mgmtDir and pass it into openImplPR so the fallback
+      PR title is meaningful. File: runtime/executors/hermes/src/index.ts.'
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T15:41:44+0700
+    note: No dependencies — ready immediately on creation.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T08:50:53.446Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T08:51:05.985Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/22,
+      github.com/tiendv89/agent-workflow/pull/115"
+    rag_query: openImplPR fallback — derive PR title from task YAML
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    at: 2026-05-25T09:12:48.685Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T16:20:39+0700
+    note: Reset to ready — T8 ran but phase_6_no_changes fired because T5
+      (commitAndPush branch param fix) was not yet merged. Hermes made correct
+      changes and passed 133/133 tests but commits were lost in temp exec dir.
+      Re-run after T5 merges.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:26:11.911Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:26:20.159Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/22,
+      github.com/tiendv89/agent-workflow/pull/115"
+    rag_query: openImplPR fallback — derive PR title from task YAML
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T16:23:00+0700
+    note: Reset to ready (cycle 2) — waiting for T5 (#224) to merge first.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:37:24.875Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:37:31.769Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/22,
+      github.com/tiendv89/agent-workflow/pull/115"
+    rag_query: openImplPR fallback — derive PR title from task YAML
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/225"
+    at: 2026-05-25T09:51:17.906Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-25T10:03:39.863Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 runtime/executors/hermes/src/index.ts:288 — openImplPR uses raw task
+      title without feat(featureId/taskId): prefix, violating the convention
+      stated in tasks.md. CI passed. No 🔴 findings."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/225#issuecomment-4533410801
+    at: 2026-05-25T10:12:35.121Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-25T10:14:26.074Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/225"
+    token_usage:
+      input: 97
+      output: 8228
+      model: claude-sonnet-4-6
+    cost_usd: 0.12371099999999999
+    at: 2026-05-25T10:19:11.163Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-25T10:21:05.400Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: noreply@anthropic.com
+    at: 2026-05-25T10:29:25+0000
+    note: "🟡 runtime/executors/hermes/src/index.ts:766 — Phase 6 short-circuit only
+      handles `in_review`; when Hermes follows new briefing and writes
+      `blocked:tests_failed + pr_url`, commitAndPush returns false (already
+      pushed) and wrapper overwrites with `blocked:no_changes`, losing real
+      reason and PR URL. Fix: extend hermesDone condition to include `blocked`
+      when pr_url is present. CI passed. No 🔴 findings. Self-review restriction
+      applied (HTTP 422)."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/225#issuecomment-4533529398
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-25T10:31:24.908Z
+    note: Fix agent claimed.
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 runtime/executors/hermes/src/index.ts:766 — Phase 6 short-circuit only
+      handles `in_review`; when Hermes follows new briefing and writes
+      `blocked:tests_failed + pr_url`, `commitAndPush` returns false (already
+      pushed) and wrapper overwrites with `blocked:no_changes`, losing the real
+      reason and PR URL. Fix: extend hermesDone condition to include `blocked`
+      when `pr_url` is present."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/225#issuecomment-4533529398
+    at: 2026-05-25T10:32:30.905Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-25T10:34:19.194Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/225"
+    token_usage:
+      input: 128
+      output: 14393
+      model: claude-sonnet-4-6
+    cost_usd: 0.216279
+    at: 2026-05-25T10:37:31.133Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-25T10:39:25.506Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/225"
+    token_usage:
+      input: 98
+      output: 10155
+      model: claude-sonnet-4-6
+    cost_usd: 0.152619
+    at: 2026-05-25T10:50:07.691Z
+  - action: rebase_completed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T11:06:32.875Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_complete
+    by: tiendv89
+    at: 2026-05-25T10:44:00Z
+    note: APPROVE — CI passed. All T8 subtasks implemented and tested. No 🔴/🟡 findings.
+    review_url: https://github.com/tiendv89/agent-workflow/pull/225#issuecomment-4533631871
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T20:05:09+0700
+    note: >-
+      Marked done — impl PR #225 merged 2026-05-25T11:14:58Z. Workspace PR #334
+      merged manually; T8.yaml repaired (stale conflict_state/rebase_log keys
+      from rebase bot prevented orchestrator from detecting the merge).
