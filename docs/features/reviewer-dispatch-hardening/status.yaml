@@ -1,9 +1,9 @@
 feature_id: reviewer-dispatch-hardening
 title: Reviewer dispatch hardening — reviewing status guard + executor env separation
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown.
+next_action: Execute tasks — T1, T2, T5 are ready.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: "2026-05-25T05:31:48Z"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-25T05:36:28Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: "2026-05-25T05:36:28Z"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -48,6 +52,10 @@ history:
     by: tiendv.52@gmai.com
     at: "2026-05-25T05:31:48Z"
     note: Technical design approved — feature advanced to task planning.
+  - action: tasks_approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-25T05:36:28Z"
+    note: Tasks approved — feature advanced to ready_for_implementation. T1, T2, T5 activated.
 
 revalidation:
   product_spec_required: false
