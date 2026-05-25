@@ -14,6 +14,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/50
   status: open
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/340
+  status: open
 
 log:
   - action: created
