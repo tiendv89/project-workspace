@@ -1,7 +1,7 @@
 id: T6
 title: Tests — reviewing guard + audit + MAX_TURNS
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T3
   - T4
@@ -14,10 +14,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T17:13:12.784Z
+  last_updated_at: 2026-05-25T17:29:46.313Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/230
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/339
   status: open
