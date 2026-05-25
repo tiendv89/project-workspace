@@ -52,3 +52,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T05:52:31.459Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:37.935Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/124,
+      github.com/tiendv89/agent-workflow/pull/96"
+    rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
