@@ -1,7 +1,7 @@
 id: T2
 title: ABI types — ExecutorAudit + reviewing in TaskStatus
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,10 +11,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T07:36:30.113Z
+  last_updated_at: 2026-05-25T07:48:53.673Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/223
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/332
   status: open
