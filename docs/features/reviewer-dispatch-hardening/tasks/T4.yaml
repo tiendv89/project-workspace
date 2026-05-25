@@ -1,7 +1,7 @@
 id: T4
 title: Token/MCP audit — executor_audit propagation
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T2
 blocked_reason: null
@@ -11,10 +11,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-25T10:09:00+0000
+  last_updated_at: 2026-05-25T10:23:26.663Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/226
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/336
   status: open
