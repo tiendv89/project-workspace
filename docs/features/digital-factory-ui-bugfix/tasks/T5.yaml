@@ -1,23 +1,25 @@
 id: T5
 title: Pagination controls and metadata wiring
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
-branch: "feature/digital-factory-ui-bugfix-T5"
-
+branch: feature/digital-factory-ui-bugfix-T5
 execution:
   actor_type: agent
   last_updated_by: null
   last_updated_at: null
-
 pr:
   url: ""
   status: not_created
-
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:38:39+0700
-    note: Task split created for pagination controls and page-state wiring after the paged query layer is in place.
+    note: Task split created for pagination controls and page-state wiring after the
+      paged query layer is in place.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-25T19:04:25.992Z
+    note: Task activated — dependency T1 merged and marked done.
