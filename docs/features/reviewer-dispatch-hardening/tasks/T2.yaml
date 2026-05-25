@@ -1,7 +1,7 @@
 id: T2
 title: ABI types — ExecutorAudit + reviewing in TaskStatus
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/reviewer-dispatch-hardening-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T05:45:30.766Z
+  last_updated_at: 2026-05-25T05:52:31.459Z
 pr:
   url: null
   status: null
@@ -45,5 +45,10 @@ log:
     at: 2026-05-25T05:45:30.766Z
   - action: ready
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:50:45Z"
-    note: Reset to ready — executor crash was Hermes workdir bug (fixed in agent-workflow PR #220), not a task issue.
+    at: 2026-05-25T05:50:45Z
+    note: Reset to ready — executor crash was Hermes workdir bug (fixed in
+      agent-workflow PR
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:31.459Z
+    note: Claimed via git-based claim protocol.
