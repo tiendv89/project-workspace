@@ -274,6 +274,7 @@ Add explicit note to log actions table: `reviewer_started` and `fix_started` are
 
 - **Hard**: `TaskStatus` union in `task/types.ts` must include `"reviewing"` before `dispatch-reviewer.ts` or `match.ts` reference it — T2 (ABI/types) must land before T3 (log-scan removal).
 - **Hard**: `ExecutorAudit` / `ClaudeExecutorAudit` interfaces and `executor_audit` field on `ReviewerResult` must land before `dispatch-review-result.ts` spreads them — T2 before T4.
+- **Hard**: `HermesExecutorAudit` type and `hermes?` on `ExecutorAudit` must exist before Hermes executor code references them — T2 before T7. T4 must establish the pattern before T7 mirrors it — T4 before T7.
 - **Soft**: CLAUDE.md (T1) and MAX_TURNS cleanup (T5) are independent of the type changes; can ship in any order.
 - **No external dependencies** — all changes are within `workflow` and `management-repo`.
 
@@ -283,25 +284,31 @@ Add explicit note to log actions table: `reviewer_started` and `fix_started` are
 T1: management-repo — CLAUDE.md: reviewing status + transitions + audit-only note
   └── Can begin now — no blockers
 
-T2: workflow — ABI types: reviewing in TaskStatus union; ExecutorAudit + ClaudeExecutorAudit interfaces; executor_audit in ReviewerResult + ExecutorResult
+T2: workflow — ABI types: reviewing in TaskStatus union; ExecutorAudit + ClaudeExecutorAudit + HermesExecutorAudit interfaces; executor_audit in ReviewerResult + ExecutorResult
   └── Can begin now — no blockers
   └── T1 and T2 run in parallel
   │
   T3: workflow — Log-scan guard removal: match.ts + dispatch-reviewer.ts + claim-fix.ts
       └── BLOCKED on T2 (reviewing must be a valid TaskStatus before dispatch code uses it)
 
-  T4: workflow — Token/MCP audit: dispatch-review-result.ts + dispatch.ts + executor/index.ts
+  T4: workflow — Token/MCP audit (Claude): dispatch-review-result.ts + dispatch.ts + executors/claude/src/index.ts
       └── BLOCKED on T2 (ReviewerResult.executor_audit must exist before dispatch-review-result spreads it)
       └── T3 and T4 run in parallel (touch different files)
 
+  T7: workflow — executor_audit (Hermes): executors/hermes/src/index.ts + HermesExecutorAudit type
+      └── BLOCKED on T2 (HermesExecutorAudit type and hermes? on ExecutorAudit must exist first)
+      └── BLOCKED on T4 (pattern established by Claude executor must be in place to mirror)
+      └── T4 and T7 run in parallel once T2 is done (touch different executor files)
+
 T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-reviewer.ts; docker-compose + OPERATOR-GUIDE.md
   └── Can begin now — no blockers
-  └── T5 runs in parallel with T1, T2, T3, T4
+  └── T5 runs in parallel with T1, T2, T3, T4, T7
 
-        T6: workflow — Tests: reviewing guard paths; token/MCP audit paths; MAX_TURNS inheritance
+        T6: workflow — Tests: reviewing guard paths; token/MCP audit paths (Claude + Hermes); MAX_TURNS inheritance
               └── BLOCKED on T3 (log-scan removal must be in place to test new guard)
-              └── BLOCKED on T4 (token/MCP audit must be in place to test)
+              └── BLOCKED on T4 (Claude executor_audit must be in place to test)
               └── BLOCKED on T5 (MAX_TURNS removal must be in place to test env inheritance)
+              └── BLOCKED on T7 (Hermes executor_audit must be in place to test)
 ```
 
 ## Repository Impact
@@ -309,7 +316,7 @@ T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-r
 | Repo | Why touched |
 |---|---|
 | `management-repo` | CLAUDE.md: add `reviewing` status, update transition table, mark log actions audit-only |
-| `workflow` | `abi/src/types.ts`: `ExecutorAudit`/`ClaudeExecutorAudit` interfaces, `executor_audit` on `ReviewerResult`/`ExecutorResult`; `eligibility/match.ts`, `pr/dispatch-reviewer.ts`, `task/claim-fix.ts`: log-scan removal; `task/dispatch-review-result.ts`, `task/dispatch.ts`, `executors/claude/src/index.ts`: executor_audit propagation; `main.ts`, docker-compose: MAX_TURNS cleanup; tests |
+| `workflow` | `abi/src/types.ts`: `ExecutorAudit`/`ClaudeExecutorAudit`/`HermesExecutorAudit` interfaces, `executor_audit` on `ReviewerResult`/`ExecutorResult`; `eligibility/match.ts`, `pr/dispatch-reviewer.ts`, `task/claim-fix.ts`: log-scan removal; `task/dispatch-review-result.ts`, `task/dispatch.ts`, `executors/claude/src/index.ts`: executor_audit propagation (Claude); `executors/hermes/src/index.ts`: executor_audit propagation (Hermes); `main.ts`, docker-compose: MAX_TURNS cleanup; tests |
 
 ## Validation and Release Impact
 
@@ -318,7 +325,8 @@ T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-r
 - `dispatchReviewer`: task already `reviewing` after fetch → returns `claim_lost` without push; task `in_review` → claim sets status `reviewing`, pushes, submits executor; push rejected → `claim_lost`.
 - `claimFixTask`: task `in_progress` after fetch → returns `already_claimed`; `change_requested` with no prior claim → wins.
 - `dispatchReviewResult`: `change_requested` result with `token_usage`/`mcp_usage` → log entry has those fields; `review_incomplete` → same; `passed` → task status reset to `in_review`.
-- Executor `mcp_usage`: `result.json` contains `mcp_usage` when RAG/GitNexus calls present in stdout; absent otherwise.
+- Claude executor `mcp_usage`: `result.json` contains `mcp_usage` when RAG/GitNexus calls present in stdout; absent otherwise.
+- Hermes executor `executor_audit.hermes`: always present in result.json (minimum `{}`); populated with token/turn data when available from Hermes stdout.
 - `MAX_TURNS` not present in any `extraEnv` construction in orchestrator code (static grep check in test).
 
 **Migration / config impact:**
@@ -328,7 +336,7 @@ T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-r
 
 **Rollout:**
 - T1 (CLAUDE.md) can ship independently.
-- T2–T6 ship together in the `workflow` repo; no feature flag needed.
+- T2–T7 ship together in the `workflow` repo; no feature flag needed. T6 gates on T7 completing.
 - The `MAX_TURNS` change requires an ops step (docker-compose update) before deploying T5.
 
 **Backward compatibility:**

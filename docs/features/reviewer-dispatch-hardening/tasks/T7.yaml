@@ -1,0 +1,28 @@
+id: T7
+title: "executor_audit — Hermes executor output"
+repo: workflow
+status: todo
+depends_on:
+  - T2
+  - T4
+blocked_reason: null
+
+branch: null
+
+execution:
+  actor_type: agent
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-25T14:50:39+0700
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T14:50:39+0700
+    note: >-
+      Task added post-approval — Hermes executor parity gap identified:
+      T4 wires executor_audit only for Claude; Hermes runs have no audit
+      trail entry.
