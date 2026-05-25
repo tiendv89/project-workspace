@@ -1,7 +1,7 @@
 id: T1
 title: CLAUDE.md — reviewing status + transitions
 repo: management-repo
-status: in_review
+status: review_incomplete
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T1
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T07:56:33.823Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T07:59:05.281Z
 pr:
   url: https://github.com/tiendv89/project-workspace/pull/331
   status: open
@@ -101,3 +101,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T07:56:33.823Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: review_blocked
+    by: norepy@tiendv.dev
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-05-25T07:59:05.281Z
