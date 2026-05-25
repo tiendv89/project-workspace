@@ -12,8 +12,8 @@ execution:
   last_updated_at: null
 
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/50
+  status: open
 
 log:
   - action: created
