@@ -6,7 +6,7 @@
 
 ## Problem
 
-Two separate issues in the current reviewer dispatch path need to be addressed:
+Three issues in the current reviewer dispatch path need to be addressed:
 
 **Problem 1 — The orchestrator uses log-entry scans to make dispatch decisions.**
 
@@ -27,7 +27,13 @@ The correct fix is to use status as the guard. `reviewing` is the missing status
 
 The task status values list in `CLAUDE.md` does not include `reviewing`. The transition `in_review → reviewing` (set atomically by the orchestrator before dispatch) is missing from the workflow rules.
 
-**Problem 2 — Orchestrator redundantly passes executor-owned environment variables.**
+**Problem 2 — Token usage is only recorded for the implementation executor.**
+
+`dispatch.ts` writes a `run_completed` log entry with `token_usage` and `cost_usd` from `result.json` when an implementation executor finishes. However `dispatch-review-result.ts` (reviewer path) and `claim-fix.ts` / the fix executor reap path never write these fields — even though reviewer and fix executors also produce `result.json` with `token_usage`.
+
+This means the task log only shows token cost for the first implementation run. Every subsequent reviewer session and fix-executor run is invisible in the audit trail, making cumulative cost per task impossible to compute from the log alone.
+
+**Problem 3 — Orchestrator redundantly passes executor-owned environment variables.**
 
 `SubProcessAdapter.submit()` builds the child environment as:
 ```
@@ -47,7 +53,9 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
    The orchestrator must not perform any dispatch decision based on log entry values. Log entries (`reviewer_started`, `fix_started`) are retained as audit-only entries in the same claim commit.
 
-2. **Remove `MAX_TURNS` from all orchestrator `extraEnv` blocks.** The executor already reads `process.env.MAX_TURNS ?? "200"` and already inherits the full orchestrator environment via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread. The orchestrator re-passing it explicitly is redundant. `MAX_TURNS` is documented in `docker-compose.yml` as an env var on the orchestrator service — the executor picks it up automatically through inheritance. No executor code changes needed.
+2. **Record `token_usage` and `cost_usd` on every executor completion**, not just the implementation run. Every log entry appended when an executor completes — `run_completed` (impl), `reviewer_complete` / `review_incomplete` (reviewer), and the fix-executor completion entry — must carry `token_usage` and `cost_usd` from `result.json` when present. This gives a complete per-task cost audit trail across all sessions.
+
+3. **Remove `MAX_TURNS` from all orchestrator `extraEnv` blocks.** The executor already reads `process.env.MAX_TURNS ?? "200"` and already inherits the full orchestrator environment via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread. The orchestrator re-passing it explicitly is redundant. `MAX_TURNS` is documented in `docker-compose.yml` as an env var on the orchestrator service — the executor picks it up automatically through inheritance. No executor code changes needed.
 
 3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables (task routing, repo URLs, credentials); executor-operational config (`MAX_TURNS`, etc.) is set at the service level in docker-compose and inherited — not computed or injected by the orchestrator.
 
@@ -88,6 +96,16 @@ The two-tier protection:
 - `review_incomplete → reviewing` replaces `review_incomplete → in_review`.
 - Explicit note: the orchestrator must not use `reviewer_started` or `fix_started` log entry values to make any dispatch decision — these are audit-only.
 
+### Token usage audit — all executor paths
+
+Every reap path appends a log entry with `token_usage` and `cost_usd` when the fields are present in `result.json`:
+
+- **`dispatch-review-result.ts`**: `reviewer_complete` (on `change_requested`) and `review_incomplete` (on incomplete exit) entries gain `token_usage` / `cost_usd`.
+- **Fix executor reap path**: the log entry written when a fix executor completes (whether it returns `in_review` or `blocked`) gains `token_usage` / `cost_usd`.
+- **`dispatch.ts`** (impl path): already correct — no change needed.
+
+The `TaskLogEntry` type in the ABI / task types must allow `token_usage` and `cost_usd` as optional fields on any log entry, not only `run_completed`.
+
 ### Executor env separation — `MAX_TURNS`
 
 `SubProcessAdapter.submit()` builds the child env as `{ ...process.env, ...extraEnv, ...abivars }`. Because `process.env` is spread first, any env var set on the orchestrator service is already present in the executor's environment without the orchestrator explicitly re-passing it.
@@ -106,6 +124,9 @@ Changes:
 - `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
 - `claimFix` guard checks `task.status === "in_progress"` — no log scan.
 - No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
+- Every reviewer completion (`reviewer_complete`, `review_incomplete`) log entry includes `token_usage` and `cost_usd` when present in `result.json`.
+- Every fix-executor completion log entry includes `token_usage` and `cost_usd` when present.
+- A task that goes through impl → review → fix → review has `token_usage` recorded on each of those four log entries.
 - `MAX_TURNS` is not present in any `extraEnv` block in the orchestrator dispatch paths (grep confirms zero usages outside test fixtures).
 - `docker-compose.yml` orchestrator service has `MAX_TURNS` in its `environment` block with a documented default.
 - No executor code changes — `process.env.MAX_TURNS ?? "200"` reads it transparently via env inheritance.
