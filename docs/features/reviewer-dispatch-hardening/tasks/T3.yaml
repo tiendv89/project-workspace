@@ -1,7 +1,7 @@
 id: T3
 title: Log-scan guard removal
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -11,8 +11,8 @@ branch: feature/reviewer-dispatch-hardening-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-25T17:17:00+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T10:31:05.891Z
 pr:
   url: null
   status: null
@@ -49,6 +49,9 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-25T17:17:00+0700
-    note: >-
-      Reset to ready — no_changes was T5 commitAndPush bug (now merged).
+    note: Reset to ready — no_changes was T5 commitAndPush bug (now merged).
       Previous reset introduced duplicate YAML key; this commit fixes it.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T10:31:05.891Z
+    note: Claimed via git-based claim protocol.
