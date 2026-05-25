@@ -1,30 +1,95 @@
 id: T3
 title: Feature/card/status rendering fixes
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: "feature/digital-factory-ui-bugfix-T3"
-
+blocked_suggestion: null
+blocked_context: null
+branch: feature/digital-factory-ui-bugfix-T3
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T21:11:34.165Z
 pr:
-  url: ""
-  status: not_created
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/53
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/342
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-25T10:16:02Z
-    note: Task drafted by tech-lead from approved product spec and updated technical design.
+    note: Task drafted by tech-lead from approved product spec and updated technical
+      design.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:38:39+0700
-    note: Task split repurposed T3 for feature status, card hierarchy, status tag suppression, and Task tab repository text.
+    note: Task split repurposed T3 for feature status, card hierarchy, status tag
+      suppression, and Task tab repository text.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-25T11:53:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T18:16:22.977Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T18:16:35.989Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/product-spec.md,
+      docs/features/digital-factory-ui-bugfix/technical-design.md"
+    rag_query: Feature/card/status rendering fixes digital-factory-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    executor_audit:
+      hermes: {}
+    at: 2026-05-25T18:36:49.881Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T03:47:01+0700
+    note: Human unblocked — Hermes no_changes block resolved. Reset to ready for
+      re-claim.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T20:49:14.885Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T20:49:21.175Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/product-spec.md,
+      docs/features/digital-factory-ui-bugfix/technical-design.md"
+    rag_query: Feature/card/status rendering fixes digital-factory-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/53"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-25T20:59:08.790Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T21:01:12.705Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T3 subtasks implemented correctly. Lint clean, 798/798 tests pass. No
+      CI check-runs. 🟢 nits only: placeholder repo test in
+      t3-rendering-fixes.test.ts (real UI coverage in task-tab-view.test.ts);
+      two inline what-not-why comments in FeatureListRow.tsx."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/53#pullrequestreview-4358767891
+    at: 2026-05-25T21:09:50.734Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T21:11:34.165Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
