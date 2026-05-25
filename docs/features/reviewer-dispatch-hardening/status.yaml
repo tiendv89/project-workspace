@@ -61,3 +61,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/reviewer-dispatch-hardening
 feature_branch_base_sha: 22bae7853f498502f131346d678a657a55f5bbb2
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/330
