@@ -1,7 +1,7 @@
 id: T8
 title: openImplPR fallback — derive PR title from task YAML
 repo: workflow
-status: in_review
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -122,3 +122,14 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-25T10:21:05.400Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: noreply@anthropic.com
+    at: 2026-05-25T10:29:25+0000
+    note: >-
+      🟡 runtime/executors/hermes/src/index.ts:766 — Phase 6 short-circuit only
+      handles `in_review`; when Hermes follows new briefing and writes
+      `blocked:tests_failed + pr_url`, commitAndPush returns false (already pushed)
+      and wrapper overwrites with `blocked:no_changes`, losing real reason and PR URL.
+      Fix: extend hermesDone condition to include `blocked` when pr_url is present.
+      CI passed. No 🔴 findings. Self-review restriction applied (HTTP 422).
+    review_url: https://github.com/tiendv89/agent-workflow/pull/225#issuecomment-4533529398
