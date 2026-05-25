@@ -47,14 +47,14 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
    The orchestrator must not perform any dispatch decision based on log entry values. Log entries (`reviewer_started`, `fix_started`) are retained as audit-only entries in the same claim commit.
 
-2. **Remove `MAX_TURNS` from the orchestrator entirely.** The executor already clones the management repo (`MGMT_REPO_URL`) in Phase 1. It reads `workspace.yaml` from that clone to get its own operational config — including `max_turns`. The `MAX_TURNS` env var is removed as an operator-level concern; the orchestrator never sets, computes, or passes it.
+2. **Remove `MAX_TURNS` from all orchestrator `extraEnv` blocks.** The executor already reads `process.env.MAX_TURNS ?? "200"` and already inherits the full orchestrator environment via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread. The orchestrator re-passing it explicitly is redundant. `MAX_TURNS` is documented in `docker-compose.yml` as an env var on the orchestrator service — the executor picks it up automatically through inheritance. No executor code changes needed.
 
-3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables (task routing, repo URLs, credentials); executor reads its own operational config (`max_turns`, future per-kind settings) from `workspace.yaml` after the management repo clone.
+3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables (task routing, repo URLs, credentials); executor-operational config (`MAX_TURNS`, etc.) is set at the service level in docker-compose and inherited — not computed or injected by the orchestrator.
 
 ## Non-goals
 
 - Not removing `EXECUTOR_KIND` or other dispatch-routing env vars that are genuinely orchestrator-owned decisions (the orchestrator decides *what kind* of executor to run; the executor decides *how* to run it).
-- Not implementing per-kind turn multipliers in this feature — that belongs in `feature-branch-pr-review-gate`. This feature establishes the executor-self-config pattern that makes multipliers trivial to add later.
+- Not implementing per-kind turn multipliers in this feature — that belongs in `feature-branch-pr-review-gate`. This feature establishes the clean env-inheritance pattern that makes multipliers easy to add later (orchestrator can still compute and inject a specific value for feature reviewers when that feature ships).
 - Not changing the task log actions (`reviewer_started`, `fix_started`) — they remain as audit entries.
 
 ## Behaviour specification
@@ -83,16 +83,16 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 - `review_incomplete → reviewing` replaces `review_incomplete → in_review`.
 - Explicit note: the orchestrator must not use `reviewer_started` or `fix_started` log entry values to make any dispatch decision — these are audit-only.
 
-### Executor self-config — `MAX_TURNS`
+### Executor env separation — `MAX_TURNS`
 
-The executor reads `max_turns` from `workspace.yaml` after the Phase 1 management repo clone. The current `process.env.MAX_TURNS ?? "200"` fallback is replaced with a `workspace.yaml` lookup with the same default.
+`SubProcessAdapter.submit()` builds the child env as `{ ...process.env, ...extraEnv, ...abivars }`. Because `process.env` is spread first, any env var set on the orchestrator service is already present in the executor's environment without the orchestrator explicitly re-passing it.
 
 Changes:
-- **`executors/claude/src/index.ts`**: after `materializeMgmtRepo`, read `workspace.yaml` from the cloned mgmt dir; resolve `max_turns` (default `200`). Remove `process.env.MAX_TURNS` read.
 - **`dispatch-reviewer.ts`**: remove `MAX_TURNS: String(maxTurns)` from `extraEnv`; remove `maxTurns` from `DispatchReviewerOptions`.
-- **`workspace.yaml` schema**: add optional `max_turns: 200` field at root level. Existing workspaces without it use the default.
-- **`dispatchExecutor` and fix-executor dispatch paths**: audited and cleaned up identically — `MAX_TURNS` removed from all `extraEnv` blocks.
-- **ABI spec + operator guide**: document that `MAX_TURNS` is no longer an env var or operator concern; `max_turns` is a `workspace.yaml` field read by the executor.
+- **All other dispatch paths** (`dispatchExecutor`, fix-executor): audit and remove `MAX_TURNS` from `extraEnv` blocks identically.
+- **`docker-compose.yml`**: add `MAX_TURNS` to the orchestrator service `environment` block with a documented default (e.g. `200`). This is the canonical place operators set the turn budget — the executor inherits it automatically.
+- **No executor code changes** — `process.env.MAX_TURNS ?? "200"` remains as-is.
+- **ABI spec + operator guide**: document that `MAX_TURNS` is an operator-level env var set on the orchestrator service; it is not injected by the orchestrator into individual executor spawns.
 
 ## Success criteria
 
@@ -101,8 +101,8 @@ Changes:
 - `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
 - `claimFix` guard checks `task.status === "in_progress"` — no log scan.
 - No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
-- `MAX_TURNS` env var is not present in any `extraEnv` block in the orchestrator (grep confirms zero usages outside tests).
-- Executor reads `max_turns` from `workspace.yaml`; `process.env.MAX_TURNS` read is removed from executor code.
-- `workspace.yaml` schema documents the optional `max_turns` field.
+- `MAX_TURNS` is not present in any `extraEnv` block in the orchestrator dispatch paths (grep confirms zero usages outside test fixtures).
+- `docker-compose.yml` orchestrator service has `MAX_TURNS` in its `environment` block with a documented default.
+- No executor code changes — `process.env.MAX_TURNS ?? "200"` reads it transparently via env inheritance.
 - `CLAUDE.md` task status list includes `reviewing`; transition table is complete; explicit note that log entries are audit-only.
 - Existing tests pass; new unit tests cover the `reviewing` guard path, the fix `in_progress` guard path, and the duplicate-dispatch-skip paths for both.
