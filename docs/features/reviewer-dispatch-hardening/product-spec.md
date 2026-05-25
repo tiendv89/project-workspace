@@ -47,15 +47,14 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
    The orchestrator must not perform any dispatch decision based on log entry values. Log entries (`reviewer_started`, `fix_started`) are retained as audit-only entries in the same claim commit.
 
-2. **Remove redundant `MAX_TURNS` pass-through** from `dispatchReviewer` and other dispatch paths. Executor-owned configuration (`MAX_TURNS`, and any future per-kind multipliers) is read by the executor from its inherited environment or from `workspace.yaml` directly. The orchestrator does not compute or inject these values.
+2. **Remove `MAX_TURNS` from the orchestrator entirely.** The executor already clones the management repo (`MGMT_REPO_URL`) in Phase 1. It reads `workspace.yaml` from that clone to get its own operational config — including `max_turns`. The `MAX_TURNS` env var is removed as an operator-level concern; the orchestrator never sets, computes, or passes it.
 
-3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables; executor reads its own operational config from the environment it inherits.
+3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables (task routing, repo URLs, credentials); executor reads its own operational config (`max_turns`, future per-kind settings) from `workspace.yaml` after the management repo clone.
 
 ## Non-goals
 
-- Not changing how `MAX_TURNS` is set by the operator (still an env var at orchestrator startup — the executor inherits it automatically).
-- Not removing `EXECUTOR_KIND` or other dispatch-routing env vars that are genuinely orchestrator-owned decisions.
-- Not implementing per-feature-kind multipliers in this feature — that belongs in `feature-branch-pr-review-gate`. This feature only removes the pattern of the orchestrator re-injecting what the executor already inherits.
+- Not removing `EXECUTOR_KIND` or other dispatch-routing env vars that are genuinely orchestrator-owned decisions (the orchestrator decides *what kind* of executor to run; the executor decides *how* to run it).
+- Not implementing per-kind turn multipliers in this feature — that belongs in `feature-branch-pr-review-gate`. This feature establishes the executor-self-config pattern that makes multipliers trivial to add later.
 - Not changing the task log actions (`reviewer_started`, `fix_started`) — they remain as audit entries.
 
 ## Behaviour specification
@@ -84,14 +83,16 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 - `review_incomplete → reviewing` replaces `review_incomplete → in_review`.
 - Explicit note: the orchestrator must not use `reviewer_started` or `fix_started` log entry values to make any dispatch decision — these are audit-only.
 
-### Executor env separation
+### Executor self-config — `MAX_TURNS`
 
-`dispatchReviewer` `extraEnv` block:
-- Remove `MAX_TURNS: String(maxTurns)` — executor inherits `MAX_TURNS` from `process.env` via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread.
-- `maxTurns` parameter removed from `DispatchReviewerOptions` (or deprecated).
-- Other dispatch paths (`dispatchExecutor`, fix executor dispatch) audited and cleaned up identically.
+The executor reads `max_turns` from `workspace.yaml` after the Phase 1 management repo clone. The current `process.env.MAX_TURNS ?? "200"` fallback is replaced with a `workspace.yaml` lookup with the same default.
 
-ABI spec updated: note that `MAX_TURNS` is an executor-read env var (operator-set, inherited), not an orchestrator-injected ABI var.
+Changes:
+- **`executors/claude/src/index.ts`**: after `materializeMgmtRepo`, read `workspace.yaml` from the cloned mgmt dir; resolve `max_turns` (default `200`). Remove `process.env.MAX_TURNS` read.
+- **`dispatch-reviewer.ts`**: remove `MAX_TURNS: String(maxTurns)` from `extraEnv`; remove `maxTurns` from `DispatchReviewerOptions`.
+- **`workspace.yaml` schema**: add optional `max_turns: 200` field at root level. Existing workspaces without it use the default.
+- **`dispatchExecutor` and fix-executor dispatch paths**: audited and cleaned up identically — `MAX_TURNS` removed from all `extraEnv` blocks.
+- **ABI spec + operator guide**: document that `MAX_TURNS` is no longer an env var or operator concern; `max_turns` is a `workspace.yaml` field read by the executor.
 
 ## Success criteria
 
@@ -100,6 +101,8 @@ ABI spec updated: note that `MAX_TURNS` is an executor-read env var (operator-se
 - `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
 - `claimFix` guard checks `task.status === "in_progress"` — no log scan.
 - No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
-- `MAX_TURNS` is not present in any `extraEnv` block in the orchestrator dispatch paths.
+- `MAX_TURNS` env var is not present in any `extraEnv` block in the orchestrator (grep confirms zero usages outside tests).
+- Executor reads `max_turns` from `workspace.yaml`; `process.env.MAX_TURNS` read is removed from executor code.
+- `workspace.yaml` schema documents the optional `max_turns` field.
 - `CLAUDE.md` task status list includes `reviewing`; transition table is complete; explicit note that log entries are audit-only.
 - Existing tests pass; new unit tests cover the `reviewing` guard path, the fix `in_progress` guard path, and the duplicate-dispatch-skip paths for both.
