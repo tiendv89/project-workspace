@@ -1,7 +1,7 @@
 id: T3
 title: Feature/card/status rendering fixes
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T3
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T21:01:12.705Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T21:09:50.734Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/53
   status: open
@@ -81,3 +81,11 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T21:01:12.705Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T3 subtasks implemented correctly. Lint clean, 798/798 tests pass. No
+      CI check-runs. 🟢 nits only: placeholder repo test in
+      t3-rendering-fixes.test.ts (real UI coverage in task-tab-view.test.ts);
+      two inline what-not-why comments in FeatureListRow.tsx."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/53#pullrequestreview-4358767891
+    at: 2026-05-25T21:09:50.734Z
