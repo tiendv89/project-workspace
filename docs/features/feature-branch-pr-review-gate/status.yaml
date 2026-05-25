@@ -2,8 +2,8 @@ feature_id: feature-branch-pr-review-gate
 title: Feature branch PR review gate — reviewer approves but never merges
 
 feature_status: in_tdd
-current_stage: tasks
-next_action: Produce task breakdown (tasks.md and tasks/T<n>.yaml files).
+current_stage: technical_design
+next_action: Review and approve the technical design.
 
 stages:
   product_spec:
@@ -17,15 +17,11 @@ stages:
         at: "2026-05-24T17:25:08Z"
         comment: null
   technical_design:
-    review_status: approved
-    reviewed_by: tiendv.52@gmai.com
-    reviewed_at: "2026-05-25T04:14:06Z"
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
     review_comment: null
-    review_history:
-      - status: approved
-        by: tiendv.52@gmai.com
-        at: "2026-05-25T04:14:06Z"
-        comment: null
+    review_history: []
   tasks:
     review_status: draft
     reviewed_by: null
@@ -44,10 +40,6 @@ history:
     by: tiendv.52@gmai.com
     at: "2026-05-24T17:25:08Z"
     note: Product spec approved — feature advanced to in_tdd.
-  - action: technical_design_approved
-    by: tiendv.52@gmai.com
-    at: "2026-05-25T04:14:06Z"
-    note: Technical design approved — feature advanced to task planning.
 
 revalidation:
   product_spec_required: false
