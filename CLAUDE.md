@@ -39,6 +39,7 @@ Features follow this lifecycle:
 - blocked
 - in_review
 - reviewing
+- review_passed
 - review_incomplete
 - change_requested
 - done
@@ -80,13 +81,15 @@ todo → ready                  (auto-ready rule, applied by whoever marks the l
 ready → in_progress           (start-implementation only)
 in_progress → in_review       (agent or human, after work is complete)
 in_progress → blocked         (agent, when blocked)
-in_review → reviewing         (orchestrator, when reviewer executor is dispatched)
-in_review → done              (human, or orchestrator PR poll after reviewer approves)
+in_review → reviewing         (orchestrator, on reviewer dispatch claim — first-push-wins)
+in_review → done              (human, or handleMergedPrs when the impl PR merges directly without a reviewer cycle)
 in_review → ready             (human, when rejecting for rework)
-reviewing → in_review         (orchestrator, when reviewer completes with passed — PR poll then detects merge)
-reviewing → change_requested  (orchestrator, when reviewer completes with change_requested)
+in_review → review_incomplete (orchestrator, when reviewer exits without a valid result — up to MAX_REVIEW_INCOMPLETES times)
+reviewing → review_passed     (orchestrator, when reviewer verdict is `passed` — APPROVE posted, awaiting impl PR merge)
+reviewing → change_requested  (orchestrator, when reviewer posts REQUEST_CHANGES)
 reviewing → review_incomplete (orchestrator, when reviewer exits without a valid result — up to MAX_REVIEW_INCOMPLETES times)
-review_incomplete → reviewing (orchestrator, when re-dispatching on next cycle)
+review_passed → done          (orchestrator/handleMergedPrs, when the impl PR is observed merged on GitHub)
+review_incomplete → reviewing (orchestrator, when re-dispatching reviewer on the next poll cycle)
 review_incomplete → blocked   (orchestrator, after MAX_REVIEW_INCOMPLETES failed review attempts — escalates)
 change_requested → in_progress  (fix agent — same first-push-wins claim as ready → in_progress)
 blocked → ready               (human, after resolving the block — only if pr.url is null)
@@ -98,7 +101,9 @@ any → cancelled               (human only)
 - `start-implementation` must hard-stop if the task status is not `ready`.
 - **Unblock target rule**: when a human resolves a block, the target status depends on how far the task had progressed. If `pr.url` is set, reset to `in_review` — the PR already exists and the agent should resume review work. If `pr.url` is null, reset to `ready` — the task has not yet produced a PR and must be re-claimed. Never reset a task to `ready` once a PR has been opened.
 - **Change-requested claim rule**: `change_requested → in_progress` uses the same first-push-wins claim protocol as `ready → in_progress`. The fix agent commits the claim to the management repo task branch before beginning implementation. If the push is rejected (non-fast-forward), the agent must stop — another fix agent won the claim.
-- **Review-incomplete retry rule**: `review_incomplete → reviewing` uses the same first-push-wins claim protocol as reviewer dispatch. The orchestrator writes a `reviewer_started` log entry (audit-only) and resets status to `reviewing` atomically before re-dispatching. After `MAX_REVIEW_INCOMPLETES` failures the orchestrator escalates directly to `blocked` instead of retrying.
+- **Reviewer-dispatch claim rule**: `in_review → reviewing` (and `review_incomplete → reviewing` for retries) uses the same first-push-wins claim protocol as other agent claims. The orchestrator writes a `reviewer_started` log entry and sets status to `reviewing` atomically in the claim commit. The `reviewing` status itself is the duplicate-claim guard — once a task is `reviewing`, other orchestrator instances will not dispatch a second reviewer for the same task.
+- **Review-passed holding rule**: after a `passed` verdict the task is set to `review_passed`, **not** back to `in_review`. This intentionally deviates from the approved technical design (which specified `reviewing → in_review`): resetting to `in_review` would allow `findReviewableTasks` to dispatch a fresh reviewer while waiting for the impl PR to merge, creating a duplicate-dispatch window. `review_passed` closes that window — it is excluded from `findReviewableTasks` and exists solely as a holding state. The in_review PR poll continues to watch the PR; when GitHub reports `merged: true`, `handleMergedPrs` writes `review_passed → done`.
+- **Review-incomplete retry rule**: `review_incomplete → reviewing` uses the same first-push-wins claim protocol as reviewer dispatch. After `MAX_REVIEW_INCOMPLETES` failures the orchestrator escalates directly to `blocked` instead of retrying.
 
 ![Task Status Workflow](docs/task-workflow.png)
 
@@ -128,10 +133,10 @@ The following `action` values are defined for task log entries:
 | `started` | agent | executor work phase begun |
 | `work_phase_complete` | agent | intermediate work phase finished |
 | `blocked` | agent | task set to `blocked` with reason |
-| `reviewer_started` | reviewer agent | **Audit-only.** Reviewer executor dispatched for a task now in `reviewing`. The orchestrator must not read this entry to make any dispatch decision. |
-| `fix_started` | fix agent | **Audit-only.** Fix executor dispatched; status set back to `in_progress`. The orchestrator must not read this entry to make any dispatch decision. |
-| `reviewer_complete` | reviewer agent | reviewer requested changes — task mutated to `change_requested` |
-| `review_blocked` | orchestrator | reviewer exited without a valid result — task set to `review_incomplete` for retry; escalates after max attempts |
+| `reviewer_started` | reviewer agent | Audit-only. Written alongside the `reviewing` status claim commit. The orchestrator must never read this entry to make a dispatch decision; use `task.status === "reviewing"` instead. |
+| `fix_started` | fix agent | Audit-only. Written alongside the `in_progress` status claim commit for fix runs. The orchestrator must never read this entry to make a dispatch decision; use `task.status === "in_progress"` instead. |
+| `reviewer_complete` | reviewer agent | reviewer verdict applied — task mutated to `change_requested` (REQUEST_CHANGES) or `review_passed` (APPROVE; awaits impl PR merge) |
+| `review_blocked` | orchestrator | reviewer exited without a valid result — task transitioned to `review_incomplete` for retry; escalates to `blocked` after max attempts |
 | `retried` | orchestrator | max-turns block reset to `ready` for retry |
 | `done` | human or reviewer agent | task work accepted |
 | `cancelled` | human | task cancelled |
