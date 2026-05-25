@@ -1,12 +1,11 @@
 id: T3
 title: Log-scan guard removal
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T2
-blocked_reason: no_changes
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T3
 execution:
@@ -70,3 +69,11 @@ log:
     by: norepy@tiendv.dev
     note: no_changes
     at: 2026-05-25T10:52:40.591Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T19:21:00+0700
+    note: >-
+      Reset to ready — second no_changes block caused by two hermes executor bugs
+      (wrong clone base + new-branch commit detection). Both fixed in
+      agent-workflow PR #228 (fix/hermes-clone-base-and-no-changes-detection).
+      Re-run after that PR merges and agent image is rebuilt.
