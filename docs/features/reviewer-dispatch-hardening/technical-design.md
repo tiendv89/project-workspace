@@ -163,16 +163,12 @@ if (task.status === "in_progress") return { won: false, reason: "already_claimed
 
 ### 2. Token and MCP audit (ABI + executor + dispatch-review-result)
 
-**`abi/src/types.ts`** — extend `ReviewerResult`:
+Audit fields are namespaced under the executor kind. This lets the orchestrator record per-executor telemetry without assuming a single shape across executor types (Claude, Hermes, future kinds).
+
+**`abi/src/types.ts`** — extend `ReviewerResult` and `ExecutorResult` with a `executor_audit` namespace:
 ```ts
-export interface ReviewerResult {
-  terminal_status: ReviewerTerminalStatus;
-  verdict: ReviewerTerminalStatus;
-  confidence: number;
-  notes: string;
-  review_url?: string;
-  self_review_skipped?: boolean;
-  // New audit fields — optional; omitted when not available
+// Shared audit shape per executor kind
+export interface ClaudeExecutorAudit {
   token_usage?: { input: number; output: number; model?: string };
   cost_usd?: number;
   mcp_usage?: {
@@ -180,48 +176,65 @@ export interface ReviewerResult {
     gitnexus_queries: Array<{ tool: string; arguments: Record<string, unknown>; result_length: number }>;
   };
 }
+
+// Future executor kinds extend here without touching existing shapes
+export interface ExecutorAudit {
+  claude?: ClaudeExecutorAudit;
+  // hermes?: HermesExecutorAudit;  // tbd when Hermes executor lands
+}
+
+export interface ReviewerResult {
+  terminal_status: ReviewerTerminalStatus;
+  verdict: ReviewerTerminalStatus;
+  confidence: number;
+  notes: string;
+  review_url?: string;
+  self_review_skipped?: boolean;
+  executor_audit?: ExecutorAudit;   // populated by executor; omitted when unavailable
+}
 ```
 
-Add `mcp_usage` to `ExecutorResult` as well (impl and fix executors also produce it).
+`ExecutorResult` gains the same `executor_audit?: ExecutorAudit` field (impl and fix executors also produce it).
 
-**`executors/claude/src/index.ts`** — after extracting RAG/GitNexus queries, include them in `claudeResult` before writing `result.json`:
+**`executors/claude/src/index.ts`** — after extracting RAG/GitNexus queries, build the audit block and include it in `claudeResult` before writing `result.json`:
 ```ts
 const ragQueries = spawnResult.stdout ? extractRagQueries(spawnResult.stdout) : [];
 const gitnexusQueries = spawnResult.stdout ? extractGitNexusQueries(spawnResult.stdout) : [];
-if (ragQueries.length > 0 || gitnexusQueries.length > 0) {
-  claudeResult.mcp_usage = { rag_queries: ragQueries, gitnexus_queries: gitnexusQueries };
+const claudeAudit: ClaudeExecutorAudit = {
+  ...(claudeResult.token_usage && { token_usage: claudeResult.token_usage }),
+  ...(claudeResult.cost_usd !== undefined && { cost_usd: claudeResult.cost_usd }),
+  ...((ragQueries.length > 0 || gitnexusQueries.length > 0) && {
+    mcp_usage: { rag_queries: ragQueries, gitnexus_queries: gitnexusQueries },
+  }),
+};
+if (Object.keys(claudeAudit).length > 0) {
+  claudeResult.executor_audit = { claude: claudeAudit };
 }
 ```
 The existing `emit({ type: "rag_query", ...rq })` calls remain for the log sink.
 
-**`task/dispatch-review-result.ts`** — spread audit fields on all log entries:
+**`task/dispatch-review-result.ts`** — spread `executor_audit` on all log entries:
 ```ts
 // change_requested branch
 logEntry: {
   action: "reviewer_complete",
-  ...(result.token_usage && { token_usage: result.token_usage }),
-  ...(result.cost_usd !== undefined && { cost_usd: result.cost_usd }),
-  ...(result.mcp_usage && { mcp_usage: result.mcp_usage }),
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
   ...
 }
 // review_incomplete branch (default case)
 logEntry: {
   action: "review_blocked",
-  ...(result.token_usage && { token_usage: result.token_usage }),
-  ...(result.cost_usd !== undefined && { cost_usd: result.cost_usd }),
-  ...(result.mcp_usage && { mcp_usage: result.mcp_usage }),
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
   ...
 }
 // passed branch (new status reset entry)
 logEntry: {
   action: "reviewer_complete",
-  ...(result.token_usage && { token_usage: result.token_usage }),
-  ...(result.cost_usd !== undefined && { cost_usd: result.cost_usd }),
-  ...(result.mcp_usage && { mcp_usage: result.mcp_usage }),
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
 }
 ```
 
-**`task/dispatch.ts`** — `run_completed` and `blocked` entries: add `mcp_usage` spread (same pattern as existing `token_usage`/`cost_usd`).
+**`task/dispatch.ts`** — `run_completed` and `blocked` entries: add `executor_audit` spread (replaces the flat `token_usage`/`cost_usd` pattern — those fields move inside `executor_audit.claude`).
 
 ### 3. `MAX_TURNS` env separation
 
@@ -260,7 +273,7 @@ Add explicit note to log actions table: `reviewer_started` and `fix_started` are
 ## Dependency Analysis
 
 - **Hard**: `TaskStatus` union in `task/types.ts` must include `"reviewing"` before `dispatch-reviewer.ts` or `match.ts` reference it — T2 (ABI/types) must land before T3 (log-scan removal).
-- **Hard**: `ReviewerResult` type extension must land before `dispatch-review-result.ts` spreads the new fields — T2 before T4.
+- **Hard**: `ExecutorAudit` / `ClaudeExecutorAudit` interfaces and `executor_audit` field on `ReviewerResult` must land before `dispatch-review-result.ts` spreads them — T2 before T4.
 - **Soft**: CLAUDE.md (T1) and MAX_TURNS cleanup (T5) are independent of the type changes; can ship in any order.
 - **No external dependencies** — all changes are within `workflow` and `management-repo`.
 
@@ -270,7 +283,7 @@ Add explicit note to log actions table: `reviewer_started` and `fix_started` are
 T1: management-repo — CLAUDE.md: reviewing status + transitions + audit-only note
   └── Can begin now — no blockers
 
-T2: workflow — ABI types: reviewing in TaskStatus union; token_usage/cost_usd/mcp_usage in ReviewerResult + ExecutorResult
+T2: workflow — ABI types: reviewing in TaskStatus union; ExecutorAudit + ClaudeExecutorAudit interfaces; executor_audit in ReviewerResult + ExecutorResult
   └── Can begin now — no blockers
   └── T1 and T2 run in parallel
   │
@@ -278,7 +291,7 @@ T2: workflow — ABI types: reviewing in TaskStatus union; token_usage/cost_usd/
       └── BLOCKED on T2 (reviewing must be a valid TaskStatus before dispatch code uses it)
 
   T4: workflow — Token/MCP audit: dispatch-review-result.ts + dispatch.ts + executor/index.ts
-      └── BLOCKED on T2 (ReviewerResult.token_usage/mcp_usage must exist before dispatch-review-result spreads them)
+      └── BLOCKED on T2 (ReviewerResult.executor_audit must exist before dispatch-review-result spreads it)
       └── T3 and T4 run in parallel (touch different files)
 
 T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-reviewer.ts; docker-compose + OPERATOR-GUIDE.md
@@ -296,7 +309,7 @@ T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + dispatch-r
 | Repo | Why touched |
 |---|---|
 | `management-repo` | CLAUDE.md: add `reviewing` status, update transition table, mark log actions audit-only |
-| `workflow` | `abi/src/types.ts`: type extensions; `eligibility/match.ts`, `pr/dispatch-reviewer.ts`, `task/claim-fix.ts`: log-scan removal; `task/dispatch-review-result.ts`, `task/dispatch.ts`, `executors/claude/src/index.ts`: token/MCP audit; `main.ts`, docker-compose: MAX_TURNS cleanup; tests |
+| `workflow` | `abi/src/types.ts`: `ExecutorAudit`/`ClaudeExecutorAudit` interfaces, `executor_audit` on `ReviewerResult`/`ExecutorResult`; `eligibility/match.ts`, `pr/dispatch-reviewer.ts`, `task/claim-fix.ts`: log-scan removal; `task/dispatch-review-result.ts`, `task/dispatch.ts`, `executors/claude/src/index.ts`: executor_audit propagation; `main.ts`, docker-compose: MAX_TURNS cleanup; tests |
 
 ## Validation and Release Impact
 

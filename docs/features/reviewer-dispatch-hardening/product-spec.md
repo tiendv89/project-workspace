@@ -115,30 +115,37 @@ The two-tier protection:
 The executor already calls `extractRagQueries` and `extractGitNexusQueries` on `spawnResult.stdout`. The extracted data needs to flow through to `result.json`:
 
 **Executor (`executors/claude/src/index.ts`):**
-- After extracting RAG and GitNexus queries from stdout, include a `mcp_usage` field in the written `result.json`:
+- After extracting RAG/GitNexus queries and recording token usage, write an `executor_audit` block into `result.json` under the executor-kind key:
   ```json
   {
-    "mcp_usage": {
-      "rag_queries": [{ "query": "...", "result_length": 1234 }, ...],
-      "gitnexus_queries": [{ "tool": "mcp__gitnexus__query", "arguments": {...}, "result_length": 567 }, ...]
+    "executor_audit": {
+      "claude": {
+        "token_usage": { "input": 284, "output": 35568, "model": "claude-opus-4-7" },
+        "cost_usd": 0.42,
+        "mcp_usage": {
+          "rag_queries": [{ "query": "...", "result_length": 1234 }, ...],
+          "gitnexus_queries": [{ "tool": "mcp__gitnexus__query", "arguments": {...}, "result_length": 567 }, ...]
+        }
+      }
     }
   }
   ```
-- Empty arrays when no MCP calls were made; field omitted entirely if both are empty.
+- `mcp_usage` omitted entirely when no MCP calls were made; `claude` key omitted when no audit data available.
+- Future executor kinds (e.g. `hermes`) add their own key under `executor_audit` without touching the `claude` shape.
 
 **Orchestrator (all reap paths):**
-- When appending the completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete), spread `mcp_usage` from `result.json` if present.
-- ABI spec updated: `mcp_usage` added as an optional field on `result.json`.
+- When appending the completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete), spread `executor_audit` from `result.json` if present.
+- ABI spec updated: `executor_audit` added as an optional typed field on `result.json`.
 
 ### Token usage audit — all executor paths
 
-Every reap path appends a log entry with `token_usage` and `cost_usd` when the fields are present in `result.json`:
+Every reap path appends a log entry with `executor_audit` when the field is present in `result.json` (token usage and MCP data travel together under the executor-kind namespace):
 
-- **`dispatch-review-result.ts`**: `reviewer_complete` (on `change_requested`) and `review_incomplete` (on incomplete exit) entries gain `token_usage` / `cost_usd`.
-- **Fix executor reap path**: the log entry written when a fix executor completes (whether it returns `in_review` or `blocked`) gains `token_usage` / `cost_usd`.
-- **`dispatch.ts`** (impl path): already correct — no change needed.
+- **`dispatch-review-result.ts`**: `reviewer_complete` (on `change_requested`) and `review_incomplete` (on incomplete exit) entries gain `executor_audit`.
+- **Fix executor reap path**: the log entry written when a fix executor completes gains `executor_audit`.
+- **`dispatch.ts`** (impl path): already writes `token_usage`/`cost_usd` flat — migrate to `executor_audit` spread for consistency.
 
-The `TaskLogEntry` type in the ABI / task types must allow `token_usage` and `cost_usd` as optional fields on any log entry, not only `run_completed`.
+The `TaskLogEntry` type in the ABI / task types must allow `executor_audit?: ExecutorAudit` as an optional field on any log entry.
 
 ### Executor env separation — `MAX_TURNS`
 
@@ -158,11 +165,11 @@ Changes:
 - `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
 - `claimFix` guard checks `task.status === "in_progress"` — no log scan.
 - No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
-- Every completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete) includes `mcp_usage` when the executor made RAG or GitNexus calls during that session.
-- A task that goes through impl → review → fix → re-review has per-session `mcp_usage` on each of those four log entries, not just the initial `rag_pre_flight`.
-- Every reviewer completion (`reviewer_complete`, `review_incomplete`) log entry includes `token_usage` and `cost_usd` when present in `result.json`.
-- Every fix-executor completion log entry includes `token_usage` and `cost_usd` when present.
-- A task that goes through impl → review → fix → review has `token_usage` recorded on each of those four log entries.
+- Every completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete) includes `executor_audit.claude.mcp_usage` when the executor made RAG or GitNexus calls during that session.
+- A task that goes through impl → review → fix → re-review has per-session `executor_audit` on each of those four log entries, not just the initial `rag_pre_flight`.
+- Every reviewer completion (`reviewer_complete`, `review_incomplete`) log entry includes `executor_audit.claude.token_usage` and `executor_audit.claude.cost_usd` when present in `result.json`.
+- Every fix-executor completion log entry includes `executor_audit.claude.token_usage` and `executor_audit.claude.cost_usd` when present.
+- A task that goes through impl → review → fix → review has token usage recorded under `executor_audit.claude` on each of those four log entries.
 - `MAX_TURNS` is not present in any `extraEnv` block in the orchestrator dispatch paths (grep confirms zero usages outside test fixtures).
 - `docker-compose.yml` orchestrator service has `MAX_TURNS` in its `environment` block with a documented default.
 - No executor code changes — `process.env.MAX_TURNS ?? "200"` reads it transparently via env inheritance.
