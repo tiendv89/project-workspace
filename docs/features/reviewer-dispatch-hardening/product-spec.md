@@ -33,7 +33,19 @@ The task status values list in `CLAUDE.md` does not include `reviewing`. The tra
 
 This means the task log only shows token cost for the first implementation run. Every subsequent reviewer session and fix-executor run is invisible in the audit trail, making cumulative cost per task impossible to compute from the log alone.
 
-**Problem 3 — Orchestrator redundantly passes executor-owned environment variables.**
+**Problem 3 — Mid-session RAG and GitNexus usage is invisible in the task audit trail.**
+
+The executor already extracts RAG and GitNexus calls from stdout post-execution (`rag-audit.ts`, `gitnexus-audit.ts`) and emits them as `rag_query` / `gitnexus_query` events to the log sink (jsonl files). However these are never written to the task YAML log.
+
+The task YAML only shows `rag_pre_flight` — the orchestrator's initial context injection before the executor starts. Every RAG query and GitNexus lookup that Claude makes *during* execution is invisible in the task audit trail.
+
+This means:
+- You can see what context was injected before the run, but not what the agent looked up while working.
+- Multiple executor sessions (impl, reviewer, fix) each produce a batch of RAG/GitNexus calls with no per-session attribution in the YAML.
+
+The executor already has the data (`extractRagQueries`, `extractGitNexusQueries` called on `spawnResult.stdout`). It needs to include query summaries in `result.json` so the orchestrator can persist them in the completion log entry.
+
+**Problem 4 — Orchestrator redundantly passes executor-owned environment variables.**
 
 `SubProcessAdapter.submit()` builds the child environment as:
 ```
@@ -55,7 +67,9 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
 2. **Record `token_usage` and `cost_usd` on every executor completion**, not just the implementation run. Every log entry appended when an executor completes — `run_completed` (impl), `reviewer_complete` / `review_incomplete` (reviewer), and the fix-executor completion entry — must carry `token_usage` and `cost_usd` from `result.json` when present. This gives a complete per-task cost audit trail across all sessions.
 
-3. **Remove `MAX_TURNS` from all orchestrator `extraEnv` blocks.** The executor already reads `process.env.MAX_TURNS ?? "200"` and already inherits the full orchestrator environment via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread. The orchestrator re-passing it explicitly is redundant. `MAX_TURNS` is documented in `docker-compose.yml` as an env var on the orchestrator service — the executor picks it up automatically through inheritance. No executor code changes needed.
+3. **Persist RAG and GitNexus usage summaries in the task YAML completion log entry.** The executor includes a `mcp_usage` summary in `result.json` — counts and query strings for RAG and GitNexus calls made during the session. The orchestrator appends this to the same log entry it writes on completion (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete). Each executor session's MCP usage is attributed to that session in the task log.
+
+4. **Remove `MAX_TURNS` from all orchestrator `extraEnv` blocks.** The executor already reads `process.env.MAX_TURNS ?? "200"` and already inherits the full orchestrator environment via `SubProcessAdapter`'s `{ ...process.env, ...extraEnv }` spread. The orchestrator re-passing it explicitly is redundant. `MAX_TURNS` is documented in `docker-compose.yml` as an env var on the orchestrator service — the executor picks it up automatically through inheritance. No executor code changes needed.
 
 3. **Document the separation of concerns** in the ABI spec and operator guide: orchestrator injects ABI-required variables (task routing, repo URLs, credentials); executor-operational config (`MAX_TURNS`, etc.) is set at the service level in docker-compose and inherited — not computed or injected by the orchestrator.
 
@@ -96,6 +110,26 @@ The two-tier protection:
 - `review_incomplete → reviewing` replaces `review_incomplete → in_review`.
 - Explicit note: the orchestrator must not use `reviewer_started` or `fix_started` log entry values to make any dispatch decision — these are audit-only.
 
+### RAG and GitNexus usage audit
+
+The executor already calls `extractRagQueries` and `extractGitNexusQueries` on `spawnResult.stdout`. The extracted data needs to flow through to `result.json`:
+
+**Executor (`executors/claude/src/index.ts`):**
+- After extracting RAG and GitNexus queries from stdout, include a `mcp_usage` field in the written `result.json`:
+  ```json
+  {
+    "mcp_usage": {
+      "rag_queries": [{ "query": "...", "result_length": 1234 }, ...],
+      "gitnexus_queries": [{ "tool": "mcp__gitnexus__query", "arguments": {...}, "result_length": 567 }, ...]
+    }
+  }
+  ```
+- Empty arrays when no MCP calls were made; field omitted entirely if both are empty.
+
+**Orchestrator (all reap paths):**
+- When appending the completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete), spread `mcp_usage` from `result.json` if present.
+- ABI spec updated: `mcp_usage` added as an optional field on `result.json`.
+
 ### Token usage audit — all executor paths
 
 Every reap path appends a log entry with `token_usage` and `cost_usd` when the fields are present in `result.json`:
@@ -124,6 +158,8 @@ Changes:
 - `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
 - `claimFix` guard checks `task.status === "in_progress"` — no log scan.
 - No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
+- Every completion log entry (`run_completed`, `reviewer_complete`, `review_incomplete`, fix-complete) includes `mcp_usage` when the executor made RAG or GitNexus calls during that session.
+- A task that goes through impl → review → fix → re-review has per-session `mcp_usage` on each of those four log entries, not just the initial `rag_pre_flight`.
 - Every reviewer completion (`reviewer_complete`, `review_incomplete`) log entry includes `token_usage` and `cost_usd` when present in `result.json`.
 - Every fix-executor completion log entry includes `token_usage` and `cost_usd` when present.
 - A task that goes through impl → review → fix → review has `token_usage` recorded on each of those four log entries.
