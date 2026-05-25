@@ -1,27 +1,144 @@
 id: T2
-title: "ABI types — ExecutorAudit + reviewing in TaskStatus"
+title: ABI types — ExecutorAudit + reviewing in TaskStatus
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-
-branch: null
-
+blocked_suggestion: null
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T2
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: "2026-05-25T05:35:08Z"
-
+  requires_human_review: true
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T09:50:22.957Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/223
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/332
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:35:08Z"
-    note: "Task created during reviewer-dispatch-hardening task breakdown."
+    at: 2026-05-25T05:35:08Z
+    note: Task created during reviewer-dispatch-hardening task breakdown.
   - action: ready
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:36:28Z"
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-05-25T05:36:28Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:42:27.946Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:42:39.885Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/124,
+      github.com/tiendv89/agent-workflow/pull/96"
+    rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: executor_crashed (exit 1)
+    at: 2026-05-25T05:45:30.766Z
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-25T05:50:45Z
+    note: Reset to ready — executor crash was Hermes workdir bug (fixed in
+      agent-workflow PR
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:31.459Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:52:37.935Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/124,
+      github.com/tiendv89/agent-workflow/pull/96"
+    rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: result_not_written
+    at: 2026-05-25T06:02:18.841Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T13:37:48+0700
+    note: "Reset to ready — Hermes executor fixes merged (agent-workflow PR #221).
+      requires_human_review set: agent must open draft PR; human merges."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T06:38:55.542Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T06:39:01.833Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/124,
+      github.com/tiendv89/agent-workflow/pull/96"
+    rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    at: 2026-05-25T06:49:37.439Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T14:30:39+0700
+    note: "Reset to ready — Hermes briefing fix merged (agent-workflow PR #222).
+      Hermes now owns push/PR/result.json like Claude executor."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T07:36:30.113Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T07:36:36.361Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/tasks/tasks.md,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/329"
+    rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/223"
+    at: 2026-05-25T07:49:02.780Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T07:51:04.914Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T15:39:50+0700
+    note: REQUEST_CHANGES — cost_usd must move from ClaudeExecutorAudit to
+      ExecutorAudit top level (executor-agnostic field shared across all
+      executor kinds). Review posted at
+      https://github.com/tiendv89/agent-workflow/pull/223#issuecomment-4532809214
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-25T08:41:26.462Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/223"
+    at: 2026-05-25T08:51:41.913Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T09:12:19.189Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:50:22.957Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
