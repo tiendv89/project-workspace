@@ -8,12 +8,22 @@
 
 Two separate issues in the current reviewer dispatch path need to be addressed:
 
-**Problem 1 — Log-scan deduplication guard is fragile.**
+**Problem 1 — The orchestrator uses log-entry scans to make dispatch decisions.**
 
-`dispatchReviewer` currently prevents duplicate reviewer dispatch by checking whether the last task log entry is `reviewer_started`. This log-scan guard is fragile:
-- It relies on log ordering and the specific value of the last entry — not on authoritative state.
-- If the log is appended out of order (e.g. concurrent orchestrator instances, replay), the guard can be bypassed.
-- Adding a `reviewing` task status was proposed in the `feature-branch-pr-review-gate` technical design as the correct deduplication mechanism — the status field is the authoritative, atomic claim guard.
+Three places in the orchestrator read `reviewer_started` or `fix_started` log entries to control dispatch logic:
+
+1. **`eligibility/match.ts` — `findReviewableTasks`**: filters eligible tasks with the predicate `last log entry ≠ reviewer_started`. This is the primary eligibility gate that decides whether a reviewer should be dispatched for a given task.
+
+2. **`dispatch-reviewer.ts` — duplicate-claim guard**: after fetching the latest task YAML, checks `if (lastEntry?.action === "reviewer_started")` and returns `claim_lost` to prevent double-dispatch.
+
+3. **`claim-fix.ts` — fix-claim guard**: checks `if (last?.action === "fix_started")` to prevent a second fix agent from claiming a task that is already `in_progress`.
+
+All three are log scans — they depend on the last log entry having a specific value rather than reading authoritative task state. This is fragile:
+- Log ordering is not guaranteed under concurrent orchestrator instances.
+- A log entry appended slightly out of order can allow two reviewers or two fix agents to claim the same task.
+- The status field already changes atomically (first-push-wins commit); log entries are appended in the same commit but are advisory, not authoritative.
+
+The correct fix is to use status as the guard. `reviewing` is the missing status value that closes the reviewer-dispatch race. For fix dispatch, `claim-fix.ts` already sets `status = "in_progress"` in the same commit — the log-scan guard is entirely redundant there.
 
 The task status values list in `CLAUDE.md` does not include `reviewing`. The transition `in_review → reviewing` (set atomically by the orchestrator before dispatch) is missing from the workflow rules.
 
@@ -30,7 +40,12 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
 ## Goals
 
-1. **Add `reviewing` task status** to the workflow rules in `CLAUDE.md` and to `dispatchReviewer`. The transition `in_review → reviewing` is written to the task YAML and pushed (first-push-wins) before the reviewer executor is dispatched. This status field replaces the log-scan guard — if the task is already `reviewing`, dispatch is skipped.
+1. **Add `reviewing` task status** to the workflow rules in `CLAUDE.md`. Replace all three log-scan guards with status checks:
+   - `findReviewableTasks` eligibility: `status === "in_review" || status === "review_incomplete"` (drop the `last log ≠ reviewer_started` predicate)
+   - `dispatchReviewer` duplicate-claim guard: check `task.status === "reviewing"` (drop `lastEntry?.action === "reviewer_started"`)
+   - `claim-fix.ts` fix-claim guard: check `task.status === "in_progress"` (drop `last?.action === "fix_started"`)
+
+   The orchestrator must not perform any dispatch decision based on log entry values. Log entries (`reviewer_started`, `fix_started`) are retained as audit-only entries in the same claim commit.
 
 2. **Remove redundant `MAX_TURNS` pass-through** from `dispatchReviewer` and other dispatch paths. Executor-owned configuration (`MAX_TURNS`, and any future per-kind multipliers) is read by the executor from its inherited environment or from `workspace.yaml` directly. The orchestrator does not compute or inject these values.
 
@@ -47,19 +62,27 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 
 ### reviewing status
 
-When `dispatchReviewer` is about to submit a reviewer executor:
-1. Check task status: if already `reviewing`, skip dispatch (no-op return).
-2. Set `task.status = "reviewing"` in the task YAML.
-3. Append `reviewer_started` log entry (audit only — status is now the guard).
-4. Commit and push to `origin/<taskBranch>` (first-push-wins). If push rejected → `claim_lost`.
+**`findReviewableTasks` (eligibility filter — `match.ts`):**
+- Current: `status in [in_review, review_incomplete] AND last log ≠ reviewer_started`
+- New: `status in [in_review, review_incomplete]` — no log scan
+
+**`dispatchReviewer` (claim guard — `dispatch-reviewer.ts`):**
+1. Check `task.status === "reviewing"` → if true, return `claim_lost` immediately (already claimed).
+2. Set `task.status = "reviewing"`.
+3. Append `reviewer_started` log entry (audit only).
+4. Commit and push (first-push-wins). If push rejected → `claim_lost`.
 5. Submit reviewer executor.
 
-CLAUDE.md additions:
+**`claimFix` (fix-claim guard — `claim-fix.ts`):**
+- Current: `if (last?.action === "fix_started") return already_claimed`
+- New: `if (task.status === "in_progress") return already_claimed` — claim-fix already sets `status = "in_progress"` in the same commit; the log scan is redundant.
+
+**CLAUDE.md additions:**
 - `reviewing` added to task status values list.
-- `in_review → reviewing` added to transition table with annotation: `(orchestrator, when reviewer executor is dispatched)`.
+- `in_review → reviewing` added to transition table: `(orchestrator, when reviewer executor is dispatched)`.
 - `reviewing → done`, `reviewing → change_requested`, `reviewing → review_incomplete` added.
 - `review_incomplete → reviewing` replaces `review_incomplete → in_review`.
-- Note: `reviewer_started` log action is audit-only — status is the deduplication guard.
+- Explicit note: the orchestrator must not use `reviewer_started` or `fix_started` log entry values to make any dispatch decision — these are audit-only.
 
 ### Executor env separation
 
@@ -73,7 +96,10 @@ ABI spec updated: note that `MAX_TURNS` is an executor-read env var (operator-se
 ## Success criteria
 
 - Task transitions `in_review → reviewing` atomically in `dispatchReviewer` before executor is submitted.
-- If task status is already `reviewing` when `dispatchReviewer` is called, dispatch is skipped — no log scan needed.
+- `findReviewableTasks` eligibility check contains no log-entry predicate.
+- `dispatchReviewer` duplicate-claim guard checks `task.status === "reviewing"` — no log scan.
+- `claimFix` guard checks `task.status === "in_progress"` — no log scan.
+- No orchestrator code reads `reviewer_started` or `fix_started` to make a dispatch decision (grep confirms zero such usages outside test fixtures and log-write lines).
 - `MAX_TURNS` is not present in any `extraEnv` block in the orchestrator dispatch paths.
-- `CLAUDE.md` task status list includes `reviewing`; transition table is complete.
-- Existing tests pass; new unit tests cover the `reviewing` guard path and the duplicate-dispatch-skip path.
+- `CLAUDE.md` task status list includes `reviewing`; transition table is complete; explicit note that log entries are audit-only.
+- Existing tests pass; new unit tests cover the `reviewing` guard path, the fix `in_progress` guard path, and the duplicate-dispatch-skip paths for both.
