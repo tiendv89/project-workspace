@@ -1,7 +1,7 @@
 id: T2
 title: ABI types — ExecutorAudit + reviewing in TaskStatus
 repo: workflow
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ branch: feature/reviewer-dispatch-hardening-T2
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-25T15:39:50+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T08:41:26.462Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/223
   status: open
@@ -122,8 +122,11 @@ log:
   - action: reviewer_complete
     by: matthew@swellnetwork.io
     at: 2026-05-25T15:39:50+0700
-    note: >-
-      REQUEST_CHANGES — cost_usd must move from ClaudeExecutorAudit to
+    note: REQUEST_CHANGES — cost_usd must move from ClaudeExecutorAudit to
       ExecutorAudit top level (executor-agnostic field shared across all
       executor kinds). Review posted at
       https://github.com/tiendv89/agent-workflow/pull/223#issuecomment-4532809214
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-25T08:41:26.462Z
+    note: Fix agent claimed.
