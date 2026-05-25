@@ -4,12 +4,14 @@ repo: digital-factory-ui
 status: blocked
 depends_on: []
 blocked_reason: no_changes
+blocked_suggestion: Hermes exited without making any file changes. Re-run with a
+  clearer briefing or more iterations.
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T18:36:40.569Z
+  last_updated_at: 2026-05-25T18:36:49.881Z
 pr:
   url: ""
   status: not_created
@@ -45,5 +47,9 @@ log:
       docs/features/digital-factory-ui-bugfix/technical-design.md"
     rag_query: Feature/card/status rendering fixes digital-factory-ui-bugfix
     note: Runtime pre-flight RAG fetch — written before executor spawn.
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    executor_audit:
+      hermes: {}
+    at: 2026-05-25T18:36:49.881Z
