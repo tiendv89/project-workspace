@@ -1,19 +1,23 @@
 feature_id: feature-branch-pr-review-gate
 title: Feature branch PR review gate — reviewer approves but never merges
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Review and approve the technical design.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: "2026-05-24T17:25:08Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: tiendv.52@gmai.com
+        at: "2026-05-24T17:25:08Z"
+        comment: null
   technical_design:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
@@ -31,7 +35,11 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - action: product_spec_approved
+    by: tiendv.52@gmai.com
+    at: "2026-05-24T17:25:08Z"
+    note: Product spec approved — feature advanced to in_tdd.
 
 revalidation:
   product_spec_required: false
