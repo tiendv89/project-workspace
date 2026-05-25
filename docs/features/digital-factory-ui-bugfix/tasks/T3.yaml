@@ -1,7 +1,7 @@
 id: T3
 title: Feature/card/status rendering fixes
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,10 +10,10 @@ branch: feature/digital-factory-ui-bugfix-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T21:09:50.734Z
+  last_updated_at: 2026-05-25T21:11:34.165Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/53
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/342
   status: open
@@ -89,3 +89,7 @@ log:
       two inline what-not-why comments in FeatureListRow.tsx."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/53#pullrequestreview-4358767891
     at: 2026-05-25T21:09:50.734Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T21:11:34.165Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
