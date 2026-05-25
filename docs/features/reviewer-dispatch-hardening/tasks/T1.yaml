@@ -29,3 +29,12 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T05:40:25.175Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:40:38.252Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/37,
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/179"
+    rag_query: CLAUDE.md — reviewing status + transitions reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
