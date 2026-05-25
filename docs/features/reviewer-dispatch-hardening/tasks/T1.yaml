@@ -9,7 +9,7 @@ branch: feature/reviewer-dispatch-hardening-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T05:43:37.494Z
+  last_updated_at: 2026-05-25T05:43:46.614Z
 pr:
   url: null
   status: null
@@ -38,3 +38,7 @@ log:
       github.com/tiendv89/project-workspace/pull/179"
     rag_query: CLAUDE.md — reviewing status + transitions reviewer-dispatch-hardening
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: executor_crashed (exit 1)
+    at: 2026-05-25T05:43:46.614Z
