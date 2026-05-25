@@ -11,7 +11,7 @@ branch: feature/reviewer-dispatch-hardening-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-25T10:58:32.837Z
+  last_updated_at: 2026-05-25T11:03:43+0000
 pr:
   url: null
   status: null
@@ -40,3 +40,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: executor_audit — Hermes executor output reviewer-dispatch-hardening
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-25T11:03:43+0000
+    note: executor work phase begun.
