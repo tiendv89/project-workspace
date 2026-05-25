@@ -60,3 +60,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T09:26:11.911Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:26:20.159Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/22,
+      github.com/tiendv89/agent-workflow/pull/115"
+    rag_query: openImplPR fallback — derive PR title from task YAML
+      reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
