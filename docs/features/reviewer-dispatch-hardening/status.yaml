@@ -1,7 +1,7 @@
 feature_id: reviewer-dispatch-hardening
 title: Reviewer dispatch hardening — reviewing status guard + executor env separation
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Execute tasks — T1, T2, T5 are ready.
 stages:
   product_spec:
@@ -67,4 +67,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/345
 impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/231
-    status: open
+    status: merged
