@@ -66,11 +66,16 @@ More broadly, any per-executor-kind configuration (like a `max_turns_multiplier`
 - New: `status in [in_review, review_incomplete]` — no log scan
 
 **`dispatchReviewer` (claim guard — `dispatch-reviewer.ts`):**
-1. Check `task.status === "reviewing"` → if true, return `claim_lost` immediately (already claimed).
-2. Set `task.status = "reviewing"`.
-3. Append `reviewer_started` log entry (audit only).
-4. Commit and push (first-push-wins). If push rejected → `claim_lost`.
-5. Submit reviewer executor.
+1. `git fetch + checkout` to get latest state from origin.
+2. Read task YAML. If `task.status === "reviewing"` → **skip** (return silently — another orchestrator already claimed; nothing to do this cycle).
+3. Set `task.status = "reviewing"`.
+4. Append `reviewer_started` log entry (audit only).
+5. Commit and push (first-push-wins). If push rejected → `claim_lost` (concurrent orchestrator won the race between step 1 and step 5).
+6. Submit reviewer executor.
+
+The two-tier protection:
+- **Eligibility filter** (`findReviewableTasks`): `reviewing` tasks are never returned — the dispatch is not even attempted.
+- **Post-fetch check** (step 2): catches the race window where two orchestrators both read `in_review`, one commits first and pushes `reviewing`, then the second fetches and sees it before trying to commit.
 
 **`claimFix` (fix-claim guard — `claim-fix.ts`):**
 - Current: `if (last?.action === "fix_started") return already_claimed`
