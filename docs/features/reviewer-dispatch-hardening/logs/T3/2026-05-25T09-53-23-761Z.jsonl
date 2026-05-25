@@ -1,0 +1,1346 @@
+{"at":"2026-05-25T09:53:23.761Z","by":"norepy@tiendv.dev","type":"run_started"}
+Query: ## Workspace context
+
+You are an autonomous coding agent working on workspace workspace.
+Your working directory is 
+/agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/impl.
+
+## Task
+
+```yaml
+id: T3
+title: Log-scan guard removal
+repo: workflow
+status: in_progress
+depends_on:
+  - T2
+blocked_reason: null
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T3
+execution:
+  actor_type: agent
+  requires_human_review: true
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T09:53:01.386Z
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/335
+  status: open
+log:
+  - action: created
+    by: tiendv.52@gmai.com
+    at: 2026-05-25T05:35:08Z
+    note: Task created during reviewer-dispatch-hardening task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:50:23.265Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:53:01.386Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:53:13.691Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/product-spec.md,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/329"
+    rag_query: Log-scan guard removal reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+```
+
+## Description and subtasks
+
+(tasks.md not found at 
+/agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/mgmt/docs/features/reviewe
+r-dispatch-hardening/tasks.md)
+
+## Technical design
+
+# Technical Design
+
+## Feature
+- Feature ID: `reviewer-dispatch-hardening`
+- Title: Reviewer dispatch hardening — reviewing status guard + executor env 
+separation
+
+## Current State
+
+### Log-scan guards (three locations)
+
+**`eligibility/match.ts` — `findReviewableTasks`** (line 492):
+```ts
+t.log?.action !== "reviewer_started"
+```
+Returns tasks eligible for reviewer dispatch. The log-scan predicate is the only
+guard against dispatching a second reviewer while one is already running.
+
+**`pr/dispatch-reviewer.ts`** (line 142):
+```ts
+if (lastEntry?.action === "reviewer_started") { return "claim_lost"; }
+```
+Secondary guard inside `dispatchReviewer` — runs after fetching the latest task 
+YAML. If this guard were the only one, concurrent orchestrators could still both
+pass it if neither had yet pushed a `reviewer_started` entry.
+
+**`task/claim-fix.ts`** (line 79):
+```ts
+if (last?.action === "fix_started") return { won: false, reason: 
+"already_claimed" };
+```
+Guard inside `claimFixTask`. `claim-fix.ts` already sets `task.status = 
+"in_progress"` in the same claim commit (line 89) — the log scan is entirely 
+redundant given that status check.
+
+### Token / MCP audit gaps
+
+**`dispatch-review-result.ts`**: writes `reviewer_complete` and 
+`review_incomplete` log entries but never spreads `token_usage`, `cost_usd`, or 
+`mcp_usage`. The `ReviewerResult` ABI type (`abi/src/types.ts`) does not define 
+these fields.
+
+**Fix executor reap path**: fix executor completions route to the `kind="impl"` 
+branch of the reap loop, which calls `dispatch.ts`. `dispatch.ts` DOES write 
+`token_usage`/`cost_usd` on `run_completed` and `blocked` entries — fix executor
+token tracking is already correct.
+
+**RAG / GitNexus mid-session**: the executor extracts `rag_query` and 
+`gitnexus_query` events from stdout after the run (`extractRagQueries`, 
+`extractGitNexusQueries`) and emits them to the log sink (jsonl). These events 
+are never placed in `result.json`, so the orchestrator never sees them and they 
+never reach the task YAML. Only `rag_pre_flight` (written by the orchestrator 
+before spawn) is visible in the task audit trail.
+
+### `MAX_TURNS` pass-through
+
+`main.ts` line 441:
+```ts
+MAX_TURNS: String(config.budget.max_iterations),
+```
+`config.budget.max_iterations` comes from the agent YAML 
+(`budget.max_iterations`). The orchestrator reads this and injects it as 
+`MAX_TURNS` in `extraEnv`. Because `SubProcessAdapter.submit()` builds `childEnv
+= { ...process.env, ...extraEnv, ...abivars }`, the executor receives 
+`MAX_TURNS` through `extraEnv`.
+
+The executor reads `process.env.MAX_TURNS ?? "200"`. Since `...process.env` is 
+spread first and `...extraEnv` overwrites it, any ambient `MAX_TURNS` in the 
+operator environment is overridden by the agent YAML value. This coupling 
+between the agent YAML and the executor's turn budget is a hidden dependency.
+
+`dispatch-reviewer.ts` also passes `MAX_TURNS: String(maxTurns)` from its 
+`DispatchReviewerOptions.maxTurns` parameter.
+
+## Problem Framing
+
+**What specifically needs to change:**
+1. `findReviewableTasks` log-scan predicate removed; status check (`reviewing` 
+absent from results) is sufficient.
+2. `dispatchReviewer` claim guard replaced with `task.status === "reviewing"` 
+post-fetch check; claim commit sets `task.status = "reviewing"`.
+3. `claimFixTask` log-scan guard replaced with `task.status === "in_progress"` 
+(already set in the same commit).
+4. `ReviewerResult` type extended with `token_usage`, `cost_usd`, `mcp_usage` 
+(optional).
+5. `dispatch-review-result.ts` spreads those fields on `reviewer_complete` and 
+`review_incomplete` log entries.
+6. Executor includes `mcp_usage` in `result.json`; same field spread by all reap
+paths.
+7. `MAX_TURNS` removed from `extraEnv` in `main.ts` and `dispatch-reviewer.ts`; 
+`MAX_TURNS` documented in docker-compose as an orchestrator-service env var 
+(executor inherits via `...process.env`).
+8. `CLAUDE.md` adds `reviewing` status, full transitions, explicit audit-only 
+note for `reviewer_started`/`fix_started`.
+
+**What must remain stable:**
+- Fix executor token tracking (`dispatch.ts` `run_completed`/`blocked` entries) 
+— already correct, no changes.
+- `claim-fix.ts` SHA-based push contention resolution (lines 106–134) — not 
+touched.
+- `dispatchReviewResult` routing logic (`passed`/`change_requested`/`escalate`) 
+— not touched.
+- `check-in-review.ts` PR poll — not touched; it checks `status === "in_review"`
+which remains valid (reviewer sets task to `reviewing` before dispatch; `passed`
+result leaves task as `in_review` for PR poll to detect merge).
+- Agent YAML `budget.max_iterations` field — remains valid; orchestrator still 
+reads it for other internal budgeting (`budgetTokens`). Only the `MAX_TURNS` 
+extraEnv injection is removed.
+
+**Assumptions already fixed:**
+- Fix executor (`kind="fix"`) routes through `kind="impl"` in the reap loop → 
+`dispatch.ts` → token tracking already works.
+- `SubProcessAdapter` spreads `...process.env` first — executor inherits the 
+full orchestrator environment including any ambient `MAX_TURNS`.
+- `reviewing` is a new status value; it does not exist in any current task YAML.
+No migration needed.
+
+## Constraints
+
+- `reviewing` must be added to the `TaskStatus` union in the orchestrator's task
+types before any dispatch code references it.
+- Removing `MAX_TURNS` from `extraEnv` means the executor falls back to 
+`process.env.MAX_TURNS ?? "200"`. Operators must set `MAX_TURNS` in 
+docker-compose to preserve current behavior; the default 200 is safe but may 
+differ from per-workspace agent YAML values.
+- `reviewing` tasks must NOT be returned by `findReviewableTasks` — they are 
+already claimed. The eligibility filter `status in ` naturally excludes them.
+- The `passed` result path in `dispatch-review-result.ts` leaves task status as 
+`in_review` (the PR poll detects merge). After this feature, the reviewer runs 
+while status is `reviewing`; when it finishes with `passed`, the orchestrator 
+transitions the task back to `in_review` before the PR poll picks it up. This 
+requires one additional status write in the `passed` branch of 
+`dispatch-review-result.ts`.
+
+## Options Considered
+
+### Option A — Status-only guard (no log entry change)
+Keep `reviewer_started` and `fix_started` log entries; just stop using them as 
+dispatch guards. Replace all three log-scan predicates with status checks.
+
+- Pros: minimal blast radius; log entries remain for historical context.
+- Cons: log entries have no machine purpose — their continued presence creates 
+maintenance confusion ("why do we still write these?").
+- Chosen: Yes, but with CLAUDE.md explicitly documenting them as audit-only. 
+Removing them is a separate future cleanup.
+
+### Option B — Remove log entries entirely
+Stop writing `reviewer_started` and `fix_started` in the claim commit.
+
+- Pros: removes dead machine state.
+- Cons: breaks existing log consumers that may display these entries; requires a
+bigger audit of all log readers; out of scope for this feature.
+- Chosen: No — too broad. Log entries are retained as audit-only.
+
+### Option C — Separate `mcp_usage` file per executor run
+Write a `mcp_usage_<handle>.json` sidecar instead of embedding in `result.json`.
+
+- Pros: doesn't widen the ABI contract.
+- Cons: orchestrator needs a second file read per completion; more complex 
+cleanup; doesn't flow naturally into the task log.
+- Chosen: No — extend `result.json` and `ReviewerResult` directly.
+
+## Chosen Design
+
+**Option A for log guards** + extend ABI types for audit fields.
+
+### 1. `reviewing` status — three-file change (workflow repo)
+
+**`task/types.ts`** — add `"reviewing"` to `TaskStatus` union.
+
+**`eligibility/match.ts` — `findReviewableTasks`:**
+```ts
+// Before
+(t) => (t.status === "in_review" || t.status === "review_incomplete")
+       && !!t.pr?.url
+       && t.log?.action !== "reviewer_started"
+
+// After
+(t) => (t.status === "in_review" || t.status === "review_incomplete")
+       && !!t.pr?.url
+```
+
+**`pr/dispatch-reviewer.ts`** — claim guard:
+```ts
+// Before (line 134-145): check task.status and lastEntry.action
+if (task.status !== "in_review" && task.status !== "review_incomplete") { ... }
+const lastEntry = task.log;
+if (lastEntry?.action === "reviewer_started") { return "claim_lost"; }
+
+// After: status-only guards
+if (task.status === "reviewing") {
+  emit({ type: "reviewer_already_claimed", ... });
+  return "claim_lost";   // <- actually "skip" semantics; see below
+}
+if (task.status !== "in_review" && task.status !== "review_incomplete") {
+  emit({ type: "reviewer_claim_lost", details: `task status is ${task.status}` 
+});
+  return "claim_lost";
+}
+// Claim: set status = "reviewing" before push
+task.status = "reviewing";
+task.log.push({ action: "reviewer_started", ... }); // audit only
+```
+
+Note on "skip" vs "claim_lost": both return `"claim_lost"` to the caller for 
+backward compatibility. The distinction (`reviewing` = already claimed vs 
+`in_review` push-rejected = lost race) is captured in the emitted event type.
+
+**`pr/dispatch-reviewer.ts`** — `passed` result: after reviewer completes with 
+`passed`, the task must transition back to `in_review` for the PR poll to detect
+the merge. This transition is written in `dispatch-review-result.ts` `passed` 
+branch:
+```ts
+case "passed": {
+  // Reset status to in_review so the PR poll can detect merge.
+  mutateTaskYamlDirect({ ..., status: "in_review", logEntry: { action: 
+"reviewer_complete", ... } });
+  ...
+}
+```
+
+**`task/claim-fix.ts`** — fix-claim guard:
+```ts
+// Before (line 79)
+if (last?.action === "fix_started") return { won: false, reason: 
+"already_claimed" };
+
+// After
+if (task.status === "in_progress") return { won: false, reason: 
+"already_claimed" };
+```
+
+### 2. Token and MCP audit (ABI + executor + dispatch-review-result)
+
+Audit fields are namespaced under the executor kind. This lets the orchestrator 
+record per-executor telemetry without assuming a single shape across executor 
+types (Claude, Hermes, future kinds).
+
+**`abi/src/types.ts`** — extend `ReviewerResult` and `ExecutorResult` with a 
+`executor_audit` namespace:
+```ts
+// Claude-specific audit data (token counts, MCP calls)
+export interface ClaudeExecutorAudit {
+  token_usage?: { input: number; output: number; model?: string };
+  mcp_usage?: {
+    rag_queries: Array<{ query: string; result_length: number }>;
+    gitnexus_queries: Array<{ tool: string; arguments: Record<string, unknown>; 
+result_length: number }>;
+  };
+  // Note: cost_usd lives on ExecutorAudit (top level) — it is executor-agnostic
+}
+
+// Top-level audit: cost is shared across all executor kinds; per-kind data is 
+namespaced
+export interface ExecutorAudit {
+  cost_usd?: number;           // universal — any executor kind populates this
+  claude?: ClaudeExecutorAudit;
+  // hermes?: HermesExecutorAudit;  // T7 will add
+}
+
+export interface ReviewerResult {
+  terminal_status: ReviewerTerminalStatus;
+  verdict: ReviewerTerminalStatus;
+  confidence: number;
+  notes: string;
+  review_url?: string;
+  self_review_skipped?: boolean;
+  executor_audit?: ExecutorAudit;   // populated by executor; omitted when 
+unavailable
+}
+```
+
+`ExecutorResult` gains the same `executor_audit?: ExecutorAudit` field (impl and
+fix executors also produce it).
+
+**`executors/claude/src/index.ts`** — after extracting RAG/GitNexus queries, 
+build the audit block and include it in `claudeResult` before writing 
+`result.json`:
+```ts
+const ragQueries = spawnResult.stdout ? extractRagQueries(spawnResult.stdout) : 
+[];
+const gitnexusQueries = spawnResult.stdout ? 
+extractGitNexusQueries(spawnResult.stdout) : [];
+const claudeAudit: ClaudeExecutorAudit = {
+  ...(claudeResult.token_usage && { token_usage: claudeResult.token_usage }),
+  ...((ragQueries.length > 0 || gitnexusQueries.length > 0) && {
+    mcp_usage: { rag_queries: ragQueries, gitnexus_queries: gitnexusQueries },
+  }),
+};
+const executorAudit: ExecutorAudit = {
+  ...(claudeResult.cost_usd !== undefined && { cost_usd: claudeResult.cost_usd 
+}),
+  ...(Object.keys(claudeAudit).length > 0 && { claude: claudeAudit }),
+};
+if (Object.keys(executorAudit).length > 0) {
+  claudeResult.executor_audit = executorAudit;
+}
+```
+The existing `emit({ type: "rag_query", ...rq })` calls remain for the log sink.
+
+**`task/dispatch-review-result.ts`** — spread `executor_audit` on all log 
+entries:
+```ts
+// change_requested branch
+logEntry: {
+  action: "reviewer_complete",
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
+  ...
+}
+// review_incomplete branch (default case)
+logEntry: {
+  action: "review_blocked",
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
+  ...
+}
+// passed branch (new status reset entry)
+logEntry: {
+  action: "reviewer_complete",
+  ...(result.executor_audit && { executor_audit: result.executor_audit }),
+}
+```
+
+**`task/dispatch.ts`** — `run_completed` and `blocked` entries: add 
+`executor_audit` spread. The flat `token_usage`/`cost_usd` fields on the log 
+entry are replaced by `executor_audit.cost_usd` (shared) and 
+`executor_audit.claude.token_usage` (Claude-specific).
+
+### 3. `MAX_TURNS` env separation
+
+**`main.ts`** — remove from `extraEnv`:
+```ts
+// Remove this line:
+MAX_TURNS: String(config.budget.max_iterations),
+```
+
+**`pr/dispatch-reviewer.ts`** — remove `MAX_TURNS` from `extraEnv`; remove 
+`maxTurns` parameter from `DispatchReviewerOptions`.
+
+**`docker-compose.platform.yml` + 
+`runtime/orchestrator/templates/docker-compose.local-docker.yml`** — add to 
+orchestrator service `environment`:
+```yaml
+environment:
+  MAX_TURNS: ${MAX_TURNS:-200}   # executor turn budget; inherited by all 
+executor subprocesses
+```
+
+**`runtime/orchestrator/docs/OPERATOR-GUIDE.md`** — document `MAX_TURNS` as an 
+operator env var set on the orchestrator service; not injected 
+per-executor-spawn.
+
+**`abi/docs/abi-spec.md`** — note that `MAX_TURNS` is executor-read via 
+inherited environment, not an orchestrator-injected ABI variable.
+
+### 4. CLAUDE.md (management-repo)
+
+Add `reviewing` to task status values list. Update transition table:
+```
+in_review → reviewing         (orchestrator, when reviewer executor is 
+dispatched)
+reviewing → in_review         (orchestrator, when reviewer completes with passed
+— PR poll then detects merge)
+reviewing → change_requested  (orchestrator, when reviewer completes with 
+change_requested)
+reviewing → review_incomplete (orchestrator, when reviewer exits without a valid
+result)
+review_incomplete → reviewing (orchestrator, when re-dispatching on next cycle)
+```
+Replace `review_incomplete → in_review` with `review_incomplete → reviewing`.
+
+Add explicit note to log actions table: `reviewer_started` and `fix_started` are
+**audit-only** — the orchestrator must not read these entries to make any 
+dispatch decision.
+
+## Dependency Analysis
+
+- **Hard**: `TaskStatus` union in `task/types.ts` must include `"reviewing"` 
+before `dispatch-reviewer.ts` or `match.ts` reference it — T2 (ABI/types) must 
+land before T3 (log-scan removal).
+- **Hard**: `ExecutorAudit` / `ClaudeExecutorAudit` interfaces and 
+`executor_audit` field on `ReviewerResult` must land before 
+`dispatch-review-result.ts` spreads them — T2 before T4.
+- **Hard**: `HermesExecutorAudit` type and `hermes?` on `ExecutorAudit` must 
+exist before Hermes executor code references them — T2 before T7. T4 must 
+establish the pattern before T7 mirrors it — T4 before T7.
+- **Soft**: CLAUDE.md (T1) and MAX_TURNS cleanup (T5) are independent of the 
+type changes; can ship in any order.
+- **No external dependencies** — all changes are within `workflow` and 
+`management-repo`.
+
+## Parallelization / Blocking Analysis
+
+```
+T1: management-repo — CLAUDE.md: reviewing status + transitions + audit-only 
+note
+  └── Can begin now — no blockers
+
+T2: workflow — ABI types: reviewing in TaskStatus union; ExecutorAudit + 
+ClaudeExecutorAudit + HermesExecutorAudit interfaces; executor_audit in 
+ReviewerResult + ExecutorResult
+  └── Can begin now — no blockers
+  └── T1 and T2 run in parallel
+  │
+  T3: workflow — Log-scan guard removal: match.ts + dispatch-reviewer.ts + 
+claim-fix.ts
+      └── BLOCKED on T2 (reviewing must be a valid TaskStatus before dispatch 
+code uses it)
+
+  T4: workflow — Token/MCP audit (Claude): dispatch-review-result.ts + 
+dispatch.ts + executors/claude/src/index.ts
+      └── BLOCKED on T2 (ReviewerResult.executor_audit must exist before 
+dispatch-review-result spreads it)
+      └── T3 and T4 run in parallel (touch different files)
+
+  T7: workflow — executor_audit (Hermes): executors/hermes/src/index.ts + 
+HermesExecutorAudit type
+      └── BLOCKED on T2 (HermesExecutorAudit type and hermes? on ExecutorAudit 
+must exist first)
+      └── BLOCKED on T4 (pattern established by Claude executor must be in place
+to mirror)
+      └── T4 and T7 run in parallel once T2 is done (touch different executor 
+files)
+
+T5: workflow — MAX_TURNS cleanup: remove from extraEnv in main.ts + 
+dispatch-reviewer.ts; docker-compose + OPERATOR-GUIDE.md
+  └── Can begin now — no blockers
+  └── T5 runs in parallel with T1, T2, T3, T4, T7
+
+        T6: workflow — Tests: reviewing guard paths; token/MCP audit paths 
+(Claude + Hermes); MAX_TURNS inheritance
+              └── BLOCKED on T3 (log-scan removal must be in place to test new 
+guard)
+              └── BLOCKED on T4 (Claude executor_audit must be in place to test)
+              └── BLOCKED on T5 (MAX_TURNS removal must be in place to test env 
+inheritance)
+              └── BLOCKED on T7 (Hermes executor_audit must be in place to test)
+```
+
+## Repository Impact
+
+| Repo | Why touched |
+|---|---|
+| `management-repo` | CLAUDE.md: add `reviewing` status, update transition 
+table, mark log actions audit-only |
+| `workflow` | `abi/src/types.ts`: 
+`ExecutorAudit`/`ClaudeExecutorAudit`/`HermesExecutorAudit` interfaces, 
+`executor_audit` on `ReviewerResult`/`ExecutorResult`; `eligibility/match.ts`, 
+`pr/dispatch-reviewer.ts`, `task/claim-fix.ts`: log-scan removal; 
+`task/dispatch-review-result.ts`, `task/dispatch.ts`, 
+`executors/claude/src/index.ts`: executor_audit propagation (Claude); 
+`executors/hermes/src/index.ts`: executor_audit propagation (Hermes); `main.ts`,
+docker-compose: MAX_TURNS cleanup; tests |
+
+## Validation and Release Impact
+
+**Tests required (`workflow` repo):**
+- `findReviewableTasks` returns `in_review` and `review_incomplete` tasks 
+regardless of last log entry; does not return `reviewing` tasks.
+- `dispatchReviewer`: task already `reviewing` after fetch → returns 
+`claim_lost` without push; task `in_review` → claim sets status `reviewing`, 
+pushes, submits executor; push rejected → `claim_lost`.
+- `claimFixTask`: task `in_progress` after fetch → returns `already_claimed`; 
+`change_requested` with no prior claim → wins.
+- `dispatchReviewResult`: `change_requested` result with 
+`token_usage`/`mcp_usage` → log entry has those fields; `review_incomplete` → 
+same; `passed` → task status reset to `in_review`.
+- Claude executor `mcp_usage`: `result.json` contains `mcp_usage` when 
+RAG/GitNexus calls present in stdout; absent otherwise.
+- Hermes executor `executor_audit.hermes`: always present in result.json 
+(minimum `{}`); populated with token/turn data when available from Hermes 
+stdout.
+- `MAX_TURNS` not present in any `extraEnv` construction in orchestrator code 
+(static grep check in test).
+
+**Migration / config impact:**
+- Existing tasks with `status: "in_review"` — unaffected; `reviewing` is a new 
+forward-only status.
+- `MAX_TURNS` env var: operators must set `MAX_TURNS` in docker-compose (or 
+their operator env) to match their current agent YAML `budget.max_iterations` 
+value. If not set, executor defaults to 200. This is a required ops step on 
+upgrade.
+- `ReviewerResult` type extension is backward-compatible — all new fields are 
+optional.
+
+**Rollout:**
+- T1 (CLAUDE.md) can ship independently.
+- T2–T7 ship together in the `workflow` repo; no feature flag needed. T6 gates 
+on T7 completing.
+- The `MAX_TURNS` change requires an ops step (docker-compose update) before 
+deploying T5.
+
+**Backward compatibility:**
+- `reviewer_started` and `fix_started` log entries remain in existing task YAMLs
+— they are now audit-only. Nothing reads them for dispatch decisions after this 
+ships.
+- Tasks currently `in_review` with a `reviewer_started` last-log entry: after 
+this ships, `findReviewableTasks` will return them (log scan removed). The 
+`dispatchReviewer` post-fetch check will see `in_review` (not `reviewing`) and 
+proceed normally.
+
+## Available skills
+
+- /airflow-3
+- /backend-engineer
+- /browser-qa-frontend
+- /data-engineer
+- /directus-vue-engineer
+- /figma-mcp
+- /frontend-engineer
+- /gitnexus-mcp
+- /go-best-practices
+- /heroui-react
+- /python-best-practices
+- /python-data
+- /rag-context
+- /rag-enforce
+- /review-pr
+- /start-implementation
+- /typescript-best-practices
+
+## Your scope
+
+You own the complete task delivery — code changes, git, and PR.
+
+1. **Code**: Make the required changes in 
+/agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/impl. Commit incrementally
+   with `feat(reviewer-dispatch-hardening/T3): <what>` messages as you go.
+2. **Tests**: Run the project's full test suite. Fix all failures before 
+continuing.
+3. **Push**: `git push origin feature/reviewer-dispatch-hardening-T3`
+4. **Open PR** via the GitHub REST API (always draft):
+
+   ```sh
+   curl -s -X POST \
+     -H "Authorization: token $GITHUB_TOKEN" \
+     -H "Accept: application/vnd.github+json" \
+     "https://api.github.com/repos/tiendv89/agent-workflow/pulls" \
+     -d '{"title":"feat(reviewer-dispatch-hardening/T3): <short 
+description>","body":"...","head":"feature/reviewer-dispatch-hardening-T3","base
+":"feature/reviewer-dispatch-hardening","draft":true}'
+   ```
+
+   Capture the `html_url` from the response.
+
+5. **Write result**: `printf '%s' 
+'{"terminal_status":"in_review","pr_url":"<html_url>"}' > 
+"/tmp/executor-result-T3.json"`
+
+If tests cannot be fixed after 3 attempts, still open the PR as a draft and 
+write
+`{"terminal_status":"blocked","blocked_reason":"tests_failed","pr_url":"<html_ur
+l>"}`
+to `/tmp/executor-result-T3.json`. Do not stop without writing 
+`/tmp/executor-result-T3.json`.
+Initializing agent...
+  ⚠ tirith security scanner enabled but not available — command scanning will use pattern matching only
+────────────────────────────────────────
+
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 skill     start-implementation  0.1s
+  ┊ 📚 skill     rag-context  0.1s
+  ┊ 📚 skill     rag-enforce  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me follow the start-implementation skill. First, check for prior state and understand the project structure.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      handover.md  0.6s
+  ┊ 🔎 find      *  0.5s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    This looks like a templates/workspace management repo, not the actual workflow repo. Let me check the workspace configuration to find the right repo.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 🔎 preparing search_files…
+  ┊ 📖 read      /agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/impl/HERMES.md  0.4s
+  ┊ 🔎 find      workspace.yaml  0.2s
+  ┊ 📖 preparing read_file…
+  ┊ 💻 preparing terminal…
+  ┊ 📖 read      /agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/mgmt/workspace.yaml  0.4s
+  ┊ 💻 $         ls -la /agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    The workflow repo is at env:WORKFLOW_LOCAL_PATH. Let me check that environment variable.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         echo $WORKFLOW_LOCAL_PATH  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Good, the workflow repo is at /agent/data/agent-workflow. Let me verify it's there and check the branch and current state.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git branch --show-current && git status --short && echo "---" && ls -la  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    We're on main. The task branch should be feature/reviewer-dispatch-hardening-T3. Let me check what branches exist and set up the right branch.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git branch -a  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git fetch origin && git checkout feature/reviewer-dispatch-hardening && git log --oneline -10  2.6s [exit 128]
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git remote -v && echo "---" && cat /agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/ssh_key | head -c 50  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         eval "$(ssh-agent -s)" && ssh-add /agent/data/exec-1b218086-cfee-4699-8b90-68c4ef9cd4b8/ssh_key && cd /agent/data/agent-workflow && git fetch origin  4.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Good. Now let me set up the T3 branch from feature/reviewer-dispatch-hardening.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git checkout feature/reviewer-dispatch-hardening && git log --oneline -10  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    T2 is already merged in. Now let me create the T3 branch and start working. Let me first load the TypeScript skill and query RAG for additional context on the specific files I'll be modifying.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 skill     typescript-best-practices  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me create the T3 branch and start examining the files. Let me first query GitNexus and check the project structure.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git checkout -b feature/reviewer-dispatch-hardening-T3 && echo "---" && ls -la src/ 2>/dev/null || echo "no src dir"  0.2s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      eligibility/match.ts  0.3s
+  ┊ 🔎 find      package.json  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me use GitNexus and read the three files I need to modify. Let me first query for the symbols and then read the files.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ⚡ preparing mcp_gitnexus_query…
+  ┊ ⚡ preparing mcp_gitnexus_query…
+  ┊ ⚡ preparing mcp_gitnexus_query…
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    GitNexus not available. Let me read the three files directly and find the specific functions.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/eligibility/match.ts  0.4s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.4s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now I have a clear picture. Let me verify that T2's work (reviewing in TaskStatus) is in place, and check what T5 already did.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      TaskStatus  0.3s
+  ┊ 🔎 find      types.ts  0.2s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/task/types.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    reviewing is confirmed in TaskStatus. Now let me also check the full dispatch-reviewer.ts to understand the complete current state, and view what T5 already changed.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me check the existing tests to understand what needs to be updated.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      *.test.ts  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me read the relevant test files to understand the test patterns and what needs updating.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      reviewer_started|findReviewableTasks|reviewing  0.2s
+  ┊ 🔎 grep      reviewer_started|reviewing|log-scan|log_scan  0.2s
+  ┊ 🔎 grep      fix_started|already_claimed|in_progress  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me read the relevant test files to understand the patterns.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/tests/match.test.ts  0.4s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me set up a task list and start the implementation. First, let me also quickly check the match test for reviewer-related tests and the dispatch-reviewer test.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 📖 preparing read_file…
+  ┊ 🔎 grep      findReviewable|reviewer|in_review|review_incomplete  0.2s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now I have a complete picture. Let me set up the task list and start implementing.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      7 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Starting implementation. Task 1: Remove log-scan predicate from findReviewableTasks.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 1 task(s)  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/eligibility/match.ts  6.9s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/eligibility/match.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/eligibility/match.ts
+@@ -488,7 +488,6 @@
+     ["in_review", "review_incomplete"],
+     (t) =>
+       (t.status === "in_review" || t.status === "review_incomplete") &&
+-      !!t.pr?.url &&
+-      t.log[t.log.length - 1]?.action !== "reviewer_started",
++      !!t.pr?.url,
+   );
+ }
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Change applied. The LSP errors are pre-existing (missing node types, etc.) — not related to my edit. Let me commit and move on.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "feat(reviewer-dispatch-hardening/T3): remove log-scan predicate from findReviewableTasks"  0.3s [exit 128]
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git config user.email "norepy@tiendv.dev" && git config user.name "Hermes Agent"  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "feat(reviewer-dispatch-hardening/T3): remove log-scan predicate from findReviewableTasks"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Task 1 done. Now task 2: Replace the log-scan guard in dispatch-reviewer.ts with a status-based check.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 1/7 ✓  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.9s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts
+@@ -134,11 +134,10 @@
+     return "claim_lost";
+   }
+ 
+-  // Duplicate-claim guard: if the last log action is already `reviewer_started`,
+-  // another orchestrator instance claimed this cycle first.
+-  const lastEntry = task.log[task.log.length - 1];
+-  if (lastEntry?.action === "reviewer_started") {
+-    emit({ type: "reviewer_claim_lost", task_id: taskId, feature_id: featureId, details: "last log entry is reviewer_started — already claimed" });
++  // Duplicate-claim guard: if another orchestrator already set this task
++  // to `reviewing`, they won the claim race.
++  if (task.status === "reviewing") {
++    emit({ type: "reviewer_already_claimed", task_id: taskId, feature_id: featureId, details: "task already in reviewing status" });
+     return "claim_lost";
+   }
+ 
+@@ -149,11 +148,11 @@
+     return "claim_lost";
+   }
+ 
+-  // ── 3. Write reviewer_started log entry and push (first-push-wins) ───────────
+-  // When retrying from review_incomplete, reset status back to in_review as part
+-  // of the claim commit so the task lifecycle reflects the active review state.
++  // ── 3. Write reviewer_started log entry (audit-only) and push (first-push-wins) ──
++  // Set status to `reviewing` so other orchestrator instances see the claim.
++  // When retrying from review_incomplete, status also transitions to reviewing.
+   const now = new Date().toISOString();
+-  task.status = "in_review";
++  task.status = "reviewing";
+   task.log.push({
+     action: "reviewer_started",
+     by: effectiveEmail,
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me check if the reviewer_already_claimed emit event type exists in the event types.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      reviewer_already_claimed|reviewer_claim_lost  0.2s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      type.*=.*reviewer|reviewer_.*type|DispatchEvent|ReviewEmit  0.2s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      emit.*type|type:.*reviewer  0.2s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      reviewer_  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I used reviewer_already_claimed but the existing event type is reviewer_claim_lost. Since emit is untyped, let me revert to reviewer_claim_lost for consistency. The distinction is in the details string.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.6s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts
+@@ -137,7 +137,7 @@
+   // Duplicate-claim guard: if another orchestrator already set this task
+   // to `reviewing`, they won the claim race.
+   if (task.status === "reviewing") {
+-    emit({ type: "reviewer_already_claimed", task_id: taskId, feature_id: featureId, details: "task already in reviewing status" });
++    emit({ type: "reviewer_claim_lost", task_id: taskId, feature_id: featureId, details: "task already in reviewing status" });
+     return "claim_lost";
+   }
+ 
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Good. Commit task 2.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "feat(reviewer-dispatch-hardening/T3): replace log-scan guard with reviewing status check in dispatchReviewer"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Task 2 done. Now task 3: Replace fix_started log-scan guard in claim-fix.ts.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 2/7 ✓  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts  0.9s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts
+@@ -75,8 +75,7 @@
+   catch (e) { return { won: false, reason: "push_rejected", details: `yaml read failed: ${gitErrDetails(e)}` }; }
+ 
+   if (task.status !== "change_requested") return { won: false, reason: "task_not_change_requested" };
+-  const last = task.log[task.log.length - 1];
+-  if (last?.action === "fix_started") return { won: false, reason: "already_claimed" };
++  if (task.status === "in_progress") return { won: false, reason: "already_claimed" };
+ 
+   // ── 3. Pre-commit jitter ──────────────────────────────────────────────────
+   if (!skipJitter) {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now commit task 3.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "feat(reviewer-dispatch-hardening/T3): replace fix_started log-scan guard with status check in claimFixTask"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now task 4: Update dispatch-reviewer.test.ts.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 3/7 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I need to update two sets of tests in dispatch-reviewer.test.ts. Let me update the "already claimed" test section first.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts  2.3s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts
+@@ -236,19 +236,12 @@
+   });
+ });
+ 
+-// ── 3. claim_lost when last log entry is reviewer_started ─────────────────────
++// ── 3. claim_lost when task already in reviewing status ─────────────────────
+ 
+ describe("dispatchReviewer — claim_lost when already claimed", () => {
+-  it("returns claim_lost if the last log entry is reviewer_started", async () => {
++  it("returns claim_lost if task status is 'reviewing'", async () => {
+     const task = makeTask({
+-      log: [
+-        {
+-          action: "reviewer_started",
+-          by: "other-agent@example.com",
+-          at: "2026-05-08T10:00:00Z",
+-          note: "Already claimed by another reviewer.",
+-        },
+-      ],
++      status: "reviewing",
+     });
+     const wsRoot = makeWorkspaceWithTask(task);
+     const events: Record<string, unknown>[] = [];
+@@ -265,23 +258,18 @@
+     expect(outcome).toBe("claim_lost");
+     expect(events.some((e) => e.type === "reviewer_claim_lost")).toBe(true);
+     const ev = events.find((e) => e.type === "reviewer_claim_lost")!;
+-    expect(String(ev.details)).toMatch(/reviewer_started/);
+-  });
+-
+-  it("allows a new claim when reviewer_started is not the last entry", async () => {
++    expect(String(ev.details)).toMatch(/reviewing/);
++  });
++
++  it("allows a claim when task status is in_review regardless of log entries", async () => {
+     const task = makeTask({
++      status: "in_review",
+       log: [
+         {
+           action: "reviewer_started",
+           by: "other-agent@example.com",
+           at: "2026-05-08T10:00:00Z",
+           note: "First reviewer dispatch.",
+-        },
+-        {
+-          action: "blocked",
+-          by: "other-agent@example.com",
+-          at: "2026-05-08T11:00:00Z",
+-          note: "Reviewer blocked mid-review.",
+         },
+       ],
+     });
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the "reviewer_started log entry on success" tests to verify status is reviewing.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts  1.1s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts
+@@ -374,7 +374,7 @@
+ // ── 6. reviewer_started log entry written to task YAML ───────────────────────
+ 
+ describe("dispatchReviewer — reviewer_started log entry on success", () => {
+-  it("writes reviewer_started to task YAML on disk", async () => {
++  it("writes reviewer_started log entry and sets status to reviewing on disk", async () => {
+     const task = makeTask();
+     const wsRoot = makeWorkspaceWithTask(task);
+ 
+@@ -384,6 +384,7 @@
+     await dispatchReviewer(makeDispatchOpts(wsRoot));
+ 
+     const updatedTask = readTaskFromDisk(wsRoot, FEATURE_ID, TASK_ID);
++    expect(updatedTask.status).toBe("reviewing");
+     expect(updatedTask.log.some((e) => e.action === "reviewer_started")).toBe(true);
+     const entry = updatedTask.log.find((e) => e.action === "reviewer_started")!;
+     expect(entry.by).toBe(GIT_AUTHOR_EMAIL);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the top-level test comment.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts  0.6s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-reviewer.test.ts
+@@ -8,7 +8,7 @@
+  * Covers:
+  *   1. dispatchReviewer — claim_lost when checkout of task branch fails
+  *   2. dispatchReviewer — claim_lost when task status is not in_review
+- *   3. dispatchReviewer — claim_lost when last log entry is reviewer_started
++ *   3. dispatchReviewer — claim_lost when task already in reviewing status
+  *   4. dispatchReviewer — claim_lost when push of claim commit is rejected with no recovery
+  *   5. dispatchReviewer — dispatched on successful claim + async submit
+  *   6. dispatchReviewer — reviewer_started log entry written to task YAML on success
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit task 4.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "test(reviewer-dispatch-hardening/T3): update dispatch-reviewer tests for status-based guard"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now task 5: Update claim-fix-task.test.ts.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 4/7 ✓  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts  1.1s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts
+@@ -164,9 +164,9 @@
+     expect(onDisk.status).toBe("in_review");
+   });
+ 
+-  it("returns already_claimed when last log action is fix_started", async () => {
++  it("returns already_claimed when task status is in_progress", async () => {
+     const task = makeChangeRequestedTask(TASK_ID);
+-    task.log.push({ action: "fix_started", by: "other@test.com", at: "2026-05-09T11:00:00Z", note: "Fix agent claimed." });
++    task.status = "in_progress";
+     const dir = makeWorkspaceDir(task);
+ 
+     const result = await claimFixTask({
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now I need to update the integration test at line 270 that expects task_not_change_requested or push_rejected — it should also accept already_claimed.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts  0.2s [Could not find a match for old_string in the ...]
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts  0.6s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/claim-fix-task.test.ts
+@@ -296,9 +296,10 @@
+       skipJitter: true,
+     });
+ 
+-    // B sees task is in_progress after checkout → task_not_change_requested
++    // B sees task is in_progress after checkout → already_claimed, or task_not_change_requested,
++    // or push_rejected depending on timing
+     expect(resultB.won).toBe(false);
+-    expect(["task_not_change_requested", "push_rejected"]).toContain(
++    expect(["already_claimed", "task_not_change_requested", "push_rejected"]).toContain(
+       (resultB as { won: false; reason: string }).reason,
+     );
+   });
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit task 5.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "test(reviewer-dispatch-hardening/T3): update claim-fix tests for status-based guard"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All code and test changes done. Now let me run the test suite.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 5/7 ✓  0.0s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/package.json  0.8s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && ls node_modules/.package-lock.json 2>/dev/null && echo "installed" || echo "not installed"  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npm install 2>&1  3.6s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/abi && ls node_modules/.package-lock.json 2>/dev/null && echo "abi installed" || (npm install 2>&1 && echo "abi installed now")  3.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me run the relevant tests.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx vitest run tests/dispatch-reviewer.test.ts tests/claim-fix-task.test.ts tests/match.test.ts 2>&1  16.7s [exit 1]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I see two issues:
+    
+    1. claim-fix.ts: The already_claimed guard needs to come BEFORE the task_not_change_requested guard, since in_progress is a subset of !== change_requested.
+    
+    2. dispatch-reviewer.test.ts: The @workflow/runtime-abi package needs building.
+    
+    3. match.test.ts: Need to check if these are pre-existing failures.
+    
+    Let me fix the claim-fix guard ordering first.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts  0.6s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts
+@@ -74,8 +74,8 @@
+   try { task = normalizeTaskKeyOrder(parseYaml(readFileSync(yamlPath, "utf-8")) as Record<string, unknown>); }
+   catch (e) { return { won: false, reason: "push_rejected", details: `yaml read failed: ${gitErrDetails(e)}` }; }
+ 
++  if (task.status === "in_progress") return { won: false, reason: "already_claimed" };
+   if (task.status !== "change_requested") return { won: false, reason: "task_not_change_requested" };
+-  if (task.status === "in_progress") return { won: false, reason: "already_claimed" };
+ 
+   // ── 3. Pre-commit jitter ──────────────────────────────────────────────────
+   if (!skipJitter) {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me build the ABI package and fix the dispatch-reviewer test resolution.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/abi && npm run build 2>&1  4.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now re-run the tests.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx vitest run tests/claim-fix-task.test.ts tests/dispatch-reviewer.test.ts 2>&1  16.5s [exit 1]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    The claim-fix tests pass now. The dispatch-reviewer test failures look like an email mismatch. Let me check the email resolution in dispatch-reviewer.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.4s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      effectiveEmail|effectiveName|gitAuthorEmail  0.1s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      effectiveEmail  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         echo "REVIEWER_GIT_AUTHOR_EMAIL=$REVIEWER_GIT_AUTHOR_EMAIL"  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    The REVIEWER_GIT_AUTHOR_EMAIL env var is overriding the test value. That's a pre-existing env issue — not related to my changes. Let me now run the full test suite to get complete results.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx vitest run 2>&1  103.5s [exit 1]
+  (tip) That tool ran for a while. Use /verbose to cycle tool-progress display modes (all -> new -> off -> verbose). This tip only shows once.
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I need to fix 3 test failures caused by my changes. The rest are pre-existing. Let me fix the tests in dispatch-controller.test.ts and match-branch-state.test.ts.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-controller.test.ts  0.4s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me update the three tests that were testing the old log-scan behavior.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-controller.test.ts  1.1s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-controller.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/dispatch-controller.test.ts
+@@ -270,7 +270,9 @@
+     expect(results[0].task.id).toBe(TASK_ID);
+   });
+ 
+-  it("skips in_review tasks where last log action is reviewer_started", async () => {
++  it("includes in_review tasks regardless of last log action (log-scan removed)", async () => {
++    // After reviewer-dispatch-hardening/T3: log-scan guard removed from
++    // findReviewableTasks. Duplicate-claim protection is now via task.status === "reviewing".
+     const task = makeTask({
+       status: "in_review",
+       log: [{ action: "reviewer_started", by: "bot@test.com", at: "2026-01-01T00:00:00Z" }],
+@@ -281,7 +283,8 @@
+     const { findReviewableTasks } = await import("../src/eligibility/match.js");
+     const results = findReviewableTasks(makeAgentConfig() as Parameters<typeof findReviewableTasks>[0], wsDir);
+ 
+-    expect(results).toHaveLength(0);
++    expect(results).toHaveLength(1);
++    expect(results[0].task.id).toBe(TASK_ID);
+   });
+ 
+   it("skips in_review tasks with no pr.url", async () => {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the match-branch-state.test.ts tests.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts  1.0s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts
+@@ -559,7 +559,9 @@
+     expect(result[0]!.task.status).toBe("in_review");
+   });
+ 
+-  it("excludes task when task branch shows in_review but last log action is reviewer_started", () => {
++  it("includes task when task branch shows in_review even with reviewer_started log (log-scan removed)", () => {
++    // After T3: log-scan predicate removed from findReviewableTasks.
++    // Tasks with reviewer_started in log are no longer excluded at the eligibility stage.
+     const workspaceRoot = join(testDir, "ws-reviewable-claimed");
+     mkdirSync(workspaceRoot);
+     buildWorkspaceWithTask(workspaceRoot, "in_review", "https://github.com/org/repo/pull/12");
+@@ -578,7 +580,8 @@
+     } as ReturnType<typeof spawnSync>);
+ 
+     const result = findReviewableTasks(agentConfig, workspaceRoot);
+-    expect(result).toHaveLength(0);
++    expect(result).toHaveLength(1);
++    expect(result[0]!.task.status).toBe("in_review");
+   });
+ 
+   it("finds task when task branch has review_incomplete with pr.url set", () => {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the second match-branch-state test.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts  0.5s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts → b//agent/data/agent-workflow/runtime/orchestrator/tests/match-branch-state.test.ts
+@@ -610,7 +610,8 @@
+     expect(result[0]!.task.status).toBe("review_incomplete");
+   });
+ 
+-  it("excludes review_incomplete task when last log action is reviewer_started", () => {
++  it("includes review_incomplete task even with reviewer_started log (log-scan removed)", () => {
++    // After T3: log-scan predicate removed from findReviewableTasks.
+     const workspaceRoot = join(testDir, "ws-reviewable-incomplete-claimed");
+     mkdirSync(workspaceRoot);
+     buildWorkspaceWithTask(workspaceRoot, "in_progress", "https://github.com/org/repo/pull/15");
+@@ -629,7 +630,8 @@
+     } as ReturnType<typeof spawnSync>);
+ 
+     const result = findReviewableTasks(agentConfig, workspaceRoot);
+-    expect(result).toHaveLength(0);
++    expect(result).toHaveLength(1);
++    expect(result[0]!.task.status).toBe("review_incomplete");
+   });
+ 
+   it("skips done task — pre-filter catches terminal state, no branch read", () => {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit the test fixes for the three remaining test failures caused by my changes.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "test(reviewer-dispatch-hardening/T3): update findReviewableTasks tests for log-scan removal"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me verify the fixed tests pass.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx vitest run tests/dispatch-controller.test.ts tests/match-branch-state.test.ts tests/dispatch-reviewer.test.ts tests/claim-fix-task.test.ts 2>&1  18.8s [exit 1]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All test failures from my changes are fixed. The 2 remaining dispatch-reviewer failures are pre-existing (env var REVIEWER_GIT_AUTHOR_EMAIL override). Let me verify TypeScript compilation.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx tsc --noEmit 2>&1 | head -30  12.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    There's a TypeScript narrowing issue. Let me look at the code around line 139.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    The TS error makes sense — after the in_review || review_incomplete guard at line 132, TypeScript narrows the status type, making the reviewing check unreachable. The reviewing guard is logically redundant since:
+    
+    1. After git checkout, the task YAML reflects the latest origin
+    2. If another instance already set reviewing, it would be caught by line 132 (since reviewing ≠ in_review or review_incomplete)
+    3. If no one has set it yet, status is in_review/review_incomplete and the reviewing check can never fire
+    
+    Let me remove the redundant guard and add a clarifying comment.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts  0.5s
+  ┊ review diff
+a//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts → b//agent/data/agent-workflow/runtime/orchestrator/src/pr/dispatch-reviewer.ts
+@@ -134,12 +134,12 @@
+     return "claim_lost";
+   }
+ 
+-  // Duplicate-claim guard: if another orchestrator already set this task
+-  // to `reviewing`, they won the claim race.
+-  if (task.status === "reviewing") {
+-    emit({ type: "reviewer_claim_lost", task_id: taskId, feature_id: featureId, details: "task already in reviewing status" });
+-    return "claim_lost";
+-  }
++  // Duplicate-claim safety: the guard above already ensures the task is in_review
++  // or review_incomplete. If another orchestrator already claimed this task and set
++  // status to `reviewing`, the checkout + guard above would catch it (reviewing is
++  // neither in_review nor review_incomplete). The push rejection (first-push-wins
++  // below) covers the remaining race window where two instances read the same state
++  // before either pushes.
+ 
+   const reviewCycleCount = countReviewCycles(task);
+ 
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx tsc --noEmit 2>&1  10.6s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    TS compiles clean. Let me commit and re-run the dispatch-reviewer test.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git add -A && git commit -m "fix(reviewer-dispatch-hardening/T3): remove redundant reviewing guard narrowed by TS"  0.3s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow/runtime/orchestrator && npx vitest run tests/dispatch-reviewer.test.ts 2>&1  5.4s [exit 1]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All my changes work correctly. Only 2 pre-existing failures remain (env var REVIEWER_GIT_AUTHOR_EMAIL overriding test email). Let me verify final state.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/agent-workflow && git log --oneline -10  0.1s
+  ┊ 💻 $         cd /agent/data/agent-workflow && git diff feature/reviewer-dispatch-hardening..HEAD --stat  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me do a final review of the key source file changes and also run the critical test files.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/task/claim-fix.ts  0.4s
+  ┊ 📖 read      /agent/data/agent-workflow/runtime/orchestrator/src/eligibility/match.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Everything looks correct. Let me finalize the task list.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 7/7 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    T3 implementation complete. Here's a summary of all changes:
+    
+    Summary: T3 — Log-scan guard removal
+    
+    Source changes (3 files)
+    
+    1. eligibility/match.ts — Removed log-scan predicate from findReviewableTasks. The status filter (in_review/review_incomplete) + pr.url presence is now sufficient.
+    
+    2. pr/dispatch-reviewer.ts — Replaced log-scan guard with status-based flow. The existing in_review || review_incomplete guard already catches reviewing tasks at checkout. Changed claim commit to set task.status = "reviewing" (audit-only reviewer_started log entry preserved).
+    
+    3. task/claim-fix.ts — Replaced last?.action === "fix_started" with task.status === "in_progress". Moved the guard before the change_requested check for correct semantics.
+    
+    Test changes (4 files)
+    
+    4. dispatch-reviewer.test.ts — Updated for status-based guards, added reviewing assertion
+    5. claim-fix-task.test.ts — Updated for status-based already_claimed, expanded accepted reasons
+    6. dispatch-controller.test.ts — Updated to expect inclusion regardless of log entries
+    7. match-branch-state.test.ts — Updated two findReviewableTasks tests
+    
+    Commits (7 total)
+    All incremental commits on feature/reviewer-dispatch-hardening-T3. TypeScript compiles clean. Test suite: 10/12 dispatch-reviewer tests pass (2 pre-existing env-var failures), all claim-fix and match-branch-state tests pass.
+╰──────────────────────────────────────────────────────────────────────────────╯
+{"at":"2026-05-25T10:08:08.679Z","by":"norepy@tiendv.dev","type":"run_ended","details":{"outcome":"blocked"}}
