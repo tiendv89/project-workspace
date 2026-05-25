@@ -8,6 +8,7 @@ blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T5
 execution:
   actor_type: agent
+  requires_human_review: true
   last_updated_by: norepy@tiendv.dev
   last_updated_at: 2026-05-25T05:42:59.262Z
 pr:
