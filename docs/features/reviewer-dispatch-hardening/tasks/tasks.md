@@ -13,7 +13,8 @@ Machine state lives in `tasks/T<n>.yaml` — do not edit status, PR, or log fiel
 | T3 | 2 | Log-scan guard removal | T2 |
 | T4 | 2 | Token/MCP audit — executor_audit propagation | T2 |
 | T5 | 1 | MAX_TURNS env separation | — |
-| T6 | 3 | Tests — reviewing guard + audit + MAX_TURNS | T3, T4, T5 |
+| T6 | 3 | Tests — reviewing guard + audit + MAX_TURNS | T3, T4, T5, T7 |
+| T7 | 3 | executor_audit — Hermes executor output | T2, T4 |
 
 ---
 
@@ -222,11 +223,59 @@ No executor code changes. `process.env.MAX_TURNS ?? "200"` in `executors/claude/
 
 ---
 
+## T7 — executor_audit — Hermes executor output
+
+### Description
+
+Bring Hermes executor to parity with the Claude executor for `executor_audit` output. T4 wires `executor_audit.claude` into result.json for the Claude executor — every Hermes run currently produces no audit entry in the task YAML cost trail.
+
+**`runtime/abi/src/types.ts`:**
+Extend the `ExecutorAudit` interface (added in T2) with a `hermes` key:
+```ts
+export interface HermesExecutorAudit {
+  token_usage?: { input?: number; output?: number };
+  turns?: number;
+}
+export interface ExecutorAudit {
+  claude?: ClaudeExecutorAudit;
+  hermes?: HermesExecutorAudit;  // add this
+}
+```
+Fields are all optional — populate only what Hermes actually exposes in its output.
+
+**`runtime/executors/hermes/src/index.ts`:**
+After Phase 5 completes (`spawnResult` available), extract whatever token/turn data Hermes emits to stdout. Build a `HermesExecutorAudit` object and merge it into result.json:
+
+- If Hermes wrote its own result.json (Phase 6 short-circuit path): read it, add `executor_audit: { hermes: hermesAudit }`, write it back before emitting `phase_done`.
+- If the wrapper is writing result.json itself (fallback path): include `executor_audit: { hermes: hermesAudit }` directly in the object written.
+
+To discover what Hermes exposes, inspect `spawnResult.stdout` for structured JSON lines or summary output. If nothing structured is available, emit `turns` only (count newlines or session turns from stdout). Do not leave `executor_audit` absent — write `{ hermes: {} }` as a minimum so the orchestrator knows the session ran under Hermes.
+
+**`runtime/abi/docs/abi-spec.md`:**
+Document `HermesExecutorAudit` shape alongside `ClaudeExecutorAudit`. Note that `hermes.token_usage` fields are populated only when the Hermes CLI exposes them.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Read `runtime/abi/src/types.ts` — add `HermesExecutorAudit` interface; add `hermes?` to `ExecutorAudit`
+- [ ] Read `runtime/executors/hermes/src/index.ts` — inspect `spawnResult` shape; identify available stdout data
+- [ ] Build `hermesAudit` from available stdout/result data after Phase 5
+- [ ] Phase 6 short-circuit path: augment result.json with `executor_audit.hermes` before `phase_done` emit
+- [ ] Fallback path: include `executor_audit.hermes` in wrapper-written result.json
+- [ ] Update `abi/docs/abi-spec.md` — document `HermesExecutorAudit` shape
+- [ ] Run `npx tsc --noEmit` — zero errors
+- [ ] Run full test suite — all passing
+
+---
+
 ## T6 — Tests — reviewing guard + audit + MAX_TURNS
 
 ### Description
 
-Write or update unit and integration tests covering all changes from T3, T4, and T5. This task must land after T3, T4, and T5 are complete so tests can exercise the final code.
+Write or update unit and integration tests covering all changes from T3, T4, T5, and T7. This task must land after all of those are complete so tests can exercise the final code.
 
 **`eligibility/match.ts` tests:**
 - `findReviewableTasks` returns `in_review` tasks regardless of last log entry value.
@@ -255,18 +304,25 @@ Write or update unit and integration tests covering all changes from T3, T4, and
 **`MAX_TURNS` static check:**
 - Test (or CI check) that `grep -r "MAX_TURNS" runtime/orchestrator/src/` returns zero results outside expected comment lines.
 
+**Hermes `executor_audit` tests (T7):**
+- Phase 6 short-circuit path: when Hermes writes result.json with `terminal_status: in_review`, wrapper augments it with `executor_audit.hermes` before emitting `phase_done`.
+- Fallback path: wrapper-written result.json includes `executor_audit.hermes`.
+- `executor_audit.hermes` is never absent — minimum `{}` when no structured stdout available.
+- `HermesExecutorAudit` type compiles cleanly alongside `ClaudeExecutorAudit` under `ExecutorAudit`.
+
 ### Required skills
 
 - typescript-best-practices
 
 ### Subtasks
 
-- [ ] Identify existing test files for `match.ts`, `dispatch-reviewer.ts`, `claim-fix.ts`, `dispatch-review-result.ts`, `dispatch.ts`, `executors/claude/src/index.ts`
+- [ ] Identify existing test files for `match.ts`, `dispatch-reviewer.ts`, `claim-fix.ts`, `dispatch-review-result.ts`, `dispatch.ts`, `executors/claude/src/index.ts`, `executors/hermes/src/index.ts`
 - [ ] Add/update `findReviewableTasks` tests — log-scan independence + `reviewing` exclusion
 - [ ] Add/update `dispatchReviewer` claim guard tests — skip on `reviewing`; claim on `in_review`; push-rejected
 - [ ] Add/update `claimFixTask` tests — `in_progress` guard; `change_requested` win
 - [ ] Add/update `dispatchReviewResult` tests — `executor_audit` on all branches; `passed` → `in_review` reset
-- [ ] Add/update executor tests — `executor_audit.claude` in `result.json` when MCP calls present/absent
+- [ ] Add/update Claude executor tests — `executor_audit.claude` in `result.json` when MCP calls present/absent
+- [ ] Add Hermes executor tests — `executor_audit.hermes` present in both short-circuit and fallback paths
 - [ ] Add static grep check for `MAX_TURNS` in `extraEnv` (as test or CI lint step)
 - [ ] Run full test suite — all passing
 - [ ] Run `npx tsc --noEmit` — zero errors
