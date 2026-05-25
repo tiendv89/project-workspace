@@ -1,7 +1,7 @@
 id: T2
 title: Tab-first click behavior
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/digital-factory-ui-bugfix-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T18:45:59.676Z
+  last_updated_at: 2026-05-25T18:47:55.602Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/51
   status: open
@@ -79,3 +79,7 @@ log:
       definition but no longer used."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/51#issuecomment-4536434652
     at: 2026-05-25T18:45:59.676Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-25T18:47:55.602Z
+    note: Fix agent claimed.
