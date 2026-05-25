@@ -1,7 +1,7 @@
 id: T1
 title: Mode-scoped paged query layer
 repo: digital-factory-ui
-status: ready
+status: in_review
 depends_on: []
 blocked_reason: null
 branch: "feature/digital-factory-ui-bugfix-T1"
@@ -24,3 +24,7 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-25T11:53:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: in_review
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T01:11:38+0700
+    note: Manually set to in_review.
