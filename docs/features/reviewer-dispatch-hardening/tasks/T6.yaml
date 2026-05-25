@@ -1,7 +1,7 @@
 id: T6
-title: "Tests — reviewing guard + audit + MAX_TURNS"
+title: Tests — reviewing guard + audit + MAX_TURNS
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T3
   - T4
@@ -15,10 +15,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T18:17:09.653Z
+  last_updated_at: 2026-05-25T18:52:45.604Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/230
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/339
   status: open
@@ -39,10 +39,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T17:13:25.355Z
     rag_context_injected: true
-    rag_summary: >-
-      Retrieved 5 chunks: github.com/tiendv89/project-workspace/pull/335,
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/335,
       docs/features/reviewer-dispatch-hardening/technical-design.md,
-      github.com/tiendv89/project-workspace/pull/336
+      github.com/tiendv89/project-workspace/pull/336"
     rag_query: Tests — reviewing guard + audit + MAX_TURNS reviewer-dispatch-hardening
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: run_completed
@@ -57,13 +57,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T17:40:56.881Z
     review_url: https://github.com/tiendv89/agent-workflow/pull/230#pullrequestreview-4358086271
-    note: >-
-      🔴 Missing behavioral findReviewableTasks tests — match.test.ts has no tests
-      for reviewing exclusion or review_incomplete/in_review inclusion (tasks.md
-      subtask partially unimplemented). 🔴 Missing Hermes executor_audit.hermes
-      integration tests — index.ts:809-814 short-circuit augmentation and
-      index.ts:847 fallback write have no covering test (tasks.md subtask partially
-      unimplemented). CI passed 4/4. 🟢 PR title uses wrong type/description.
+    note: 🔴 Missing behavioral findReviewableTasks tests — match.test.ts has no
+      tests for reviewing exclusion or review_incomplete/in_review inclusion
+      (tasks.md subtask partially unimplemented). 🔴 Missing Hermes
+      executor_audit.hermes integration tests — index.ts:809-814 short-circuit
+      augmentation and index.ts:847 fallback write have no covering test
+      (tasks.md subtask partially unimplemented). CI passed 4/4. 🟢 PR title
+      uses wrong type/description.
   - action: fix_started
     by: norepy@tiendv.dev
     at: 2026-05-25T17:42:36.392Z
@@ -83,15 +83,17 @@ log:
   - action: unblocked
     by: matthew@swellnetwork.io
     at: 2026-05-26T01:37:56+0700
-    note: >-
-      Human unblock after manual review (cycle 2 escalation resolved). PR #230
+    note: "Human unblock after manual review (cycle 2 escalation resolved). PR #230
       approved via /review-pr — both Cycle 1 blockers addressed. Resetting to
-      in_review per unblock-target rule (pr.url is set).
+      in_review per unblock-target rule (pr.url is set)."
   - action: unblocked
     by: matthew@swellnetwork.io
     at: 2026-05-26T01:50:43+0700
-    note: >-
-      Fixed YAML parse errors introduced by prior edit: multi-line plain scalar in
-      reviewer_complete note (converted to >- block scalar) and unblocked log entry
-      appended outside log list. Restored pr.url, workspace_pr, branch, and
-      status: in_review.
+    note: "Fixed YAML parse errors introduced by prior edit: multi-line plain scalar
+      in reviewer_complete note (converted to >- block scalar) and unblocked log
+      entry appended outside log list. Restored pr.url, workspace_pr, branch,
+      and status: in_review."
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T18:52:45.604Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
