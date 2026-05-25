@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T05:42:59.262Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T05:43:10.855Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/feature-branch-pr-review-gate/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/96,
+      github.com/tiendv89/agent-workflow/pull/138"
+    rag_query: MAX_TURNS env separation reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
