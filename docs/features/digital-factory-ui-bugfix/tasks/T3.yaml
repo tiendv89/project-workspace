@@ -1,11 +1,10 @@
 id: T3
 title: Feature/card/status rendering fixes
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: no_changes
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T3
 execution:
@@ -53,3 +52,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-25T18:36:49.881Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T03:47:01+0700
+    note: Human unblocked — Hermes no_changes block resolved. Reset to ready for re-claim.
