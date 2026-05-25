@@ -1,7 +1,7 @@
 id: T1
 title: CLAUDE.md — reviewing status + transitions
 repo: management-repo
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T1
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-25T14:27:44+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T07:29:45.196Z
 pr:
   url: null
   status: null
@@ -68,7 +68,10 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-25T14:27:44+0700
-    note: >-
-      Reset to ready — Hermes briefing fix merged (agent-workflow PR #222).
+    note: "Reset to ready — Hermes briefing fix merged (agent-workflow PR #222).
       no_changes was a false negative from commitAndPush seeing a clean tree
-      after Hermes committed incrementally.
+      after Hermes committed incrementally."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T07:29:45.196Z
+    note: Claimed via git-based claim protocol.
