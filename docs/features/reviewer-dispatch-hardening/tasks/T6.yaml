@@ -34,3 +34,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T17:13:12.784Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T17:13:25.355Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/335,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/336"
+    rag_query: Tests — reviewing guard + audit + MAX_TURNS reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
