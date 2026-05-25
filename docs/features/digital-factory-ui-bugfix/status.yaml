@@ -1,0 +1,144 @@
+feature_id: digital-factory-ui-bugfix
+title: Digital Factory UI Bug Fix
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks — T1, T2, T3, and T4 are ready.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-25T10:10:24Z
+    review_comment: Product spec approved. Feature advances to technical design.
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T10:10:24Z
+        comment: Product spec approved. Feature advances to technical design.
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-25T11:51:27Z
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T10:12:01Z
+        comment: Technical design drafted and submitted for review.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T10:22:23Z
+        comment: Technical design clarified to explicitly select Option B.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T10:38:40Z
+        comment: Technical design reviewed against reference feature and tightened around current code boundaries.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T10:49:28Z
+        comment: Technical design extended to cover Feature tab Task Docs label, content loading, and Markdown rendering.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T18:16:16+0700
+        comment: Technical design revised to include Feature mode card ID/title hierarchy and title-width priority.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T18:32:35+0700
+        comment: Technical design revised to make single-click open feature/task tabs and remove modal-detail-specific scope.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T11:51:27Z
+        comment: Technical design approved. Feature advances to task planning.
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-25T11:53:13Z
+    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, and T4 activated.
+    review_history:
+      - status: draft
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T18:38:39+0700
+        comment: Task breakdown updated and split into six implementation tasks.
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T11:51:27Z
+        comment: Task breakdown submitted for approval after technical design approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-25T11:53:13Z
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, and T4 activated.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T16:12:13+07:00
+    note: Feature scaffold created for a UI bugfix in digital-factory-ui.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:10:24Z
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:12:01Z
+    note: Technical design updated and submitted for review.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:22:23Z
+    note: Technical design clarified to explicitly select Option B from the options considered.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:38:40Z
+    note: Technical design reviewed against cost-and-rag-optimization and current digital-factory-ui code boundaries.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:49:28Z
+    note: Technical design extended to cover Feature tab Task Docs label, content loading, and Markdown rendering.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T18:16:16+0700
+    note: Technical design revised to include Feature mode card ID/title hierarchy and title-width priority.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T18:32:35+0700
+    note: Technical design revised to make single-click open feature/task tabs and remove modal-detail-specific scope.
+  - stage: tasks
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T18:38:39+0700
+    note: Task breakdown updated and split into six implementation tasks.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T11:51:27Z
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T11:51:27Z
+    note: Task breakdown submitted for approval after technical design approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T11:53:13Z
+    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, and T4 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
