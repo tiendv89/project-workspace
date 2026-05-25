@@ -1,9 +1,9 @@
 id: T2
 title: ABI types — ExecutorAudit + reviewing in TaskStatus
 repo: workflow
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: executor_failed:executor_crashed (exit 1)
+blocked_reason: null
 blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T2
 execution:
@@ -43,3 +43,7 @@ log:
     by: norepy@tiendv.dev
     note: executor_crashed (exit 1)
     at: 2026-05-25T05:45:30.766Z
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: "2026-05-25T05:50:45Z"
+    note: Reset to ready — executor crash was Hermes workdir bug (fixed in agent-workflow PR #220), not a task issue.
