@@ -1,0 +1,1839 @@
+{"at":"2026-05-25T17:54:40.031Z","by":"norepy@tiendv.dev","type":"run_started"}
+Query: ## Workspace context
+
+You are an autonomous coding agent working on workspace workspace.
+Your working directory is 
+/agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl.
+
+## Task
+
+```yaml
+id: T1
+title: Mode-scoped paged query layer
+repo: digital-factory-ui
+status: in_progress
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/digital-factory-ui-bugfix-T1
+execution:
+  actor_type: agent
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T17:54:23.951Z
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T10:16:02Z
+    note: Task drafted by tech-lead from approved product spec and updated 
+technical
+      design.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-25T11:53:13Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T17:54:23.951Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T17:54:30.343Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/product-spec.md,
+      docs/features/digital-factory-ui-bugfix/technical-design.md"
+    rag_query: Mode-scoped paged query layer digital-factory-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+```
+
+## Description and subtasks
+
+## T1 — Mode-scoped paged query layer
+
+### Description
+Extend the board query path so Feature mode and Task mode send search, filter, 
+sort, page, and limit to the correct backend collection route while preserving 
+paged response metadata. This task is the data-flow foundation for pagination 
+but does not need to implement visible pagination controls.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Add or expose pagination-aware request paths for workspace features and 
+workspace tasks.
+- [ ] Preserve `{ items, total, page, limit }` metadata instead of unwrapping 
+paged responses to arrays in board/search surfaces.
+- [ ] Serialize `title`, `status`, `page`, `limit`, and `sort` into the active 
+mode-specific request.
+- [ ] Ensure Feature mode uses the features endpoint and Task mode uses the 
+tasks endpoint.
+- [ ] Reset page to `1` when search, filter, or sort changes.
+- [ ] Keep query state and pagination metadata in one shared source of truth for
+board views.
+
+## Technical design
+
+# Technical Design
+
+## Feature
+- Feature ID: `digital-factory-ui-bugfix`
+- Title: Digital Factory UI Bug Fix
+- Implementation repo: `digital-factory-ui`
+
+## 1. Current State
+The current `digital-factory-ui` behavior has several concrete UI problems:
+- Task mode feature rows show the wrong status.
+- Mode-level list loading still leans on the workspace root payload instead of 
+mode-specific list endpoints.
+- Feature and task lists do not have pagination behavior.
+- Single-clicking features or tasks currently opens modal detail surfaces; the 
+desired primary action is to open the matching Feature tab or Task tab.
+- Task repository metadata in the Task tab must be plain text, not a link. 
+Modal-detail repository behavior is no longer part of this bugfix because modal 
+detail is being removed from the single-click flow.
+- Feature cards in feature mode do not yet have the intended copy hierarchy: 
+feature ID should be secondary and smaller than the title, while the title 
+should get as much visible width as possible.
+- Feature cards in feature mode must not show a status tag.
+- The Feature tab Tasks panel must expose nested tabs as `Tasks List` and `Task 
+Docs`; `Task Docs` must load `tasks.md` from the document URL/path and render it
+as formatted Markdown.
+
+Relevant implementation points in `digital-factory-ui`:
+- `src/services/workflow-backend/types.ts` already defines `PagedFeatures` and 
+`PagedTasks` with `items`, `total`, `page`, and `limit`.
+- `src/services/workflow-backend/client.ts` currently unwraps paged responses to
+arrays via `unwrapItems()`, which discards pagination metadata.
+- `src/services/workflow-backend/query-params.ts` already supports `title`, 
+`status`, `page`, `limit`, and `sort` for features, and also supports `task_id` 
+and `repo` for task routes.
+- `src/features/board/lib/backend-list-params.ts` currently applies `limit=100` 
+but does not consistently set `page=1` or a default sort for board list 
+requests.
+- `src/features/board/hooks/useBackendFeatureSearch.ts` and 
+`src/features/board/hooks/useBackendTaskSearch.ts` return only result rows and 
+loading/error state, not pagination metadata.
+- `src/features/board/components/FeatureBoardView/FeatureListRow.tsx` is the 
+Feature mode card surface. It should render the feature ID as compact secondary 
+metadata and let the title occupy the primary text block.
+- `src/features/board/components/FeatureBoardView/FeatureBoardView.tsx` 
+currently wires Feature mode card single-click to selection/modal state and 
+double-click to tab opening. The primary click should open the Feature tab.
+- `src/features/board/components/TaskBoardView/TaskBoardView.tsx`, 
+`src/features/board/components/FeatureRow/FeatureRow.tsx`, and task card wiring 
+currently route task selection through modal state. The primary task click 
+should open the Task tab.
+- `src/features/board/components/FeatureTabView/FeatureTasksPanel.tsx` already 
+has the document-content path through `useDocumentContent()` and 
+`MarkdownBlock`, but the visible tab label and fallback copy still need to match
+`Task Docs`.
+
+Current repo boundaries:
+- `project-workspace` owns the planning artifacts.
+- `digital-factory-ui` owns the implementation.
+- `workflow-backend` is the read-only backend dependency for list/search data.
+
+Current constraints:
+- The frontend must keep the backend as the source of truth for feature/task 
+lists.
+- The frontend must preserve the current query state when the user pages, 
+filters, or searches.
+- Browser verification is required because the defects are visible in the UI.
+- Existing `workflow-backend` client behavior should remain backward compatible 
+for call sites that only need arrays; pagination-aware code can use an additive 
+API.
+- Feature mode card layout must stay compact enough for the kanban-style table 
+while prioritizing title readability over metadata decoration.
+
+## 2. Problem Framing
+What needs to change:
+- Feature mode must query the feature list endpoint.
+- Task mode must query the task list endpoint.
+- Search, filter, sort, and pagination must all be backend-driven per mode.
+- The UI needs explicit pagination state and controls instead of only `limit`.
+- The frontend must preserve pagination metadata from backend list responses 
+instead of unwrapping everything to arrays.
+- Single-clicking a feature must open the Feature tab, not a feature detail 
+modal.
+- Single-clicking a task must open the Task tab, not a task detail modal.
+- Task tab must show repository as text only.
+- Feature cards in feature mode must stop rendering a status tag.
+- Feature mode cards must show `feature.id` as smaller, secondary metadata and 
+allocate the primary card width to the title so the title is visible as fully as
+possible.
+- Task-mode feature rows must render the feature lifecycle status from the 
+feature response, not a task-derived proxy.
+- Feature tab Tasks panel must show `Tasks List` and `Task Docs`, and `Task 
+Docs` must render `tasks.md` Markdown from the backend document content or 
+document URL.
+
+What must remain stable:
+- Workspace selection and other unrelated dashboard flows.
+- Existing backend route ownership.
+- Existing feature/task identity conventions.
+- No backend schema or write-path change for this bugfix.
+
+Assumptions already fixed:
+- The workspace ID for the bug report is `e2a00270-3358-4264-8aa6-785279feb5e4`.
+- The backend exposes separate collection endpoints for features and tasks.
+- The UI is allowed to keep the current backend contract and only change how it 
+queries and renders it.
+- The existing paged response shape is `{ items, total, page, limit }`.
+- Feature card title text is more important than showing the ID prominently; ID 
+remains useful for scanning and copy context, but it must not steal title space.
+- Modal detail surfaces are not part of the target single-click interaction path
+for this bugfix.
+
+## 3. Options Considered
+
+### Option A: Keep loading the workspace root payload and filter locally
+- Pros:
+  - Lowest immediate code churn.
+  - No new query-state plumbing.
+- Cons:
+  - Cannot satisfy mode-specific query requirements.
+  - Cannot add real pagination.
+  - Keeps the status mapping bug alive.
+  - Ties list rendering to stale or oversized root payloads.
+- Implementation impact:
+  - Small code change, but it would not fix the reported defects.
+- Dependency impact:
+  - No backend dependency change, but the UI would still be incorrect.
+
+### Option B: Use existing mode-specific list endpoints with shared query state
+- Pros:
+  - Matches the required backend contract.
+  - Makes search, filter, sort, and pagination consistent per mode.
+  - Keeps backend as source of truth.
+  - Fixes the status and repository rendering bugs in the same data flow.
+- Cons:
+  - More frontend state and request wiring.
+  - Requires a clear pagination metadata contract.
+- Implementation impact:
+  - Moderate refactor in the data layer and list components.
+- Dependency impact:
+  - Depends on the existing list endpoints and their pagination shape.
+
+### Option D: Render Feature mode card ID as secondary metadata and prioritize 
+title width
+- Pros:
+  - Matches the requested visual hierarchy: title first, ID second.
+  - Keeps feature identity visible without making the card feel like an ID-first
+row.
+  - Gives long titles the best chance to render fully by putting title in the 
+primary text block and avoiding large ID/status chips beside it.
+- Cons:
+  - May slightly increase card height if the title wraps.
+  - Requires regression coverage so future compact-card tweaks do not hide the 
+ID or compress the title again.
+- Implementation impact:
+  - Update `FeatureListRow` card layout, typography, and truncation/wrapping 
+behavior.
+  - Keep the feature status tag suppressed in Feature mode cards.
+- Dependency impact:
+  - No backend dependency; this is a frontend rendering-only change.
+
+### Option E: Keep ID and title on one line with equal visual weight
+- Pros:
+  - Minimal markup change.
+  - Keeps cards very compact.
+- Cons:
+  - Does not satisfy the requirement that ID be smaller than title.
+  - Long IDs or badge styling can consume the title width and make titles harder
+to read.
+- Implementation impact:
+  - Small change, but weak UX outcome.
+- Dependency impact:
+  - No backend dependency.
+
+### Option F: Make single-click open tabs and remove modal detail from the 
+primary flow
+- Pros:
+  - Matches the requested interaction model.
+  - Reduces duplicate detail surfaces for the same task/feature content.
+  - Makes single-click behavior consistent with tab-based navigation.
+- Cons:
+  - Requires updating tests that expect modal state on single-click.
+  - Existing modal components may become unused until a separate cleanup removes
+them.
+- Implementation impact:
+  - Rewire Feature mode card primary click to `openFeatureTab(...)`.
+  - Rewire task card/row primary click to `openTaskTab(...)`.
+  - Remove modal-detail-specific acceptance checks from this bugfix.
+- Dependency impact:
+  - No backend dependency; this is frontend interaction wiring.
+
+### Option G: Keep modal on single-click and open tab only through double-click
+- Pros:
+  - Minimal behavior change.
+  - Preserves the existing modal detail path.
+- Cons:
+  - Does not satisfy the requested tab-first behavior.
+  - Keeps two competing detail surfaces active.
+  - Keeps modal-detail repository rendering in scope even though the modal path 
+is no longer desired.
+- Implementation impact:
+  - Small code change, but it leaves the reported behavior in place.
+- Dependency impact:
+  - No backend dependency.
+
+### Option C: Add a new backend endpoint tailored to the UI
+- Pros:
+  - Could normalize response shape and pagination metadata.
+- Cons:
+  - Unnecessary backend churn.
+  - Slower release path.
+  - Expands scope beyond a frontend bugfix.
+- Implementation impact:
+  - Frontend and backend work.
+- Dependency impact:
+  - Adds a backend release dependency the current bug does not need.
+
+## 4. Chosen Design
+Selected approach: **Option B - Use existing mode-specific list endpoints with 
+shared query state**, plus **Option D - Feature mode card ID as secondary 
+metadata with title width prioritized**, plus **Option F - single-click opens 
+tabs and modal detail is removed from the primary flow**.
+
+Option B keeps the existing backend contract, makes mode behavior explicit, and 
+keeps implementation scoped to `digital-factory-ui`.
+
+The chosen implementation uses a shared frontend list-query layer that resolves 
+the active endpoint by mode:
+- Feature mode -> `/api/workspaces/:workspaceId/features`
+- Task mode -> `/api/workspaces/:workspaceId/tasks`
+
+The list-query layer should own:
+- active mode
+- `title`
+- `status`
+- `page`
+- `limit`
+- `sort`
+- request execution
+- pagination metadata normalization
+
+The workflow-backend client should expose pagination-aware list helpers without 
+breaking existing array-returning helpers. The implementation can either:
+- add new helpers such as `searchFeaturesPage()` and 
+`searchWorkspaceTasksPage()`, or
+- change the board-specific hooks to call a lower-level request path that 
+returns `{ items, total, page, limit }`.
+
+Do not rely on `unwrapItems()` for the paginated board/search surfaces because 
+it drops the metadata needed by pagination controls.
+
+The render layer should own:
+- feature lifecycle status display
+- task repository text rendering
+- tab-first feature/task click behavior
+- feature card status-tag suppression
+- feature card ID/title hierarchy
+- Feature tab `Task Docs` label and Markdown rendering
+
+Behavior rules:
+- Initial board list requests use `page=1&limit=100`.
+- Search, filter, and sort changes reset `page` to `1`.
+- Page changes preserve `title`, `status`, `limit`, and `sort`.
+- The active mode always determines the endpoint.
+- Feature mode and task mode never share a local filtered list derived from the 
+workspace root payload.
+- Task route helpers may continue supporting `task_id` and `repo` for existing 
+call sites, but this bugfix only requires task mode board search/filter to drive
+`title`, `status`, `page`, `limit`, and `sort`.
+- Feature mode card single-click opens the Feature tab. It must not open the 
+feature modal detail.
+- Task card single-click opens the Task tab. It must not open the task modal 
+detail.
+- Feature mode cards render the feature ID in a smaller secondary style than the
+title.
+- Feature mode card title uses the primary text area, can wrap within the card, 
+and should only truncate after consuming the available title area.
+- Feature mode cards keep the status tag suppressed; status remains represented 
+by the kanban-style status column/cell, not by an extra card badge.
+- Feature tab nested tasks view uses the visible labels `Tasks List` and `Task 
+Docs`; `Task Docs` fetches or uses inline `tasks.md` content and renders it 
+through the Markdown renderer.
+
+Compatibility considerations:
+- If the backend returns explicit pagination metadata, the UI should use it 
+directly.
+- If metadata is incomplete, the UI should fall back conservatively and avoid 
+inventing page counts.
+- The UI should tolerate backend-supported multi-value `status` encoding without
+hardcoding a single serialization scheme unless the contract already fixes it.
+- Existing tests that assert array-returning helpers should remain valid unless 
+their call site is intentionally migrated to a paged helper.
+- Card layout changes should not alter feature identity or explicit 
+new-tab/session behavior.
+
+Operational / release implications:
+- No migration.
+- No config change expected.
+- Frontend-only rollout, but it depends on the existing backend read contract 
+staying stable.
+
+## 5. Dependency Analysis
+
+Internal dependencies:
+- Mode switch state in `digital-factory-ui`.
+- Existing feature/task list rendering components.
+- Shared request/query serialization code.
+- `workflow-backend` client handling of paged responses.
+- Status/repository/card rendering components.
+- Feature/task click wiring and tab-opening handlers.
+- `FeatureListRow` typography and layout behavior.
+- Feature tab document loading and Markdown rendering path.
+
+External dependencies:
+- `workflow-backend` list endpoints for features and tasks.
+- Backend pagination metadata shape.
+- Backend-supported query params for `title`, `status`, `page`, `limit`, and 
+`sort`.
+- Browser QA against the live UI.
+
+Blocking decisions:
+- Confirm whether the backend list responses expose `total`, `page`, `limit`, 
+`hasNext`, or similar pagination metadata.
+- Confirm the backend's multi-status encoding convention if it is not already 
+standardized by the current list routes.
+
+Unresolved dependency:
+- Exact pagination metadata beyond `{ items, total, page, limit }` is not 
+required. If the backend omits additional fields such as `hasNext`, the frontend
+should derive only conservative next/previous availability from `total`, `page`,
+and `limit`.
+
+## 6. Parallelization / Blocking Analysis
+
+D1: Confirm backend pagination metadata shape and multi-status encoding
+  └── Unblocks pagination control enablement and exact query serialization 
+before T5
+
+T1: Frontend list-query layer - mode-scoped requests and query-state model
+  └── Can begin now — no blockers
+
+T2: Tab-first feature/task click behavior
+  └── Can begin now — no blockers
+
+T3: Feature/card/status rendering fixes
+  └── Can begin now — no blockers
+
+T4: Feature Task Docs markdown panel
+  └── Can begin now — no blockers
+
+T2, T3, and T4 run in parallel.
+
+T5: Pagination controls and page-state wiring
+  └── BLOCKED on D1 (pagination controls need the response metadata and query 
+serialization confirmed)
+  └── BLOCKED on T1 (shared query-state layer must preserve page metadata before
+controls can drive it)
+
+T1, T2, T3, and T4 can start in parallel after task approval.
+T5 starts after T1 is in place and the pagination contract is confirmed.
+
+T6: Regression tests and browser QA
+  └── BLOCKED on T1 (endpoint/query contract must be stable before assertions 
+are meaningful)
+  └── BLOCKED on T2 (tab-first click behavior must be implemented)
+  └── BLOCKED on T3 (status, repository, and feature card hierarchy must be 
+implemented)
+  └── BLOCKED on T4 (Task Docs rendering must be implemented)
+  └── BLOCKED on T5 (pagination controls and page-state behavior must exist 
+before browser QA)
+
+## 7. Repository Impact
+Affected repositories:
+- `digital-factory-ui` - implementation repo where the bugfix lands.
+- `project-workspace` - planning repo where this technical design lives.
+
+No other repo needs a code change for this bugfix.
+
+## 8. Validation and Release Impact
+Testing expectations:
+- Verify the feature endpoint is queried in feature mode with `page`, `limit`, 
+`title`, `status`, and `sort`.
+- Verify the task endpoint is queried in task mode with `page`, `limit`, 
+`title`, `status`, and `sort`.
+- Verify paged response metadata is preserved for board/search pagination 
+controls.
+- Verify search/filter/sort/page actions preserve the active query state and 
+reset `page` only when appropriate.
+- Verify task-mode feature rows render lifecycle status from the feature 
+response.
+- Verify feature single-click opens the Feature tab and does not open the 
+feature modal detail.
+- Verify task single-click opens the Task tab and does not open the task modal 
+detail.
+- Verify task repository is plain text in the Task tab.
+- Verify feature cards in feature mode no longer render a status tag.
+- Verify feature cards render feature ID smaller than the title and let the 
+title use the primary available width.
+- Verify Feature tab nested tasks view labels are `Tasks List` and `Task Docs`.
+- Verify `Task Docs` loads `tasks.md` content from inline backend content or the
+document URL and renders formatted Markdown.
+
+Release impact:
+- Frontend-only rollout.
+- No migration.
+- No persisted data change.
+- Backward compatibility depends on the backend continuing to accept the 
+documented query params and returning usable pagination data.
+
+Handoff impact:
+- The implementation handoff should include the exact query contract used by the
+UI, the pagination behavior, and screenshots or browser QA notes for the 
+affected views.
+
+## Available skills
+
+- /airflow-3
+- /backend-engineer
+- /browser-qa-frontend
+- /data-engineer
+- /directus-vue-engineer
+- /figma-mcp
+- /frontend-engineer
+- /gitnexus-mcp
+- /go-best-practices
+- /heroui-react
+- /python-best-practices
+- /python-data
+- /rag-context
+- /rag-enforce
+- /review-pr
+- /start-implementation
+- /typescript-best-practices
+
+## Your scope
+
+You own the complete task delivery — code changes, git, and PR.
+
+1. **Code**: Make the required changes in 
+/agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl. Commit incrementally
+   with `feat(digital-factory-ui-bugfix/T1): <what>` messages as you go.
+2. **Tests**: Run the project's full test suite. Fix all failures before 
+continuing.
+3. **Push**: `git push origin feature/digital-factory-ui-bugfix-T1`
+4. **Open PR** via the GitHub REST API (always draft):
+
+   ```sh
+   curl -s -X POST \
+     -H "Authorization: token $GITHUB_TOKEN" \
+     -H "Accept: application/vnd.github+json" \
+     "https://api.github.com/repos/tiendv89/digital-factory-ui/pulls" \
+     -d '{"title":"feat(digital-factory-ui-bugfix/T1): <short 
+description>","body":"...","head":"feature/digital-factory-ui-bugfix-T1","base":
+"feature/digital-factory-ui-bugfix","draft":true}'
+   ```
+
+   Capture the `html_url` from the response.
+
+5. **Write result**: `printf '%s' 
+'{"terminal_status":"in_review","pr_url":"<html_url>"}' > 
+"/tmp/executor-result-T1.json"`
+
+If tests cannot be fixed after 3 attempts, still open the PR as a draft and 
+write
+`{"terminal_status":"blocked","blocked_reason":"tests_failed","pr_url":"<html_ur
+l>"}`
+to `/tmp/executor-result-T1.json`. Do not stop without writing 
+`/tmp/executor-result-T1.json`.
+Initializing agent...
+  ⚠ tirith security scanner enabled but not available — command scanning will use pattern matching only
+────────────────────────────────────────
+
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 skill     frontend-engineer  0.1s
+  ┊ 📚 skill     typescript-best-practices  0.1s
+  ┊ 📚 skill     start-implementation  0.1s
+  ┊ 📚 skill     rag-context  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me follow the start-implementation workflow. The briefing already has RAG context injected, so I'll skip re-querying. Let me check the repo state and read the spec documents.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 preparing search_files…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git branch --show-current  0.2s
+  ┊ 🔎 find      handover.md  0.4s
+  ┊ 🔎 find      workspace.yaml  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Good - on the right branch, no prior state. Let me now query RAG for specific implementation context and look at the key source files.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ⚡ preparing mcp_rag_rag_query…
+  ┊ ⚡ preparing mcp_gitnexus_query…
+  ┊ ⚡ preparing mcp_gitnexus_query…
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    MCP tools aren't available — falling back to direct file reads. Let me explore the project structure and find the key source files.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      *  0.1s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      *  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me read the key source files to understand the current state.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/types.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts  0.3s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/query-params.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/index.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me read the board-specific hooks and params files.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/hooks/useBackendFeatureSearch.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/hooks/useBackendTaskSearch.ts  0.3s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/backend-list-params.ts  0.2s [File not found: backend-list-params.ts]
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/board-mode-store.ts  0.3s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/types.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me now read the remaining key files — the board data hook, filter stores, and the index.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/hooks/useBoardData.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/data/load-board-data.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me also look at the KanbanBoard context (which provides board mode and tab routing), the workspaceAdapter, and the package.json for the test setup.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/workspaces/lib/workspaceAdapter.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/package.json  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me check for existing tests and the status-filter store.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 📖 preparing read_file…
+  ┊ 🔎 find      *.test.*  0.1s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/status-filter-store.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me read the existing tests for the client and query-params, and the board-related tests to understand the patterns.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/workflow-backend-client.test.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/workflow-backend-query-params.test.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/board-qa-integration.test.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now I have a complete picture of the codebase. Let me set up my task list and start implementing.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      8 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 1: Add pagination-aware client functions to client.ts. These return full PagedFeatures/PagedTasks objects instead of unwrapping to arrays.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts  5.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts
+@@ -76,6 +76,17 @@
+   return unwrapItems(result);
+ }
+ 
++export async function searchFeaturesPage(
++  workspaceId: string,
++  params?: URLSearchParams,
++): Promise<PagedFeatures> {
++  const qs = params?.toString() ? `?${params.toString()}` : "";
++  const result = await request<FeatureSummary[] | PagedFeatures>(
++    `/api/workspaces/${workspaceId}/features${qs}`,
++  );
++  return normalizePagedFeatures(result);
++}
++
+ export async function getFeature(workspaceId: string, featureId: string): Promise<FeatureDetail> {
+   return request<FeatureDetail>(`/api/workspaces/${workspaceId}/features/${featureId}`);
+ }
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the searchWorkspaceTasksPage function and the normalization helpers:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts  0.6s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts
+@@ -102,6 +102,17 @@
+   return unwrapItems(result);
+ }
+ 
++export async function searchWorkspaceTasksPage(
++  workspaceId: string,
++  params?: URLSearchParams,
++): Promise<PagedTasks> {
++  const qs = params?.toString() ? `?${params.toString()}` : "";
++  const result = await request<TaskSummary[] | PagedTasks>(
++    `/api/workspaces/${workspaceId}/tasks${qs}`,
++  );
++  return normalizePagedTasks(result);
++}
++
+ export async function getWorkspaceTask(workspaceId: string, taskId: string): Promise<TaskDetail> {
+   return request<TaskDetail>(`/api/workspaces/${workspaceId}/tasks/${taskId}`);
+ }
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the normalization helpers at the end of the file:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts
+@@ -146,3 +146,45 @@
+   }
+   throw new Error("Expected API response data to be an array or a paged { items } object");
+ }
++
++function normalizePagedFeatures(
++  result: FeatureSummary[] | PagedFeatures,
++): PagedFeatures {
++  if (Array.isArray(result)) {
++    return { items: result, total: result.length, page: 1, limit: result.length };
++  }
++  if (
++    result &&
++    typeof result === "object" &&
++    Array.isArray(result.items) &&
++    typeof result.total === "number" &&
++    typeof result.page === "number" &&
++    typeof result.limit === "number"
++  ) {
++    return result as PagedFeatures;
++  }
++  throw new Error(
++    "Expected API response data to be an array or a valid PagedFeatures object",
++  );
++}
++
++function normalizePagedTasks(
++  result: TaskSummary[] | PagedTasks,
++): PagedTasks {
++  if (Array.isArray(result)) {
++    return { items: result, total: result.length, page: 1, limit: result.length };
++  }
++  if (
++    result &&
++    typeof result === "object" &&
++    Array.isArray(result.items) &&
++    typeof result.total === "number" &&
++    typeof result.page === "number" &&
++    typeof result.limit === "number"
++  ) {
++    return result as PagedTasks;
++  }
++  throw new Error(
++    "Expected API response data to be an array or a valid PagedTasks object",
++  );
++}
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me verify the final state of the client file, then commit:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/client.ts  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Good. Let me commit this change:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/services/workflow-backend/client.ts && git commit -m "feat(digital-factory-ui-bugfix/T1): add searchFeaturesPage and searchWorkspaceTasksPage client functions"  0.2s [exit 128]
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git config user.email "norepy@tiendv.dev" && git config user.name "Hermes Agent"  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/services/workflow-backend/client.ts && git commit -m "feat(digital-factory-ui-bugfix/T1): add searchFeaturesPage and searchWorkspaceTasksPage client functions"  0.3s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 1/8 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 2: Create the shared backend-list-params.ts module — this is the central source of truth for board query state and page management.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/backend-list-params.ts  0.7s
+  ┊ review diff
+a/src/features/board/lib/backend-list-params.ts → b/src/features/board/lib/backend-list-params.ts
+@@ -0,0 +1,76 @@
++import type { FeatureSearchParams, TaskSearchParams } from "@/services/workflow-backend";
++
++export interface PaginationMeta {
++  total: number;
++  page: number;
++  limit: number;
++}
++
++export type BoardListParams = {
++  title?: string;
++  status?: string | string[];
++  page: number;
++  limit: number;
++  sort?: string;
++};
++
++export const BOARD_DEFAULT_LIMIT = 100;
++export const BOARD_DEFAULT_SORT = "updated_at_desc";
++
++export function buildBoardFeatureParams(
++  params: BoardListParams,
++): FeatureSearchParams {
++  return {
++    title: params.title,
++    status: params.status,
++    page: params.page,
++    limit: params.limit,
++    sort: params.sort ?? BOARD_DEFAULT_SORT,
++  };
++}
++
++export function buildBoardTaskParams(
++  params: BoardListParams,
++): TaskSearchParams {
++  return {
++    title: params.title,
++    status: params.status,
++    page: params.page,
++    limit: params.limit,
++    sort: params.sort ?? BOARD_DEFAULT_SORT,
++  };
++}
++
++/**
++ * Returns true when search query or status filter has changed in a way that
++ * should reset the page counter to 1.
++ *
++ * Page-only changes (pagination navigation) must not trigger a reset.
++ */
++export function shouldResetPage(
++  prev: BoardListParams,
++  next: BoardListParams,
++): boolean {
++  return (
++    normalizeQuery(prev.title) !== normalizeQuery(next.title) ||
++    normalizeStatus(prev.status) !== normalizeStatus(next.status) ||
++    (prev.sort ?? BOARD_DEFAULT_SORT) !== (next.sort ?? BOARD_DEFAULT_SORT)
++  );
++}
++
++export function makeDefaultBoardListParams(): BoardListParams {
++  return {
++    page: 1,
++    limit: BOARD_DEFAULT_LIMIT,
++    sort: BOARD_DEFAULT_SORT,
++  };
++}
++
++function normalizeQuery(q: string | undefined): string {
++  return (q ?? "").trim();
++}
++
++function normalizeStatus(s: string | string[] | undefined): string {
++  if (Array.isArray(s)) return s.join(",");
++  return s ?? "";
++}
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/features/board/lib/backend-list-params.ts && git commit -m "feat(digital-factory-ui-bugfix/T1): add shared backend-list-params module with page reset logic"  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 3 & 4: Update board/types.ts with PaginationMeta, and update both search hooks to use the paged endpoints.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/types.ts  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/types.ts  0.9s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/types.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/types.ts
+@@ -14,3 +14,9 @@
+ export type FeatureActiveFilters = {
+   statuses: FeatureStatus[];
+ };
++
++export interface PaginationMeta {
++  total: number;
++  page: number;
++  limit: number;
++}
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update useBackendFeatureSearch to preserve pagination metadata:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/hooks/useBackendFeatureSearch.ts  0.7s
+  ┊ review diff
+a/src/features/board/hooks/useBackendFeatureSearch.ts → b/src/features/board/hooks/useBackendFeatureSearch.ts
+@@ -2,13 +2,13 @@
+ 
+ import { useEffect, useRef, useState } from "react";
+ import {
+-  searchFeatures,
++  searchFeaturesPage,
+   buildFeatureParams,
+   type FeatureSearchParams,
+ } from "@/services/workflow-backend";
+ import { adaptFeatureSummaries } from "@/features/workspaces/lib/workspaceAdapter";
+ import type { ParsedFeature } from "@/services/yaml-parser";
+-import type { BoardLoadError } from "../types";
++import type { BoardLoadError, PaginationMeta } from "../types";
+ 
+ const DEBOUNCE_MS = 300;
+ 
+@@ -20,25 +20,28 @@
+   results: ParsedFeature[] | null;
+   searching: boolean;
+   searchError: BoardLoadError | null;
++  pagination: PaginationMeta | null;
+ };
+ 
+ export function useBackendFeatureSearch(
+   workspaceId: string | null,
+   params: FeatureSearchParams,
+ ): UseBackendFeatureSearchResult {
+-  const { title, status } = params;
++  const { title, status, page, limit, sort } = params;
+   const [results, setResults] = useState<ParsedFeature[] | null>(null);
+   const [searching, setSearching] = useState(false);
+   const [searchError, setSearchError] = useState<BoardLoadError | null>(null);
++  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+   const requestIdRef = useRef(0);
+ 
+   useEffect(() => {
+-    const searchParams = { title, status };
++    const searchParams = { title, status, page, limit, sort };
+ 
+     if (!workspaceId || isEmptyParams(searchParams)) {
+       setResults(null);
+       setSearching(false);
+       setSearchError(null);
++      setPagination(null);
+       return;
+     }
+ 
+@@ -49,12 +52,17 @@
+       setSearchError(null);
+ 
+       try {
+-        const features = await searchFeatures(
++        const paged = await searchFeaturesPage(
+           workspaceId,
+           buildFeatureParams(searchParams),
+         );
+         if (cancelled || requestIdRef.current !== id) return;
+-        setResults(adaptFeatureSummaries(features));
++        setResults(adaptFeatureSummaries(paged.items));
++        setPagination({
++          total: paged.total,
++          page: paged.page,
++          limit: paged.limit,
++        });
+         setSearching(false);
+       } catch (err: unknown) {
+         if (cancelled || requestIdRef.current !== id) return;
+@@ -65,6 +73,7 @@
+           retryable: e.retryable,
+         });
+         setResults([]);
++        setPagination(null);
+         setSearching(false);
+       }
+     }, DEBOUNCE_MS);
+@@ -73,7 +82,7 @@
+       cancelled = true;
+       clearTimeout(timer);
+     };
+… omitted 6 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update useBackendTaskSearch:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/hooks/useBackendTaskSearch.ts  0.7s
+  ┊ review diff
+a/src/features/board/hooks/useBackendTaskSearch.ts → b/src/features/board/hooks/useBackendTaskSearch.ts
+@@ -2,13 +2,13 @@
+ 
+ import { useEffect, useRef, useState } from "react";
+ import {
+-  searchWorkspaceTasks,
++  searchWorkspaceTasksPage,
+   buildTaskParams,
+   type TaskSearchParams,
+ } from "@/services/workflow-backend";
+ import { adaptTaskSummariesToFeatures } from "@/features/workspaces/lib/workspaceAdapter";
+ import type { ParsedFeature } from "@/services/yaml-parser";
+-import type { BoardLoadError } from "../types";
++import type { BoardLoadError, PaginationMeta } from "../types";
+ 
+ const DEBOUNCE_MS = 300;
+ 
+@@ -20,25 +20,28 @@
+   results: ParsedFeature[] | null;
+   searching: boolean;
+   searchError: BoardLoadError | null;
++  pagination: PaginationMeta | null;
+ };
+ 
+ export function useBackendTaskSearch(
+   workspaceId: string | null,
+   params: TaskSearchParams,
+ ): UseBackendTaskSearchResult {
+-  const { task_id, title, status } = params;
++  const { task_id, title, status, page, limit, sort } = params;
+   const [results, setResults] = useState<ParsedFeature[] | null>(null);
+   const [searching, setSearching] = useState(false);
+   const [searchError, setSearchError] = useState<BoardLoadError | null>(null);
++  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+   const requestIdRef = useRef(0);
+ 
+   useEffect(() => {
+-    const searchParams = { task_id, title, status };
++    const searchParams = { task_id, title, status, page, limit, sort };
+ 
+     if (!workspaceId || isEmptyParams(searchParams)) {
+       setResults(null);
+       setSearching(false);
+       setSearchError(null);
++      setPagination(null);
+       return;
+     }
+ 
+@@ -49,12 +52,17 @@
+       setSearchError(null);
+ 
+       try {
+-        const tasks = await searchWorkspaceTasks(
++        const paged = await searchWorkspaceTasksPage(
+           workspaceId,
+           buildTaskParams(searchParams),
+         );
+         if (cancelled || requestIdRef.current !== id) return;
+-        setResults(adaptTaskSummariesToFeatures(tasks));
++        setResults(adaptTaskSummariesToFeatures(paged.items));
++        setPagination({
++          total: paged.total,
++          page: paged.page,
++          limit: paged.limit,
++        });
+         setSearching(false);
+       } catch (err: unknown) {
+         if (cancelled || requestIdRef.current !== id) return;
+@@ -65,6 +73,7 @@
+           retryable: e.retryable,
+         });
+         setResults([]);
++        setPagination(null);
+         setSearching(false);
+       }
+     }, DEBOUNCE_MS);
+@@ -73,7 +82,7 @@
+       cancelled = true;
+       clearTimeout(timer);
+     };
+… omitted 6 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit the search hook changes:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/features/board/types.ts src/features/board/hooks/useBackendFeatureSearch.ts src/features/board/hooks/useBackendTaskSearch.ts && git commit -m "feat(digital-factory-ui-bugfix/T1): preserve pagination metadata in board search hooks"  0.3s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 4/8 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 5: Update the KanbanBoard context to track pagination state and manage page resets.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me update the context imports and add pagination to the BoardContextValue type:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.9s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -22,6 +22,7 @@
+   ActiveFilters,
+   BoardLoadError,
+   FeatureActiveFilters,
++  PaginationMeta,
+ } from "../../types";
+ import {
+   type BoardMode,
+@@ -35,6 +36,12 @@
+   saveFeatureStatusFilter,
+   saveStatusFilter,
+ } from "../../lib/status-filter-store";
++import {
++  BOARD_DEFAULT_LIMIT,
++  BOARD_DEFAULT_SORT,
++  shouldResetPage,
++  type BoardListParams,
++} from "../../lib/backend-list-params";
+ 
+ export type SelectedTask = {
+   task: ParsedTask;
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add pagination fields to the BoardContextValue type:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.6s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -99,6 +99,14 @@
+   featureSearching: boolean;
+   taskSearchError: BoardLoadError | null;
+   featureSearchError: BoardLoadError | null;
++
++  // Pagination state per mode
++  taskPage: number;
++  setTaskPage: (page: number) => void;
++  featurePage: number;
++  setFeaturePage: (page: number) => void;
++  taskPagination: PaginationMeta | null;
++  featurePagination: PaginationMeta | null;
+ };
+ 
+ const BoardContext = createContext<BoardContextValue | null>(null);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add pagination state inside the BoardProvider. Read the state section:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Add pagination state after selectedFeature:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -167,6 +167,20 @@
+   const [selectedFeature, setSelectedFeature] = useState<ParsedFeature | null>(
+     null,
+   );
++  const [taskPage, setTaskPage] = useState(1);
++  const [featurePage, setFeaturePage] = useState(1);
++
++  // Reset page to 1 when search query or filters change
++  const prevTaskSearchRef = useRef<BoardListParams>({
++    page: 1,
++    limit: BOARD_DEFAULT_LIMIT,
++    sort: BOARD_DEFAULT_SORT,
++  });
++  const prevFeatureSearchRef = useRef<BoardListParams>({
++    page: 1,
++    limit: BOARD_DEFAULT_LIMIT,
++    sort: BOARD_DEFAULT_SORT,
++  });
+ 
+   // Backend search hooks
+   const deferredTaskSearchQuery = useDeferredValue(taskSearchQuery);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the search params to include page/limit/sort and handle page reset:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -187,39 +187,73 @@
+   const deferredFeatureSearchQuery = useDeferredValue(featureSearchQuery);
+   const trimmedTaskQuery = deferredTaskSearchQuery.trim();
+   const taskSearchActive = boardMode === "task" && trimmedTaskQuery.length > 0;
+-  const taskSearchParams = taskSearchActive
+-    ? {
+-        title: trimmedTaskQuery,
+-        status:
+-          taskActiveFilters.statuses.length > 0
+-            ? taskActiveFilters.statuses.join(",")
+-            : undefined,
+-      }
+-    : {};
++
++  const taskSearchParams = useMemo(() => {
++    const status =
++      taskActiveFilters.statuses.length > 0
++        ? taskActiveFilters.statuses.join(",")
++        : undefined;
++
++    const nextParams: BoardListParams = {
++      title: trimmedTaskQuery || undefined,
++      status,
++      page: taskPage,
++      limit: BOARD_DEFAULT_LIMIT,
++      sort: BOARD_DEFAULT_SORT,
++    };
++
++    if (shouldResetPage(prevTaskSearchRef.current, nextParams)) {
++      setTaskPage(1);
++      nextParams.page = 1;
++    }
++
++    prevTaskSearchRef.current = nextParams;
++
++    if (!taskSearchActive) return {};
++    return nextParams;
++  }, [trimmedTaskQuery, taskActiveFilters.statuses, taskPage, taskSearchActive]);
+ 
+   const {
+     results: backendTaskResults,
+     searching: taskSearching,
+     searchError: taskSearchError,
++    pagination: taskPagination,
+   } = useBackendTaskSearch(workspaceDetail.id, taskSearchParams);
+ 
+   const trimmedFeatureQuery = deferredFeatureSearchQuery.trim();
+   const featureSearchActive =
+     boardMode === "feature" && trimmedFeatureQuery.length > 0;
+-  const featureSearchParams = featureSearchActive
+-    ? {
+-        title: trimmedFeatureQuery,
+-        status:
+-          featureActiveFilters.statuses.length > 0
+-            ? featureActiveFilters.statuses.join(",")
+-            : undefined,
+-      }
+-    : {};
++
++  const featureSearchParams = useMemo(() => {
++    const status =
++      featureActiveFilters.statuses.length > 0
++        ? featureActiveFilters.statuses.join(",")
++        : undefined;
++
++    const nextParams: BoardListParams = {
++      title: trimmedFeatureQuery || undefined,
++      status,
++      page: featurePage,
++      limit: BOARD_DEFAULT_LIMIT,
++      sort: BOARD_DEFAULT_SORT,
++    };
++
++    if (shouldResetPage(prevFeatureSearchRef.current, nextParams)) {
++      setFeaturePage(1);
++      nextParams.page = 1;
++    }
++
++    prevFeatureSearchRef.current = nextParams;
+… omitted 13 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the useMemo value to include pagination fields:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Add pagination fields to the value memo:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -426,6 +426,13 @@
+       openTaskTabNewSession,
+       openFeatureTab,
+       openFeatureTabNewSession,
++
++      taskPage,
++      setTaskPage,
++      featurePage,
++      setFeaturePage,
++      taskPagination,
++      featurePagination,
+     }),
+     [
+       workspaceDetail,
+@@ -459,6 +466,11 @@
+       openTaskTabNewSession,
+       openFeatureTab,
+       openFeatureTabNewSession,
++
++      taskPage,
++      featurePage,
++      taskPagination,
++      featurePagination,
+     ],
+   );
+ 
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit the context changes:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/features/board/components/KanbanBoard/KanbanBoard.context.tsx && git commit -m "feat(digital-factory-ui-bugfix/T1): add pagination state and page-reset logic to KanbanBoard context"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 6: Export the new functions and types from indexes.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/index.ts  0.8s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/index.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/services/workflow-backend/index.ts
+@@ -40,6 +40,8 @@
+   request,
+   searchFeatureTasks,
+   searchFeatures,
++  searchFeaturesPage,
+   searchWorkspaceTasks,
++  searchWorkspaceTasksPage,
+   syncWorkspace,
+ } from "./client";
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the board index to export pagination types and helper:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts  0.9s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts
+@@ -24,7 +24,7 @@
+   mapClientError,
+   type BoardDataClient,
+ } from "./data/load-board-data";
+-export type { BoardLoadError, ActiveFilters } from "./types";
++export type { BoardLoadError, ActiveFilters, PaginationMeta } from "./types";
+ export {
+   STATUS_COLUMNS,
+   getStatusColor,
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me also export the backend-list-params from the board index:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts  0.3s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts
+@@ -34,3 +34,13 @@
+   type TaskStatus,
+   type StatusColumn,
+ } from "./lib/status";
++export {
++  BOARD_DEFAULT_LIMIT,
++  BOARD_DEFAULT_SORT,
++  shouldResetPage,
++  makeDefaultBoardListParams,
++  buildBoardFeatureParams,
++  buildBoardTaskParams,
++  type BoardListParams,
++  type PaginationMeta as BoardPaginationMeta,
++} from "./lib/backend-list-params";
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I see a duplication — PaginationMeta is defined in both board/types.ts and backend-list-params.ts. Let me fix backend-list-params.ts to import from types instead:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/backend-list-params.ts  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/backend-list-params.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/lib/backend-list-params.ts
+@@ -1,10 +1,7 @@
+ import type { FeatureSearchParams, TaskSearchParams } from "@/services/workflow-backend";
++import type { PaginationMeta } from "../types";
+ 
+-export interface PaginationMeta {
+-  total: number;
+-  page: number;
+-  limit: number;
+-}
++export type { PaginationMeta };
+ 
+ export type BoardListParams = {
+   title?: string;
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Fix the board index to avoid duplicate PaginationMeta export:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/index.ts
+@@ -42,5 +42,4 @@
+   buildBoardFeatureParams,
+   buildBoardTaskParams,
+   type BoardListParams,
+-  type PaginationMeta as BoardPaginationMeta,
+ } from "./lib/backend-list-params";
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Commit the index export updates:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/services/workflow-backend/index.ts src/features/board/index.ts src/features/board/lib/backend-list-params.ts && git commit -m "feat(digital-factory-ui-bugfix/T1): export pagination-aware functions and types from indexes"  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me run the test suite:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm install 2>&1 | tail -5  58.2s
+  (tip) That tool ran for a while. Use /verbose to cycle tool-progress display modes (all -> new -> off -> verbose). This tip only shows once.
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm test 2>&1  13.8s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All 786 tests pass. Now let me write tests for the new functionality:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 6/8 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me check for formatter and lint scripts:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && cat package.json | grep -E '"(format|lint|lint:fix)"' 2>/dev/null; echo "---end---"  0.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm run lint 2>&1 | tail -20  13.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    There are React lint errors — I need to move the page reset logic from useMemo into useEffect. Let me fix the context:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Replace the side-effect-heavy params logic with clean useMemo + useEffect:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -188,29 +188,38 @@
+   const trimmedTaskQuery = deferredTaskSearchQuery.trim();
+   const taskSearchActive = boardMode === "task" && trimmedTaskQuery.length > 0;
+ 
++  // Reset page to 1 when search query or filters change
++  const prevTaskQueryRef = useRef(trimmedTaskQuery);
++  const prevTaskStatusRef = useRef(
++    taskActiveFilters.statuses.join(","),
++  );
++  useEffect(() => {
++    const currentStatus = taskActiveFilters.statuses.join(",");
++    if (
++      trimmedTaskQuery !== prevTaskQueryRef.current ||
++      currentStatus !== prevTaskStatusRef.current
++    ) {
++      setTaskPage(1);
++    }
++    prevTaskQueryRef.current = trimmedTaskQuery;
++    prevTaskStatusRef.current = currentStatus;
++  }, [trimmedTaskQuery, taskActiveFilters.statuses]);
++
+   const taskSearchParams = useMemo(() => {
++    if (!taskSearchActive) return {};
++
+     const status =
+       taskActiveFilters.statuses.length > 0
+         ? taskActiveFilters.statuses.join(",")
+         : undefined;
+ 
+-    const nextParams: BoardListParams = {
+-      title: trimmedTaskQuery || undefined,
++    return {
++      title: trimmedTaskQuery,
+       status,
+       page: taskPage,
+       limit: BOARD_DEFAULT_LIMIT,
+       sort: BOARD_DEFAULT_SORT,
+     };
+-
+-    if (shouldResetPage(prevTaskSearchRef.current, nextParams)) {
+-      setTaskPage(1);
+-      nextParams.page = 1;
+-    }
+-
+-    prevTaskSearchRef.current = nextParams;
+-
+-    if (!taskSearchActive) return {};
+-    return nextParams;
+   }, [trimmedTaskQuery, taskActiveFilters.statuses, taskPage, taskSearchActive]);
+ 
+   const {
+@@ -224,29 +233,37 @@
+   const featureSearchActive =
+     boardMode === "feature" && trimmedFeatureQuery.length > 0;
+ 
++  const prevFeatureQueryRef = useRef(trimmedFeatureQuery);
++  const prevFeatureStatusRef = useRef(
++    featureActiveFilters.statuses.join(","),
++  );
++  useEffect(() => {
++    const currentStatus = featureActiveFilters.statuses.join(",");
++    if (
++      trimmedFeatureQuery !== prevFeatureQueryRef.current ||
++      currentStatus !== prevFeatureStatusRef.current
++    ) {
++      setFeaturePage(1);
++    }
++    prevFeatureQueryRef.current = trimmedFeatureQuery;
++    prevFeatureStatusRef.current = currentStatus;
++  }, [trimmedFeatureQuery, featureActiveFilters.statuses]);
++
+   const featureSearchParams = useMemo(() => {
++    if (!featureSearchActive) return {};
++
+     const status =
+       featureActiveFilters.statuses.length > 0
+         ? featureActiveFilters.statuses.join(",")
+         : undefined;
+ 
+… omitted 22 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now clean up the unused refs I added earlier:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Remove the unused refs and clean up imports:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -170,18 +170,6 @@
+   const [taskPage, setTaskPage] = useState(1);
+   const [featurePage, setFeaturePage] = useState(1);
+ 
+-  // Reset page to 1 when search query or filters change
+-  const prevTaskSearchRef = useRef<BoardListParams>({
+-    page: 1,
+-    limit: BOARD_DEFAULT_LIMIT,
+-    sort: BOARD_DEFAULT_SORT,
+-  });
+-  const prevFeatureSearchRef = useRef<BoardListParams>({
+-    page: 1,
+-    limit: BOARD_DEFAULT_LIMIT,
+-    sort: BOARD_DEFAULT_SORT,
+-  });
+-
+   // Backend search hooks
+   const deferredTaskSearchQuery = useDeferredValue(taskSearchQuery);
+   const deferredFeatureSearchQuery = useDeferredValue(featureSearchQuery);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Clean up unused imports — shouldResetPage and BoardListParams no longer used in the context:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -39,8 +39,6 @@
+ import {
+   BOARD_DEFAULT_LIMIT,
+   BOARD_DEFAULT_SORT,
+-  shouldResetPage,
+-  type BoardListParams,
+ } from "../../lib/backend-list-params";
+ 
+ export type SelectedTask = {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me run the lint and tests:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm run lint 2>&1 | tail -15  12.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Lint is clean (only 1 pre-existing warning). Now run the tests:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm test 2>&1  11.7s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Clean lint and all 786 tests pass. Commit the lint fix:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/features/board/components/KanbanBoard/KanbanBoard.context.tsx && git commit -m "fix(digital-factory-ui-bugfix/T1): move page-reset logic from useMemo to useEffect to satisfy react-hooks lint"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Step 7: Write tests for the new functionality.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/workflow-backend-client.test.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Add tests for searchFeaturesPage and searchWorkspaceTasksPage:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/workflow-backend-client.test.ts  0.5s [Escape-drift detected: old_string and new_str...]
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me write the tests in a separate file to avoid escape issues:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/workflow-backend-paged-client.test.ts  0.7s
+  ┊ review diff
+a/src/__tests__/workflow-backend-paged-client.test.ts → b/src/__tests__/workflow-backend-paged-client.test.ts
+@@ -0,0 +1,136 @@
++import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
++import {
++  searchFeaturesPage,
++  searchWorkspaceTasksPage,
++} from "../services/workflow-backend/client";
++
++const API_BASE = "http://localhost:3001";
++
++function makeResponse(body: unknown): Response {
++  return {
++    status: 200,
++    ok: true,
++    text: () => Promise.resolve(JSON.stringify(body)),
++  } as unknown as Response;
++}
++
++function successResponse(data: unknown): Response {
++  return makeResponse({ success: true, data });
++}
++
++describe("searchFeaturesPage", () => {
++  let fetchMock: ReturnType<typeof vi.fn>;
++
++  beforeEach(() => {
++    fetchMock = vi.fn();
++    vi.stubGlobal("fetch", fetchMock);
++    process.env.NEXT_PUBLIC_API_BASE_URL = API_BASE;
++  });
++
++  afterEach(() => {
++    vi.unstubAllGlobals();
++    delete process.env.NEXT_PUBLIC_API_BASE_URL;
++  });
++
++  it("returns full PagedFeatures from the backend", async () => {
++    const feature = { id: "feat-1", feature_name: "dashboard" };
++    const paged = { items: [feature], total: 10, page: 2, limit: 5 };
++    fetchMock.mockResolvedValueOnce(successResponse(paged));
++
++    const result = await searchFeaturesPage("ws-1");
++
++    expect(result).toEqual(paged);
++    expect(result.items).toEqual([feature]);
++    expect(result.total).toBe(10);
++    expect(result.page).toBe(2);
++    expect(result.limit).toBe(5);
++  });
++
++  it("normalizes a bare array response into PagedFeatures", async () => {
++    const feature = { id: "feat-1", feature_name: "api" };
++    fetchMock.mockResolvedValueOnce(successResponse([feature]));
++
++    const result = await searchFeaturesPage("ws-1");
++
++    expect(result.items).toEqual([feature]);
++    expect(result.total).toBe(1);
++    expect(result.page).toBe(1);
++    expect(result.limit).toBe(1);
++  });
++
++  it("appends query string when params provided", async () => {
++    fetchMock.mockResolvedValueOnce(
++      successResponse({ items: [], total: 0, page: 1, limit: 20 }),
++    );
++    const params = new URLSearchParams({ page: "3", limit: "50" });
++    await searchFeaturesPage("ws-1", params);
++    const [url] = fetchMock.mock.calls[0] as [string];
++    expect(url).toContain("page=3");
++    expect(url).toContain("limit=50");
++  });
++
++  it("GETs /api/workspaces/:workspaceId/features", async () => {
++    fetchMock.mockResolvedValueOnce(successResponse({ items: [], total: 0, page: 1, limit: 20 }));
++    await searchFeaturesPage("ws-1");
++    const [url] = fetchMock.mock.calls[0] as [string];
++    expect(url).toBe(`${API_BASE}/api/workspaces/ws-1/features`);
++  });
++});
+… omitted 58 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add tests for backend-list-params.ts:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl/src/__tests__/backend-list-params.test.ts  0.7s
+  ┊ review diff
+a/src/__tests__/backend-list-params.test.ts → b/src/__tests__/backend-list-params.test.ts
+@@ -0,0 +1,128 @@
++import { describe, it, expect } from "vitest";
++import {
++  shouldResetPage,
++  makeDefaultBoardListParams,
++  buildBoardFeatureParams,
++  buildBoardTaskParams,
++  BOARD_DEFAULT_LIMIT,
++  BOARD_DEFAULT_SORT,
++} from "../features/board/lib/backend-list-params";
++
++describe("makeDefaultBoardListParams", () => {
++  it("returns page 1 with default limit and sort", () => {
++    const params = makeDefaultBoardListParams();
++    expect(params.page).toBe(1);
++    expect(params.limit).toBe(BOARD_DEFAULT_LIMIT);
++    expect(params.sort).toBe(BOARD_DEFAULT_SORT);
++  });
++});
++
++describe("shouldResetPage", () => {
++  const base = makeDefaultBoardListParams();
++
++  it("returns true when title changes", () => {
++    expect(shouldResetPage({ ...base, title: "old" }, { ...base, title: "new" })).toBe(true);
++  });
++
++  it("returns true when title added (was undefined)", () => {
++    expect(shouldResetPage({ ...base, title: undefined }, { ...base, title: "new" })).toBe(true);
++  });
++
++  it("returns true when title cleared", () => {
++    expect(shouldResetPage({ ...base, title: "old" }, { ...base, title: undefined })).toBe(true);
++  });
++
++  it("returns true when status changes", () => {
++    expect(shouldResetPage({ ...base, status: "ready" }, { ...base, status: "in_progress" })).toBe(
++      true,
++    );
++  });
++
++  it("returns true when status array changes", () => {
++    expect(
++      shouldResetPage(
++        { ...base, status: ["ready", "in_progress"] },
++        { ...base, status: ["ready"] },
++      ),
++    ).toBe(true);
++  });
++
++  it("returns true when sort changes", () => {
++    expect(
++      shouldResetPage({ ...base, sort: "title_asc" }, { ...base, sort: "updated_at_desc" }),
++    ).toBe(true);
++  });
++
++  it("returns false when only page changes", () => {
++    expect(shouldResetPage({ ...base, page: 1 }, { ...base, page: 5 })).toBe(false);
++  });
++
++  it("returns false when only limit changes", () => {
++    expect(
++      shouldResetPage({ ...base, page: 1, limit: 50 }, { ...base, page: 1, limit: 100 }),
++    ).toBe(false);
++  });
++
++  it("returns false when nothing changes", () => {
++    expect(shouldResetPage(base, { ...base })).toBe(false);
++  });
++});
++
++describe("buildBoardFeatureParams", () => {
++  it("includes title, status, page, limit, sort", () => {
++    const params = buildBoardFeatureParams({
++      title: "data",
++      status: ["ready"],
++      page: 2,
++      limit: 20,
++      sort: "title_asc",
+… omitted 50 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Run tests to verify the new tests pass:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm test 2>&1  13.9s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All 809 tests pass including 23 new tests. Commit the test additions:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git add src/__tests__/workflow-backend-paged-client.test.ts src/__tests__/backend-list-params.test.ts && git commit -m "test(digital-factory-ui-bugfix/T1): add unit tests for paged client functions and backend-list-params"  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me run final lint check:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && npm run lint 2>&1 | tail -10  12.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Clean lint. Let me verify the git log:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git log --oneline  0.1s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      update 8/8 ✓  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me verify no uncommitted changes remain:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-449eec71-d85c-4a35-acd6-9a0e27ab6d9b/impl && git status  0.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All work is complete. Here's a summary of T1 implementation:
+    
+    T1 — Mode-scoped paged query layer — Complete
+    
+    Changes made (7 incremental commits):
+    
+    Workflow-backend client layer:
+    - client.ts — Added searchFeaturesPage() and searchWorkspaceTasksPage() that return full { items, total, page, limit } objects instead of unwrapping to arrays
+    - index.ts — Exported new paged functions
+    
+    Board query state (shared source of truth):
+    - lib/backend-list-params.ts (new) — BoardListParams, PaginationMeta, shouldResetPage(), buildBoardFeatureParams(), buildBoardTaskParams(), constants (BOARD_DEFAULT_LIMIT=100, BOARD_DEFAULT_SORT=updated_at_desc)
+    
+    Board hooks:
+    - useBackendFeatureSearch.ts — Now uses searchFeaturesPage(), returns pagination metadata
+    - useBackendTaskSearch.ts — Now uses searchWorkspaceTasksPage(), returns pagination metadata
+    
+    Board context (single source of truth):
+    - KanbanBoard.context.tsx — Added taskPage/featurePage/taskPagination/featurePagination state. Search params now include page, limit, sort. Page resets to 1 on search/filter changes via useEffect.
+    
+    Tests:
+    - workflow-backend-paged-client.test.ts (8 tests)
+    - backend-list-params.test.ts (15 tests)
+    
+    Result: 809 tests passing (42 files), lint clean (0 errors).
+    
+    The wrapper will handle git push and PR creation next.
+╰──────────────────────────────────────────────────────────────────────────────╯
+{"at":"2026-05-25T18:07:01.714Z","by":"norepy@tiendv.dev","type":"run_ended","details":{"outcome":"in_review"}}
