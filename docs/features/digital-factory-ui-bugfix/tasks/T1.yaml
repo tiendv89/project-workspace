@@ -14,8 +14,8 @@ pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/50
   status: open
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/344
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
