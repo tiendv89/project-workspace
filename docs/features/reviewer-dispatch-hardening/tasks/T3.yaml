@@ -1,7 +1,7 @@
 id: T3
 title: Log-scan guard removal
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -12,7 +12,7 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T10:52:40.591Z
+  last_updated_at: 2026-05-25T12:23:43.025Z
 pr:
   url: null
   status: null
@@ -72,8 +72,11 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-25T19:21:00+0700
-    note: >-
-      Reset to ready — second no_changes block caused by two hermes executor bugs
-      (wrong clone base + new-branch commit detection). Both fixed in
+    note: "Reset to ready — second no_changes block caused by two hermes executor
+      bugs (wrong clone base + new-branch commit detection). Both fixed in
       agent-workflow PR #228 (fix/hermes-clone-base-and-no-changes-detection).
-      Re-run after that PR merges and agent image is rebuilt.
+      Re-run after that PR merges and agent image is rebuilt."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T12:23:43.025Z
+    note: Claimed via git-based claim protocol.
