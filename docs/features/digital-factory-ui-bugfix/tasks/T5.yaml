@@ -1,7 +1,7 @@
 id: T5
 title: Pagination controls and metadata wiring
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/digital-factory-ui-bugfix-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T19:06:49.770Z
+  last_updated_at: 2026-05-25T19:25:07.417Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/52
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/346
   status: open
