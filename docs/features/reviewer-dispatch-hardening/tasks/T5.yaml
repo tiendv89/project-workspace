@@ -1,7 +1,7 @@
 id: T5
 title: MAX_TURNS env separation
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T05:57:44.841Z
+  last_updated_at: 2026-05-25T08:11:24.771Z
 pr:
   url: null
   status: null
@@ -63,3 +63,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-25T15:09:33+0700
     note: Reset to ready by human — re-dispatch executor.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T08:11:24.771Z
+    note: Claimed via git-based claim protocol.
