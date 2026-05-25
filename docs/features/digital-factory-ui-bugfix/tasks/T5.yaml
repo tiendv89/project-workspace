@@ -10,7 +10,7 @@ branch: feature/digital-factory-ui-bugfix-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T19:48:06.407Z
+  last_updated_at: 2026-05-25T19:49:38.134Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/52
   status: open
@@ -82,13 +82,17 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T19:48:06.407Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
-conflict_state: resolved
+conflict_state: resolving
 rebase_log:
   - at: 2026-05-25T19:27:09.318Z
     action: rebase_started
     by: norepy@tiendv.dev
     note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
   - at: 2026-05-25T19:39:12.317Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
+  - at: 2026-05-25T19:49:38.134Z
     action: rebase_started
     by: norepy@tiendv.dev
     note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
