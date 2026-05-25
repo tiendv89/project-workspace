@@ -38,6 +38,7 @@ Features follow this lifecycle:
 - in_progress
 - blocked
 - in_review
+- reviewing
 - review_incomplete
 - change_requested
 - done
@@ -79,11 +80,13 @@ todo → ready                  (auto-ready rule, applied by whoever marks the l
 ready → in_progress           (start-implementation only)
 in_progress → in_review       (agent or human, after work is complete)
 in_progress → blocked         (agent, when blocked)
-in_review → done              (human, or reviewer agent when CI + rubric pass)
-in_review → change_requested  (reviewer agent, when REQUEST_CHANGES posted)
+in_review → reviewing         (orchestrator, when reviewer executor is dispatched)
+in_review → done              (human, or orchestrator PR poll after reviewer approves)
 in_review → ready             (human, when rejecting for rework)
-in_review → review_incomplete (orchestrator, when reviewer exits without a valid result — up to MAX_REVIEW_INCOMPLETES times)
-review_incomplete → in_review (orchestrator, when re-dispatching reviewer on the next poll cycle)
+reviewing → in_review         (orchestrator, when reviewer completes with passed — PR poll then detects merge)
+reviewing → change_requested  (orchestrator, when reviewer completes with change_requested)
+reviewing → review_incomplete (orchestrator, when reviewer exits without a valid result — up to MAX_REVIEW_INCOMPLETES times)
+review_incomplete → reviewing (orchestrator, when re-dispatching on next cycle)
 review_incomplete → blocked   (orchestrator, after MAX_REVIEW_INCOMPLETES failed review attempts — escalates)
 change_requested → in_progress  (fix agent — same first-push-wins claim as ready → in_progress)
 blocked → ready               (human, after resolving the block — only if pr.url is null)
@@ -95,7 +98,7 @@ any → cancelled               (human only)
 - `start-implementation` must hard-stop if the task status is not `ready`.
 - **Unblock target rule**: when a human resolves a block, the target status depends on how far the task had progressed. If `pr.url` is set, reset to `in_review` — the PR already exists and the agent should resume review work. If `pr.url` is null, reset to `ready` — the task has not yet produced a PR and must be re-claimed. Never reset a task to `ready` once a PR has been opened.
 - **Change-requested claim rule**: `change_requested → in_progress` uses the same first-push-wins claim protocol as `ready → in_progress`. The fix agent commits the claim to the management repo task branch before beginning implementation. If the push is rejected (non-fast-forward), the agent must stop — another fix agent won the claim.
-- **Review-incomplete retry rule**: `review_incomplete → in_review` uses the same first-push-wins claim protocol as reviewer dispatch. The orchestrator writes a `reviewer_started` log entry and resets status to `in_review` atomically before re-dispatching. After `MAX_REVIEW_INCOMPLETES` failures the orchestrator escalates directly to `blocked` instead of retrying.
+- **Review-incomplete retry rule**: `review_incomplete → reviewing` uses the same first-push-wins claim protocol as reviewer dispatch. The orchestrator writes a `reviewer_started` log entry (audit-only) and resets status to `reviewing` atomically before re-dispatching. After `MAX_REVIEW_INCOMPLETES` failures the orchestrator escalates directly to `blocked` instead of retrying.
 
 ![Task Status Workflow](docs/task-workflow.png)
 
@@ -125,10 +128,10 @@ The following `action` values are defined for task log entries:
 | `started` | agent | executor work phase begun |
 | `work_phase_complete` | agent | intermediate work phase finished |
 | `blocked` | agent | task set to `blocked` with reason |
-| `reviewer_started` | reviewer agent | reviewer executor dispatched for a task in `in_review` |
-| `fix_started` | fix agent | fix executor dispatched; status set back to `in_progress` |
+| `reviewer_started` | reviewer agent | **Audit-only.** Reviewer executor dispatched for a task now in `reviewing`. The orchestrator must not read this entry to make any dispatch decision. |
+| `fix_started` | fix agent | **Audit-only.** Fix executor dispatched; status set back to `in_progress`. The orchestrator must not read this entry to make any dispatch decision. |
 | `reviewer_complete` | reviewer agent | reviewer requested changes — task mutated to `change_requested` |
-| `review_blocked` | orchestrator | reviewer exited without a valid result — task stays `in_review` for retry; escalates after max attempts |
+| `review_blocked` | orchestrator | reviewer exited without a valid result — task set to `review_incomplete` for retry; escalates after max attempts |
 | `retried` | orchestrator | max-turns block reset to `ready` for retry |
 | `done` | human or reviewer agent | task work accepted |
 | `cancelled` | human | task cancelled |
