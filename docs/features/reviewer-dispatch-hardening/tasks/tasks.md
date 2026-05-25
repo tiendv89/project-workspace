@@ -15,6 +15,7 @@ Machine state lives in `tasks/T<n>.yaml` — do not edit status, PR, or log fiel
 | T5 | 1 | MAX_TURNS env separation | — |
 | T6 | 3 | Tests — reviewing guard + audit + MAX_TURNS | T3, T4, T5, T7 |
 | T7 | 3 | executor_audit — Hermes executor output | T2, T4 |
+| T8 | 1 | openImplPR fallback — derive PR title from task YAML | — |
 
 ---
 
@@ -326,3 +327,46 @@ Write or update unit and integration tests covering all changes from T3, T4, T5,
 - [ ] Add static grep check for `MAX_TURNS` in `extraEnv` (as test or CI lint step)
 - [ ] Run full test suite — all passing
 - [ ] Run `npx tsc --noEmit` — zero errors
+
+---
+
+## T8 — openImplPR fallback — derive PR title from task YAML
+
+### Description
+
+When the Hermes executor exits before opening a PR itself (e.g. normal completion
+with `terminal_status: in_review`), the wrapper's `openImplPR` fallback creates
+the PR using a generic hardcoded title:
+
+```
+feat(featureId/taskId): hermes agent implementation
+```
+
+This is unhelpful — the task YAML already has a `title` field. Fix: read `title`
+from the task YAML in `mgmtDir` and pass it to `openImplPR` so the fallback PR
+title follows the standard convention:
+
+```
+feat(featureId/taskId): <task title from YAML>
+```
+
+**File:** `runtime/executors/hermes/src/index.ts`
+
+In the `openImplPR` call (fallback path), replace the hardcoded description string
+with a value derived from the task YAML `title` field read from `mgmtDir`. If the
+YAML cannot be parsed, fall back to the existing generic string.
+
+No ABI changes. No orchestrator changes. TypeScript only.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Read `runtime/executors/hermes/src/index.ts` — locate `openImplPR` call in the fallback path
+- [ ] Read the task YAML from `mgmtDir` to extract the `title` field
+- [ ] Pass the task title as the PR description to `openImplPR`
+- [ ] Add a safe fallback if the YAML parse fails
+- [ ] Run `npx tsc --noEmit` — zero errors
+- [ ] Run full test suite — all passing
