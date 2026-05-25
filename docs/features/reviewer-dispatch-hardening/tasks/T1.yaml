@@ -1,0 +1,23 @@
+id: T1
+title: "CLAUDE.md — reviewing status + transitions"
+repo: management-repo
+status: todo
+depends_on: []
+blocked_reason: null
+
+branch: null
+
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: "2026-05-25T05:35:08Z"
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: tiendv.52@gmai.com
+    at: "2026-05-25T05:35:08Z"
+    note: "Task created during reviewer-dispatch-hardening task breakdown."
