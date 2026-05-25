@@ -1,37 +1,40 @@
 id: T2
 title: Tab-first click behavior
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: "feature/digital-factory-ui-bugfix-T2"
-
+blocked_context: null
+branch: feature/digital-factory-ui-bugfix-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T18:15:24.444Z
 pr:
   url: ""
   status: not_created
-
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-25T10:16:02Z
-    note: Task drafted by tech-lead from approved product spec and updated technical design.
+    note: Task drafted by tech-lead from approved product spec and updated technical
+      design.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-25T10:49:28Z
-    note: Task expanded to include Feature tab Task Docs label, content loading, and Markdown rendering.
+    note: Task expanded to include Feature tab Task Docs label, content loading, and
+      Markdown rendering.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:16:16+0700
-    note: Task expanded to cover Feature mode card ID/title hierarchy and title-width priority.
+    note: Task expanded to cover Feature mode card ID/title hierarchy and
+      title-width priority.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:32:35+0700
-    note: Task expanded to make single-click open feature/task tabs and remove modal-detail-specific repository scope.
+    note: Task expanded to make single-click open feature/task tabs and remove
+      modal-detail-specific repository scope.
   - action: revised
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:38:39+0700
@@ -40,3 +43,7 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-05-25T11:53:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T18:15:24.444Z
+    note: Claimed via git-based claim protocol.
