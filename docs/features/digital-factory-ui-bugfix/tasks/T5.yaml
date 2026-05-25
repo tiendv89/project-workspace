@@ -1,7 +1,7 @@
 id: T5
 title: Pagination controls and metadata wiring
 repo: digital-factory-ui
-status: reviewing
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T19:28:11.857Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T19:37:23.393Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/52
   status: open
@@ -51,6 +51,15 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T19:28:11.857Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented correctly. CI passed (no check-runs). Only 🟢
+      nits: dead branch in displayRange (PaginationControls.tsx), and three
+      it.todo test placeholders deferred to T6 scope. APPROVE review posted.
+      Merge returned 405 (merge conflicts — branch needs rebase before merging);
+      orchestrator in_review poll will catch merge once rebased."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pulls/52/reviews/4358468198
+    at: 2026-05-25T19:37:23.393Z
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-25T19:27:09.318Z
