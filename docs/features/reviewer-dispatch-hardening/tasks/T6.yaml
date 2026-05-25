@@ -1,7 +1,7 @@
 id: T6
 title: "Tests — reviewing guard + audit + MAX_TURNS"
 repo: workflow
-status: todo
+status: ready
 depends_on:
   - T3
   - T4
@@ -26,3 +26,7 @@ log:
     by: tiendv.52@gmai.com
     at: "2026-05-25T05:35:08Z"
     note: "Task created during reviewer-dispatch-hardening task breakdown."
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T00:12:05+0700
+    note: All dependencies done (T3, T4, T5, T7).
