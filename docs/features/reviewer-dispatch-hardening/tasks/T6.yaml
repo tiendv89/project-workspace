@@ -1,7 +1,7 @@
 id: T6
 title: Tests — reviewing guard + audit + MAX_TURNS
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T3
   - T4
@@ -13,8 +13,8 @@ branch: feature/reviewer-dispatch-hardening-T6
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T17:31:53.717Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T17:40:56.881Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/230
   status: open
@@ -52,3 +52,14 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T17:31:53.717Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: 🔴 Missing behavioral findReviewableTasks tests — match.test.ts has no
+      tests for reviewing exclusion or review_incomplete/in_review inclusion
+      (tasks.md subtask partially unimplemented). 🔴 Missing Hermes
+      executor_audit.hermes integration tests — index.ts:809-814 short-circuit
+      augmentation and index.ts:847 fallback write have no covering test
+      (tasks.md subtask partially unimplemented). CI passed 4/4. 🟢 PR title
+      uses wrong type/description.
+    review_url: https://github.com/tiendv89/agent-workflow/pull/230#pullrequestreview-4358086271
+    at: 2026-05-25T17:40:56.881Z
