@@ -1,17 +1,16 @@
 id: T1
 title: CLAUDE.md — reviewing status + transitions
 repo: management-repo
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: no_changes
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T1
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T05:58:33.942Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-25T14:27:44+0700
 pr:
   url: null
   status: null
@@ -66,3 +65,10 @@ log:
     by: norepy@tiendv.dev
     note: no_changes
     at: 2026-05-25T05:58:33.942Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T14:27:44+0700
+    note: >-
+      Reset to ready — Hermes briefing fix merged (agent-workflow PR #222).
+      no_changes was a false negative from commitAndPush seeing a clean tree
+      after Hermes committed incrementally.
