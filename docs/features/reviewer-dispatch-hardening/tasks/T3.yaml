@@ -1,19 +1,24 @@
 id: T3
 title: Log-scan guard removal
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
-branch: null
+blocked_suggestion: null
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-05-25T05:35:08Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T16:16:06.593Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/229
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/335
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -23,3 +28,98 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T09:50:23.265Z
     note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:53:01.386Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T09:53:13.691Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/product-spec.md,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/329"
+    rag_query: Log-scan guard removal reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    at: 2026-05-25T10:10:37.704Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T17:17:00+0700
+    note: Reset to ready — no_changes was T5 commitAndPush bug (now merged).
+      Previous reset introduced duplicate YAML key; this commit fixes it.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T10:31:05.891Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T10:31:13.968Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/product-spec.md,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/329"
+    rag_query: Log-scan guard removal reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: no_changes
+    at: 2026-05-25T10:52:40.591Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T19:21:00+0700
+    note: "Reset to ready — second no_changes block caused by two hermes executor
+      bugs (wrong clone base + new-branch commit detection). Both fixed in
+      agent-workflow PR #228 (fix/hermes-clone-base-and-no-changes-detection).
+      Re-run after that PR merges and agent image is rebuilt."
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T12:23:43.025Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T12:23:49.113Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/reviewer-dispatch-hardening/product-spec.md,
+      docs/features/reviewer-dispatch-hardening/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/329"
+    rag_query: Log-scan guard removal reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/229"
+    at: 2026-05-25T12:37:40.174Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T12:39:42.472Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure (vitest unit): TypeScript narrowing error TS2367 in
+      dispatch-reviewer.ts:141 — `reviewing` guard placed after
+      `in_review|review_incomplete` narrowing guard, making it unreachable dead
+      code. Duplicate-claim guard is non-functional. Fix: move `reviewing` check
+      before the `in_review|review_incomplete` guard."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/229#pullrequestreview-4356713172
+    at: 2026-05-25T12:46:45.717Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-25T12:48:26.105Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/229"
+    at: 2026-05-25T13:01:09.920Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T13:03:12.187Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T16:16:06.593Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
