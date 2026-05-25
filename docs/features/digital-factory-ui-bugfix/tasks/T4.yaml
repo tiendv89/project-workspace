@@ -1,15 +1,15 @@
 id: T4
 title: Feature Task Docs markdown panel
 repo: digital-factory-ui
-status: in_progress
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: no_changes
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T18:30:14.199Z
+  last_updated_at: 2026-05-25T18:46:40.962Z
 pr:
   url: ""
   status: not_created
@@ -45,3 +45,5 @@ log:
       github.com/tiendv89/project-workspace/pull/338"
     rag_query: Feature Task Docs markdown panel digital-factory-ui-bugfix
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+blocked_suggestion: Hermes exited without making any file changes. Re-run with a
+  clearer briefing or more iterations.
