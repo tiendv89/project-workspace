@@ -1,7 +1,7 @@
 id: T3
 title: Log-scan guard removal
 repo: workflow
-status: in_review
+status: change_requested
 depends_on:
   - T2
 blocked_reason: null
@@ -11,8 +11,8 @@ branch: feature/reviewer-dispatch-hardening-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T12:39:42.472Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T12:46:45.717Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/229
   status: open
@@ -98,3 +98,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T12:39:42.472Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failure (vitest unit): TypeScript narrowing error TS2367 in
+      dispatch-reviewer.ts:141 — `reviewing` guard placed after
+      `in_review|review_incomplete` narrowing guard, making it unreachable dead
+      code. Duplicate-claim guard is non-functional. Fix: move `reviewing` check
+      before the `in_review|review_incomplete` guard."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/229#pullrequestreview-4356713172
+    at: 2026-05-25T12:46:45.717Z
