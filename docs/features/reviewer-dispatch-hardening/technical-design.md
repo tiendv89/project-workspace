@@ -167,20 +167,21 @@ Audit fields are namespaced under the executor kind. This lets the orchestrator 
 
 **`abi/src/types.ts`** — extend `ReviewerResult` and `ExecutorResult` with a `executor_audit` namespace:
 ```ts
-// Shared audit shape per executor kind
+// Claude-specific audit data (token counts, MCP calls)
 export interface ClaudeExecutorAudit {
   token_usage?: { input: number; output: number; model?: string };
-  cost_usd?: number;
   mcp_usage?: {
     rag_queries: Array<{ query: string; result_length: number }>;
     gitnexus_queries: Array<{ tool: string; arguments: Record<string, unknown>; result_length: number }>;
   };
+  // Note: cost_usd lives on ExecutorAudit (top level) — it is executor-agnostic
 }
 
-// Future executor kinds extend here without touching existing shapes
+// Top-level audit: cost is shared across all executor kinds; per-kind data is namespaced
 export interface ExecutorAudit {
+  cost_usd?: number;           // universal — any executor kind populates this
   claude?: ClaudeExecutorAudit;
-  // hermes?: HermesExecutorAudit;  // tbd when Hermes executor lands
+  // hermes?: HermesExecutorAudit;  // T7 will add
 }
 
 export interface ReviewerResult {
@@ -202,13 +203,16 @@ const ragQueries = spawnResult.stdout ? extractRagQueries(spawnResult.stdout) : 
 const gitnexusQueries = spawnResult.stdout ? extractGitNexusQueries(spawnResult.stdout) : [];
 const claudeAudit: ClaudeExecutorAudit = {
   ...(claudeResult.token_usage && { token_usage: claudeResult.token_usage }),
-  ...(claudeResult.cost_usd !== undefined && { cost_usd: claudeResult.cost_usd }),
   ...((ragQueries.length > 0 || gitnexusQueries.length > 0) && {
     mcp_usage: { rag_queries: ragQueries, gitnexus_queries: gitnexusQueries },
   }),
 };
-if (Object.keys(claudeAudit).length > 0) {
-  claudeResult.executor_audit = { claude: claudeAudit };
+const executorAudit: ExecutorAudit = {
+  ...(claudeResult.cost_usd !== undefined && { cost_usd: claudeResult.cost_usd }),
+  ...(Object.keys(claudeAudit).length > 0 && { claude: claudeAudit }),
+};
+if (Object.keys(executorAudit).length > 0) {
+  claudeResult.executor_audit = executorAudit;
 }
 ```
 The existing `emit({ type: "rag_query", ...rq })` calls remain for the log sink.
@@ -234,7 +238,7 @@ logEntry: {
 }
 ```
 
-**`task/dispatch.ts`** — `run_completed` and `blocked` entries: add `executor_audit` spread (replaces the flat `token_usage`/`cost_usd` pattern — those fields move inside `executor_audit.claude`).
+**`task/dispatch.ts`** — `run_completed` and `blocked` entries: add `executor_audit` spread. The flat `token_usage`/`cost_usd` fields on the log entry are replaced by `executor_audit.cost_usd` (shared) and `executor_audit.claude.token_usage` (Claude-specific).
 
 ### 3. `MAX_TURNS` env separation
 

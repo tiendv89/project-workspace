@@ -61,8 +61,8 @@ Extend the ABI type definitions in the `workflow` repo with the types required b
 Files:
 - **`runtime/abi/src/types.ts`** (or equivalent `TaskStatus` union location):
   - Add `"reviewing"` to the `TaskStatus` union.
-  - Add `ClaudeExecutorAudit` interface: `{ token_usage?: { input: number; output: number; model?: string }; cost_usd?: number; mcp_usage?: { rag_queries: Array<{ query: string; result_length: number }>; gitnexus_queries: Array<{ tool: string; arguments: Record<string, unknown>; result_length: number }> }; }`.
-  - Add `ExecutorAudit` interface: `{ claude?: ClaudeExecutorAudit; }` with a comment stub for future executor kinds.
+  - Add `ClaudeExecutorAudit` interface: `{ token_usage?: { input: number; output: number; model?: string }; mcp_usage?: { rag_queries: Array<{ query: string; result_length: number }>; gitnexus_queries: Array<{ tool: string; arguments: Record<string, unknown>; result_length: number }> }; }`. **`cost_usd` is NOT on `ClaudeExecutorAudit`** — it is executor-agnostic and lives on `ExecutorAudit` directly.
+  - Add `ExecutorAudit` interface: `{ cost_usd?: number; claude?: ClaudeExecutorAudit; }` — `cost_usd` at the top level so the orchestrator reads cost without coupling to a specific executor kind. Add a `hermes?` stub comment.
   - Add `executor_audit?: ExecutorAudit` to `ReviewerResult`.
   - Add `executor_audit?: ExecutorAudit` to `ExecutorResult`.
 - **`runtime/orchestrator/src/task/types.ts`** — if `TaskStatus` is defined separately here, add `"reviewing"` there as well.
@@ -77,8 +77,8 @@ No runtime behaviour changes. Compile check: `npx tsc --noEmit` must pass.
 
 - [ ] Locate `TaskStatus` union — check both `abi/src/types.ts` and `orchestrator/src/task/types.ts`
 - [ ] Add `"reviewing"` to `TaskStatus` union (both locations if split)
-- [ ] Add `ClaudeExecutorAudit` interface with `token_usage`, `cost_usd`, `mcp_usage` fields
-- [ ] Add `ExecutorAudit` interface with `claude?: ClaudeExecutorAudit` and a `hermes?` stub comment
+- [ ] Add `ClaudeExecutorAudit` interface with `token_usage` and `mcp_usage` fields (no `cost_usd` — it lives on `ExecutorAudit`)
+- [ ] Add `ExecutorAudit` interface: `{ cost_usd?: number; claude?: ClaudeExecutorAudit; }` with a `hermes?` stub comment
 - [ ] Add `executor_audit?: ExecutorAudit` to `ReviewerResult`
 - [ ] Add `executor_audit?: ExecutorAudit` to `ExecutorResult`
 - [ ] Run `npx tsc --noEmit` — zero errors
@@ -143,7 +143,7 @@ Grep verification: after this task, `grep -r "reviewer_started\|fix_started" run
 Propagate `executor_audit` from `result.json` into every orchestrator completion log entry. After this task, every reviewer session and fix-executor run will have per-session token usage and MCP query data visible in the task YAML.
 
 **`executors/claude/src/index.ts`:**
-After the existing `extractRagQueries` / `extractGitNexusQueries` calls, build a `ClaudeExecutorAudit` object and attach it as `executor_audit: { claude: claudeAudit }` to `claudeResult` before writing `result.json`. The existing `token_usage` and `cost_usd` fields move inside `claudeAudit` (keep them flat on `claudeResult` for backward compat if other code reads them directly, but also include in `executor_audit.claude`).
+After the existing `extractRagQueries` / `extractGitNexusQueries` calls, build a `ClaudeExecutorAudit` object (token_usage + mcp_usage) and an `ExecutorAudit` object, then attach it to `claudeResult` before writing `result.json`. `cost_usd` goes at the top level of `ExecutorAudit`, not inside `ClaudeExecutorAudit` — it is executor-agnostic.
 
 **`task/dispatch-review-result.ts`:**
 In all three branches (`change_requested`, default/`review_incomplete`, `passed`), spread `executor_audit` from `result` onto the log entry when present:
@@ -152,7 +152,7 @@ In all three branches (`change_requested`, default/`review_incomplete`, `passed`
 ```
 
 **`task/dispatch.ts`:**
-In the `run_completed` and `blocked` log entry writes, add `executor_audit` spread in the same pattern. The existing flat `token_usage`/`cost_usd` spreads may be kept for backward compatibility or migrated to `executor_audit.claude` — match the approach taken by the executor.
+In the `run_completed` and `blocked` log entry writes, add `executor_audit` spread in the same pattern. The existing flat `token_usage`/`cost_usd` fields migrate to `executor_audit.cost_usd` (shared) and `executor_audit.claude.token_usage` (Claude-specific).
 
 **`abi/docs/abi-spec.md`:**
 Add `executor_audit` as an optional field on `result.json`. Document the `ExecutorAudit` / `ClaudeExecutorAudit` shapes and the extensibility intent (future executor kinds add their own key).
@@ -164,7 +164,7 @@ Add `executor_audit` as an optional field on `result.json`. Document the `Execut
 ### Subtasks
 
 - [ ] Read `executors/claude/src/index.ts` — locate `extractRagQueries`/`extractGitNexusQueries` usage
-- [ ] Build `claudeAudit` from `token_usage`, `cost_usd`, and MCP query results
+- [ ] Build `claudeAudit` from `token_usage` and MCP query results (no `cost_usd` — set `executor_audit.cost_usd` at top level)
 - [ ] Attach `executor_audit: { claude: claudeAudit }` to `claudeResult` before `writeFile(result.json)`
 - [ ] Read `task/dispatch-review-result.ts` — add `executor_audit` spread to `change_requested`, `review_incomplete`, and `passed` log entries
 - [ ] Read `task/dispatch.ts` — add `executor_audit` spread to `run_completed` and `blocked` log entries
@@ -233,18 +233,18 @@ Bring Hermes executor to parity with the Claude executor for `executor_audit` ou
 Extend the `ExecutorAudit` interface (added in T2) with a `hermes` key:
 ```ts
 export interface HermesExecutorAudit {
-  token_usage?: { input?: number; output?: number };
-  turns?: number;
+  turns?: number;  // token_usage omitted unless Hermes exposes structured counts
 }
 export interface ExecutorAudit {
+  cost_usd?: number;           // already defined in T2 — do not re-add
   claude?: ClaudeExecutorAudit;
   hermes?: HermesExecutorAudit;  // add this
 }
 ```
-Fields are all optional — populate only what Hermes actually exposes in its output.
+Fields are all optional. `cost_usd` lives on `ExecutorAudit` (not on `HermesExecutorAudit`) — the wrapper sets it directly when Hermes exposes a cost figure.
 
 **`runtime/executors/hermes/src/index.ts`:**
-After Phase 5 completes (`spawnResult` available), extract whatever token/turn data Hermes emits to stdout. Build a `HermesExecutorAudit` object and merge it into result.json:
+After Phase 5 completes (`spawnResult` available), extract whatever token/turn data Hermes emits to stdout. Build the audit objects and merge into result.json:
 
 - If Hermes wrote its own result.json (Phase 6 short-circuit path): read it, add `executor_audit: { hermes: hermesAudit }`, write it back before emitting `phase_done`.
 - If the wrapper is writing result.json itself (fallback path): include `executor_audit: { hermes: hermesAudit }` directly in the object written.
@@ -260,7 +260,7 @@ Document `HermesExecutorAudit` shape alongside `ClaudeExecutorAudit`. Note that 
 
 ### Subtasks
 
-- [ ] Read `runtime/abi/src/types.ts` — add `HermesExecutorAudit` interface; add `hermes?` to `ExecutorAudit`
+- [ ] Read `runtime/abi/src/types.ts` — add `HermesExecutorAudit` interface (turns only); add `hermes?: HermesExecutorAudit` to `ExecutorAudit` (cost_usd already there from T2)
 - [ ] Read `runtime/executors/hermes/src/index.ts` — inspect `spawnResult` shape; identify available stdout data
 - [ ] Build `hermesAudit` from available stdout/result data after Phase 5
 - [ ] Phase 6 short-circuit path: augment result.json with `executor_audit.hermes` before `phase_done` emit
@@ -299,7 +299,7 @@ Write or update unit and integration tests covering all changes from T3, T4, T5,
 **Executor `executor_audit` tests:**
 - When RAG and GitNexus calls present in stdout: `result.json` contains `executor_audit.claude.mcp_usage`.
 - When no MCP calls: `executor_audit` absent from `result.json`.
-- `token_usage` and `cost_usd` appear in `executor_audit.claude` when present.
+- `token_usage` appears in `executor_audit.claude.token_usage`; `cost_usd` appears at `executor_audit.cost_usd` (top level).
 
 **`MAX_TURNS` static check:**
 - Test (or CI check) that `grep -r "MAX_TURNS" runtime/orchestrator/src/` returns zero results outside expected comment lines.
