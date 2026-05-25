@@ -1,7 +1,7 @@
 id: T1
 title: CLAUDE.md — reviewing status + transitions
 repo: management-repo
-status: review_incomplete
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -13,10 +13,10 @@ execution:
   last_updated_at: 2026-05-25T08:03:35.827Z
 pr:
   url: https://github.com/tiendv89/project-workspace/pull/331
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/331
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -113,3 +113,7 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-05-25T08:03:35.827Z
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T00:11:17+0700
+    note: Marked done — PR #331 merged. review_incomplete was reviewer executor exits; work accepted.
