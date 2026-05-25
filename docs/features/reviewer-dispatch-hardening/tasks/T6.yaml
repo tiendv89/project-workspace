@@ -1,32 +1,34 @@
 id: T6
-title: "Tests — reviewing guard + audit + MAX_TURNS"
+title: Tests — reviewing guard + audit + MAX_TURNS
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T4
   - T5
   - T7
 blocked_reason: null
-
-branch: null
-
+blocked_context: null
+branch: feature/reviewer-dispatch-hardening-T6
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-25T14:50:39+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T17:13:12.784Z
 pr:
   url: null
   status: null
-
+workspace_pr: null
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: "2026-05-25T05:35:08Z"
-    note: "Task created during reviewer-dispatch-hardening task breakdown."
+    at: 2026-05-25T05:35:08Z
+    note: Task created during reviewer-dispatch-hardening task breakdown.
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-05-26T00:12:05+0700
     note: All dependencies done (T3, T4, T5, T7).
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T17:13:12.784Z
+    note: Claimed via git-based claim protocol.
