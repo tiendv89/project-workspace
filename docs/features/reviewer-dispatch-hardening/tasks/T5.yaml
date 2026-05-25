@@ -1,7 +1,7 @@
 id: T5
 title: MAX_TURNS env separation
 repo: workflow
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -59,3 +59,7 @@ log:
       github.com/tiendv89/agent-workflow/pull/138"
     rag_query: MAX_TURNS env separation reviewer-dispatch-hardening
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-25T15:09:33+0700
+    note: Reset to ready by human — re-dispatch executor.
