@@ -9,7 +9,7 @@ branch: feature/reviewer-dispatch-hardening-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T05:45:21.729Z
+  last_updated_at: 2026-05-25T05:45:30.766Z
 pr:
   url: null
   status: null
@@ -39,3 +39,7 @@ log:
     rag_query: ABI types — ExecutorAudit + reviewing in TaskStatus
       reviewer-dispatch-hardening
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: norepy@tiendv.dev
+    note: executor_crashed (exit 1)
+    at: 2026-05-25T05:45:30.766Z
