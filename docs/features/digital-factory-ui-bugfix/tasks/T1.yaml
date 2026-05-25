@@ -1,15 +1,15 @@
 id: T1
 title: Mode-scoped paged query layer
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T1
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: "2026-05-26T01:11:38+0700"
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-25T18:46:18.429Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/50
   status: open
@@ -44,3 +44,7 @@ log:
     by: matthew@swellnetwork.io
     at: 2026-05-26T01:11:38+0700
     note: Manually set to in_review.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T18:46:18.429Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
