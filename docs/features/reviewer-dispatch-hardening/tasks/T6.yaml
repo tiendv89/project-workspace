@@ -1,13 +1,13 @@
 id: T6
 title: Tests — reviewing guard + audit + MAX_TURNS
 repo: workflow
-status: blocked
+status: in_review
 depends_on:
   - T3
   - T4
   - T5
   - T7
-blocked_reason: missing_tool
+blocked_reason: null
 blocked_context: null
 branch: feature/reviewer-dispatch-hardening-T6
 execution:
@@ -79,4 +79,11 @@ log:
     by: norepy@tiendv.dev
     note: missing_tool
     at: 2026-05-25T18:17:09.653Z
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
+blocked_suggestion: null
+  - action: unblocked
+    by: matthew@swellnetwork.io
+    at: 2026-05-26T01:37:56+0700
+    note: >-
+      Human unblock after manual review (cycle 2 escalation resolved). PR #230 approved
+      via /review-pr — both Cycle 1 blockers addressed. Resetting to in_review per
+      unblock-target rule (pr.url is set).
