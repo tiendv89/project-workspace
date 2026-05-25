@@ -33,3 +33,10 @@ log:
     by: pentative@gmail.com
     at: 2026-05-25T10:58:32.837Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-25T10:58:42.367Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: executor_audit — Hermes executor output reviewer-dispatch-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
