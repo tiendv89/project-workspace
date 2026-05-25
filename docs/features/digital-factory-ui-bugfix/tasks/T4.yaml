@@ -1,7 +1,7 @@
 id: T4
 title: Feature Task Docs markdown panel
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,10 +10,10 @@ branch: feature/digital-factory-ui-bugfix-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-25T21:12:20.510Z
+  last_updated_at: 2026-05-25T21:13:52.279Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/54
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/343
   status: open
@@ -88,3 +88,7 @@ log:
       findings. CI: no check-runs. PR squash-merged successfully."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/54#pullrequestreview-4358774816
     at: 2026-05-25T21:12:20.510Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-25T21:13:52.279Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
