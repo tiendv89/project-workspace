@@ -22,7 +22,6 @@ This creates an asymmetry: every individual task gets reviewed, but the integrat
 
 ## Non-goals
 
-- Changing how individual task PRs are reviewed.
 - Changing the human's ability to merge without waiting for APPROVE (the gate is informational / best-practice, not a GitHub branch protection rule — unless the operator configures one separately).
 - Auto-merging the feature branch PR under any condition.
 
@@ -36,9 +35,10 @@ This creates an asymmetry: every individual task gets reviewed, but the integrat
 
 ### Trigger
 The orchestrator dispatches a feature branch reviewer when:
-1. `status.yaml.handoff_pr_promoted` is `true`
-2. `status.yaml.handoff_pr_review_status` is absent or `pending`
-3. No reviewer is already in flight for the feature PR
+1. `status.yaml.feature_status` is `in_handoff`
+2. `status.yaml.handoff_pr_url` is set (written by the Handoff Trigger — the PR is created as `draft: false`, so it is immediately ready for review)
+3. `status.yaml.handoff_pr_review_status` is absent or `pending`
+4. No reviewer is already in flight for the feature PR
 
 ### Reviewer scope
 The reviewer receives:
@@ -48,7 +48,7 @@ The reviewer receives:
 
 ### Post-review state
 - On APPROVE: `status.yaml.handoff_pr_review_status = approved`; orchestrator waits for human merge
-- On REQUEST_CHANGES: `status.yaml.handoff_pr_review_status = changes_requested`; orchestrator surfaces to human for decision
+- On REQUEST_CHANGES: `status.yaml.handoff_pr_review_status = changes_requested`; orchestrator spawns a fix executor to address the changes (same pattern as task-level `change_requested → in_progress`)
 - On reviewer exit without valid result: retry up to `MAX_REVIEW_INCOMPLETES`; escalate to `blocked` after max retries
 
 ### Merge detection (unchanged)
