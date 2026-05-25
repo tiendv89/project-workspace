@@ -1,15 +1,15 @@
 id: T1
 title: Mode-scoped paged query layer
 repo: digital-factory-ui
-status: reviewing
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T1
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-25T18:56:12.925Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-25T19:02:26.632Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/50
   status: open
@@ -60,3 +60,11 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-25T18:56:12.925Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T1 subtasks implemented. CI passed (no check-runs). No 🔴/🟡 findings.
+      Architecture matches Option B. Backward-compatible paged client helpers
+      with full test coverage. Page-reset logic and shared pagination metadata
+      in BoardContext are correct. PR squash-merged.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/50#pullrequestreview-4358369735
+    at: 2026-05-25T19:02:26.632Z
