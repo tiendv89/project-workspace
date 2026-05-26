@@ -9,7 +9,7 @@ branch: feature/df-ui-bugfix-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T10:43:45.536Z
+  last_updated_at: 2026-05-26T11:07:59.764Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/60
   status: open
@@ -46,3 +46,9 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-26T10:43:45.536Z
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-26T11:07:59.764Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/df-ui-bugfix.
