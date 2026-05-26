@@ -1,0 +1,24 @@
+id: T3
+title: Task Docs tasks.md document URL rendering
+repo: digital-factory-ui
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/df-ui-bugfix-T3
+execution:
+  actor_type: agent
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-26T16:21:43+0700
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T12:42:20+0700
+    note: >-
+      Task selects the tasks_md document URL, fetches Markdown content, and renders that content in the UI.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T16:21:43+0700
+    note: Task activated on tasks-stage approval — dependencies met.
