@@ -1,15 +1,15 @@
 id: T5
 title: Task-mode feature lifecycle status mapping
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T12:05:17.597Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-26T12:36:47.853Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/60
   status: open
@@ -54,6 +54,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T12:03:53.805Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T12:36:47.853Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T11:07:59.764Z
