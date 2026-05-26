@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T1
   - T2
@@ -9,14 +9,18 @@ depends_on:
   - T4
   - T5
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T07:37:15.117Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/55
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/347
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -27,3 +31,103 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T04:48:02.020Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T04:56:38.827Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-26T04:56:50.639Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      github.com/tiendv89/digital-factory-ui/pull/39,
+      github.com/tiendv89/digital-factory-ui/pull/34"
+    rag_query: Regression tests and browser QA digital-factory-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/55"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T05:09:25.636Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T05:11:24.949Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Subtask 8 (tasks.md line 116) not implemented: no browser QA
+      verification present (no Playwright/Cypress tests, no screenshots, no
+      in-browser evidence). PR adds 949-line unit test file using
+      renderToStaticMarkup only — server-side static rendering is not browser
+      verification. Subtasks 1–7 are well covered. 🟢 Nit: test names for
+      click-behavior tests (lines 299/316/350) overstate invocation
+      verification; vi.fn() mocks are never called in renderToStaticMarkup
+      tests."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4360766052
+    at: 2026-05-26T05:19:54.199Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-26T05:21:28.892Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/55"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T05:33:47.032Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T05:35:43.081Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Subtask 8 (tasks.md line 116) still not implemented as browser
+      verification (src/__tests__/t6-regression.test.ts:795-955). Same finding
+      as cycle 1: section 8 uses renderToStaticMarkup unit tests, not in-browser
+      verification. Product spec requires browser/UI checks, technical design
+      requires browser verification, tasks.md subtask 8 says 'in-browser'. Fix:
+      run dev server and capture screenshots or Playwright output via
+      browser-qa-frontend or verify skill."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4360878240
+    at: 2026-05-26T05:44:41.586Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-26T05:45:47.247Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/55"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T06:10:52.561Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T06:12:08.935Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Playwright test 'feature cards render ID smaller than title and
+      prioritize title width' fails with 60s networkidle timeout
+      (tests/browser-qa/t6-browser-qa.spec.ts:24) — in-browser feature card
+      verification cannot complete. Fix: remove waitForLoadState('networkidle')
+      from navigateToQAPage helper, keep only waitForSelector('h1'). 7/8 browser
+      tests pass; subtasks 1–7 unit tests comprehensive. 🟢 Nit: repository
+      regression test only checks typeof repo === 'string', not DOM rendering."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4361102649
+    at: 2026-05-26T06:23:57.313Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-26T06:25:37.386Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/55"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T06:40:00.200Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T07:37:15.117Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
