@@ -1,7 +1,7 @@
 id: T1
 title: Dedicated task creation flow and detail-modal cleanup
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/df-ui-bugfix-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T11:57:15.854Z
+  last_updated_at: 2026-05-26T12:02:56.429Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/57
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/351
   status: open
@@ -120,6 +120,10 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-26T11:57:15.854Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T12:02:56.429Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-26T11:17:59.534Z
