@@ -16,7 +16,7 @@ pr:
   status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/346
-  status: open
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -125,3 +125,7 @@ rebase_log:
     at: 2026-05-26T11:46:40+0700
     note: "Manually set to in_review. Rebase and review-fix commits pushed; PR #52
       is clean and was merged. Clearing blocked_reason result_not_written."
+  - action: workspace_pr_merged
+    by: tiendv.52@gmai.com
+    at: 2026-05-26T11:54:37+0700
+    note: Workspace PR #346 manually merged — recovering from orchestrator merge failure.
