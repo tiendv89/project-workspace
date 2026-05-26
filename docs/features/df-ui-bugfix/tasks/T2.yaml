@@ -1,7 +1,7 @@
 id: T2
 title: Mode-specific list search/filter endpoint contract
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/df-ui-bugfix-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T10:59:08.930Z
+  last_updated_at: 2026-05-26T11:08:29.411Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/58
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/352
   status: open
@@ -60,3 +60,7 @@ log:
       t2-endpoint-contract.test.ts. No 🔴/🟡 findings.
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/58#pullrequestreview-4363096528
     at: 2026-05-26T10:59:08.930Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:08:29.411Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
