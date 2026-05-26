@@ -1,18 +1,22 @@
 id: T5
 title: Pagination controls and metadata wiring
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T04:48:01.438Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/52
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/346
+  status: merged
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -23,3 +27,105 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-25T19:04:25.992Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T19:06:49.770Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-25T19:07:02.221Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/product-spec.md"
+    rag_query: Pagination controls and metadata wiring digital-factory-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/52"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-25T19:25:16.496Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T19:28:11.857Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented correctly. CI passed (no check-runs). Only 🟢
+      nits: dead branch in displayRange (PaginationControls.tsx), and three
+      it.todo test placeholders deferred to T6 scope. APPROVE review posted.
+      Merge returned 405 (merge conflicts — branch needs rebase before merging);
+      orchestrator in_review poll will catch merge once rebased."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pulls/52/reviews/4358468198
+    at: 2026-05-25T19:37:23.393Z
+  - action: rebase_completed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T19:38:23.051Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T19:40:29.665Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented. CI passed (no check-runs). Only 🟢 nits:
+      dead branch in displayRange (PaginationControls.tsx:24), vacuous
+      placeholder tests (t5-pagination.test.ts:342-354), redundant page reset on
+      filter change (KanbanBoard.context.tsx:249-291). No 🔴/🟡 findings. Merge
+      returned HTTP 405 (merge conflicts) — branch needs rebase before
+      human/orchestrator can merge."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/52#pullrequestreview-4358505626
+    at: 2026-05-25T19:47:51.633Z
+  - action: rebase_completed
+    by: norepy@tiendv.dev
+    at: 2026-05-25T19:48:06.407Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-25T19:50:10.775Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented. CI passed (no check-runs). Only 🟢 nits:
+      dead branch in displayRange (PaginationControls.tsx), two expect(true)
+      placeholder tests (t5-pagination.test.ts:296-305), redundant page reset in
+      context (KanbanBoard.context.tsx). Merge returned HTTP 405 (branch
+      protection/conflict) — orchestrator in_review poll will catch merge once
+      rebased."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/52#pullrequestreview-4358541768
+    at: 2026-05-25T19:58:18.108Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T04:48:01.438Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-05-26T04:48:19.455Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Base branch was modified. Review and try the merge
+      again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+conflict_state: resolved
+rebase_log:
+  - at: 2026-05-25T19:27:09.318Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
+  - at: 2026-05-25T19:39:12.317Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
+  - at: 2026-05-25T19:49:38.134Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-26T11:46:40+0700
+    note: "Manually set to in_review. Rebase and review-fix commits pushed; PR #52
+      is clean and was merged. Clearing blocked_reason result_not_written."
+  - action: workspace_pr_merged
+    by: tiendv.52@gmai.com
+    at: 2026-05-26T11:54:37+0700
+    note: Workspace PR #346 manually merged — recovering from orchestrator merge failure.
