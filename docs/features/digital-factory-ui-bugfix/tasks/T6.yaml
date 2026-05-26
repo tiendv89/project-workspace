@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -13,8 +13,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-26T05:11:24.949Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T05:19:54.199Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/55
   status: open
@@ -55,3 +55,15 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-26T05:11:24.949Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Subtask 8 (tasks.md line 116) not implemented: no browser QA
+      verification present (no Playwright/Cypress tests, no screenshots, no
+      in-browser evidence). PR adds 949-line unit test file using
+      renderToStaticMarkup only — server-side static rendering is not browser
+      verification. Subtasks 1–7 are well covered. 🟢 Nit: test names for
+      click-behavior tests (lines 299/316/350) overstate invocation
+      verification; vi.fn() mocks are never called in renderToStaticMarkup
+      tests."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4360766052
+    at: 2026-05-26T05:19:54.199Z
