@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -13,8 +13,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-26T06:12:08.935Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T06:23:57.313Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/55
   status: open
@@ -106,3 +106,14 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-26T06:12:08.935Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Playwright test 'feature cards render ID smaller than title and
+      prioritize title width' fails with 60s networkidle timeout
+      (tests/browser-qa/t6-browser-qa.spec.ts:24) — in-browser feature card
+      verification cannot complete. Fix: remove waitForLoadState('networkidle')
+      from navigateToQAPage helper, keep only waitForSelector('h1'). 7/8 browser
+      tests pass; subtasks 1–7 unit tests comprehensive. 🟢 Nit: repository
+      regression test only checks typeof repo === 'string', not DOM rendering."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4361102649
+    at: 2026-05-26T06:23:57.313Z
