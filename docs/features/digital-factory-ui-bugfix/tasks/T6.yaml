@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
   - T2
@@ -13,8 +13,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T06:10:52.561Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-26T06:12:08.935Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/55
   status: open
@@ -102,3 +102,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-26T06:10:52.561Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T06:12:08.935Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
