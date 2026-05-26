@@ -1,15 +1,15 @@
 id: T3
 title: Task Docs tasks.md document URL rendering
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T3
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T10:38:58.764Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-26T12:06:22.352Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/59
   status: open
@@ -46,3 +46,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-26T10:38:58.764Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T12:06:22.352Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
