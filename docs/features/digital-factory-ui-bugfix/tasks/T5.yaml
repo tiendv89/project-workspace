@@ -1,10 +1,10 @@
 id: T5
 title: Pagination controls and metadata wiring
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on:
   - T1
-blocked_reason: result_not_written
+blocked_reason: null
 blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T5
 execution:
@@ -96,7 +96,7 @@ log:
       rebased."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/52#pullrequestreview-4358541768
     at: 2026-05-25T19:58:18.108Z
-conflict_state: resolving
+conflict_state: resolved
 rebase_log:
   - at: 2026-05-25T19:27:09.318Z
     action: rebase_started
@@ -110,3 +110,9 @@ rebase_log:
     action: rebase_started
     by: norepy@tiendv.dev
     note: Rebase claimed; targeting origin/feature/digital-factory-ui-bugfix.
+  - action: in_review
+    by: tiendv.52@gmai.com
+    at: 2026-05-26T11:46:40+0700
+    note: >-
+      Manually set to in_review. Rebase and review-fix commits pushed; PR #52
+      is clean and was merged. Clearing blocked_reason result_not_written.
