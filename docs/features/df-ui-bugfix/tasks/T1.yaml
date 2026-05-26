@@ -1,7 +1,7 @@
 id: T1
 title: Dedicated task creation flow and detail-modal cleanup
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -78,6 +78,16 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-26T11:35:54.579Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: noreply@tiendv.dev
+    at: 2026-05-26T11:39:48+0000
+    note: >-
+      🟡 Missing test: task creation opens the dedicated flow
+      (src/features/board/components/CreateTaskButton/CreateTaskButton.tsx).
+      T1 subtask 5 requires focused tests proving task creation opens the
+      dedicated flow — no test was added for CreateTaskButton. All other T1
+      subtasks are correctly implemented.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/57#pullrequestreview-4363314398
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-26T11:17:59.534Z
