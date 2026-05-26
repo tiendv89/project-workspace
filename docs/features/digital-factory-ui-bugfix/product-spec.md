@@ -20,6 +20,10 @@ Today, users can see misleading feature status in task mode, list data can come 
 - Remove the status tag from feature cards in feature mode.
 - Adjust Feature mode cards so the feature ID is smaller than the title and the title gets as much visible space as possible.
 - Fix the Feature tab Tasks panel so the nested tabs are `Tasks List` and `Task Docs`, and `Task Docs` loads `tasks.md` from the document URL/path and renders it as formatted Markdown.
+- Add a collapsible/expandable panel for blocked tasks at the top of the tasks sidebar, pushing blocked tasks to the top.
+- Show prominent, highly visible status age/duration indicators for each task in the sidebar based on its current status (e.g., duration in ready, in progress, in review, or blocked status).
+- Detect and format web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) within the task activity timeline and log entries without using any regular expressions (regex). Detected links must be highlighted and rendered as clickable hyperlinks that open in a new tab/window.
+- Reorder the sections inside the Task tab (rendered in `TaskDetailSheet`) so that the "Pull Request" section is positioned at the very top, followed by "Details", "Execution", "Last Updated", and "Activity Timeline".
 
 ## Goals
 - Users see the correct feature lifecycle status in task mode.
@@ -30,6 +34,10 @@ Today, users can see misleading feature status in task mode, list data can come 
 - Users see repository values as task tab metadata text.
 - Feature mode cards show only the intended feature metadata, with title prioritized over feature ID.
 - Users can open Task Docs from the Feature tab and read the `tasks.md` content as formatted Markdown without leaving the app.
+- Users can view and manage blocked tasks quickly via a dedicated, collapsible top-level sidebar panel.
+- Users can easily monitor task progress and bottlenecks using prominent duration/age displays for task statuses in the sidebar.
+- Users can click on web links inside the activity timeline and log entries to open them in a new tab.
+- Users can view Pull Request information at the very top of the Task tab for immediate visibility, before reading other task metadata.
 
 ## Non-goals
 - No backend API redesign beyond consuming the existing mode-specific list endpoints and their query params.
@@ -51,4 +59,8 @@ Today, users can see misleading feature status in task mode, list data can come 
 - Feature cards in feature mode no longer show a status tag.
 - Feature cards in feature mode render feature ID smaller than title and prioritize title visibility.
 - Feature tab Tasks panel shows `Tasks List` and `Task Docs`, and Task Docs renders the `tasks.md` content as formatted Markdown from the document URL/path.
+- The task sidebar displays a collapsible/expandable section for blocked tasks positioned at the very top.
+- Every task in the sidebar displays a prominent, easily readable duration/age indicator showing how long it has been in its current status (e.g., "ready", "in progress", "in review", "blocked").
+- Web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) within the task activity timeline/logs are detected without using regular expressions (regex), highlighted as clickable hyperlinks, and open in a new tab/window when clicked.
+- In the Task tab, the sections are rendered in the following specific top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
 - The fix is verified with focused regression coverage and browser/UI checks.

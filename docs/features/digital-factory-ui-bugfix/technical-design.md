@@ -15,6 +15,8 @@ The current `digital-factory-ui` behavior has several concrete UI problems:
 - Feature cards in feature mode do not yet have the intended copy hierarchy: feature ID should be secondary and smaller than the title, while the title should get as much visible width as possible.
 - Feature cards in feature mode must not show a status tag.
 - The Feature tab Tasks panel must expose nested tabs as `Tasks List` and `Task Docs`; `Task Docs` must load `tasks.md` from the document URL/path and render it as formatted Markdown.
+- The tasks sidebar displays "In Progress", "In Review", and "Ready" sections, but lacks a dedicated section for "Blocked" tasks. Blocked tasks are mixed within other lists or omitted.
+- The tasks sidebar sections cannot be collapsed/expanded to focus on specific work states, and there are no status duration indicators showing how long a task has been in its current state.
 
 Relevant implementation points in `digital-factory-ui`:
 - `src/services/workflow-backend/types.ts` already defines `PagedFeatures` and `PagedTasks` with `items`, `total`, `page`, and `limit`.
@@ -26,6 +28,8 @@ Relevant implementation points in `digital-factory-ui`:
 - `src/features/board/components/FeatureBoardView/FeatureBoardView.tsx` currently wires Feature mode card single-click to selection/modal state and double-click to tab opening. The primary click should open the Feature tab.
 - `src/features/board/components/TaskBoardView/TaskBoardView.tsx`, `src/features/board/components/FeatureRow/FeatureRow.tsx`, and task card wiring currently route task selection through modal state. The primary task click should open the Task tab.
 - `src/features/board/components/FeatureTabView/FeatureTasksPanel.tsx` already has the document-content path through `useDocumentContent()` and `MarkdownBlock`, but the visible tab label and fallback copy still need to match `Task Docs`.
+- `src/features/board/components/TaskTrackingPanel/TaskTrackingPanel.tsx` groups and lists tracked sidebar tasks. It uses `groupTrackedTasks()` from `groupTasks.ts` and renders sections via `TaskTrackingSection` and tasks via `TaskTrackingItem`.
+- `src/features/board/components/TaskTrackingPanel/TaskTrackingPanel.types.ts` defines `TrackedStatus` as `"in_progress" | "ready" | "in_review"`, missing the `"blocked"` status.
 
 Current repo boundaries:
 - `project-workspace` owns the planning artifacts.
@@ -53,6 +57,8 @@ What needs to change:
 - Feature mode cards must show `feature.id` as smaller, secondary metadata and allocate the primary card width to the title so the title is visible as fully as possible.
 - Task-mode feature rows must render the feature lifecycle status from the feature response, not a task-derived proxy.
 - Feature tab Tasks panel must show `Tasks List` and `Task Docs`, and `Task Docs` must render `tasks.md` Markdown from the backend document content or document URL.
+- The tasks sidebar must include a collapsible/expandable section for "Blocked" tasks, positioned at the very top.
+- Task items in the sidebar must show prominent status duration indicators representing the elapsed time since they entered their current status, computed from the task's log or execution metadata.
 
 What must remain stable:
 - Workspace selection and other unrelated dashboard flows.
@@ -196,6 +202,8 @@ The render layer should own:
 - feature card status-tag suppression
 - feature card ID/title hierarchy
 - Feature tab `Task Docs` label and Markdown rendering
+- task activity timeline/logs regex-free link detection and click handling
+- Task tab section reordering (Pull Request first, followed by Details, Execution, Last Updated, and Activity Timeline)
 
 Behavior rules:
 - Initial board list requests use `page=1&limit=100`.
@@ -210,6 +218,14 @@ Behavior rules:
 - Feature mode card title uses the primary text area, can wrap within the card, and should only truncate after consuming the available title area.
 - Feature mode cards keep the status tag suppressed; status remains represented by the kanban-style status column/cell, not by an extra card badge.
 - Feature tab nested tasks view uses the visible labels `Tasks List` and `Task Docs`; `Task Docs` fetches or uses inline `tasks.md` content and renders it through the Markdown renderer.
+- The tasks sidebar displays the "Blocked" tasks section at the very top, followed by "In Progress", "In Review", and "Ready".
+- The "Blocked" section is collapsible/expandable, initialized as expanded, and can be toggled by the user.
+- To retrieve blocked tasks for the sidebar from the backend, the constant `SIDEBAR_TASK_PARAMS` in `src/services/workflow-backend/query-params.ts` must be updated to include `"blocked"` in its `status` array, resulting in the query parameter string `status=in_progress,in_review,ready,blocked` (adding `blocked` to the 3 existing statuses).
+- Status duration (age) is calculated by scanning the task's log in reverse to find the latest transition timestamp matching the current status (or falling back to the last log timestamp or `execution.last_updated_at`).
+- The status duration is displayed prominently on the task item in the sidebar (e.g., using a high-visibility badge, highlighted text, or color-coded status age indicators like "in progress 2d", "blocked 5h").
+- Web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) within task activity timeline and logs are detected without using regular expressions (regex).
+- Detected web links in timeline/logs are formatted/highlighted as hyperlinks, and clicking them opens the URL in a new tab/window.
+- The Task tab (rendered in `TaskDetailSheet`) reorders its sections so that the "Pull Request" (PR) section is rendered first at the very top, followed by the "Details" metadata, "Execution" info, "Last Updated" timestamp, and finally the "Activity Timeline" logs.
 
 Compatibility considerations:
 - If the backend returns explicit pagination metadata, the UI should use it directly.
@@ -234,6 +250,8 @@ Internal dependencies:
 - Feature/task click wiring and tab-opening handlers.
 - `FeatureListRow` typography and layout behavior.
 - Feature tab document loading and Markdown rendering path.
+- Task list grouping logic and sidebar components (`TaskTrackingPanel`, `groupTrackedTasks`, `TaskTrackingItem`).
+- Status duration calculations and formatting helpers.
 
 External dependencies:
 - `workflow-backend` list endpoints for features and tasks.
@@ -265,7 +283,16 @@ T3: Feature/card/status rendering fixes
 T4: Feature Task Docs markdown panel
   └── Can begin now — no blockers
 
-T2, T3, and T4 run in parallel.
+T8: Sidebar blocked section and status-age indicators
+  └── Can begin now — no blockers
+
+T9: Timeline link formatting and click-handling
+  └── Can begin now — no blockers
+
+T10: Task tab section reordering
+  └── Can begin now — no blockers
+
+T2, T3, T4, T8, T9, and T10 run in parallel.
 
 T5: Pagination controls and page-state wiring
   └── BLOCKED on D1 (pagination controls need the response metadata and query serialization confirmed)
@@ -280,6 +307,10 @@ T6: Regression tests and browser QA
   └── BLOCKED on T3 (status, repository, and feature card hierarchy must be implemented)
   └── BLOCKED on T4 (Task Docs rendering must be implemented)
   └── BLOCKED on T5 (pagination controls and page-state behavior must exist before browser QA)
+
+T7: Post-change final regression and browser QA
+  └── BLOCKED on T1, T2, T3, T4, T5, T6, T9, T10 (original features regression must be stable)
+  └── BLOCKED on T8 (sidebar blocked section and status-age indicator must be implemented)
 
 ## 7. Repository Impact
 Affected repositories:
@@ -302,6 +333,10 @@ Testing expectations:
 - Verify feature cards render feature ID smaller than the title and let the title use the primary available width.
 - Verify Feature tab nested tasks view labels are `Tasks List` and `Task Docs`.
 - Verify `Task Docs` loads `tasks.md` content from inline backend content or the document URL and renders formatted Markdown.
+- Verify the tasks sidebar displays a collapsible/expandable "Blocked" tasks panel at the very top.
+- Verify that every task item in the sidebar displays a prominent, highly visible indicator showing how long it has been in its current status.
+- Verify that web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) in the task activity timeline and logs are detected without regex, highlighted as hyperlinks, and open correctly in a new tab/window when clicked.
+- Verify that the Task tab layout displays its sections in the following specific top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
 
 Release impact:
 - Frontend-only rollout.
