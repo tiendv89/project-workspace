@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -9,19 +9,21 @@ depends_on:
   - T4
   - T5
 blocked_reason: null
-branch: "feature/digital-factory-ui-bugfix-T6"
-
+branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
   last_updated_by: null
   last_updated_at: null
-
 pr:
   url: ""
   status: not_created
-
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-25T18:38:39+0700
-    note: Task split created for focused regression coverage and browser QA after implementation tasks complete.
+    note: Task split created for focused regression coverage and browser QA after
+      implementation tasks complete.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-26T04:48:02.020Z
+    note: Task activated — dependency T5 merged and marked done.
