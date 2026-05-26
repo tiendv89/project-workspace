@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -17,5 +17,9 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T12:49:23+0700
-    note: >-
-      Task implements real Feature mode and Task mode pagination through page and limit query params on backend list endpoints.
+    note: Task implements real Feature mode and Task mode pagination through page
+      and limit query params on backend list endpoints.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:08:29.939Z
+    note: Task activated — dependency T2 merged and marked done.
