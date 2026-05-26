@@ -30,3 +30,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T10:37:53.628Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:38:13.530Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Kanban feature lifecycle status mapping df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
