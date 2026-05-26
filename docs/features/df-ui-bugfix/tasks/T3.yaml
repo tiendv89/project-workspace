@@ -1,7 +1,7 @@
 id: T3
 title: Task Docs tasks.md document URL rendering
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/df-ui-bugfix-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T12:43:19.176Z
+  last_updated_at: 2026-05-26T13:07:53.536Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/59
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/353
   status: open
@@ -58,3 +58,7 @@ log:
       content), 22 new/updated tests cover all required scenarios."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/59#pullrequestreview-4363466601
     at: 2026-05-26T12:43:19.176Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T13:07:53.536Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
