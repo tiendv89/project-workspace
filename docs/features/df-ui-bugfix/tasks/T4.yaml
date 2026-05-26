@@ -1,18 +1,20 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T11:16:04.557Z
 pr:
   url: ""
   status: not_created
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -23,3 +25,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T11:08:29.939Z
     note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:16:04.557Z
+    note: Claimed via git-based claim protocol.
