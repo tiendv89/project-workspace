@@ -1,7 +1,7 @@
 feature_id: digital-factory-ui-bugfix
 title: Digital Factory UI Bug Fix
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Execute tasks — T1, T2, T3, and T4 are ready.
 stages:
   product_spec:
@@ -158,4 +158,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/348
 impl_feature_prs:
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/56
-    status: open
+    status: merged
