@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser QA
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -13,8 +13,8 @@ blocked_context: null
 branch: feature/digital-factory-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-26T05:35:43.081Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T05:44:41.586Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/55
   status: open
@@ -81,3 +81,14 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-26T05:35:43.081Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Subtask 8 (tasks.md line 116) still not implemented as browser
+      verification (src/__tests__/t6-regression.test.ts:795-955). Same finding
+      as cycle 1: section 8 uses renderToStaticMarkup unit tests, not in-browser
+      verification. Product spec requires browser/UI checks, technical design
+      requires browser verification, tasks.md subtask 8 says 'in-browser'. Fix:
+      run dev server and capture screenshots or Playwright output via
+      browser-qa-frontend or verify skill."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/55#pullrequestreview-4360878240
+    at: 2026-05-26T05:44:41.586Z
