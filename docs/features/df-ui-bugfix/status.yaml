@@ -1,0 +1,90 @@
+feature_id: df-ui-bugfix
+title: DF UI Bug Fix
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks - T1, T2, T3, T5, and T6 are ready. T4 waits for T2; T7 waits for T1-T6.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-26T08:54:29Z
+    review_comment: Product spec approved. Feature advances to technical design.
+    review_history:
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-26T08:54:29Z
+        comment: Product spec approved. Feature advances to technical design.
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-26T09:12:42Z
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-26T09:10:30Z
+        comment: Technical design normalized into the standard tech-lead form and remains ready for review.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-26T09:12:42Z
+        comment: Technical design approved. Feature advances to task planning.
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-05-26T16:21:43+0700
+    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
+    review_history:
+      - status: awaiting_approval
+        by: minhkienn203@gmail.com
+        at: 2026-05-26T09:12:42Z
+        comment: Task breakdown submitted for approval after technical design approval.
+      - status: approved
+        by: minhkienn203@gmail.com
+        at: 2026-05-26T16:21:43+0700
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: codex
+    at: 2026-05-26T14:57:09+0700
+    note: Feature scaffold created for a separate Digital Factory UI bug-fix track.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T08:54:29Z
+    note: Product spec approved. Feature advances to in_tdd.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T09:10:30Z
+    note: Technical design normalized into the standard tech-lead form.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T09:12:42Z
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T09:12:42Z
+    note: Task breakdown submitted for approval after technical design approval.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T16:21:43+0700
+    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

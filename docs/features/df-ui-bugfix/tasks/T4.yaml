@@ -1,0 +1,21 @@
+id: T4
+title: Feature/task pagination API wiring
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T2
+blocked_reason: null
+branch: feature/df-ui-bugfix-T4
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T12:49:23+0700
+    note: >-
+      Task implements real Feature mode and Task mode pagination through page and limit query params on backend list endpoints.
