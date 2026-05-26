@@ -1,7 +1,7 @@
 id: T1
 title: Dedicated task creation flow and detail-modal cleanup
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/df-ui-bugfix-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T10:52:52.498Z
+  last_updated_at: 2026-05-26T10:54:45.097Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/57
   status: open
@@ -60,3 +60,7 @@ log:
       removed, context state cleaned up, backend dependency documented."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/57#pullrequestreview-4363054334
     at: 2026-05-26T10:52:52.498Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:54:45.097Z
+    note: Fix agent claimed.
