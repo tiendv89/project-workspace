@@ -19,7 +19,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Task-mode feature rows must show only parent feature lifecycle statuses from the feature response.
 - Kanban/Feature mode feature status must also show only parent feature lifecycle statuses from the feature response.
 - Final regression coverage must verify the above behavior plus Feature mode card typography/casing acceptance criteria that remain part of the visible UI bugfix.
-- The tasks sidebar lacks a dedicated top-level blocked task section and does not prominently show how long each task has been in its current status.
+- The tasks sidebar lacks dedicated top-level sections for blocked and in_reviewing tasks, and does not prominently show how long each task has been in its current status.
 - Task activity timeline/log entries can contain URLs such as GitHub PR links, but these links must be detected without regular expressions, highlighted, and opened safely in a new tab/window.
 - Task tab users need Pull Request information at the very top of the tab before details, execution metadata, last-updated information, and timeline logs.
 - When a user opens a task or feature tab, and then switches workspaces, the open tab still displays components and data from the previous workspace. This is incorrect because the active tab does not belong to the newly selected workspace. When switching workspaces, the active tabs must be closed, and the workspace UI state must be completely reset.
@@ -38,6 +38,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Fix Kanban/Feature mode feature status so it reads from the feature lifecycle response and never displays task lifecycle statuses.
 - Verify Feature mode card title remains the largest card text, feature ID is smaller secondary text, and title/subtitle preserve mixed casing.
 - Add a collapsible/expandable "Blocked" tasks section at the top of the tasks sidebar, with blocked tasks grouped first.
+- Add a collapsible/expandable "In Reviewing" tasks section in the tasks sidebar to display the list of tasks with status `in_reviewing`.
 - Show prominent status age/duration indicators for each task in the sidebar based on its current status transition log.
 - Detect and format web links inside task activity timeline/log text without using regular expressions; detected links must be highlighted and open in a new tab/window.
 - Reorder Task tab sections so the top-to-bottom order is Pull Request, Details, Execution, Last Updated, and Activity Timeline.
@@ -53,7 +54,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Task mode and Kanban/Feature mode show only valid feature lifecycle statuses: `in_design`, `in_tdd`, `ready_for_implementation`, `in_implementation`, `in_handoff`, `done`, `blocked`, and `cancelled`.
 - Feature status surfaces never display task lifecycle statuses such as `todo`, `ready`, `in_progress`, or `in_review`.
 - Final QA confirms the endpoint, pagination, modal removal, Task Docs, status mapping, Feature card typography/casing, sidebar blocked/status-age, timeline link formatting, and Task tab ordering requirements.
-- Users can quickly find blocked tasks in a dedicated top-level sidebar section.
+- Users can quickly find blocked tasks in a dedicated top-level sidebar section, as well as tasks with status `in_reviewing` in their own dedicated collapsible section.
 - Users can monitor task bottlenecks through visible duration/age indicators for the current status.
 - Users can click timeline/log URLs and have them open safely in a new tab/window.
 - Users see Pull Request information first when opening the Task tab.
@@ -87,6 +88,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Both feature status surfaces never display task lifecycle statuses such as `todo`, `ready`, `in_progress`, or `in_review`.
 - Feature mode card title is the largest card text, feature ID is smaller secondary text, and title/subtitle preserve mixed casing without uppercase transforms.
 - The task sidebar displays a collapsible/expandable section for blocked tasks positioned at the very top.
+- The task sidebar displays a collapsible/expandable section for tasks with status `in_reviewing` to display the list of tasks currently in review.
 - Every task in the sidebar displays a prominent, easily readable duration/age indicator showing how long it has been in its current status.
 - Web links such as `https://github.com/tiendv89/digital-factory-ui/pull/57` within the task activity timeline/logs are detected without using regular expressions, highlighted as clickable hyperlinks, and open in a new tab/window.
 - In the Task tab, sections render in this top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
