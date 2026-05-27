@@ -1,15 +1,15 @@
 id: T9
 title: Timeline link formatting and click-handling
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T9
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-27T11:05:12.456Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T11:11:42.748Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/64
   status: open
@@ -56,3 +56,11 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-27T11:05:12.456Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T9 subtasks implemented. CI passed (no check-runs). Regex-free
+      tokenizer uses startsWith+URL constructor; target=_blank rel=noopener
+      noreferrer present; 1139 tests passing; lint 0 errors. One 🟢 nit: array
+      index as React key in TimelineNoteText. No 🔴/🟡 findings."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pulls/64/reviews/4371881932
+    at: 2026-05-27T11:11:42.748Z
