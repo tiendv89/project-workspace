@@ -1,9 +1,9 @@
 id: T5
 title: Task-mode feature lifecycle status mapping
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on: []
-blocked_reason: no_changes
+blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T5
 execution:
@@ -58,6 +58,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-26T12:36:47.853Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T12:12:24+0700
+    note: >-
+      Human unblocked (was blocked/no_changes) — PR #60 exists, resetting to
+      in_review so a fix agent can rebase and re-examine the implementation.
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T11:07:59.764Z
