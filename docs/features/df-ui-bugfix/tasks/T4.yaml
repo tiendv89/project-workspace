@@ -40,3 +40,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-27T06:27:12.946Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:19.366Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      docs/features/df-ui-bugfix/technical-design.md,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Feature/task pagination API wiring df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
