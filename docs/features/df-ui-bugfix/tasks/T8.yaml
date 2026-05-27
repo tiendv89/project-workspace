@@ -1,0 +1,20 @@
+id: T8
+title: Sidebar blocked section and status-age indicators
+repo: digital-factory-ui
+status: todo
+depends_on: []
+blocked_reason: null
+branch: feature/digital-factory-ui-bugfix-T8
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T18:43:49+0700
+    note: >-
+      Task adds blocked tasks to the top of the tasks sidebar and shows current-status age for sidebar tasks.
