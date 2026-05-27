@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-27T06:56:54.838Z
+  last_updated_at: 2026-05-27T10:33:55.304Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/62
   status: merged
@@ -82,8 +82,11 @@ log:
   - action: done
     by: tiendv.52@gmai.com
     at: 2026-05-27T17:32:52+0700
-    note: >-
-      Human reverted done → review_passed. Workspace PR #356 was not merged by
+    note: "Human reverted done → review_passed. Workspace PR #356 was not merged by
       orchestrator (405 — base branch had advanced during T5/T6 rebase). PR is
       now clean; re-entering review_passed so orchestrator PR poll can retry the
-      workspace PR merge.
+      workspace PR merge."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-27T10:33:55.304Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
