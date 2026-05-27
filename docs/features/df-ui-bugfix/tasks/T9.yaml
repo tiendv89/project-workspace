@@ -9,7 +9,7 @@ branch: feature/df-ui-bugfix-T9
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-27T10:42:28.219Z
+  last_updated_at: 2026-05-27T10:44:57+0000
 pr:
   url: ""
   status: not_created
@@ -37,3 +37,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Timeline link formatting and click-handling df-ui-bugfix
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-27T10:44:57+0000
+    note: executor work phase begun.
