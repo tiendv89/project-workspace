@@ -1,18 +1,18 @@
 id: T12
 title: Sidebar in_reviewing collapsible section and list rendering
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T12
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-27T15:26:29.835Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T18:08:46.136Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/67
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/362
   status: open
@@ -65,3 +65,7 @@ log:
       tests pass. No 🔴/🟡 findings. PR squash-merged."
     review_url: https://github.com/tiendv89/digital-factory-ui/pulls/67/reviews/4373569418
     at: 2026-05-27T15:26:29.835Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:08:46.136Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
