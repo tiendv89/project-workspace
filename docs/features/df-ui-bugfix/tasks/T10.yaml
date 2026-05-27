@@ -1,7 +1,7 @@
 id: T10
 title: Task tab layout reordering
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/digital-factory-ui-bugfix-T10
@@ -18,3 +18,7 @@ log:
     at: 2026-05-26T19:09:34+0700
     note: >-
       Task reorders the sections inside the Task tab (rendered in TaskDetailSheet) so that the Pull Request section is at the very top.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:41:07+0700
+    note: Auto-readied — no dependencies, tasks stage approved.

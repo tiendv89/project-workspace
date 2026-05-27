@@ -1,7 +1,7 @@
 id: T8
 title: Sidebar blocked section and status-age indicators
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/digital-factory-ui-bugfix-T8
@@ -18,3 +18,7 @@ log:
     at: 2026-05-26T18:43:49+0700
     note: >-
       Task adds blocked tasks to the top of the tasks sidebar and shows current-status age for sidebar tasks.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:41:07+0700
+    note: Auto-readied — no dependencies, tasks stage approved.

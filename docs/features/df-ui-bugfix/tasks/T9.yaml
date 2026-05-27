@@ -1,7 +1,7 @@
 id: T9
 title: Timeline link formatting and click-handling
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: feature/digital-factory-ui-bugfix-T9
@@ -18,3 +18,7 @@ log:
     at: 2026-05-26T19:06:05+0700
     note: >-
       Task adds regex-free web link detection and highlighting to the task activity timeline and logs, enabling click-to-open behavior.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:41:07+0700
+    note: Auto-readied — no dependencies, tasks stage approved.
