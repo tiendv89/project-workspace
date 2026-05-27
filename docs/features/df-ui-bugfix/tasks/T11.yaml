@@ -1,15 +1,15 @@
 id: T11
 title: Workspace switching tab and state reset
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T11
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-27T11:10:36.060Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T11:17:19.418Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/66
   status: open
@@ -50,3 +50,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-27T11:10:36.060Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 src/__tests__/workspace-switch-reset.test.ts — Test plan item not
+      fully covered: tests verify clear-helper isolation and type exports but do
+      not behaviorally test that selectWorkspace(newId) resets openTaskTabs,
+      openFeatureTabs, activeTaskTabId, and activeFeatureTabId. Integration test
+      calling selectWorkspace and asserting context state + localStorage is
+      cleared is required."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/66#pullrequestreview-4371910709
+    at: 2026-05-27T11:17:19.418Z
