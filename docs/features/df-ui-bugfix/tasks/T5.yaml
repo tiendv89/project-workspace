@@ -1,15 +1,15 @@
 id: T5
 title: Task-mode feature lifecycle status mapping
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-27T05:14:14.333Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T06:25:58.111Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/60
   status: open
@@ -67,6 +67,15 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-27T05:14:14.333Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All T5 subtasks implemented. CI passed (no check runs). Zero red/yellow
+      findings. deriveFeatureStatusFromTasks removed;
+      normalizeFeatureLifecycleStatus gates all 8 valid feature lifecycle
+      statuses; featureStatusMap threaded from context via useBackendTaskSearch;
+      regression tests for all statuses and task-status rejection present.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/60#issuecomment-4551932302
+    at: 2026-05-27T06:25:58.111Z
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T11:07:59.764Z
