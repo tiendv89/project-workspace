@@ -1,0 +1,20 @@
+id: T11
+title: Workspace switching tab and state reset
+repo: digital-factory-ui
+status: todo
+depends_on: []
+blocked_reason: null
+branch: feature/digital-factory-ui-bugfix-T11
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T14:30:00+0700
+    note: >-
+      Task ensures that when switching workspaces, any open feature or task tab is closed/cleared, and all workspace-specific UI state is fully reset.

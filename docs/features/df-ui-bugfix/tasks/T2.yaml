@@ -1,24 +1,66 @@
 id: T2
 title: Mode-specific list search/filter endpoint contract
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/df-ui-bugfix-T2
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-26T16:21:43+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-26T11:08:29.411Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/58
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/352
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T12:22:09+0700
-    note: >-
-      Task locks Feature mode and Task mode list, search, and status filtering to their own collection endpoints.
+    note: Task locks Feature mode and Task mode list, search, and status filtering
+      to their own collection endpoints.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-26T16:21:43+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:04:07.065Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:04:21.429Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/product-spec.md"
+    rag_query: Mode-specific list search/filter endpoint contract df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/58"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T10:25:20.124Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T10:51:52.438Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T2 subtasks implemented. Feature mode and Task mode list/search/filter
+      locked to mode-specific backend endpoints (/features and /tasks). Local
+      client-side filtering removed from FeatureBoardView and TaskBoardView.
+      Status-only filter correctly activates backend search. Query params
+      serialize title and status correctly. Comprehensive tests added in
+      t2-endpoint-contract.test.ts. No 🔴/🟡 findings.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/58#pullrequestreview-4363096528
+    at: 2026-05-26T10:59:08.930Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:08:29.411Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

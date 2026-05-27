@@ -9,8 +9,12 @@ depends_on:
   - T4
   - T5
   - T6
+  - T8
+  - T9
+  - T10
+  - T11
 blocked_reason: null
-branch: feature/df-ui-bugfix-T7
+branch: feature/digital-factory-ui-bugfix-T7
 execution:
   actor_type: agent
   last_updated_by: null

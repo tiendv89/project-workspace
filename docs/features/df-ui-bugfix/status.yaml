@@ -2,8 +2,7 @@ feature_id: df-ui-bugfix
 title: DF UI Bug Fix
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Execute tasks - T1, T2, T3, T5, and T6 are ready. T4 waits for T2;
-  T7 waits for T1-T6.
+next_action: Execute tasks - T1, T2, T3, T5, T6, T8, T9, T10, and T11 are ready. T4 waits for T2; T7 waits for T1-T6 and T8-T11.
 stages:
   product_spec:
     review_status: approved
@@ -24,7 +23,8 @@ stages:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-26T09:10:30Z
-        comment: Technical design normalized into the standard tech-lead form and
+        comment:
+          Technical design normalized into the standard tech-lead form and
           remains ready for review.
       - status: approved
         by: minhkienn203@gmail.com
@@ -34,7 +34,8 @@ stages:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
     reviewed_at: 2026-05-26T16:21:43+0700
-    review_comment: Tasks approved. Feature advances to ready_for_implementation.
+    review_comment:
+      Tasks approved. Feature advances to ready_for_implementation.
       T1, T2, T3, T5, and T6 activated.
     review_history:
       - status: awaiting_approval
@@ -44,7 +45,8 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-26T16:21:43+0700
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2,
+        comment:
+          Tasks approved. Feature advances to ready_for_implementation. T1, T2,
           T3, T5, and T6 activated.
   handoff:
     review_status: draft
@@ -82,7 +84,8 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-26T16:21:43+0700
-    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3,
+    note:
+      Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3,
       T5, and T6 activated.
 revalidation:
   product_spec_required: false
