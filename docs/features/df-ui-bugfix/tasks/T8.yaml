@@ -37,3 +37,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Sidebar blocked section and status-age indicators df-ui-bugfix
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-27T10:47:46+0000
+    note: executor work phase begun.
