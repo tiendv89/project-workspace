@@ -1,7 +1,7 @@
 id: T7
 title: Post-change final regression and browser QA
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -20,7 +20,7 @@ branch: feature/df-ui-bugfix-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-27T18:49:09.387Z
+  last_updated_at: 2026-05-27T18:50:50.421Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/68
   status: open
@@ -69,3 +69,7 @@ log:
       PR. No other correctness, security, or design issues found."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/68#pullrequestreview-4375138996
     at: 2026-05-27T18:49:09.387Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:50:50.421Z
+    note: Fix agent claimed.
