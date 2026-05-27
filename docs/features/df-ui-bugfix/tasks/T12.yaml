@@ -1,15 +1,15 @@
 id: T12
 title: Sidebar in_reviewing collapsible section and list rendering
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T12
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-27T11:31:28.225Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T15:26:29.835Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/67
   status: open
@@ -55,3 +55,13 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-27T11:31:28.225Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T12 subtasks implemented: TrackedStatus extended with in_reviewing,
+      TRACKED_SECTIONS updated to 5 sections in correct order
+      (blocked→in_progress→in_reviewing→in_review→ready), section initialized
+      expanded, SIDEBAR_TASK_PARAMS updated, groupTasks.ts SIDEBAR_STATUSES
+      updated. 14 new test cases added plus existing tests updated. 1175/1175
+      tests pass. No 🔴/🟡 findings. PR squash-merged."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pulls/67/reviews/4373569418
+    at: 2026-05-27T15:26:29.835Z
