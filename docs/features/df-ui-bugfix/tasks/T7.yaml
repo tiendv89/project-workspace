@@ -1,7 +1,7 @@
 id: T7
 title: Post-change final regression and browser QA
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -26,5 +26,8 @@ log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T13:15:57+0700
-    note: >-
-      Task covers final regression and browser QA for the scoped follow-up.
+    note: Task covers final regression and browser QA for the scoped follow-up.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:08:04.678Z
+    note: Task activated — dependency T11 merged and marked done.
