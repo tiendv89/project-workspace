@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: done
+status: review_passed
 depends_on:
   - T2
 blocked_reason: null
@@ -79,3 +79,11 @@ log:
     note: 'Workspace PR merge failed — will require manual recovery. Details:
       {"message":"Pull Request is not
       mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:32:52+0700
+    note: >-
+      Human reverted done → review_passed. Workspace PR #356 was not merged by
+      orchestrator (405 — base branch had advanced during T5/T6 rebase). PR is
+      now clean; re-entering review_passed so orchestrator PR poll can retry the
+      workspace PR merge.
