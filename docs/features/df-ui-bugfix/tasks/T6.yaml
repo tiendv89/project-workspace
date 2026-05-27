@@ -1,9 +1,9 @@
 id: T6
 title: Kanban feature lifecycle status mapping
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on: []
-blocked_reason: no_changes
+blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T6
 execution:
@@ -51,6 +51,12 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T11:46:35.061Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T13:24:57+0700
+    note: >-
+      Human unblocked (was blocked/no_changes) — PR #61 exists, resetting to
+      in_review so a fix agent can rebase and re-examine the implementation.
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T10:58:20.516Z
