@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-26T11:16:54.845Z
+  last_updated_at: 2026-05-27T06:27:12.946Z
 pr:
   url: ""
   status: not_created
@@ -34,6 +34,9 @@ log:
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-27T13:25:48+0700
-    note: >-
-      Human unblocked (was blocked/executor_failed — RAG pre-flight ETIMEDOUT
+    note: Human unblocked (was blocked/executor_failed — RAG pre-flight ETIMEDOUT
       before any work started). No PR exists; resetting to ready for re-claim.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:12.946Z
+    note: Claimed via git-based claim protocol.
