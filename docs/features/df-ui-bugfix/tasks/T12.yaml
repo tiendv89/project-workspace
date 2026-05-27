@@ -1,24 +1,29 @@
 id: T12
 title: Sidebar in_reviewing collapsible section and list rendering
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: feature/digital-factory-ui-bugfix-T12
+blocked_context: null
+branch: feature/df-ui-bugfix-T12
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T11:18:32.052Z
 pr:
   url: ""
   status: not_created
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-27T18:14:47+0700
-    note: >-
-      Task adds a collapsible "In Reviewing" tasks section to the tasks sidebar.
+    note: Task adds a collapsible "In Reviewing" tasks section to the tasks sidebar.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-27T18:14:47+0700
     note: Auto-readied — no dependencies, tasks stage approved.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-27T11:18:32.052Z
+    note: Claimed via git-based claim protocol.
