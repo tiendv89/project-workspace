@@ -30,5 +30,5 @@ log:
     note: Task covers final regression and browser QA for the scoped follow-up.
   - action: ready
     by: norepy@tiendv.dev
-    at: 2026-05-27T18:08:04.678Z
-    note: Task activated — dependency T11 merged and marked done.
+    at: 2026-05-27T18:08:47.099Z
+    note: Task activated — dependency T12 merged and marked done.
