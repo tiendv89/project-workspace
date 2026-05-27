@@ -44,6 +44,7 @@ What needs to change:
 - The tasks sidebar must include a collapsible/expandable "Blocked" section at the top and show current-status age/duration for every sidebar task.
 - Timeline/log rendering must detect `http://` and `https://` links without regular expressions and render them as highlighted safe hyperlinks.
 - The Task tab must render sections in the order: Pull Request, Details, Execution, Last Updated, Activity Timeline.
+- When the active workspace switches, any open Feature tab or Task tab must be closed, and all workspace-specific UI state (e.g., search text, status filter, pagination) must be completely reset.
 
 What must remain stable:
 - Workspace selection and unrelated dashboard flows.
@@ -190,6 +191,14 @@ Choose Option B: normalize the board around tab-first UX and mode-specific backe
 - Render the remaining sections after it in this order: Details, Execution, Last Updated, Activity Timeline.
 - Preserve existing spacing, empty states, and section semantics while changing order.
 
+### Workspace switching state reset
+- Listen to active workspace ID changes using a React effect or integration in the workspace store/state manager.
+- When the workspace switches:
+  - Close and unmount any open Feature detail tab and Task detail tab (set selected feature and task IDs to `null` or equivalent).
+  - Clear workspace-specific local filter and search state (reset `title` and `status` queries).
+  - Reset active pagination state back to page `1`.
+  - Trigger a complete teardown or reset of all workspace-scoped Zustand/Redux stores or Context values to prevent stale data leaks from the old workspace.
+
 Compatibility and release considerations:
 - Existing workspace selection, Feature tab, Task tab, Markdown renderer, and backend read endpoints remain the compatibility boundary.
 - No data migration or persisted state format change is expected.
@@ -226,7 +235,7 @@ Configuration dependencies:
 
 Release dependencies:
 - T7 final regression must pass before the feature is ready for handoff.
-- T8, T9, and T10 must complete before T7 final regression because T7 verifies the sidebar blocked/status-age, timeline link, and Task tab ordering additions.
+- T8, T9, T10, and T11 must complete before T7 final regression because T7 verifies the sidebar blocked/status-age, timeline link, Task tab ordering, and workspace switching reset additions.
 - If T1 proves task creation lacks a real write contract, the handoff must call out that dependency instead of claiming local task creation is complete.
 
 ## Parallelization / Blocking Analysis
@@ -260,7 +269,10 @@ T9: Timeline link formatting and click-handling
 
 T10: Task tab layout reordering
   └── Can begin now — no blockers
-  └── T1, T2, T3, T5, T6, T8, T9, and T10 run in parallel
+  └── T1, T2, T3, T5, T6, T8, T9, T10, and T11 run in parallel
+
+T11: Workspace switching tab and state reset
+  └── Can begin now — no blockers
 
 T4: Feature/task pagination API wiring
   └── BLOCKED on T2 (pagination must use the finalized mode-specific endpoint/query contract)
@@ -275,11 +287,12 @@ T7: Post-change final regression and browser QA
   └── BLOCKED on T8 (sidebar blocked section and status-age indicator must be implemented)
   └── BLOCKED on T9 (timeline link formatting and click-handling must be implemented)
   └── BLOCKED on T10 (Task tab section ordering must be implemented)
+  └── BLOCKED on T11 (Workspace switching state reset must be implemented)
 
 Execution waves:
-- Wave 1: T1, T2, T3, T5, T6, T8, T9, and T10 can start immediately and run in parallel.
+- Wave 1: T1, T2, T3, T5, T6, T8, T9, T10, and T11 can start immediately and run in parallel.
 - Wave 2: T4 starts after T2.
-- Wave 3: T7 starts after T1 through T6 and T8 through T10 are complete.
+- Wave 3: T7 starts after T1 through T6 and T8 through T11 are complete.
 
 ## Repository Impact
 Affected repositories:
@@ -308,6 +321,7 @@ Testing expectations:
 - Verify each sidebar task shows a prominent status age/duration derived from current status history.
 - Verify timeline/log URLs are detected without regex, highlighted, and opened in a new tab/window.
 - Verify Task tab sections render in the required order: Pull Request, Details, Execution, Last Updated, Activity Timeline.
+- Verify that switching workspaces automatically closes any open Feature detail tab and Task detail tab, and completely resets workspace search, status filters, and pagination back to defaults.
 - Run focused unit/integration tests and browser UI checks for the affected views.
 
 Backward compatibility constraints:

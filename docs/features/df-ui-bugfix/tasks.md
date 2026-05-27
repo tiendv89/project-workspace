@@ -13,7 +13,8 @@
 | T8 | 1 | Sidebar blocked section and status-age indicators | none |
 | T9 | 1 | Timeline link formatting and click-handling | none |
 | T10 | 1 | Task tab layout reordering | none |
-| T7 | 4 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6, T8, T9, T10 |
+| T11 | 1 | Workspace switching tab and state reset | none |
+| T7 | 4 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6, T8, T9, T10, T11 |
 
 ## T1 — Dedicated task creation flow and detail-modal cleanup
 
@@ -170,10 +171,27 @@ Reorder the layout sections within the Task tab (rendered in `TaskDetailSheet`) 
 - [ ] Ensure all visual spacing, margins, divider lines, and empty states of the Task tab match the reordered flow in Figma.
 - [ ] Add or update render tests verifying the correct rendering order of the Task tab sections.
 
+## T11 — Workspace switching tab and state reset
+
+### Description
+Ensure that when a user switches workspaces, any open Feature tab or Task tab (active detail sheets/panels) is automatically closed and the workspace's entire UI state is completely reset (e.g., search text, status filter, and active pagination page), preventing any stale data leaks from the previous workspace.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Integrate a listener/effect on the active workspace ID to detect when the workspace has changed.
+- [ ] Automatically close any open Feature tab (clear active `selectedFeatureId` or equivalent) on workspace switch.
+- [ ] Automatically close any open Task tab (clear active `selectedTaskId` or equivalent) on workspace switch.
+- [ ] Reset workspace-scoped queries: clear search search-text, reset selected status filters, and reset active pagination page back to `1` when workspace is switched.
+- [ ] Reset or clear any other workspace-specific local component state or store/context caches on workspace switch.
+- [ ] Add unit/integration tests confirming that the active detail tabs and list filters are successfully reset to their default states when the workspace ID changes.
+
 ## T7 — Post-change final regression and browser QA
 
 ### Description
-Perform final verification of the sidebar blocked panel, collapsible toggles, status-age indicators, timeline link formatting, Task tab section reordering, and run comprehensive regression tests across the entire workspace UI, ensuring zero broken flows after T8, T9, and T10 are implemented.
+Perform final verification of the sidebar blocked panel, collapsible toggles, status-age indicators, timeline link formatting, Task tab section reordering, workspace switching tab and state reset, and run comprehensive regression tests across the entire workspace UI, ensuring zero broken flows after T8, T9, T10, and T11 are implemented.
 
 ### Required skills
 - browser-qa-frontend
@@ -187,4 +205,5 @@ Perform final verification of the sidebar blocked panel, collapsible toggles, st
 - [ ] Verify that adding a log transition dynamically updates the status age on the sidebar.
 - [ ] Assert that web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) are correctly highlighted and clickable in the timeline and logs, opening in a new tab/window.
 - [ ] Assert that the Task tab sections are rendered in the correct specific top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
-- [ ] Run full regression suite on digital-factory-ui to ensure all features (T1-T6, T8, T9, T10) are functioning.
+- [ ] Assert that switching workspaces automatically closes any open Feature or Task detail sheet/tab and resets query parameters/UI state back to defaults.
+- [ ] Run full regression suite on digital-factory-ui to ensure all features (T1-T6, T8, T9, T10, T11) are functioning.
