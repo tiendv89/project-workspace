@@ -1,10 +1,10 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on:
   - T2
-blocked_reason: "executor_failed:rag_pre_flight_error: Error: spawnSync /bin/sh ETIMEDOUT"
+blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T4
 execution:
@@ -31,3 +31,9 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-26T11:16:04.557Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T13:25:48+0700
+    note: >-
+      Human unblocked (was blocked/executor_failed — RAG pre-flight ETIMEDOUT
+      before any work started). No PR exists; resetting to ready for re-claim.
