@@ -30,3 +30,10 @@ log:
     by: pentative@gmail.com
     at: 2026-05-27T10:42:13.601Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-27T10:42:24.207Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Sidebar blocked section and status-age indicators df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
