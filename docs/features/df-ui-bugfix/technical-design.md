@@ -172,11 +172,12 @@ Choose Option B: normalize the board around tab-first UX and mode-specific backe
 - Confirm feature ID is smaller secondary text.
 - Confirm title/subtitle preserve mixed casing without CSS or JavaScript uppercase transforms.
 
-### Sidebar blocked section and status-age indicators
-- Extend the sidebar tracked status model to include `blocked`.
+### Sidebar blocked and in_reviewing sections and status-age indicators
+- Extend the sidebar tracked status model to include `blocked` and `in_reviewing`.
 - Add a "Blocked" section at the top of the tracked task sections, initialized expanded and user-toggleable.
-- Include `blocked` in the sidebar task query status params so blocked tasks are fetched alongside ready/in-progress/in-review work.
-- Group blocked tasks into the new top bucket.
+- Add an "In Reviewing" section to display tasks with status `in_reviewing` in the sidebar, collapsible/expandable and initialized expanded. This section must be positioned second, directly after "In Progress" in the tracked task sections (third overall after "Blocked" and "In Progress").
+- Include `blocked` and `in_reviewing` in the sidebar task query status params so these tasks are fetched alongside ready/in-progress/in-review work.
+- Group blocked and in_reviewing tasks into their respective new sidebar buckets.
 - Compute status age by scanning task logs in reverse for the latest transition matching the current status; fall back to last log or execution timestamp when needed.
 - Render status age prominently on each sidebar task with readable duration text such as `2d`, `5h`, `10m`, or `30s`.
 
@@ -235,7 +236,7 @@ Configuration dependencies:
 
 Release dependencies:
 - T7 final regression must pass before the feature is ready for handoff.
-- T8, T9, T10, and T11 must complete before T7 final regression because T7 verifies the sidebar blocked/status-age, timeline link, Task tab ordering, and workspace switching reset additions.
+- T8, T9, T10, T11, and T12 must complete before T7 final regression because T7 verifies the sidebar blocked/status-age, the collapsible in_reviewing section, timeline link, Task tab ordering, and workspace switching reset additions.
 - If T1 proves task creation lacks a real write contract, the handoff must call out that dependency instead of claiming local task creation is complete.
 
 ## Parallelization / Blocking Analysis
@@ -269,9 +270,12 @@ T9: Timeline link formatting and click-handling
 
 T10: Task tab layout reordering
   └── Can begin now — no blockers
-  └── T1, T2, T3, T5, T6, T8, T9, T10, and T11 run in parallel
+  └── T1, T2, T3, T5, T6, T8, T9, T10, T11, and T12 run in parallel
 
 T11: Workspace switching tab and state reset
+  └── Can begin now — no blockers
+
+T12: Sidebar in_reviewing collapsible section and list rendering
   └── Can begin now — no blockers
 
 T4: Feature/task pagination API wiring
@@ -288,11 +292,12 @@ T7: Post-change final regression and browser QA
   └── BLOCKED on T9 (timeline link formatting and click-handling must be implemented)
   └── BLOCKED on T10 (Task tab section ordering must be implemented)
   └── BLOCKED on T11 (Workspace switching state reset must be implemented)
+  └── BLOCKED on T12 (sidebar in_reviewing collapsible section must be implemented)
 
 Execution waves:
-- Wave 1: T1, T2, T3, T5, T6, T8, T9, T10, and T11 can start immediately and run in parallel.
+- Wave 1: T1, T2, T3, T5, T6, T8, T9, T10, T11, and T12 can start immediately and run in parallel.
 - Wave 2: T4 starts after T2.
-- Wave 3: T7 starts after T1 through T6 and T8 through T11 are complete.
+- Wave 3: T7 starts after T1 through T6 and T8 through T12 are complete.
 
 ## Repository Impact
 Affected repositories:

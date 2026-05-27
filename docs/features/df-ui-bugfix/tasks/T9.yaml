@@ -1,24 +1,70 @@
 id: T9
 title: Timeline link formatting and click-handling
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: feature/digital-factory-ui-bugfix-T9
+blocked_context: null
+branch: feature/df-ui-bugfix-T9
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T11:21:07.222Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/64
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/359
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T19:06:05+0700
-    note: >-
-      Task adds regex-free web link detection and highlighting to the task activity timeline and logs, enabling click-to-open behavior.
+    note: Task adds regex-free web link detection and highlighting to the task
+      activity timeline and logs, enabling click-to-open behavior.
   - action: ready
     by: tiendv.52@gmai.com
     at: 2026-05-27T17:41:07+0700
     note: Auto-readied — no dependencies, tasks stage approved.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-27T10:42:28.219Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-27T10:42:37.801Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Timeline link formatting and click-handling df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-27T10:44:57+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/64"
+    executor_audit:
+      cost_usd: 0.420894
+      claude:
+        token_usage:
+          input: 278
+          output: 28004
+          model: claude-sonnet-4-6
+    at: 2026-05-27T11:03:43.372Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-27T11:05:12.456Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T9 subtasks implemented. CI passed (no check-runs). Regex-free
+      tokenizer uses startsWith+URL constructor; target=_blank rel=noopener
+      noreferrer present; 1139 tests passing; lint 0 errors. One 🟢 nit: array
+      index as React key in TimelineNoteText. No 🔴/🟡 findings."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pulls/64/reviews/4371881932
+    at: 2026-05-27T11:11:42.748Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T11:21:07.222Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

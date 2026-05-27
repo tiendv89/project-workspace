@@ -14,7 +14,8 @@
 | T9 | 1 | Timeline link formatting and click-handling | none |
 | T10 | 1 | Task tab layout reordering | none |
 | T11 | 1 | Workspace switching tab and state reset | none |
-| T7 | 4 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6, T8, T9, T10, T11 |
+| T12 | 1 | Sidebar in_reviewing collapsible section and list rendering | none |
+| T7 | 4 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6, T8, T9, T10, T11, T12 |
 
 ## T1 — Dedicated task creation flow and detail-modal cleanup
 
@@ -191,7 +192,7 @@ Ensure that when a user switches workspaces, any open Feature tab or Task tab (a
 ## T7 — Post-change final regression and browser QA
 
 ### Description
-Perform final verification of the sidebar blocked panel, collapsible toggles, status-age indicators, timeline link formatting, Task tab section reordering, workspace switching tab and state reset, and run comprehensive regression tests across the entire workspace UI, ensuring zero broken flows after T8, T9, T10, and T11 are implemented.
+Perform final verification of the sidebar blocked panel, collapsible toggles, status-age indicators, timeline link formatting, Task tab section reordering, workspace switching tab and state reset, the collapsible "In Reviewing" section, and run comprehensive regression tests across the entire workspace UI, ensuring zero broken flows after T8, T9, T10, T11, and T12 are implemented.
 
 ### Required skills
 - browser-qa-frontend
@@ -200,10 +201,29 @@ Perform final verification of the sidebar blocked panel, collapsible toggles, st
 ### Subtasks
 - [ ] Assert the "Blocked" section is rendered at the top of the tasks sidebar.
 - [ ] Assert the "Blocked" section collapsible toggles correctly.
+- [ ] Assert the "In Reviewing" section is rendered on the tasks sidebar.
+- [ ] Assert the "In Reviewing" section collapsible toggles correctly and lists tasks with status `in_reviewing`.
 - [ ] Assert status duration values are formatted and displayed correctly on each task.
 - [ ] Perform cross-browser testing for the status age indicators' styles and alignment.
 - [ ] Verify that adding a log transition dynamically updates the status age on the sidebar.
 - [ ] Assert that web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) are correctly highlighted and clickable in the timeline and logs, opening in a new tab/window.
 - [ ] Assert that the Task tab sections are rendered in the correct specific top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
 - [ ] Assert that switching workspaces automatically closes any open Feature or Task detail sheet/tab and resets query parameters/UI state back to defaults.
-- [ ] Run full regression suite on digital-factory-ui to ensure all features (T1-T6, T8, T9, T10, T11) are functioning.
+- [ ] Run full regression suite on digital-factory-ui to ensure all features (T1-T6, T8, T9, T10, T11, T12) are functioning.
+
+## T12 — Sidebar in_reviewing collapsible section and list rendering
+
+### Description
+Add a collapsible/expandable "In Reviewing" tasks section in the tasks sidebar to group and display the list of tasks with status `in_reviewing`. This section should be user-toggleable, initialized as expanded, and positioned second, directly after "In Progress" in the active status sections list (third overall after "Blocked" and "In Progress").
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Extend `TrackedStatus` type to include `"in_reviewing"`.
+- [ ] Add the "In Reviewing" section to the `TRACKED_SECTIONS` list, positioned second, directly after "In Progress" (third overall after "Blocked" and "In Progress").
+- [ ] Configure the "In Reviewing" section to be collapsible/expandable, initialized as expanded.
+- [ ] Update `SIDEBAR_TASK_PARAMS` in `query-params.ts` to include `"in_reviewing"` in the status parameter list.
+- [ ] Update task grouping logic in `groupTasks.ts` to populate the "In Reviewing" bucket with `in_reviewing` tasks.
+- [ ] Add unit tests for the task grouping and sidebar changes for `in_reviewing` status.
