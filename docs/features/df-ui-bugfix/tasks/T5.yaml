@@ -1,18 +1,18 @@
 id: T5
 title: Task-mode feature lifecycle status mapping
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-27T06:25:58.111Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T10:28:33.212Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/60
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/354
   status: open
@@ -76,6 +76,10 @@ log:
       regression tests for all statuses and task-status rejection present.
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/60#issuecomment-4551932302
     at: 2026-05-27T06:25:58.111Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T10:28:33.212Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T11:07:59.764Z
