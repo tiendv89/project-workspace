@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T2
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-27T06:46:25.259Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T06:56:06.974Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/62
   status: open
@@ -60,3 +60,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-27T06:46:25.259Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T4 subtasks implemented. 993/993 tests pass. No 🔴/🟡 findings. Sort
+      and page-size state added to BoardContext; page-reset correctly wired for
+      all filter/sort/limit changes; PageSizeSelector and SortSelector UI
+      components added; shouldResetPage extended to include limit-change
+      detection.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/62#pullrequestreview-4370060656
+    at: 2026-05-27T06:56:06.974Z
