@@ -1,7 +1,7 @@
 id: T7
 title: Post-change final regression and browser QA
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T1
   - T2
@@ -20,10 +20,10 @@ branch: feature/df-ui-bugfix-T7
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-27T19:11:51.096Z
+  last_updated_at: 2026-05-27T19:13:43.772Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/68
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/363
   status: open
@@ -93,3 +93,7 @@ log:
       findings remain. PR squash-merged successfully.
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/68#pullrequestreview-4375307693
     at: 2026-05-27T19:11:51.096Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T19:13:43.772Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
