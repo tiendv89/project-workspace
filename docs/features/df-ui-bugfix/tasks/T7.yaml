@@ -1,7 +1,7 @@
 id: T7
 title: Post-change final regression and browser QA
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -15,14 +15,16 @@ depends_on:
   - T11
   - T12
 blocked_reason: null
-branch: feature/digital-factory-ui-bugfix-T7
+blocked_context: null
+branch: feature/df-ui-bugfix-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T18:11:29.237Z
 pr:
   url: ""
   status: not_created
+workspace_pr: null
 log:
   - action: created
     by: minhkienn203@gmail.com
@@ -32,3 +34,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-27T18:08:47.099Z
     note: Task activated — dependency T12 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:11:29.237Z
+    note: Claimed via git-based claim protocol.
