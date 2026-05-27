@@ -1,15 +1,15 @@
 id: T6
 title: Kanban feature lifecycle status mapping
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-bugfix-T6
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-27T06:25:44.194Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T06:33:40.671Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/61
   status: open
@@ -60,6 +60,14 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-27T06:25:44.194Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All 6 T6 subtasks implemented. CI passed (no check-runs). 1002/1002 tests
+      pass. 0 lint errors. isValidFeatureStatus guard correctly filters Kanban
+      columns to feature lifecycle statuses only. Task-status derivation removed
+      from workspaceAdapter. No 🔴 or 🟡 findings.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/61#pullrequestreview-4369914644
+    at: 2026-05-27T06:33:40.671Z
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T10:58:20.516Z
