@@ -1,7 +1,7 @@
 id: T6
 title: Kanban feature lifecycle status mapping
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/df-ui-bugfix-T6
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-27T06:33:40.671Z
+  last_updated_at: 2026-05-27T07:55:57.678Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/61
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/355
   status: open
@@ -68,6 +68,10 @@ log:
       from workspaceAdapter. No 🔴 or 🟡 findings.
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/61#pullrequestreview-4369914644
     at: 2026-05-27T06:33:40.671Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-27T07:55:57.678Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolving
 rebase_log:
   - at: 2026-05-26T10:58:20.516Z
