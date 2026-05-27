@@ -1,7 +1,7 @@
 id: T8
 title: Sidebar blocked section and status-age indicators
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/df-ui-bugfix-T8
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-27T11:12:49.727Z
+  last_updated_at: 2026-05-27T11:20:19.960Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/65
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/358
   status: open
@@ -64,3 +64,7 @@ log:
       (196 lines). No 🔴/🟡 findings. CI: no check-runs. PR squash-merged."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/65#pullrequestreview-4371884531
     at: 2026-05-27T11:12:49.727Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T11:20:19.960Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
