@@ -7,7 +7,7 @@
 - GitHub: https://github.com/tiendv89/digital-factory-ui
 
 ## Scope
-This specification keeps only the scoped follow-up work for task creation, endpoint contracts, Task Docs rendering, pagination, feature lifecycle status mapping, sidebar blocked/status-age visibility, timeline link formatting, Task tab section ordering, and final regression QA.
+This specification keeps only the scoped follow-up work for task creation, endpoint contracts, Task Docs rendering, pagination, feature lifecycle status mapping, sidebar blocked/status-age visibility, timeline link formatting, Task tab section ordering, workspace switching tab and state reset, and final regression QA.
 
 ## Problem
 The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui` after the earlier base tasks:
@@ -22,6 +22,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - The tasks sidebar lacks a dedicated top-level blocked task section and does not prominently show how long each task has been in its current status.
 - Task activity timeline/log entries can contain URLs such as GitHub PR links, but these links must be detected without regular expressions, highlighted, and opened safely in a new tab/window.
 - Task tab users need Pull Request information at the very top of the tab before details, execution metadata, last-updated information, and timeline logs.
+- When a user opens a task or feature tab, and then switches workspaces, the open tab still displays components and data from the previous workspace. This is incorrect because the active tab does not belong to the newly selected workspace. When switching workspaces, the active tabs must be closed, and the workspace UI state must be completely reset.
 
 ## Required Fixes and Additions
 - Add a dedicated task creation entry point and flow/dialog that is independent of task and feature detail modals.
@@ -40,6 +41,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Show prominent status age/duration indicators for each task in the sidebar based on its current status transition log.
 - Detect and format web links inside task activity timeline/log text without using regular expressions; detected links must be highlighted and open in a new tab/window.
 - Reorder Task tab sections so the top-to-bottom order is Pull Request, Details, Execution, Last Updated, and Activity Timeline.
+- Reset the active feature and task tabs, and completely clear/reset all workspace UI state (such as active detail panels, open tabs, search queries, filters, and pagination) when switching workspaces to prevent stale information from persisting.
 
 ## Goals
 - Users create tasks through a dedicated task creation flow, not through task or feature detail modals.
@@ -55,6 +57,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Users can monitor task bottlenecks through visible duration/age indicators for the current status.
 - Users can click timeline/log URLs and have them open safely in a new tab/window.
 - Users see Pull Request information first when opening the Task tab.
+- Users see a completely clean, reset workspace UI state upon switching workspaces, with any previously open feature or task tab closed.
 
 ## Non-goals
 - No backend API redesign beyond consuming existing mode-specific list endpoints and query params.
@@ -87,4 +90,7 @@ The follow-up bugfix scope addresses remaining UI defects in `digital-factory-ui
 - Every task in the sidebar displays a prominent, easily readable duration/age indicator showing how long it has been in its current status.
 - Web links such as `https://github.com/tiendv89/digital-factory-ui/pull/57` within the task activity timeline/logs are detected without using regular expressions, highlighted as clickable hyperlinks, and open in a new tab/window.
 - In the Task tab, sections render in this top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
+- Switching workspaces automatically closes any active Feature tab and Task tab (e.g., active detail sheets or panels).
+- Switching workspaces completely resets search queries, selected status filters, sorting state, and pagination back to their default values for the new workspace.
+- Switching workspaces triggers a full state reset in all workspace-scoped components and state managers (such as Zustand/Redux stores or Contexts), ensuring no data leaks from the previous workspace.
 - The scoped follow-up is verified with focused regression coverage and browser/UI checks.

@@ -1,24 +1,96 @@
 id: T5
 title: Task-mode feature lifecycle status mapping
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/df-ui-bugfix-T5
 execution:
   actor_type: agent
-  last_updated_by: minhkienn203@gmail.com
-  last_updated_at: 2026-05-26T16:21:43+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T10:28:33.212Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/60
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/354
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T13:01:58+0700
-    note: >-
-      Task fixes Task mode feature rows so status is read from the parent feature lifecycle response.
+    note: Task fixes Task mode feature rows so status is read from the parent
+      feature lifecycle response.
   - action: ready
     by: minhkienn203@gmail.com
     at: 2026-05-26T16:21:43+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:24:07.655Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-26T10:24:24.913Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      docs/features/df-ui-bugfix/technical-design.md,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Task-mode feature lifecycle status mapping df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/60"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-26T10:43:45.536Z
+  - action: rebase_completed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:36:22.133Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: rebase_completed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T12:03:53.805Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-26T12:36:47.853Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T12:12:24+0700
+    note: "Human unblocked (was blocked/no_changes) — PR #60 exists, resetting to
+      in_review so a fix agent can rebase and re-examine the implementation."
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-27T05:14:14.333Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All T5 subtasks implemented. CI passed (no check runs). Zero red/yellow
+      findings. deriveFeatureStatusFromTasks removed;
+      normalizeFeatureLifecycleStatus gates all 8 valid feature lifecycle
+      statuses; featureStatusMap threaded from context via useBackendTaskSearch;
+      regression tests for all statuses and task-status rejection present.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/60#issuecomment-4551932302
+    at: 2026-05-27T06:25:58.111Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T10:28:33.212Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-26T11:07:59.764Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/df-ui-bugfix.
+  - at: 2026-05-26T11:52:16.287Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/df-ui-bugfix.
+  - at: 2026-05-26T12:05:17.597Z
+    action: rebase_started
+    by: norepy@tiendv.dev
+    note: Rebase claimed; targeting origin/feature/df-ui-bugfix.

@@ -12,6 +12,7 @@ depends_on:
   - T8
   - T9
   - T10
+  - T11
 blocked_reason: null
 branch: feature/digital-factory-ui-bugfix-T7
 execution:
