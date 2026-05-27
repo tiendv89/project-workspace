@@ -1,7 +1,7 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-27T06:56:06.974Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T06:56:54.838Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/62
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/356
   status: open
@@ -69,3 +69,7 @@ log:
       detection.
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/62#pullrequestreview-4370060656
     at: 2026-05-27T06:56:06.974Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-27T06:56:54.838Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
