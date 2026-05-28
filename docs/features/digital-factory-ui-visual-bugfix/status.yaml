@@ -163,3 +163,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/digital-factory-ui-visual-bugfix
 feature_branch_base_sha: 38649c0a512e6586fbe82d0d09700f8cc13c3ab2
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/366
