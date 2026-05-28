@@ -1,18 +1,17 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: no_changes
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: you@example.com
-  last_updated_at: 2026-05-28T07:51:22.086Z
+  last_updated_by: unknown@local
+  last_updated_at: 2026-05-28T15:09:04+0700
 pr:
   url: null
   status: null
@@ -47,3 +46,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-28T07:51:22.086Z
+  - action: ready
+    by: unknown@local
+    at: 2026-05-28T15:09:04+0700
+    note: Task unblocked and reset to ready for re-claim.
