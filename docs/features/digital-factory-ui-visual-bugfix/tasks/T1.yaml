@@ -1,24 +1,73 @@
 id: T1
 title: Frontend API cache foundation
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T1
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T07:14:20Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T10:45:15.112Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/71
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/368
+  status: open
 log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
   - action: ready
     by: unknown@local
-    at: 2026-05-28T07:14:20Z
+    at: 2026-05-28T07:14:20.000Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-28T07:38:08.344Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-28T07:38:19.097Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Frontend API cache foundation digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-28T07:42:04+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/71"
+    executor_audit:
+      cost_usd: 0.322026
+      claude:
+        token_usage:
+          input: 227
+          output: 21423
+          model: claude-sonnet-4-6
+    at: 2026-05-28T07:49:06.759Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T07:50:08.186Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All 7 T1 subtasks implemented. 5-minute stale time configured,
+      refetchOnWindowFocus disabled, all query-key helpers present with param
+      normalization. Tests comprehensive. No 🔴/🟡 findings. Two 🟢 nits only:
+      gcTime equals staleTime (query-client.ts:12) and sidebarTasks
+      URLSearchParams not sorted (query-keys.ts:43). requires_human_review=true
+      — merge deferred to human."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/71#pullrequestreview-4378982258
+    at: 2026-05-28T07:55:20.305Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-28T10:45:15.112Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
