@@ -4,13 +4,15 @@ repo: digital-factory-ui
 status: blocked
 depends_on: []
 blocked_reason: no_changes
+blocked_suggestion: Hermes exited without making any file changes. Re-run with a
+  clearer briefing or more iterations.
 blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: you@example.com
-  last_updated_at: 2026-05-28T07:51:14.631Z
+  last_updated_at: 2026-05-28T07:51:22.086Z
 pr:
   url: null
   status: null
@@ -39,5 +41,9 @@ log:
     rag_query: Board visual cleanup and In Reviewing status
       digital-factory-ui-visual-bugfix
     note: Runtime pre-flight RAG fetch — written before executor spawn.
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+  - action: blocked
+    by: you@example.com
+    note: no_changes
+    executor_audit:
+      hermes: {}
+    at: 2026-05-28T07:51:22.086Z
