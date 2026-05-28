@@ -1,7 +1,7 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T08:21:44.180Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-28T08:22:18.018Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/72
   status: open
@@ -77,3 +77,7 @@ log:
           output: 19582
           model: claude-sonnet-4-6
     at: 2026-05-28T08:21:44.180Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T08:22:18.018Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
