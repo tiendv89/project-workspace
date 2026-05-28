@@ -1,24 +1,96 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_suggestion: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T07:14:20Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T09:08:38.486Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/72
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/367
+  status: open
 log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
   - action: ready
     by: unknown@local
-    at: 2026-05-28T07:14:20Z
+    at: 2026-05-28T07:14:20.000Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: you@example.com
+    at: 2026-05-28T07:37:18.992Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: you@example.com
+    at: 2026-05-28T07:37:30.622Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board visual cleanup and In Reviewing status
+      digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: you@example.com
+    note: no_changes
+    executor_audit:
+      hermes: {}
+    at: 2026-05-28T07:51:22.086Z
+  - action: ready
+    by: unknown@local
+    at: 2026-05-28T15:09:04+0700
+    note: Task unblocked and reset to ready for re-claim.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-28T08:10:31.613Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-28T08:10:36.629Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board visual cleanup and In Reviewing status
+      digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-28T08:15:17+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/72"
+    executor_audit:
+      cost_usd: 0.294324
+      claude:
+        token_usage:
+          input: 198
+          output: 19582
+          model: claude-sonnet-4-6
+    at: 2026-05-28T08:21:44.180Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T08:22:18.018Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T4 subtasks implemented. CI passed (docker: success). All 1220 tests
+      pass. Lint clean (0 errors). No 🔴/🟡 findings. CreateTaskButton removed
+      from board, in_reviewing added to STATUS_COLUMNS with label/color,
+      FEATURE_STATUS_OPTIONS correctly excludes in_reviewing, render tests
+      added."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/72#issuecomment-4562107239
+    at: 2026-05-28T08:30:08.734Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-28T09:08:38.486Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
