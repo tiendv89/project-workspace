@@ -31,3 +31,10 @@ log:
     by: pentative@gmail.com
     at: 2026-05-28T07:38:22.875Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-28T07:38:32.452Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Log link formatting digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
