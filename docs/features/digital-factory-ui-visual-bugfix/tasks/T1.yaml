@@ -1,7 +1,7 @@
 id: T1
 title: Frontend API cache foundation
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,8 +9,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T1
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-28T07:50:08.186Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T07:55:20.305Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/71
   status: open
@@ -57,3 +57,13 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-28T07:50:08.186Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All 7 T1 subtasks implemented. 5-minute stale time configured,
+      refetchOnWindowFocus disabled, all query-key helpers present with param
+      normalization. Tests comprehensive. No 🔴/🟡 findings. Two 🟢 nits only:
+      gcTime equals staleTime (query-client.ts:12) and sidebarTasks
+      URLSearchParams not sorted (query-keys.ts:43). requires_human_review=true
+      — merge deferred to human."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/71#pullrequestreview-4378982258
+    at: 2026-05-28T07:55:20.305Z
