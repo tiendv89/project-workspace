@@ -1,7 +1,7 @@
 id: T5
 title: Log link formatting
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,8 +9,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T5
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T07:47:44.517Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-28T07:48:51.037Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/70
   status: open
@@ -53,3 +53,7 @@ log:
           output: 20302
           model: claude-sonnet-4-6
     at: 2026-05-28T07:47:44.517Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T07:48:51.037Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
