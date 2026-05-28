@@ -1,7 +1,7 @@
 id: T2
 title: Board/sidebar/mode query cache migration
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T1
 blocked_reason: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T2
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-28T11:06:30.082Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T11:14:12.365Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/76
   status: open
@@ -58,3 +58,14 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-28T11:06:30.082Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T2 subtasks implemented: useBoardData, useSidebarTasks,
+      useBackendTaskSearch, useBackendFeatureSearch migrated to TanStack Query.
+      usePullRequestTaskData inherits cache via useSidebarTasks delegation.
+      60-second auto-refresh correctly uses query invalidation+refetch without
+      loading reset. Workspace sync invalidates cache in WorkspaceContext. CI:
+      no check-runs. No 🔴/🟡 findings. Nits: debounce removed from search
+      hooks; test wrapper anti-pattern in workspace-switch-provider.test.ts."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/76#issuecomment-4563427142
+    at: 2026-05-28T11:14:12.365Z
