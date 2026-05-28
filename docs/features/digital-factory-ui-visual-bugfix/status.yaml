@@ -1,0 +1,171 @@
+feature_id: digital-factory-ui-visual-bugfix
+title: Digital Factory UI Visual Bug Fix
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks - T1, T4, and T5 are ready. T2 and T3 wait for T1; T6 waits for T2, T3, T4, and T5.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-28T13:57:09+0700
+    review_comment: Product spec approved. Feature advances to technical design.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: codex
+        reviewed_at: 2026-05-28T13:08:40+0700
+        review_comment: Product spec drafted for the board cleanup, In Reviewing
+          Task Mode status, log-link formatting, and 5-minute mode-switch cache.
+      - review_status: awaiting_approval
+        reviewed_by: codex
+        reviewed_at: 2026-05-28T13:43:17+0700
+        review_comment: Product spec revised to include caching when switching
+          between task/feature tabs and the default board screen.
+      - review_status: awaiting_approval
+        reviewed_by: codex
+        reviewed_at: 2026-05-28T13:52:09+0700
+        review_comment: Product spec clarified that frontend read API data
+          should be cached for 5 minutes to avoid duplicate fetches on revisit
+          and visit-back flows.
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T13:57:09+0700
+        review_comment: Product spec approved. Feature advances to technical
+          design.
+  technical_design:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-28T14:12:20+0700
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - review_status: draft
+        reviewed_by: codex
+        reviewed_at: 2026-05-28T13:43:17+0700
+        review_comment: Technical design updated with a TanStack Query cache
+          approach for mode switching, sidebar/kanban return, and task/feature
+          tab detail reuse.
+      - review_status: draft
+        reviewed_by: codex
+        reviewed_at: 2026-05-28T13:52:09+0700
+        review_comment: Technical design clarified the 5-minute frontend API
+          cache contract and allows TanStack Query or an equivalent caching
+          library.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T13:57:09+0700
+        review_comment: Technical design submitted for review after product
+          spec approval.
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T14:12:20+0700
+        review_comment: Technical design approved. Feature advances to task
+          planning.
+  tasks:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-28T14:14:20+0700
+    review_comment: Task breakdown approved. Feature advances to
+      ready_for_implementation. T1, T4, and T5 activated.
+    review_history:
+      - review_status: draft
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T13:58:29+0700
+        review_comment: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml.
+          Tasks remain todo pending technical design and tasks approval.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T14:12:20+0700
+        review_comment: Task breakdown submitted for approval after technical
+          design approval.
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-28T14:14:20+0700
+        review_comment: Task breakdown approved. Feature advances to
+          ready_for_implementation. T1, T4, and T5 activated.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: codex
+    at: 2026-05-28T10:31:25+0700
+    note: Feature scaffold created for a separate Digital Factory UI visual bug-fix track.
+  - stage: product_spec
+    action: submitted
+    by: codex
+    at: 2026-05-28T13:08:40+0700
+    note: Product spec drafted and submitted for review.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-28T13:43:17+0700
+    note: Added same-workspace tab/default-board cache requirements.
+  - stage: technical_design
+    action: drafted
+    by: codex
+    at: 2026-05-28T13:43:17+0700
+    note: Added technical design for shared client-side data caching and visual
+      bug-fix implementation.
+  - stage: product_spec
+    action: clarified
+    by: codex
+    at: 2026-05-28T13:52:09+0700
+    note: Clarified that frontend read API responses should be cached for 5
+      minutes to avoid repeated fetches on revisit and browser visit-back flows.
+  - stage: technical_design
+    action: clarified
+    by: codex
+    at: 2026-05-28T13:52:09+0700
+    note: Clarified that TanStack Query is recommended but any equivalent
+      frontend cache library is acceptable if it meets the same 5-minute cache
+      behavior.
+  - stage: product_spec
+    action: approved
+    by: unknown@local
+    at: 2026-05-28T13:57:09+0700
+    note: Product spec approved. Feature advances to technical design.
+  - stage: technical_design
+    action: submitted
+    by: unknown@local
+    at: 2026-05-28T13:57:09+0700
+    note: Technical design is ready for review.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-28T13:58:29+0700
+    note: Technical design normalized into tech-lead form with a per-task
+      dependency diagram.
+  - stage: tasks
+    action: drafted
+    by: unknown@local
+    at: 2026-05-28T13:58:29+0700
+    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain
+      todo until technical design and tasks approval.
+  - stage: technical_design
+    action: approved
+    by: unknown@local
+    at: 2026-05-28T14:12:20+0700
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: unknown@local
+    at: 2026-05-28T14:12:20+0700
+    note: Task breakdown submitted for approval after technical design approval.
+  - stage: tasks
+    action: approved
+    by: unknown@local
+    at: 2026-05-28T14:14:20+0700
+    note: Task breakdown approved. Feature advances to ready_for_implementation.
+      T1, T4, and T5 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

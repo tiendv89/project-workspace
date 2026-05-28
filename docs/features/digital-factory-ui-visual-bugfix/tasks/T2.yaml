@@ -1,0 +1,21 @@
+id: T2
+title: Board/sidebar/mode query cache migration
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/digital-factory-ui-visual-bugfix-T2
+execution:
+  actor_type: agent
+  requires_human_review: true
+  last_updated_by: unknown@local
+  last_updated_at: 2026-05-28T13:58:29+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: unknown@local
+    at: 2026-05-28T13:58:29+0700
+    note: Task drafted by tech-lead from the approved product spec and technical design.

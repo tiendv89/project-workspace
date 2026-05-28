@@ -1,0 +1,24 @@
+id: T5
+title: Log link formatting
+repo: digital-factory-ui
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/digital-factory-ui-visual-bugfix-T5
+execution:
+  actor_type: agent
+  requires_human_review: true
+  last_updated_by: unknown@local
+  last_updated_at: 2026-05-28T07:14:20Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: unknown@local
+    at: 2026-05-28T13:58:29+0700
+    note: Task drafted by tech-lead from the approved product spec and technical design.
+  - action: ready
+    by: unknown@local
+    at: 2026-05-28T07:14:20Z
+    note: Task activated on tasks-stage approval — dependencies met.
