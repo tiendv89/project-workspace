@@ -1,7 +1,7 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,10 +11,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T08:30:08.734Z
+  last_updated_at: 2026-05-28T09:08:38.486Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/72
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/367
   status: open
@@ -90,3 +90,7 @@ log:
       added."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/72#issuecomment-4562107239
     at: 2026-05-28T08:30:08.734Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-28T09:08:38.486Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
