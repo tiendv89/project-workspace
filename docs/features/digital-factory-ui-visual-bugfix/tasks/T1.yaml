@@ -1,7 +1,7 @@
 id: T1
 title: Frontend API cache foundation
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T07:42:04+0000
+  last_updated_at: 2026-05-28T07:49:00.182Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/71
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/368
   status: open
@@ -21,8 +21,7 @@ log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: >-
-      Task drafted by tech-lead from the approved product spec and technical
+    note: Task drafted by tech-lead from the approved product spec and technical
       design.
   - action: ready
     by: unknown@local
