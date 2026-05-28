@@ -1,16 +1,17 @@
 id: T5
 title: Log link formatting
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T5
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T15:54:06+0700
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-28T08:55:50.096Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/70
   status: open
@@ -95,5 +96,9 @@ log:
   - action: in_review
     by: unknown@local
     at: 2026-05-28T15:54:06+0700
-    note: Task unblocked and reset to in_review because implementation PR already exists.
-blocked_suggestion: null
+    note: Task unblocked and reset to in_review because implementation PR already
+      exists.
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T08:55:50.096Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
