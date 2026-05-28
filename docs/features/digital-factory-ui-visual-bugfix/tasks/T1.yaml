@@ -1,7 +1,7 @@
 id: T1
 title: Frontend API cache foundation
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T07:55:20.305Z
+  last_updated_at: 2026-05-28T10:45:15.112Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/71
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/368
   status: open
@@ -67,3 +67,7 @@ log:
       — merge deferred to human."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/71#pullrequestreview-4378982258
     at: 2026-05-28T07:55:20.305Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-28T10:45:15.112Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
