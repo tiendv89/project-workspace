@@ -1,7 +1,7 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-28T08:22:18.018Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T08:30:08.734Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/72
   status: open
@@ -81,3 +81,12 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-28T08:22:18.018Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T4 subtasks implemented. CI passed (docker: success). All 1220 tests
+      pass. Lint clean (0 errors). No 🔴/🟡 findings. CreateTaskButton removed
+      from board, in_reviewing added to STATUS_COLUMNS with label/color,
+      FEATURE_STATUS_OPTIONS correctly excludes in_reviewing, render tests
+      added."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/72#issuecomment-4562107239
+    at: 2026-05-28T08:30:08.734Z
