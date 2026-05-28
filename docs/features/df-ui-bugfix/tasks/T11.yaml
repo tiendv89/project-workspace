@@ -1,0 +1,95 @@
+id: T11
+title: Workspace switching tab and state reset
+repo: digital-factory-ui
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/df-ui-bugfix-T11
+execution:
+  actor_type: agent
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T18:08:03.860Z
+pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/66
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/361
+  status: open
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T14:30:00+0700
+    note: Task ensures that when switching workspaces, any open feature or task tab
+      is closed/cleared, and all workspace-specific UI state is fully reset.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:41:07+0700
+    note: Auto-readied — no dependencies, tasks stage approved.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T10:43:53.411Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-27T10:44:11.000Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      docs/features/df-ui-bugfix/technical-design.md,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Workspace switching tab and state reset df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/66"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-27T11:07:44.914Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-27T11:10:36.060Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 src/__tests__/workspace-switch-reset.test.ts — Test plan item not
+      fully covered: tests verify clear-helper isolation and type exports but do
+      not behaviorally test that selectWorkspace(newId) resets openTaskTabs,
+      openFeatureTabs, activeTaskTabId, and activeFeatureTabId. Integration test
+      calling selectWorkspace and asserting context state + localStorage is
+      cleared is required."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/66#pullrequestreview-4371910709
+    at: 2026-05-27T11:17:19.418Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-27T11:17:59.195Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/66"
+    executor_audit:
+      cost_usd: 0.31723199999999996
+      claude:
+        token_usage:
+          input: 144
+          output: 21120
+          model: claude-sonnet-4-6
+    at: 2026-05-27T11:29:24.390Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-27T11:31:20.123Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All 6 T11 subtasks implemented. Cycle-1 concern (missing behavioral
+      integration test for selectWorkspace) resolved by
+      workspace-switch-provider.test.ts using RTL renderHook. CI: no check-runs
+      (treated as passed). No 🔴/🟡 findings. 💡 Nit only:
+      workspace-switch-reset.test.ts:145 contains expect(true).toBe(true) —
+      redundant placeholder. PR squash-merged successfully."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/66#issuecomment-4555812660
+    at: 2026-05-27T15:13:09.467Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:08:03.860Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

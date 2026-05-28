@@ -10,7 +10,12 @@
 | T4 | 2 | Feature/task pagination API wiring | T2 |
 | T5 | 1 | Task-mode feature lifecycle status mapping | none |
 | T6 | 1 | Kanban feature lifecycle status mapping | none |
-| T7 | 3 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6 |
+| T8 | 1 | Sidebar blocked section and status-age indicators | none |
+| T9 | 1 | Timeline link formatting and click-handling | none |
+| T10 | 1 | Task tab layout reordering | none |
+| T11 | 1 | Workspace switching tab and state reset | none |
+| T12 | 1 | Sidebar in_reviewing collapsible section and list rendering | none |
+| T7 | 4 | Post-change final regression and browser QA | T1, T2, T3, T4, T5, T6, T8, T9, T10, T11, T12 |
 
 ## T1 — Dedicated task creation flow and detail-modal cleanup
 
@@ -116,27 +121,109 @@ Fix the Kanban/Feature mode feature status display so each feature surface shows
 - [ ] Add focused render/adapter tests for all allowed feature lifecycle statuses on the Kanban/Feature mode surface.
 - [ ] Add a regression test proving task statuses such as `todo`, `ready`, `in_progress`, and `in_review` are not shown as Kanban/Feature mode feature status.
 
+## T8 — Sidebar blocked section and status-age indicators
+
+### Description
+Add a collapsible/expandable "Blocked" tasks section at the very top of the tasks sidebar, pushing blocked tasks to the top of the sidebar. For every task in the sidebar, calculate and display a prominent status age/duration indicator (e.g. "ready 2d", "in progress 5h", "blocked 1h") based on its current status transition log.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Extend `TrackedStatus` type to include `"blocked"`.
+- [ ] Add the "Blocked" section to the top of the `TRACKED_SECTIONS` list.
+- [ ] Configure the "Blocked" section to be collapsible/expandable, initialized as expanded.
+- [ ] Update `SIDEBAR_TASK_PARAMS` in `query-params.ts` to include `"blocked"` in the status parameter list.
+- [ ] Update task grouping logic in `groupTasks.ts` to populate the "Blocked" bucket with blocked tasks.
+- [ ] Implement a utility function to compute status age/duration based on the latest matching log transition timestamp or fallback values.
+- [ ] Implement duration formatting (e.g., converting milliseconds to "Xd", "Xh", "Xm", "Xs" formats).
+- [ ] Add status age indicators to `TaskTrackingItem` and render them prominently (e.g., clear colored badges or highly readable duration copy).
+- [ ] Add unit tests for the duration computing utility and task grouping changes.
+
+## T9 — Timeline link formatting and click-handling
+
+### Description
+Enhance the task activity timeline and log entries (typically rendered in `TaskDetailSheet`) to automatically detect, highlight, and format web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) without using regular expressions (regex). Clicking on any detected web link must open the link in a new tab/window.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Implement a regex-free URL extraction/detection helper (e.g., checking if words start with `http://` or `https://` or parsing with a non-regex URL scheme).
+- [ ] Update `TaskDetailSheet` log-timeline rendering to split log notes/activity text into text and link tokens using the helper.
+- [ ] Format detected links with distinct hyperlink styling (highlighting) to make them visually recognizable as links.
+- [ ] Add click handling to detected links to open them in a new tab/window using `target="_blank" rel="noopener noreferrer"`.
+- [ ] Add focused unit tests for the regex-free link detection and tokenization helper.
+
+## T10 — Task tab layout reordering
+
+### Description
+Reorder the layout sections within the Task tab (rendered in `TaskDetailSheet`) so that the "Pull Request" (PR) section is displayed first at the very top. It must be followed in specific order by: "Details" metadata, "Execution" actor/details, "Last Updated" timestamp, and finally the "Activity Timeline" logs.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Relocate the "Pull Request" section/card render path to the top of the Task tab body.
+- [ ] Rearrange the remaining sections to follow the specific order: Details (Metadata Grid), Execution, Last Updated, and Activity Timeline.
+- [ ] Ensure all visual spacing, margins, divider lines, and empty states of the Task tab match the reordered flow in Figma.
+- [ ] Add or update render tests verifying the correct rendering order of the Task tab sections.
+
+## T11 — Workspace switching tab and state reset
+
+### Description
+Ensure that when a user switches workspaces, any open Feature tab or Task tab (active detail sheets/panels) is automatically closed and the workspace's entire UI state is completely reset (e.g., search text, status filter, and active pagination page), preventing any stale data leaks from the previous workspace.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Integrate a listener/effect on the active workspace ID to detect when the workspace has changed.
+- [ ] Automatically close any open Feature tab (clear active `selectedFeatureId` or equivalent) on workspace switch.
+- [ ] Automatically close any open Task tab (clear active `selectedTaskId` or equivalent) on workspace switch.
+- [ ] Reset workspace-scoped queries: clear search search-text, reset selected status filters, and reset active pagination page back to `1` when workspace is switched.
+- [ ] Reset or clear any other workspace-specific local component state or store/context caches on workspace switch.
+- [ ] Add unit/integration tests confirming that the active detail tabs and list filters are successfully reset to their default states when the workspace ID changes.
+
 ## T7 — Post-change final regression and browser QA
 
 ### Description
-Run the final regression and browser QA pass for the scoped follow-up. This task verifies the dedicated task creation flow, mode-specific endpoint/search/filter contract, Task Docs document URL rendering, Feature/Task pagination API wiring, feature lifecycle status fixes, and Feature mode card typography/casing acceptance criteria.
+Perform final verification of the sidebar blocked panel, collapsible toggles, status-age indicators, timeline link formatting, Task tab section reordering, workspace switching tab and state reset, the collapsible "In Reviewing" section, and run comprehensive regression tests across the entire workspace UI, ensuring zero broken flows after T8, T9, T10, T11, and T12 are implemented.
 
 ### Required skills
 - browser-qa-frontend
 - typescript-best-practices
 
 ### Subtasks
-- [ ] Assert Feature mode search/filter calls `/api/workspaces/:workspaceId/features?title=...&status=...`.
-- [ ] Assert Task mode search/filter calls `/api/workspaces/:workspaceId/tasks?title=...&status=...`.
-- [ ] Assert Feature mode pagination calls `/api/workspaces/:workspaceId/features?page=...&limit=...` and preserves active `title`, `status`, and `sort`.
-- [ ] Assert Task mode pagination calls `/api/workspaces/:workspaceId/tasks?page=...&limit=...` and preserves active `title`, `status`, and `sort`.
-- [ ] Assert paginated board lists never use local slicing, `limit=0`, or omitted `limit`.
-- [ ] Assert Task Docs selects the `documents` item with `document_type: tasks_md`, fetches its `url`, and renders the returned Markdown content.
-- [ ] Assert Task Docs does not render the raw document URL as body content and handles missing/failing `tasks_md` documents.
-- [ ] Assert task creation opens the dedicated task creation flow and does not mount task/feature detail modals.
-- [ ] Assert Task mode feature rows display only feature lifecycle status from the feature response.
-- [ ] Assert Kanban/Feature mode feature status displays only feature lifecycle status from the feature response.
-- [ ] Assert both feature status surfaces support `in_design`, `in_tdd`, `ready_for_implementation`, `in_implementation`, `in_handoff`, `done`, `blocked`, and `cancelled`.
-- [ ] Assert both feature status surfaces do not display task lifecycle statuses such as `todo`, `ready`, `in_progress`, or `in_review`.
-- [ ] Assert Feature mode card title is the largest card text and feature ID is smaller secondary text.
-- [ ] Assert Feature mode card title/subtitle preserve mixed casing and are not uppercased.
+- [ ] Assert the "Blocked" section is rendered at the top of the tasks sidebar.
+- [ ] Assert the "Blocked" section collapsible toggles correctly.
+- [ ] Assert the "In Reviewing" section is rendered on the tasks sidebar.
+- [ ] Assert the "In Reviewing" section collapsible toggles correctly and lists tasks with status `in_reviewing`.
+- [ ] Assert status duration values are formatted and displayed correctly on each task.
+- [ ] Perform cross-browser testing for the status age indicators' styles and alignment.
+- [ ] Verify that adding a log transition dynamically updates the status age on the sidebar.
+- [ ] Assert that web links (e.g., `https://github.com/tiendv89/digital-factory-ui/pull/57`) are correctly highlighted and clickable in the timeline and logs, opening in a new tab/window.
+- [ ] Assert that the Task tab sections are rendered in the correct specific top-to-bottom order: Pull Request, Details, Execution, Last Updated, and Activity Timeline.
+- [ ] Assert that switching workspaces automatically closes any open Feature or Task detail sheet/tab and resets query parameters/UI state back to defaults.
+- [ ] Run full regression suite on digital-factory-ui to ensure all features (T1-T6, T8, T9, T10, T11, T12) are functioning.
+
+## T12 — Sidebar in_reviewing collapsible section and list rendering
+
+### Description
+Add a collapsible/expandable "In Reviewing" tasks section in the tasks sidebar to group and display the list of tasks with status `in_reviewing`. This section should be user-toggleable, initialized as expanded, and positioned second, directly after "In Progress" in the active status sections list (third overall after "Blocked" and "In Progress").
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Extend `TrackedStatus` type to include `"in_reviewing"`.
+- [ ] Add the "In Reviewing" section to the `TRACKED_SECTIONS` list, positioned second, directly after "In Progress" (third overall after "Blocked" and "In Progress").
+- [ ] Configure the "In Reviewing" section to be collapsible/expandable, initialized as expanded.
+- [ ] Update `SIDEBAR_TASK_PARAMS` in `query-params.ts` to include `"in_reviewing"` in the status parameter list.
+- [ ] Update task grouping logic in `groupTasks.ts` to populate the "In Reviewing" bucket with `in_reviewing` tasks.
+- [ ] Add unit tests for the task grouping and sidebar changes for `in_reviewing` status.

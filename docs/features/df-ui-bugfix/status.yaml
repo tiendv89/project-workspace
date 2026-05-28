@@ -1,10 +1,9 @@
 feature_id: df-ui-bugfix
 title: DF UI Bug Fix
-
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Execute tasks - T1, T2, T3, T5, and T6 are ready. T4 waits for T2; T7 waits for T1-T6.
-
+feature_status: done
+current_stage: done
+next_action: Execute tasks - T1, T2, T3, T5, T6, T8, T9, T10, and T11 are ready.
+  T4 waits for T2; T7 waits for T1-T6 and T8-T11.
 stages:
   product_spec:
     review_status: approved
@@ -25,7 +24,8 @@ stages:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
         at: 2026-05-26T09:10:30Z
-        comment: Technical design normalized into the standard tech-lead form and remains ready for review.
+        comment: Technical design normalized into the standard tech-lead form and
+          remains ready for review.
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-26T09:12:42Z
@@ -34,7 +34,8 @@ stages:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
     reviewed_at: 2026-05-26T16:21:43+0700
-    review_comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
+    review_comment: Tasks approved. Feature advances to ready_for_implementation.
+      T1, T2, T3, T5, and T6 activated.
     review_history:
       - status: awaiting_approval
         by: minhkienn203@gmail.com
@@ -43,14 +44,15 @@ stages:
       - status: approved
         by: minhkienn203@gmail.com
         at: 2026-05-26T16:21:43+0700
-        comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
+        comment: Tasks approved. Feature advances to ready_for_implementation. T1, T2,
+          T3, T5, and T6 activated.
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/364
 history:
   - stage: product_spec
     action: created
@@ -81,10 +83,18 @@ history:
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-05-26T16:21:43+0700
-    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3, T5, and T6 activated.
-
+    note: Tasks approved. Feature advances to ready_for_implementation. T1, T2, T3,
+      T5, and T6 activated.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/df-ui-bugfix
+feature_branch_base_sha: a4065631d9525de80fba17d31391ea8f3f6c47c0
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/350
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/364
+impl_feature_prs:
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/69
+    status: merged

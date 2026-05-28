@@ -1,21 +1,92 @@
 id: T4
 title: Feature/task pagination API wiring
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/df-ui-bugfix-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-27T10:33:55.304Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/62
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/356
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T12:49:23+0700
-    note: >-
-      Task implements real Feature mode and Task mode pagination through page and limit query params on backend list endpoints.
+    note: Task implements real Feature mode and Task mode pagination through page
+      and limit query params on backend list endpoints.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:08:29.939Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:16:04.557Z
+    note: Claimed via git-based claim protocol.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T13:25:48+0700
+    note: Human unblocked (was blocked/executor_failed — RAG pre-flight ETIMEDOUT
+      before any work started). No PR exists; resetting to ready for re-claim.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:12.946Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:19.366Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      docs/features/df-ui-bugfix/technical-design.md,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Feature/task pagination API wiring df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/62"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-27T06:45:32.114Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-27T06:46:25.259Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T4 subtasks implemented. 993/993 tests pass. No 🔴/🟡 findings. Sort
+      and page-size state added to BoardContext; page-reset correctly wired for
+      all filter/sort/limit changes; PageSizeSelector and SortSelector UI
+      components added; shouldResetPage extended to include limit-change
+      detection.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/62#pullrequestreview-4370060656
+    at: 2026-05-27T06:56:06.974Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-27T06:56:54.838Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-05-27T06:57:08.043Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:32:52+0700
+    note: "Human reverted done → review_passed. Workspace PR #356 was not merged by
+      orchestrator (405 — base branch had advanced during T5/T6 rebase). PR is
+      now clean; re-entering review_passed so orchestrator PR poll can retry the
+      workspace PR merge."
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-27T10:33:55.304Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

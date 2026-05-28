@@ -1,0 +1,1458 @@
+{"at":"2026-05-27T06:27:28.874Z","by":"norepy@tiendv.dev","type":"run_started"}
+Query: ## Workspace context
+
+You are an autonomous coding agent working on workspace workspace.
+Your working directory is 
+/agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl.
+
+## Task
+
+```yaml
+id: T4
+title: Feature/task pagination API wiring
+repo: digital-factory-ui
+status: in_progress
+depends_on:
+  - T2
+blocked_reason: null
+blocked_context: null
+branch: feature/df-ui-bugfix-T4
+execution:
+  actor_type: agent
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T06:27:12.946Z
+pr:
+  url: ""
+  status: not_created
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/356
+  status: open
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T12:49:23+0700
+    note: Task implements real Feature mode and Task mode pagination through 
+page
+      and limit query params on backend list endpoints.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:08:29.939Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-26T11:16:04.557Z
+    note: Claimed via git-based claim protocol.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-27T13:25:48+0700
+    note: Human unblocked (was blocked/executor_failed — RAG pre-flight 
+ETIMEDOUT
+      before any work started). No PR exists; resetting to ready for re-claim.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:12.946Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-27T06:27:19.366Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      docs/features/df-ui-bugfix/technical-design.md,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Feature/task pagination API wiring df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+```
+
+## Description and subtasks
+
+## T4 — Feature/task pagination API wiring
+
+### Description
+Implement real pagination for Feature mode and Task mode using the backend list 
+APIs. Feature mode must request 
+`/api/workspaces/:workspaceId/features?page=<page>&limit=<pageSize>` and Task 
+mode must request 
+`/api/workspaces/:workspaceId/tasks?page=<page>&limit=<pageSize>`, preserving 
+active `title`, `status`, and `sort` query params when the user changes page.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Add visible pagination controls for Feature mode and Task mode if they are
+missing from the current UI.
+- [ ] Serialize Feature mode page changes as 
+`/api/workspaces/:workspaceId/features?page=<page>&limit=<pageSize>`.
+- [ ] Serialize Task mode page changes as 
+`/api/workspaces/:workspaceId/tasks?page=<page>&limit=<pageSize>`.
+- [ ] Preserve active `title`, `status`, and `sort` query params when changing 
+page.
+- [ ] Reset page to `1` when search text, status filter, sort, or page size 
+changes.
+- [ ] Use backend `{ items, total, page, limit }` metadata to render current 
+page, total rows, and next/previous availability.
+- [ ] Do not use local slicing, `limit=0`, or omitted `limit` for paginated 
+board lists.
+- [ ] Add focused tests for Feature and Task mode pagination request URLs and 
+metadata-driven control state.
+
+## Technical design
+
+# Technical Design
+
+## Feature
+- Feature ID: `df-ui-bugfix`
+- Title: DF UI Bug Fix — scoped follow-up
+- Implementation repo: `digital-factory-ui`
+
+## Current State
+The remaining `digital-factory-ui` defects in this scope are:
+- Task/feature detail modal paths can still be active, but the desired UX is 
+tab-first navigation with detail content in Feature and Task tabs only.
+- Task creation must not remain coupled to task or feature detail modals; it 
+needs a dedicated creation entry point and flow/dialog.
+- Feature mode and Task mode list/search/filter behavior must be explicitly tied
+to separate backend collection endpoints.
+- Pagination must be API-backed with `page` and `limit` on the same 
+mode-specific endpoints.
+- Task Docs must use the real feature detail document payload: select 
+`documents` entry with `document_type: tasks_md`, fetch its `url`, and render 
+the returned Markdown.
+- Task-mode feature row status can show task lifecycle values; it must show only
+parent feature lifecycle status.
+- Kanban/Feature mode feature status can show task-derived values; it must show 
+only feature lifecycle status.
+- Final QA must also verify Feature mode card title hierarchy and casing because
+those visual criteria remain part of the bugfix acceptance surface.
+
+Relevant implementation points in `digital-factory-ui`:
+- `src/services/workflow-backend/types.ts` defines paged list shapes such as 
+`PagedFeatures` and `PagedTasks` with `items`, `total`, `page`, and `limit`.
+- `src/services/workflow-backend/query-params.ts` supports list query params 
+including `title`, `status`, `page`, `limit`, and `sort`.
+- Board feature/task search hooks and backend list params are the likely request
+wiring points for endpoint/query correctness and pagination.
+- Feature tab task documentation rendering lives around 
+`src/features/board/components/FeatureTabView/FeatureTasksPanel.tsx`, 
+`useDocumentContent()`, and `MarkdownBlock`.
+- Feature and task card/row click handlers should route to tab-opening handlers 
+instead of modal-selection state.
+- Feature row/status adapters must normalize feature lifecycle statuses and 
+reject task lifecycle values for feature status display.
+- Feature mode card typography/casing is likely owned by `FeatureListRow.tsx` 
+and related styles.
+
+## Problem Framing
+What needs to change:
+- Add or expose a dedicated create-task UI flow/dialog independent from detail 
+modals.
+- Remove active task and feature detail modal render paths after tab-first 
+navigation is in place.
+- Feature mode list/search/filter requests must call 
+`/api/workspaces/:workspaceId/features`.
+- Task mode list/search/filter requests must call 
+`/api/workspaces/:workspaceId/tasks`.
+- Search text must serialize as `title`; status filters must serialize as 
+`status`.
+- Page changes must serialize as `page` and `limit` on the active endpoint, 
+preserving `title`, `status`, and `sort`.
+- Search, status filter, sort, and page size changes reset `page` to `1`; 
+next/previous page changes do not reset unrelated query state.
+- Board lists must use backend pagination metadata rather than local slicing.
+- Task Docs must select the `tasks_md` document from feature details and 
+fetch/render the document URL content as Markdown.
+- Task-mode feature rows and Kanban/Feature mode feature status must only use 
+feature lifecycle statuses from feature responses.
+- Feature status display must not use task lifecycle statuses such as `todo`, 
+`ready`, `in_progress`, or `in_review`.
+
+What must remain stable:
+- Workspace selection and unrelated dashboard flows.
+- Existing backend route ownership.
+- Existing feature/task identity conventions.
+- Existing backend schema; use current read endpoints and current task creation 
+contract if available.
+- Existing Markdown renderer and document content proxy/raw-content path where 
+possible.
+
+Fixed assumptions:
+- The backend exposes separate collection endpoints for features and tasks.
+- The existing paged response shape is `{ items, total, page, limit }`.
+- Pagination `page` is 1-based and `limit` must be a positive bounded value.
+- Feature detail payload includes `documents` entries like `{ document_type: 
+"tasks_md", source_path: "docs/features/<feature>/tasks.md", url: 
+"https://github.com/.../tasks.md" }`.
+- Valid feature lifecycle statuses are `in_design`, `in_tdd`, 
+`ready_for_implementation`, `in_implementation`, `in_handoff`, `done`, 
+`blocked`, and `cancelled`.
+- Task lifecycle values must never be rendered as feature lifecycle status.
+- If no task creation write contract exists in the frontend, the implementation 
+should document that dependency rather than fake local creation.
+
+## Constraints
+- The scoped follow-up is frontend-first; no backend API redesign is planned.
+- Board lists must consume backend collection endpoints instead of deriving 
+list/search/filter state from a workspace root payload.
+- Task Docs must render fetched Markdown content, not a raw document URL.
+- Feature status surfaces must only render feature lifecycle values.
+- Task creation must not be nested in task or feature detail modals.
+- Final regression must cover both behavior and visible Feature mode card 
+typography/casing.
+
+## Options Considered
+
+### Option A — Patch individual visible defects while preserving existing 
+list/detail flow
+**Approach**
+Keep the current modal/detail and list plumbing mostly intact, then patch only 
+the most visible symptoms: Task Docs display, status labels, and card styling.
+
+**Pros**
+- Smallest initial implementation surface.
+- Lower short-term risk of touching board list and tab navigation code.
+
+**Cons**
+- Leaves the detail-modal coupling that caused part of the bugfix scope.
+- Does not lock Feature mode and Task mode to separate backend collection 
+contracts.
+- Makes pagination and status fixes fragile because local list derivation can 
+continue to leak stale or wrong values.
+
+**Impact**
+- Repo impact: `digital-factory-ui` only.
+- Dependency impact: low, but keeps hidden coupling with existing modal/list 
+state.
+- Release impact: faster to ship but likely to require another follow-up.
+
+### Option B — Normalize the board around tab-first UX and mode-specific backend
+contracts
+**Approach**
+Make tab views the active detail surfaces, add a dedicated task creation flow, 
+lock Feature mode and Task mode list/search/filter/pagination to their own 
+backend endpoints, and fix Task Docs/status rendering from typed backend 
+response fields.
+
+**Pros**
+- Directly matches the approved product scope.
+- Makes endpoint, pagination, Task Docs, and status behavior testable through 
+focused request/render assertions.
+- Removes active modal detail paths from normal task/feature navigation.
+- Keeps the implementation frontend-first and reuses existing backend contracts.
+
+**Cons**
+- Touches several board surfaces at once: navigation, list queries, pagination, 
+docs, adapters, and QA.
+- Requires careful regression coverage so tab behavior and list state do not 
+drift.
+
+**Impact**
+- Repo impact: `digital-factory-ui` for implementation; `project-workspace` for 
+planning artifacts.
+- Dependency impact: depends on existing backend list/document/task creation 
+contracts.
+- Release impact: frontend-only rollout if the existing task creation write 
+contract is available.
+
+### Option C — Block frontend work until backend contracts are redesigned
+**Approach**
+Pause the UI fixes and first redesign backend feature/task list, document 
+content, and task creation APIs.
+
+**Pros**
+- Could produce a more explicit long-term backend contract.
+- May reduce ambiguity if any current endpoint behavior is missing.
+
+**Cons**
+- Out of scope for this follow-up.
+- Delays fixes that can already be implemented against current endpoints.
+- Adds backend coordination without evidence that list/document APIs need 
+redesign.
+
+**Impact**
+- Repo impact: would expand to `workflow-backend`, which is not planned for this
+feature.
+- Dependency impact: creates new backend blockers.
+- Release impact: slower, higher coordination cost, and unnecessary unless 
+implementation proves a contract is missing.
+
+## Chosen Design
+Choose Option B: normalize the board around tab-first UX and mode-specific 
+backend contracts.
+
+### Dedicated task creation and no active detail modals
+- Keep tab views as the only active task/feature detail surfaces.
+- Route feature primary clicks to the Feature tab and task primary clicks to the
+Task tab.
+- Add a dedicated task creation entry point and dialog/flow.
+- Reuse an existing create-task client/helper if present.
+- If no creation write contract exists, surface a clear dependency instead of 
+storing fake tasks locally.
+- Remove or disable remaining active task/feature detail modal mounts so 
+creation is not nested inside a detail surface.
+
+### Mode-specific backend list contract
+- Feature mode list/search/filter requests target 
+`/api/workspaces/:workspaceId/features`.
+- Task mode list/search/filter requests target 
+`/api/workspaces/:workspaceId/tasks`.
+- Search text is sent as `title`.
+- Selected status is sent as `status`.
+- Board list rendering must not search/filter from the workspace root payload.
+
+### API-backed pagination
+- Feature mode page changes call 
+`/api/workspaces/:workspaceId/features?page=<page>&limit=<pageSize>`.
+- Task mode page changes call 
+`/api/workspaces/:workspaceId/tasks?page=<page>&limit=<pageSize>`.
+- Active `title`, `status`, and `sort` params are preserved when changing page.
+- Search/filter/sort/page-size changes reset `page` to `1`.
+- Controls derive current page, total rows, and next/previous availability from 
+backend `{ items, total, page, limit }` metadata.
+- Do not implement pagination with local slicing, `limit=0`, or omitted `limit`.
+
+### Task Docs source contract
+- Select `FeatureDetail.documents.find(document.document_type === "tasks_md")`.
+- Fetch the selected document `url` through the existing content proxy or 
+raw-content path.
+- Render the fetched Markdown string through the existing Markdown renderer.
+- Show clear empty/error states for missing, empty, or failed document fetches.
+- Never render the raw document URL as Task Docs body content.
+
+### Feature lifecycle status mapping
+- Task-mode feature rows read status from the parent feature response lifecycle 
+field.
+- Kanban/Feature mode feature status reads status from the feature response 
+lifecycle field.
+- Normalize display to the feature lifecycle enum only.
+- Remove fallback behavior that maps task status values into feature status 
+labels.
+- Add regression tests for all allowed feature lifecycle statuses and for 
+rejected task lifecycle statuses.
+
+### Final visual regression checks
+- Confirm Feature mode card title is the largest card text.
+- Confirm feature ID is smaller secondary text.
+- Confirm title/subtitle preserve mixed casing without CSS or JavaScript 
+uppercase transforms.
+
+Compatibility and release considerations:
+- Existing workspace selection, Feature tab, Task tab, Markdown renderer, and 
+backend read endpoints remain the compatibility boundary.
+- No data migration or persisted state format change is expected.
+- The only unresolved release dependency is whether task creation already has a 
+real backend/client write path.
+
+## Dependency Analysis
+Internal dependencies:
+- Existing tab-opening handlers for Feature and Task tabs.
+- Existing create-task helper/client if available.
+- Board request/query serialization and search hooks.
+- Backend paged response types and client helpers.
+- Feature tab document loading path and Markdown renderer.
+- Feature/task adapter code that maps API data to row/card view models.
+- Feature mode card component and styles.
+
+External dependencies:
+- `workflow-backend` feature list endpoint: 
+`/api/workspaces/:workspaceId/features`.
+- `workflow-backend` task list endpoint: `/api/workspaces/:workspaceId/tasks`.
+- Backend support for `title`, `status`, `page`, `limit`, and `sort` query 
+params.
+- Backend feature detail `documents` payload with `document_type: tasks_md` and 
+`url`.
+- Existing task creation backend/client contract, if task creation is submitted 
+from the UI.
+
+Blocking decisions:
+- Confirm whether a frontend task creation write path already exists. This does 
+not block T1 investigation, but it decides whether T1 implements creation or 
+documents the missing backend/client dependency.
+- Confirm the current content proxy/raw-content helper can fetch the selected 
+`tasks_md` document `url`. This does not block T3 investigation, but it decides 
+whether T3 reuses an existing helper or adds a narrow frontend fetch path.
+- Confirm multi-status query encoding only if the current UI supports multiple 
+selected statuses. Single selected status uses `status=<value>`.
+
+Configuration dependencies:
+- The frontend must continue to use the existing workflow backend base URL 
+configuration.
+- No new environment variables are expected for this follow-up.
+
+Release dependencies:
+- T7 final regression must pass before the feature is ready for handoff.
+- If T1 proves task creation lacks a real write contract, the handoff must call 
+out that dependency instead of claiming local task creation is complete.
+
+## Parallelization / Blocking Analysis
+External decisions/dependencies:
+- D1: Confirm task creation write contract — check during T1; if absent, 
+document dependency instead of faking local writes.
+- D2: Confirm document content fetch path for `tasks_md.url` — check during T3; 
+reuse existing proxy/raw-content helper if available.
+- D3: Confirm multi-status query encoding — only needed if the UI supports 
+multi-select status filters; single status remains `status=<value>`.
+
+T1: Dedicated task creation flow and detail-modal cleanup
+  └── Can begin now — no blockers
+  └── D1 determines implementation depth but does not block investigation or 
+modal cleanup
+
+T2: Mode-specific list search/filter endpoint contract
+  └── Can begin now — no blockers
+
+T3: Task Docs tasks.md document URL rendering
+  └── Can begin now — no blockers
+  └── D2 determines helper reuse vs narrow fetch-path adjustment
+
+T5: Task-mode feature lifecycle status mapping
+  └── Can begin now — no blockers
+
+T6: Kanban feature lifecycle status mapping
+  └── Can begin now — no blockers
+  └── T1, T2, T3, T5, and T6 run in parallel
+
+T4: Feature/task pagination API wiring
+  └── BLOCKED on T2 (pagination must use the finalized mode-specific 
+endpoint/query contract)
+
+T7: Post-change final regression and browser QA
+  └── BLOCKED on T1 (task creation flow and modal cleanup must be implemented or
+dependency-documented)
+  └── BLOCKED on T2 (endpoint/search/filter contract must be locked)
+  └── BLOCKED on T3 (Task Docs source/fetch/render behavior must be implemented)
+  └── BLOCKED on T4 (pagination API wiring must be implemented)
+  └── BLOCKED on T5 (Task-mode feature lifecycle status mapping must be fixed)
+  └── BLOCKED on T6 (Kanban/Feature mode lifecycle status mapping must be fixed)
+
+Execution waves:
+- Wave 1: T1, T2, T3, T5, and T6 can start immediately and run in parallel.
+- Wave 2: T4 starts after T2.
+- Wave 3: T7 starts after T1 through T6 are complete.
+
+## Repository Impact
+Affected repositories:
+- `digital-factory-ui` — implementation repo for UI behavior, data fetching, 
+tests, and browser QA.
+- `management-repo` — this planning repo, which owns 
+`docs/features/df-ui-bugfix/` state and workflow artifacts.
+
+No backend code change is planned. If implementation discovers the task creation
+write contract is missing, the relevant frontend task should document that 
+dependency rather than silently inventing local behavior.
+
+Task `repo` values must use the workspace repo ID `digital-factory-ui`.
+
+## Validation Approach
+Testing expectations:
+- Verify task creation opens a dedicated flow/dialog and does not mount 
+task/feature detail modals.
+- Verify feature and task clicks open their corresponding tabs without mounting 
+detail modals.
+- Verify Feature mode search/filter calls 
+`/api/workspaces/:workspaceId/features?title=...&status=...`.
+- Verify Task mode search/filter calls 
+`/api/workspaces/:workspaceId/tasks?title=...&status=...`.
+- Verify Feature mode pagination calls 
+`/api/workspaces/:workspaceId/features?page=...&limit=...` and preserves active 
+`title`, `status`, and `sort`.
+- Verify Task mode pagination calls 
+`/api/workspaces/:workspaceId/tasks?page=...&limit=...` and preserves active 
+`title`, `status`, and `sort`.
+- Verify board pagination never uses local slicing, `limit=0`, or omitted 
+`limit`.
+- Verify Task Docs selects `document_type: tasks_md`, fetches `url`, renders 
+Markdown, and handles missing/failing states.
+- Verify Task Docs does not render the raw document URL as body content.
+- Verify Task-mode feature rows and Kanban/Feature mode surfaces display only 
+feature lifecycle statuses from feature responses.
+- Verify task lifecycle statuses are not displayed as feature status.
+- Verify Feature mode card title hierarchy and mixed-casing behavior.
+- Run focused unit/integration tests and browser UI checks for the affected 
+views.
+
+Backward compatibility constraints:
+- Existing workspace selection and unrelated board/dashboard flows must continue
+to work.
+- Existing Feature tab and Task tab entry points must remain the 
+detail-navigation surfaces.
+- Existing backend response parsing should remain compatible with `{ items, 
+total, page, limit }`.
+
+## Deployment / Handoff Impact
+Release impact:
+- Frontend-only rollout expected.
+- No data migration.
+- No persisted data format change.
+- No deployment checklist is required at this planning stage.
+
+Handoff impact:
+- Handoff must include T7 evidence for endpoint URLs, pagination metadata, Task 
+Docs Markdown rendering, modal cleanup, status mapping, and card 
+typography/casing.
+- If task creation cannot be fully implemented because no write contract exists,
+handoff must list that backend/client dependency explicitly.
+
+## Available skills
+
+- /airflow-3
+- /backend-engineer
+- /browser-qa-frontend
+- /data-engineer
+- /directus-vue-engineer
+- /figma-mcp
+- /frontend-engineer
+- /gitnexus-mcp
+- /go-best-practices
+- /heroui-react
+- /python-best-practices
+- /python-data
+- /rag-context
+- /rag-enforce
+- /review-pr
+- /start-implementation
+- /typescript-best-practices
+
+## Your scope
+
+You own the complete task delivery — code changes, git, and PR.
+
+1. **Code**: Make the required changes in 
+/agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl. Commit incrementally
+   with `feat(df-ui-bugfix/T4): <what>` messages as you go.
+2. **Tests**: Run the project's full test suite. Fix all failures before 
+continuing.
+3. **Push**: `git push origin feature/df-ui-bugfix-T4`
+4. **Open PR** via the GitHub REST API (always draft):
+
+   ```sh
+   curl -s -X POST \
+     -H "Authorization: Bearer $GITHUB_TOKEN" \
+     -H "Accept: application/vnd.github+json" \
+     "https://api.github.com/repos/tiendv89/digital-factory-ui/pulls" \
+     -d '{"title":"feat(df-ui-bugfix/T4): <short 
+description>","body":"...","head":"feature/df-ui-bugfix-T4","base":"feature/df-u
+i-bugfix","draft":true}'
+   ```
+
+   Capture the `html_url` from the response.
+
+5. **Write result**: `printf '%s' 
+'{"terminal_status":"in_review","pr_url":"<html_url>"}' > 
+"/tmp/executor-result-T4.json"`
+
+If tests cannot be fixed after 3 attempts, still open the PR as a draft and 
+write
+`{"terminal_status":"blocked","blocked_reason":"tests_failed","pr_url":"<html_ur
+l>"}`
+to `/tmp/executor-result-T4.json`. Do not stop without writing 
+`/tmp/executor-result-T4.json`.
+Initializing agent...
+  ⚠ tirith security scanner enabled but not available — command scanning will use pattern matching only
+────────────────────────────────────────
+
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 preparing skill_view…
+  ┊ 📚 skill     frontend-engineer  0.1s
+  ┊ 📚 skill     typescript-best-practices  0.1s
+  ┊ 📚 skill     start-implementation  0.1s
+  ┊ 🔎 preparing search_files…
+  ┊ 💻 preparing terminal…
+  ┊ 🔎 find      *  0.4s
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git branch --show-current && git status --short | head -30  0.2s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/services/workflow-backend/client.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/services/workflow-backend/query-params.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/services/workflow-backend/types.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me look at the board hooks and views to understand the current pagination state:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx  0.3s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx  0.3s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/services/workflow-backend/index.ts  0.3s
+  ┊ 📖 preparing read_file…
+  ┊ 🔎 preparing search_files…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.3s
+  ┊ 🔎 find      PaginationControls  0.2s
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 find      *  0.1s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/PaginationControls/PaginationControls.tsx  0.3s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/types.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/hooks/useBackendFeatureSearch.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/hooks/useBackendTaskSearch.ts  0.4s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/lib/backend-list-params.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/PaginationControls/index.ts  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me examine the existing tests and understand the T2 endpoint contract tests:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 🔎 preparing search_files…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/t2-endpoint-contract.test.ts  0.3s
+  ┊ 🔎 grep      pagination  0.2s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/t5-pagination.test.ts  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/board-qa-integration.test.ts  0.4s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git log --oneline -20  0.1s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  0.4s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureListRow.tsx  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me look at the package.json and vitest config to understand the project:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/vitest.config.ts  0.3s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/package.json  0.4s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now I have a complete picture. Let me create a plan and start implementing.
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      6 task(s)  0.0s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      6 task(s)  0.0s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me now implement the changes. Starting with the context type and state variables:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  8.7s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -99,6 +99,18 @@
+   setFeaturePage: (page: number) => void;
+   taskPagination: PaginationMeta | null;
+   featurePagination: PaginationMeta | null;
++
++  // Sort state per mode
++  taskSort: string;
++  setTaskSort: (sort: string) => void;
++  featureSort: string;
++  setFeatureSort: (sort: string) => void;
++
++  // Page size (limit) state per mode
++  taskLimit: number;
++  setTaskLimit: (limit: number) => void;
++  featureLimit: number;
++  setFeatureLimit: (limit: number) => void;
+ };
+ 
+ const BoardContext = createContext<BoardContextValue | null>(null);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the state variables for sort and limit:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.6s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -169,6 +169,10 @@
+   );
+   const [taskPage, setTaskPage] = useState(1);
+   const [featurePage, setFeaturePage] = useState(1);
++  const [taskSort, setTaskSort] = useState(BOARD_DEFAULT_SORT);
++  const [featureSort, setFeatureSort] = useState(BOARD_DEFAULT_SORT);
++  const [taskLimit, setTaskLimit] = useState(BOARD_DEFAULT_LIMIT);
++  const [featureLimit, setFeatureLimit] = useState(BOARD_DEFAULT_LIMIT);
+ 
+   // Backend search hooks
+   const deferredTaskSearchQuery = useDeferredValue(taskSearchQuery);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the task search params to use state variables instead of hardcoded constants:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.6s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -218,10 +218,10 @@
+       title: trimmedTaskQuery || undefined,
+       status,
+       page: taskPage,
+-      limit: BOARD_DEFAULT_LIMIT,
+-      sort: BOARD_DEFAULT_SORT,
++      limit: taskLimit,
++      sort: taskSort,
+     };
+-  }, [trimmedTaskQuery, taskActiveFilters.statuses, taskPage, taskSearchActive, taskStatusFilterActive]);
++  }, [trimmedTaskQuery, taskActiveFilters.statuses, taskPage, taskSearchActive, taskStatusFilterActive, taskSort, taskLimit]);
+ 
+   const {
+     results: backendTaskResults,
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the feature search params:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.7s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -269,10 +269,10 @@
+       title: trimmedFeatureQuery || undefined,
+       status,
+       page: featurePage,
+-      limit: BOARD_DEFAULT_LIMIT,
+-      sort: BOARD_DEFAULT_SORT,
++      limit: featureLimit,
++      sort: featureSort,
+     };
+-  }, [trimmedFeatureQuery, featureActiveFilters.statuses, featurePage, featureSearchActive, featureStatusFilterActive]);
++  }, [trimmedFeatureQuery, featureActiveFilters.statuses, featurePage, featureSearchActive, featureStatusFilterActive, featureSort, featureLimit]);
+ 
+   const {
+     results: backendFeatureResults,
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the page reset effects for sort and limit changes. Let me update the task-mode reset effect and add feature-mode reset effect:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -190,22 +190,28 @@
+     boardMode === "task" &&
+     (trimmedTaskQuery.length > 0 || taskStatusFilterActive);
+ 
+-  // Reset page to 1 when search query or filters change
++  // Reset page to 1 when search query, filters, sort, or limit change
+   const prevTaskQueryRef = useRef(trimmedTaskQuery);
+   const prevTaskStatusRef = useRef(
+     taskActiveFilters.statuses.join(","),
+   );
++  const prevTaskSortRef = useRef(taskSort);
++  const prevTaskLimitRef = useRef(taskLimit);
+   useEffect(() => {
+     const currentStatus = taskActiveFilters.statuses.join(",");
+     if (
+       trimmedTaskQuery !== prevTaskQueryRef.current ||
+-      currentStatus !== prevTaskStatusRef.current
++      currentStatus !== prevTaskStatusRef.current ||
++      taskSort !== prevTaskSortRef.current ||
++      taskLimit !== prevTaskLimitRef.current
+     ) {
+       setTaskPage(1);
+     }
+     prevTaskQueryRef.current = trimmedTaskQuery;
+     prevTaskStatusRef.current = currentStatus;
+-  }, [trimmedTaskQuery, taskActiveFilters.statuses]);
++    prevTaskSortRef.current = taskSort;
++    prevTaskLimitRef.current = taskLimit;
++  }, [trimmedTaskQuery, taskActiveFilters.statuses, taskSort, taskLimit]);
+ 
+   const taskSearchParams = useMemo(() => {
+     if (!taskSearchActive) return {};
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the feature-mode reset effect:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -252,17 +252,23 @@
+   const prevFeatureStatusRef = useRef(
+     featureActiveFilters.statuses.join(","),
+   );
++  const prevFeatureSortRef = useRef(featureSort);
++  const prevFeatureLimitRef = useRef(featureLimit);
+   useEffect(() => {
+     const currentStatus = featureActiveFilters.statuses.join(",");
+     if (
+       trimmedFeatureQuery !== prevFeatureQueryRef.current ||
+-      currentStatus !== prevFeatureStatusRef.current
++      currentStatus !== prevFeatureStatusRef.current ||
++      featureSort !== prevFeatureSortRef.current ||
++      featureLimit !== prevFeatureLimitRef.current
+     ) {
+       setFeaturePage(1);
+     }
+     prevFeatureQueryRef.current = trimmedFeatureQuery;
+     prevFeatureStatusRef.current = currentStatus;
+-  }, [trimmedFeatureQuery, featureActiveFilters.statuses]);
++    prevFeatureSortRef.current = featureSort;
++    prevFeatureLimitRef.current = featureLimit;
++  }, [trimmedFeatureQuery, featureActiveFilters.statuses, featureSort, featureLimit]);
+ 
+   const featureSearchParams = useMemo(() => {
+     if (!featureSearchActive) return {};
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the sort and limit fields to the context value memo:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -466,6 +466,15 @@
+       setFeaturePage,
+       taskPagination,
+       featurePagination,
++
++      taskSort,
++      setTaskSort,
++      featureSort,
++      setFeatureSort,
++      taskLimit,
++      setTaskLimit,
++      featureLimit,
++      setFeatureLimit,
+     }),
+     [
+       workspaceDetail,
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the dependencies array in the useMemo:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.5s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.9s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx
+@@ -511,6 +511,11 @@
+       featurePage,
+       taskPagination,
+       featurePagination,
++
++      taskSort,
++      featureSort,
++      taskLimit,
++      featureLimit,
+     ],
+   );
+ 
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.context.tsx  0.6s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      2/6 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me update the PaginationControls component to include a page size selector:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/PaginationControls/PaginationControls.tsx  0.0s
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/PaginationControls/PaginationControls.tsx  0.4s
+  ┊ review diff
+a/src/features/board/components/PaginationControls/PaginationControls.tsx → b/src/features/board/components/PaginationControls/PaginationControls.tsx
+@@ -1,6 +1,9 @@
+ "use client";
+ 
+-import { ChevronLeft, ChevronRight } from "lucide-react";
++import { useCallback, useRef, useEffect, useState } from "react";
++import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
++
++export const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+ 
+ export type PageInfo = {
+   page: number;
+@@ -13,6 +16,10 @@
+   onPageChange: (page: number) => void;
+   /** When true, the controls are hidden entirely (no items to page). */
+   disabled?: boolean;
++  /** When provided, a page-size selector dropdown is rendered. */
++  onLimitChange?: (limit: number) => void;
++  /** Available page-size options (default: PAGE_SIZE_OPTIONS). */
++  availableLimits?: readonly number[];
+ };
+ 
+ function totalPages({ total, limit }: PageInfo): number {
+@@ -27,10 +34,86 @@
+   return { from, to };
+ }
+ 
++function PageSizeSelector({
++  value,
++  options,
++  onChange,
++}: {
++  value: number;
++  options: readonly number[];
++  onChange: (limit: number) => void;
++}) {
++  const [open, setOpen] = useState(false);
++  const ref = useRef<HTMLDivElement>(null);
++
++  useEffect(() => {
++    if (!open) return;
++
++    function handlePointerDown(event: PointerEvent) {
++      if (!ref.current?.contains(event.target as Node)) {
++        setOpen(false);
++      }
++    }
++
++    document.addEventListener("pointerdown", handlePointerDown);
++    return () => document.removeEventListener("pointerdown", handlePointerDown);
++  }, [open]);
++
++  const handleSelect = useCallback(
++    (limit: number) => {
++      onChange(limit);
++      setOpen(false);
++    },
++    [onChange],
++  );
++
++  return (
++    <div ref={ref} className="relative">
++      <button
++        type="button"
++        onClick={() => setOpen((o) => !o)}
++        aria-expanded={open}
++        aria-haspopup="listbox"
++        aria-label="Page size"
++        className="flex h-6 items-center gap-1 border border-border px-2 text-xs text-text-secondary hover:bg-surface-subtle"
++      >
++        {value}
++        <ChevronDown className="h-3 w-3" aria-hidden="true" />
++      </button>
++      {open && (
++        <div
++          role="listbox"
++          className="absolute bottom-full left-0 z-30 mb-1 w-full border border-border bg-surface shadow-lg"
++        >
++          {options.map((opt) => (
++            <button
+… omitted 67 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the PaginationControls index to export new types:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/PaginationControls/index.ts  3.0s
+  ┊ review diff
+a/src/features/board/components/PaginationControls/index.ts → b/src/features/board/components/PaginationControls/index.ts
+@@ -1,2 +1,2 @@
+-export { PaginationControls } from "./PaginationControls";
++export { PaginationControls, PAGE_SIZE_OPTIONS } from "./PaginationControls";
+ export type { PageInfo, PaginationControlsProps } from "./PaginationControls";
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update FeatureBoardView to pass onLimitChange:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx  0.6s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx
+@@ -103,6 +103,7 @@
+     featureSearchError,
+     setFeaturePage,
+     featurePagination,
++    setFeatureLimit,
+   } = useBoardContext();
+ 
+   // Use backend search results when a search or filter is active; otherwise
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx  0.6s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/FeatureBoardView/FeatureBoardView.tsx
+@@ -234,6 +234,7 @@
+         <PaginationControls
+           pageInfo={featurePagination}
+           onPageChange={setFeaturePage}
++          onLimitChange={setFeatureLimit}
+         />
+       )}
+     </div>
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update TaskBoardView:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx  0.7s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx
+@@ -67,6 +67,7 @@
+     openTaskTabNewSession,
+     setTaskPage,
+     taskPagination,
++    setTaskLimit,
+   } = useBoardContext();
+ 
+   // Build a lookup of real feature lifecycle status from the already-loaded
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx  0.7s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/TaskBoardView/TaskBoardView.tsx
+@@ -182,6 +182,7 @@
+         <PaginationControls
+           pageInfo={taskPagination}
+           onPageChange={setTaskPage}
++          onLimitChange={setTaskLimit}
+         />
+       )}
+     </div>
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      3/6 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me add a sort selector to the KanbanBoard BoardControls component:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  1.1s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    First, add the ArrowUpDown import:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  1.4s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx
+@@ -2,6 +2,7 @@
+ 
+ import {
+   AlertTriangle,
++  ArrowUpDown,
+   Funnel,
+   LayoutGrid,
+   ListChecks,
+@@ -9,7 +10,7 @@
+   Search,
+   X,
+ } from "lucide-react";
+-import { useEffect, useRef, useState } from "react";
++import { useCallback, useEffect, useRef, useState } from "react";
+ import { useBoardContext } from "./KanbanBoard.context";
+ import { TaskBoardView } from "../TaskBoardView";
+ import { FeatureBoardView } from "../FeatureBoardView";
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the sort options constant and the SortSelector component before BoardControls:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  1.6s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx
+@@ -256,6 +256,88 @@
+           {status.label}
+         </label>
+       ))}
++    </div>
++  );
++}
++
++const SORT_OPTIONS = [
++  { value: "updated_at_desc", label: "Recently updated" },
++  { value: "updated_at_asc", label: "Oldest updated" },
++  { value: "title_asc", label: "Title A–Z" },
++  { value: "title_desc", label: "Title Z–A" },
++] as const;
++
++function SortSelector({
++  value,
++  onChange,
++}: {
++  value: string;
++  onChange: (sort: string) => void;
++}) {
++  const [open, setOpen] = useState(false);
++  const ref = useRef<HTMLDivElement>(null);
++
++  useEffect(() => {
++    if (!open) return;
++
++    function handlePointerDown(event: PointerEvent) {
++      if (!ref.current?.contains(event.target as Node)) {
++        setOpen(false);
++      }
++    }
++
++    document.addEventListener("pointerdown", handlePointerDown);
++    return () => document.removeEventListener("pointerdown", handlePointerDown);
++  }, [open]);
++
++  const handleSelect = useCallback(
++    (sort: string) => {
++      onChange(sort);
++      setOpen(false);
++    },
++    [onChange],
++  );
++
++  const currentLabel =
++    SORT_OPTIONS.find((o) => o.value === value)?.label ?? "Sort";
++
++  return (
++    <div ref={ref} className="relative">
++      <button
++        type="button"
++        onClick={() => setOpen((o) => !o)}
++        aria-expanded={open}
++        aria-haspopup="listbox"
++        aria-label="Sort order"
++        className="flex h-8 items-center gap-1.5 border border-border bg-surface px-2.5 text-xs font-medium text-text-secondary transition-colors hover:bg-surface-subtle"
++      >
++        <ArrowUpDown className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
++        <span className="max-w-[100px] truncate">{currentLabel}</span>
++      </button>
++      {open && (
++        <div
++          role="listbox"
++          className="absolute right-0 top-9 z-30 w-44 border border-border bg-surface shadow-lg"
++        >
++          {SORT_OPTIONS.map((opt) => (
++            <button
++              key={opt.value}
++              type="button"
++              role="option"
++              aria-selected={opt.value === value}
++              onClick={() => handleSelect(opt.value)}
++              className={
++                "block w-full px-3 py-1.5 text-left text-xs " +
++                (opt.value === value
++                  ? "bg-primary/10 font-semibold text-primary"
++                  : "text-text-secondary hover:bg-surface-subtle")
+… omitted 10 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now wire the sort selector into BoardControls by pulling sort state from context and adding it to the toolbar:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  1.0s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx
+@@ -356,6 +356,10 @@
+     setFeatureSearchQuery,
+     taskActiveFilters,
+     featureActiveFilters,
++    taskSort,
++    setTaskSort,
++    featureSort,
++    setFeatureSort,
+   } = useBoardContext();
+   const [filterOpen, setFilterOpen] = useState(false);
+   const filterRef = useRef<HTMLDivElement>(null);
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now add the SortSelector to the toolbar right before the filter button:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  0.1s [old_string and new_string are identical]
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  0.5s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx  0.9s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/components/KanbanBoard/KanbanBoard.tsx
+@@ -438,6 +438,10 @@
+             </button>
+           )}
+         </label>
++        <SortSelector
++          value={boardMode === "task" ? taskSort : featureSort}
++          onChange={boardMode === "task" ? setTaskSort : setFeatureSort}
++        />
+         <div ref={filterRef} className="relative">
+           <button
+             type="button"
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me commit the UI changes and move to tests. First, let me run the existing test suite to check for regressions:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && npm test 2>&1 | tail -50  1.4s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && npx vitest run 2>&1 | tail -80  20.1s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && ls node_modules/.bin/vitest 2>&1 && npm install 2>&1 | tail -10  0.2s [exit 2]
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && npm install 2>&1 | tail -15  123.9s
+  (tip) That tool ran for a while. Use /verbose to cycle tool-progress display modes (all -> new -> off -> verbose). This tip only shows once.
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && npx vitest run 2>&1 | tail -100  26.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All 961 tests pass. Let me commit the context changes and UI changes:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git add -A && git diff --cached --stat  0.3s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git commit -m "feat(df-ui-bugfix/T4): add sort and page-size state to board context with reset-on-change
+
+- Add taskSort/featureSort state and setTaskSort/setFeatureSort setters
+- Add taskLimit/featureLimit state and setTaskLimit/setFeatureLimit setters
+- Replace hardcoded BOARD_DEFAULT_SORT/BOARD_DEFAULT_LIMIT with state in search params
+- Wire page-reset-to-1 on sort and limit changes in both modes
+- Add page-size selector to PaginationControls (onLimitChange prop)
+- Add sort-order dropdown to KanbanBoard toolbar
+- Wire onLimitChange in FeatureBoardView and TaskBoardView"  0.2s [exit 128]
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git config user.email "norepy@tiendv.dev" && git config user.name "Hermes Agent" && git commit -m "feat(df-ui-bugfix/T4): add sort and page-size state to board context with reset-on-change
+
+- Add taskSort/featureSort state and setTaskSort/setFeatureSort setters
+- Add taskLimit/featureLimit state and setTaskLimit/setFeatureLimit setters
+- Replace hardcoded BOARD_DEFAULT_SORT/BOARD_DEFAULT_LIMIT with state in search params
+- Wire page-reset-to-1 on sort and limit changes in both modes
+- Add page-size selector to PaginationControls (onLimitChange prop)
+- Add sort-order dropdown to KanbanBoard toolbar
+- Wire onLimitChange in FeatureBoardView and TaskBoardView"  0.4s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      4/6 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me look at the existing test patterns and the backend-list-params test:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts  0.7s
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/query-params.test.ts  0.6s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me check where shouldResetPage is used:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      shouldResetPage  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    I need to update shouldResetPage to include limit checks, as required by the T4 spec. Let me update it:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/lib/backend-list-params.ts  0.0s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/lib/backend-list-params.ts  11.0s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/lib/backend-list-params.ts → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/lib/backend-list-params.ts
+@@ -39,8 +39,8 @@
+ }
+ 
+ /**
+- * Returns true when search query or status filter has changed in a way that
+- * should reset the page counter to 1.
++ * Returns true when search query, status filter, sort, or limit has changed
++ * in a way that should reset the page counter to 1.
+  *
+  * Page-only changes (pagination navigation) must not trigger a reset.
+  */
+@@ -51,7 +51,8 @@
+   return (
+     normalizeQuery(prev.title) !== normalizeQuery(next.title) ||
+     normalizeStatus(prev.status) !== normalizeStatus(next.status) ||
+-    (prev.sort ?? BOARD_DEFAULT_SORT) !== (next.sort ?? BOARD_DEFAULT_SORT)
++    (prev.sort ?? BOARD_DEFAULT_SORT) !== (next.sort ?? BOARD_DEFAULT_SORT) ||
++    (prev.limit ?? BOARD_DEFAULT_LIMIT) !== (next.limit ?? BOARD_DEFAULT_LIMIT)
+   );
+ }
+ 
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now update the shouldResetPage test - limit changes should now reset the page:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts  0.1s [Could not find a match for old_string in the ...]
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts  0.6s
+  ┊ 🔧 preparing patch…
+  ┊ 🔧 patch     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts  9.8s
+  ┊ review diff
+a//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts → b//agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/backend-list-params.test.ts
+@@ -57,10 +57,10 @@
+     expect(shouldResetPage({ ...base, page: 1 }, { ...base, page: 5 })).toBe(false);
+   });
+ 
+-  it("returns false when only limit changes", () => {
++  it("returns true when limit changes", () => {
+     expect(
+       shouldResetPage({ ...base, page: 1, limit: 50 }, { ...base, page: 1, limit: 100 }),
+-    ).toBe(false);
++    ).toBe(true);
+   });
+ 
+   it("returns false when nothing changes", () => {
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now check and update the t6-regression test for the same limit test:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 🔎 preparing search_files…
+  ┊ 🔎 grep      limit  0.2s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/t6-regression.test.ts  0.6s
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/t6-regression.test.ts  0.9s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me write the T4-specific test file:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ ✍️ preparing write_file…
+  ┊ ✍️  write     /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/__tests__/t4-pagination-api.test.ts  2.4s
+  ┊ review diff
+a/src/__tests__/t4-pagination-api.test.ts → b/src/__tests__/t4-pagination-api.test.ts
+@@ -0,0 +1,489 @@
++/**
++ * T4 — Feature/task pagination API wiring tests
++ *
++ * Covers:
++ *   1. Feature mode pagination URL serialization
++ *   2. Task mode pagination URL serialization
++ *   3. Preserve title, status, sort when changing page
++ *   4. Page reset on search text, status filter, sort, and page size changes
++ *   5. Backend paged response metadata normalization
++ *   6. PaginationMeta type contract matches backend PagedFeatures/PagedTasks
++ *   7. PageInfo and displayRange derivation for PaginationControls
++ */
++
++import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
++import {
++  buildFeatureParams,
++  buildTaskParams,
++  type FeatureSearchParams,
++  type TaskSearchParams,
++} from "../services/workflow-backend/query-params";
++import {
++  searchFeaturesPage,
++  searchWorkspaceTasksPage,
++} from "../services/workflow-backend/client";
++import {
++  shouldResetPage,
++  makeDefaultBoardListParams,
++  BOARD_DEFAULT_LIMIT,
++  BOARD_DEFAULT_SORT,
++} from "../features/board/lib/backend-list-params";
++import type {
++  PagedFeatures,
++  PagedTasks,
++  FeatureSummary,
++  TaskSummary,
++} from "../services/workflow-backend/types";
++import type { PaginationMeta } from "../features/board/types";
++
++// ─── Helpers ──────────────────────────────────────────────────────────────
++
++function makeFeatureSummary(overrides: Partial<FeatureSummary> = {}): FeatureSummary {
++  return {
++    id: "uuid-1",
++    feature_id: "auth",
++    feature_name: "Auth System",
++    title: "Auth System",
++    status: "in_implementation",
++    current_stage: "implementation",
++    updated_at: "2026-05-27T00:00:00Z",
++    task_counts: { total: 5, done: 2, in_progress: 1, blocked: 1, ready: 1, todo: 0 },
++    ...overrides,
++  };
++}
++
++function makeTaskSummary(overrides: Partial<TaskSummary> = {}): TaskSummary {
++  return {
++    id: "uuid-t1",
++    task_id: "T1",
++    task_name: "JWT Verification",
++    feature_id: "auth",
++    feature_name: "Auth System",
++    title: "JWT Verification",
++    status: "in_progress",
++    repo: "digital-factory-ui",
++    branch: "feature/auth",
++    is_blocked: false,
++    ...overrides,
++  };
++}
++
++function makeFetchResponse(status: number, body: unknown): Response {
++  const text = JSON.stringify(body);
++  return {
++    status,
++    ok: status >= 200 && status < 300,
++    text: () => Promise.resolve(text),
++  } as unknown as Response;
++}
+… omitted 411 diff line(s) across 1 additional file(s)/section(s)
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Now let me run the tests to verify everything passes:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && npx vitest run 2>&1 | tail -60  25.7s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    All 993 tests pass (including 32 new T4 tests). Let me commit the remaining changes:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      5/6 task(s)  0.0s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git add -A && git diff --cached --stat  0.3s
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git commit -m "test(df-ui-bugfix/T4): add pagination API wiring tests and fix limit reset logic
+
+- Add t4-pagination-api.test.ts with 32 tests covering:
+  - Feature mode pagination URL serialization (page, limit, all params)
+  - Task mode pagination URL serialization (page, limit, all params)
+  - Preserve title/status/sort when changing page
+  - Page reset on filter/sort/limit changes (shouldResetPage)
+  - Backend paged response metadata normalization (searchFeaturesPage, searchWorkspaceTasksPage)
+  - PaginationMeta type contract compatibility
+  - Default board list params verification
+- Fix shouldResetPage to include limit changes
+- Update backend-list-params tests to expect page reset on limit changes"  0.3s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me verify the branch commits are clean:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 💻 preparing terminal…
+  ┊ 💻 $         cd /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl && git log --oneline -5 && echo "---" && git status  0.2s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    Let me verify the board index exports the PaginationControls properly:
+╰──────────────────────────────────────────────────────────────────────────────╯
+  ┊ 📖 preparing read_file…
+  ┊ 📖 read      /agent/data/exec-2b276d05-397d-4059-ab52-008154f8fbd9/impl/src/features/board/index.ts  0.4s
+  ┊ 📋 preparing todo…
+  ┊ 📋 plan      6/6 task(s)  0.0s
+
+╭─ ⚕ Hermes ───────────────────────────────────────────────────────────────────╮
+    T4 complete. Here's a summary of all changes:
+    
+    What was done
+    
+    1. Pagination state in board context (commit 68d0cd1)
+    - Added taskSort/featureSort and taskLimit/featureLimit state variables to KanbanBoard.context.tsx, replacing the hardcoded BOARD_DEFAULT_SORT and BOARD_DEFAULT_LIMIT constants in search params
+    - Wired page-reset-to-1 effects for sort and limit changes in both feature and task modes
+    
+    2. Page size selector in PaginationControls (commit 68d0cd1)
+    - Added PageSizeSelector dropdown to PaginationControls with options [25, 50, 100]
+    - Added onLimitChange and availableLimits props to PaginationControlsProps
+    - Wired onLimitChange={setFeatureLimit} and onLimitChange={setTaskLimit} in FeatureBoardView and TaskBoardView
+    
+    3. Sort selector in board toolbar (commit 68d0cd1)
+    - Added SortSelector dropdown to KanbanBoard toolbar with options: Recently updated, Oldest updated, Title A-Z, Title Z-A
+    - Wired to taskSort/featureSort setters from context
+    
+    4. Fixed shouldResetPage for limit changes (commit 41ee912)
+    - Updated shouldResetPage in backend-list-params.ts to include limit comparison
+    - Updated backend-list-params.test.ts to expect true on limit change
+    
+    5. T4-specific tests (commit 41ee912)
+    - Created t4-pagination-api.test.ts with 32 tests covering:
+      - Feature mode URL serialization with page/limit/all params
+      - Task mode URL serialization with page/limit/all params
+      - Preserving title/status/sort when page changes
+      - Page reset on filter/sort/limit changes
+      - Backend paged response metadata normalization
+      - PaginationMeta type contract compatibility
+      - Default board list params verification
+    
+    Test results
+    All 993 tests pass across 49 test files — zero failures.
+╰──────────────────────────────────────────────────────────────────────────────╯
+{"at":"2026-05-27T06:42:46.300Z","by":"norepy@tiendv.dev","type":"run_ended","details":{"outcome":"in_review"}}

@@ -1,0 +1,70 @@
+id: T8
+title: Sidebar blocked section and status-age indicators
+repo: digital-factory-ui
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/df-ui-bugfix-T8
+execution:
+  actor_type: agent
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T11:20:19.960Z
+pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/65
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/358
+  status: open
+log:
+  - action: created
+    by: minhkienn203@gmail.com
+    at: 2026-05-26T18:43:49+0700
+    note: Task adds blocked tasks to the top of the tasks sidebar and shows
+      current-status age for sidebar tasks.
+  - action: ready
+    by: tiendv.52@gmai.com
+    at: 2026-05-27T17:41:07+0700
+    note: Auto-readied — no dependencies, tasks stage approved.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-27T10:42:13.601Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-27T10:42:24.207Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Sidebar blocked section and status-age indicators df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-27T10:47:46+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/65"
+    executor_audit:
+      cost_usd: 0.5737859999999999
+      claude:
+        token_usage:
+          input: 337
+          output: 38185
+          model: claude-sonnet-4-6
+    at: 2026-05-27T11:05:29.104Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-27T11:07:06.582Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All 9 T8 subtasks implemented. computeStatusAge/formatStatusAgeDuration
+      utilities correct with full fallback chain. Blocked section at top of
+      sidebar. SIDEBAR_TASK_PARAMS includes blocked. Comprehensive test coverage
+      (196 lines). No 🔴/🟡 findings. CI: no check-runs. PR squash-merged."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/65#pullrequestreview-4371884531
+    at: 2026-05-27T11:12:49.727Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T11:20:19.960Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

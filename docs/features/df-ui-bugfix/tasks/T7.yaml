@@ -1,7 +1,7 @@
 id: T7
 title: Post-change final regression and browser QA
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
   - T2
@@ -9,18 +9,91 @@ depends_on:
   - T4
   - T5
   - T6
+  - T8
+  - T9
+  - T10
+  - T11
+  - T12
 blocked_reason: null
+blocked_context: null
 branch: feature/df-ui-bugfix-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-27T19:13:43.772Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/68
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/363
+  status: open
 log:
   - action: created
     by: minhkienn203@gmail.com
     at: 2026-05-26T13:15:57+0700
-    note: >-
-      Task covers final regression and browser QA for the scoped follow-up.
+    note: Task covers final regression and browser QA for the scoped follow-up.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:08:47.099Z
+    note: Task activated — dependency T12 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:11:29.237Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:11:43.217Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      github.com/tiendv89/digital-factory-ui/pull/61,
+      docs/features/df-ui-bugfix/product-spec.md"
+    rag_query: Post-change final regression and browser QA df-ui-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/68"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-27T18:35:13.563Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-27T18:37:27.885Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "Two Important findings: T7 subtask 6 (cross-browser status-age indicator
+      testing) and subtask 7 (dynamic log-transition status-age update) are not
+      covered by automated tests despite @testing-library/react,
+      @testing-library/user-event, and jsdom being added to the project in this
+      PR. No other correctness, security, or design issues found."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/68#pullrequestreview-4375138996
+    at: 2026-05-27T18:49:09.387Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-27T18:50:50.421Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/68"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-27T19:02:22.493Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-27T19:04:07.420Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All subtasks implemented. CI passed (no check-runs). Previous 🟡 findings
+      (T7 subtask 6 cross-browser status-age indicator rendering and subtask 7
+      dynamic log-transition update) are now fully covered by the new
+      src/__tests__/status-age-indicator-rendering.test.ts using
+      @testing-library/react + jsdom with 555 lines of tests. No 🔴 or 🟡
+      findings remain. PR squash-merged successfully.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/68#pullrequestreview-4375307693
+    at: 2026-05-27T19:11:51.096Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-27T19:13:43.772Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
