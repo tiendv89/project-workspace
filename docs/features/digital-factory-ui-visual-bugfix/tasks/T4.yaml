@@ -1,7 +1,7 @@
 id: T4
 title: Board visual cleanup and In Reviewing status
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T4
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T15:09:04+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T08:10:31.613Z
 pr:
   url: null
   status: null
@@ -50,3 +50,7 @@ log:
     by: unknown@local
     at: 2026-05-28T15:09:04+0700
     note: Task unblocked and reset to ready for re-claim.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-28T08:10:31.613Z
+    note: Claimed via git-based claim protocol.
