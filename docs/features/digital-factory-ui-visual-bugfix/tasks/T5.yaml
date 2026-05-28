@@ -1,7 +1,7 @@
 id: T5
 title: Log link formatting
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T5
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-28T08:55:50.096Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T09:01:00.362Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/70
   status: open
@@ -102,3 +102,12 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-28T08:55:50.096Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T5 subtasks implemented. Regex-based tokenizer fix correctly
+      preserves whitespace around URL tokens, resolving the cycle-1 rendering
+      issue. Tests cover link rendering, surrounding text, plain text, malformed
+      URLs, and multiple URLs per note. No 🔴/🟡 findings. CI: no check-runs
+      (treated as passed). requires_human_review=true — merge skipped."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/70#pullrequestreview-4379447250
+    at: 2026-05-28T09:01:00.362Z
