@@ -1,7 +1,7 @@
 id: T3
 title: Task/feature tab detail query cache migration
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T10:59:34.702Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-28T11:01:51.791Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/75
   status: open
@@ -55,3 +55,7 @@ log:
           output: 29192
           model: claude-sonnet-4-6
     at: 2026-05-28T10:59:34.702Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T11:01:51.791Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
