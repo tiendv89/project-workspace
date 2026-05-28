@@ -1,7 +1,7 @@
 id: T5
 title: Log link formatting
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,8 +9,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T5
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-28T07:48:51.037Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-28T07:58:05.760Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/70
   status: open
@@ -57,3 +57,15 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-28T07:48:51.037Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 Spaces between text tokens and link tokens are lost in rendering
+      (src/lib/url-tokenizer.ts:32-64, FeatureLogsPanel.tsx:71-93,
+      TaskTabView.tsx:429-451). tokenizeText splits on ' ' discarding space
+      characters; adjacent inline JSX span/a elements render without whitespace,
+      so 'PR merged at https://url done' displays as 'PR merged
+      athttps://urldone'. Violates product-spec requirement: non-link text
+      remains readable. Fix: preserve trailing/leading space in text tokens
+      adjacent to links, or use regex-slice approach."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/70#pullrequestreview-4378994985
+    at: 2026-05-28T07:58:05.760Z
