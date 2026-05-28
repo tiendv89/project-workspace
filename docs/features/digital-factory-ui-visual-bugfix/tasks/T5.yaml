@@ -1,7 +1,7 @@
 id: T5
 title: Log link formatting
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-28T07:58:05.760Z
+  last_updated_at: 2026-05-28T07:59:28.655Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/70
   status: open
@@ -69,3 +69,7 @@ log:
       adjacent to links, or use regex-slice approach."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/70#pullrequestreview-4378994985
     at: 2026-05-28T07:58:05.760Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-28T07:59:28.655Z
+    note: Fix agent claimed.
