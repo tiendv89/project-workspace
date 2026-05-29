@@ -31,3 +31,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-29T06:16:00.449Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-29T06:16:17.455Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/365,
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-visual-bugfix/product-spec.md"
+    rag_query: Remove board sort controls digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
