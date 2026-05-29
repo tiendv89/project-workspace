@@ -1,26 +1,66 @@
 id: T8
 title: Remove board sort controls
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T8
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: codex
-  last_updated_at: 2026-05-29T13:06:52+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T07:03:54.110Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/78
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/373
+  status: open
 log:
   - action: created
     by: codex
     at: 2026-05-29T13:06:52+0700
-    note: >-
-      Task added after product-spec update for removing the unnecessary sort
+    note: Task added after product-spec update for removing the unnecessary sort
       button from /board in both Feature Mode and Task Mode.
   - action: ready
     by: codex
     at: 2026-05-29T13:06:52+0700
     note: No dependencies; sort-button removal can begin immediately.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-29T06:16:00.449Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-29T06:16:17.455Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/365,
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-visual-bugfix/product-spec.md"
+    rag_query: Remove board sort controls digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/78"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-29T06:36:53.677Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-29T06:41:42.707Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T8 subtasks implemented: SortSelector and dead sort wiring removed
+      from KanbanBoard.tsx and KanbanBoard.context.tsx; default ordering
+      preserved via BOARD_DEFAULT_SORT; tests cover sort absence in Feature Mode
+      and Task Mode plus ordering regression. No 🔴/🟡 findings. CI has no
+      check-runs (treated as passing)."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/78#pullrequestreview-4387253698
+    at: 2026-05-29T06:50:38.155Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-29T07:03:54.110Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
