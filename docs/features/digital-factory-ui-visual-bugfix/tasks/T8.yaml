@@ -1,7 +1,7 @@
 id: T8
 title: Remove board sort controls
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,8 +9,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T8
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-29T06:41:42.707Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T06:50:38.155Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/78
   status: open
@@ -51,3 +51,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-29T06:41:42.707Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T8 subtasks implemented: SortSelector and dead sort wiring removed
+      from KanbanBoard.tsx and KanbanBoard.context.tsx; default ordering
+      preserved via BOARD_DEFAULT_SORT; tests cover sort absence in Feature Mode
+      and Task Mode plus ordering regression. No 🔴/🟡 findings. CI has no
+      check-runs (treated as passing)."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/78#pullrequestreview-4387253698
+    at: 2026-05-29T06:50:38.155Z
