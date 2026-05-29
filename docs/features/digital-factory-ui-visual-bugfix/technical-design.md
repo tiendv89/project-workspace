@@ -47,11 +47,18 @@ Feature task rows are currently handled as an inline drilldown inside
 from the feature tab, then make Back close that task tab and return to the
 parent feature tab.
 
+Sidebar task cards are grouped by task status, including `in_review`,
+`in_progress`, `in_reviewing`, `ready`, and `blocked`. The task item payload
+includes `execution.last_updated_at`, but the sidebar cards currently do not
+display a relative recency label from that timestamp.
+
 ## Problem Framing
 
 This feature changes only the frontend app. It must:
 
 - Remove unrelated `Create Task` and `Recent updates` UI from `/board`.
+- Remove the unnecessary sort button from `/board` in both Feature Mode and
+  Task Mode while preserving the board's existing default ordering behavior.
 - Add a Task Mode-only `In Reviewing` kanban column/status.
 - Highlight HTTP/HTTPS links in log/activity text and open them safely in a new
   tab.
@@ -64,6 +71,8 @@ This feature changes only the frontend app. It must:
   so the UI does not flicker through blank loading states.
 - Open task rows inside feature tabs as task tabs, and close/remove that task tab
   when Back returns to the parent feature tab.
+- Render compact browser-time relative last-updated labels on sidebar task cards
+  for `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
 
 The following behavior must remain stable:
 
@@ -278,8 +287,12 @@ Board cleanup:
 
 - Remove the `Create Task` action from the `/board` surface.
 - Remove the `Recent updates` section from `/board`.
+- Remove the sort button from the `/board` surface in both Feature Mode and
+  Task Mode.
 - Keep existing board header, mode switching, filters, pagination, sidebar, and
   detail-tab entry points intact.
+- Preserve the board's existing default item ordering, grouping, filtering,
+  pagination, and detail-opening behavior after the sort control is removed.
 
 Task Mode `In Reviewing`:
 
@@ -287,6 +300,23 @@ Task Mode `In Reviewing`:
 - Map tasks in the reviewing state to that column.
 - Keep Feature Mode status definitions unchanged.
 - Reuse the existing status color/label pattern.
+
+Sidebar task last-updated labels:
+
+- Read `execution.last_updated_at` from each task item rendered in the sidebar
+  status lists.
+- Parse ISO timestamps with `Z` or explicit offsets using browser-side time
+  primitives.
+- Format the elapsed time against the browser's current clock as compact labels
+  such as `50s ago`, `2m ago`, and `1h ago`.
+- Update relative labels as browser time advances without refetching sidebar
+  task data only to refresh the text.
+- Apply the label consistently to task cards under `in_review`, `in_progress`,
+  `in_reviewing`, `ready`, and `blocked`.
+- Omit the label for missing or invalid timestamps rather than showing
+  misleading data or crashing the sidebar.
+- Preserve existing sidebar task grouping, ordering, status visibility, and card
+  click behavior.
 
 Log link rendering:
 
@@ -314,6 +344,11 @@ Internal dependencies:
   merge conflict with cache hook changes.
 - Visual board cleanup and `In Reviewing` rendering do not depend on the cache
   layer.
+- Sort-button removal does not depend on the cache layer or feature-origin task
+  tab navigation.
+- Sidebar task timestamp rendering does not depend on backend changes or the
+  cache layer, because it uses each task item's existing
+  `execution.last_updated_at` field.
 - Log link rendering does not depend on the cache layer.
 - Final browser/network QA depends on all implementation tasks.
 
@@ -353,31 +388,35 @@ T1: Frontend API cache foundation
   └── Complete - shared provider and query-key helpers exist
   │
   T2: Board/sidebar/mode query cache migration
-    └── Can begin now - T1 is done; migrate board/sidebar reads, set 1-minute cache time, and replace the manual board interval with refetchInterval
+    └── Complete - board/sidebar/mode query cache migration is done
   │
   T3: Task/feature tab detail query cache migration
-    └── Can begin now - T1 is done; migrate task/feature detail reads and keep cached or previous data visible during tab switches
-  └── T2 and T3 run in parallel
+    └── Complete - task/feature tab detail query cache migration is done
 
 T4: Board visual cleanup and In Reviewing status
   └── Complete - board cleanup and Task Mode In Reviewing status are merged
 
 T5: Log link formatting
-  └── Can begin now - no blockers
+  └── Complete - log link formatting is merged
   │
   T7: Feature-origin task tab navigation and tab flicker hardening
-    └── BLOCKED on T3 (task/feature tab detail query migration must stabilize the tab data surfaces first)
+    └── Can begin now - T3 is done; update feature-origin task tabs and tab-switch flicker behavior
+
+T8: Remove board sort controls
+  └── Complete - sort control removal is merged
+
+T9: Sidebar task last-updated timestamps
+  └── Can begin now - no blockers; read execution.last_updated_at from existing sidebar task items
   │
   T6: Regression tests and browser/network QA
-    └── BLOCKED on T2 (board/sidebar/mode cache behavior must be implemented)
-    └── BLOCKED on T3 (task/feature tab cache behavior must be implemented)
-    └── BLOCKED on T4 (board visual/status fixes must be implemented)
-    └── BLOCKED on T5 (log link formatting must be implemented)
+    └── Completed prerequisites: T2, T3, T4, and T5
     └── BLOCKED on T7 (feature-origin task tab back behavior and tab flicker hardening must be implemented)
+    └── BLOCKED on T8 (sort-button removal must be implemented in both board modes)
+    └── BLOCKED on T9 (sidebar task cards must render browser-time relative last-updated labels)
 ```
 
-T2, T3, and T5 can proceed now. T7 follows T3 to avoid tab-surface conflicts.
-T6 remains the final verification task.
+T7 and T9 can proceed now. T8 is complete. T6 remains the final verification
+task and must cover sort-button removal plus sidebar task recency labels.
 
 ## Repository Impact
 
@@ -401,6 +440,9 @@ Expected files/areas:
 - `src/features/workspaces/context/WorkspaceContext.tsx`: invalidate/refetch
   workspace query keys after sync, preserve workspace-switch reset behavior, and
   store/activate feature return context for feature-origin task tabs.
+- Sidebar task components/hooks under `src/features/board/components/*` and
+  `src/features/board/hooks/*`: render compact relative timestamps from
+  `execution.last_updated_at` on task cards in the status lists.
 - `src/features/board/components/FeatureTabView/*`: open feature task rows as
   task tabs instead of inline drilldowns.
 - `src/features/tasks/components/TaskTabView/TaskTabView.tsx`: close/remove the
@@ -409,7 +451,8 @@ Expected files/areas:
 - `src/features/board/components/KanbanBoard/KanbanBoard.context.tsx`: remove
   the manual 60-second interval in favor of TanStack Query `refetchInterval`.
 - Board components under `src/features/board/components/*`: remove unwanted UI,
-  add Task Mode `In Reviewing`, and format feature/task logs.
+  remove sort controls from both modes, add Task Mode `In Reviewing`, and format
+  feature/task logs.
 - Tests under `src/__tests__/` and browser QA specs.
 
 Task repo values must be `digital-factory-ui`.
@@ -426,10 +469,18 @@ Testing expectations:
 - Tests for manual refresh/sync invalidating or refetching current workspace
   data.
 - Render tests for removal of `Create Task` and `Recent updates`.
+- Render tests proving the sort button is absent in both Feature Mode and Task
+  Mode, while default board ordering/filtering behavior remains intact.
+- Formatter and render tests proving sidebar task cards display compact
+  browser-time relative labels from `execution.last_updated_at` under
+  `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
+- Tests proving missing or invalid sidebar task timestamps do not crash the
+  sidebar or change task grouping/click behavior.
 - Render tests for Task Mode `In Reviewing` and Feature Mode exclusion.
 - Unit/render tests for HTTP/HTTPS log link formatting.
 - Browser QA verifying visible behavior, duplicate-fetch reduction, 1-minute
-  background refetch behavior, and no blank/flickering tab switches.
+  background refetch behavior, no blank/flickering tab switches, and sidebar
+  timestamp readability.
 
 Migration/config impact:
 

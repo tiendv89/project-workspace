@@ -2,8 +2,8 @@ feature_id: digital-factory-ui-visual-bugfix
 title: Digital Factory UI Visual Bug Fix
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Execute tasks - T7 is ready. T1, T2, T3, T4, and T5 are done. T6
-  waits for T7.
+next_action: Execute tasks - T7 and T9 are ready. T1, T2, T3, T4, T5, and T8
+  are done. T6 waits for T7 and T9.
 stages:
   product_spec:
     review_status: approved
@@ -179,6 +179,48 @@ history:
     note: >-
       Task breakdown updated with T7 and T6 now depends on T7 for final
       regression QA.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: >-
+      Product spec updated to require removing the /board sort button in both
+      Feature Mode and Task Mode.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: >-
+      Technical design updated with sort-button removal scope, affected board
+      components, validation expectations, and task dependency impact.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: >-
+      Task breakdown updated with T8 for sort-button removal, and T6 now depends
+      on T8 for final regression QA.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: >-
+      Product spec updated to require compact browser-time last-updated labels
+      on sidebar task cards from execution.last_updated_at.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: >-
+      Technical design updated with sidebar task timestamp rendering scope,
+      formatter behavior, affected frontend areas, and QA expectations.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: >-
+      Task breakdown updated with T9 for sidebar task last-updated labels, and
+      T6 now depends on T9 for final regression QA.
 revalidation:
   product_spec_required: false
   technical_design_required: false
