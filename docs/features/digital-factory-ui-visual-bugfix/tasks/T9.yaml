@@ -32,3 +32,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-29T08:16:50.940Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-29T08:17:03.723Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/digital-factory-ui/pull/72,
+      github.com/tiendv89/digital-factory-ui/pull/73,
+      docs/features/digital-factory-ui-visual-bugfix/product-spec.md"
+    rag_query: Sidebar task last-updated timestamps digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
