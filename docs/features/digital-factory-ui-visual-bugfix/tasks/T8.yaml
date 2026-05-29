@@ -1,7 +1,7 @@
 id: T8
 title: Remove board sort controls
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-29T06:50:38.155Z
+  last_updated_at: 2026-05-29T07:03:54.110Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/78
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/373
   status: open
@@ -60,3 +60,7 @@ log:
       check-runs (treated as passing)."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/78#pullrequestreview-4387253698
     at: 2026-05-29T06:50:38.155Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-29T07:03:54.110Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
