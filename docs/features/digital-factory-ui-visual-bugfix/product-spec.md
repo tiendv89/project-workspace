@@ -33,6 +33,10 @@ feel noisy, incomplete, and slower than needed:
    closes the task tab and returns to the parent feature tab.
 7. The board still shows a sort button in both Feature Mode and Task Mode, but
    this control is not needed on `/board` and adds unnecessary UI noise.
+8. Sidebar task cards are grouped by status, but they do not show when each task
+   was last updated. The task payload already includes
+   `execution.last_updated_at`, so users should be able to scan recency directly
+   in the sidebar without opening each task.
 
 ## Goals
 
@@ -52,6 +56,9 @@ feel noisy, incomplete, and slower than needed:
   and the task tab Back action should close that task tab and return to the
   parent feature tab.
 - Remove the sort button from `/board` in both Feature Mode and Task Mode.
+- Show compact browser-time relative last-updated labels on sidebar task cards
+  for `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked` task
+  lists.
 - Preserve the existing board layout, status semantics, and detail workflows
   except for the targeted fixes listed in this spec.
 
@@ -125,6 +132,18 @@ feel noisy, incomplete, and slower than needed:
 7. If a task tab has no parent feature return target, Back keeps the existing
    behavior of closing the task tab and returning to the default board.
 
+### Journey 7 - Scan sidebar task recency
+
+1. The user opens `/board`.
+2. The sidebar groups tasks under statuses such as `in_review`, `in_progress`,
+   `in_reviewing`, `ready`, and `blocked`.
+3. Each task card in those status lists reads its
+   `execution.last_updated_at` timestamp.
+4. The card displays a compact browser-time relative label such as `50s ago`,
+   `2m ago`, or `1h ago`.
+5. The user can compare task recency across sidebar status lists without opening
+   task details.
+
 ## Product Requirements
 
 ### Board cleanup
@@ -197,6 +216,25 @@ feel noisy, incomplete, and slower than needed:
   behavior: close the task tab and return to the default board.
 - The feature tab itself must remain open when returning from the task tab.
 
+### Sidebar task relative update time
+
+- Sidebar task cards under `in_review`, `in_progress`, `in_reviewing`, `ready`,
+  and `blocked` status lists must show a compact last-updated label.
+- The label must be derived from the task item's `execution.last_updated_at`
+  field.
+- Timestamp parsing must support ISO timestamps with `Z` or explicit offsets,
+  including values such as `2026-05-28T07:14:20Z`.
+- The displayed value must be computed in the browser from the browser's current
+  time so the label reflects the user's live browser clock.
+- The label format must be compact relative English, including examples such as
+  `50s ago`, `2m ago`, and `1h ago`.
+- Relative labels should update as browser time advances without requiring a
+  task data refetch only to refresh the text label.
+- Missing or invalid `execution.last_updated_at` values must not crash the
+  sidebar; those task cards may omit the relative label.
+- Adding the timestamp label must not change the existing sidebar task grouping,
+  task ordering, click behavior, or status list visibility.
+
 ## Acceptance Criteria
 
 - `/board` no longer displays `Create Task`.
@@ -230,3 +268,12 @@ feel noisy, incomplete, and slower than needed:
   returns to the parent feature tab.
 - Switching between task and feature tabs keeps cached or previous content
   visible when available and avoids visible blank/loading flicker.
+- Sidebar task cards under `in_review`, `in_progress`, `in_reviewing`, `ready`,
+  and `blocked` show compact relative last-updated labels from
+  `execution.last_updated_at`.
+- Sidebar relative labels render in browser time with compact formats such as
+  `50s ago`, `2m ago`, and `1h ago`.
+- Missing or invalid task `execution.last_updated_at` values do not crash the
+  sidebar.
+- Sidebar timestamp labels do not change existing task grouping, ordering, or
+  click behavior.

@@ -47,6 +47,11 @@ Feature task rows are currently handled as an inline drilldown inside
 from the feature tab, then make Back close that task tab and return to the
 parent feature tab.
 
+Sidebar task cards are grouped by task status, including `in_review`,
+`in_progress`, `in_reviewing`, `ready`, and `blocked`. The task item payload
+includes `execution.last_updated_at`, but the sidebar cards currently do not
+display a relative recency label from that timestamp.
+
 ## Problem Framing
 
 This feature changes only the frontend app. It must:
@@ -66,6 +71,8 @@ This feature changes only the frontend app. It must:
   so the UI does not flicker through blank loading states.
 - Open task rows inside feature tabs as task tabs, and close/remove that task tab
   when Back returns to the parent feature tab.
+- Render compact browser-time relative last-updated labels on sidebar task cards
+  for `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
 
 The following behavior must remain stable:
 
@@ -294,6 +301,23 @@ Task Mode `In Reviewing`:
 - Keep Feature Mode status definitions unchanged.
 - Reuse the existing status color/label pattern.
 
+Sidebar task last-updated labels:
+
+- Read `execution.last_updated_at` from each task item rendered in the sidebar
+  status lists.
+- Parse ISO timestamps with `Z` or explicit offsets using browser-side time
+  primitives.
+- Format the elapsed time against the browser's current clock as compact labels
+  such as `50s ago`, `2m ago`, and `1h ago`.
+- Update relative labels as browser time advances without refetching sidebar
+  task data only to refresh the text.
+- Apply the label consistently to task cards under `in_review`, `in_progress`,
+  `in_reviewing`, `ready`, and `blocked`.
+- Omit the label for missing or invalid timestamps rather than showing
+  misleading data or crashing the sidebar.
+- Preserve existing sidebar task grouping, ordering, status visibility, and card
+  click behavior.
+
 Log link rendering:
 
 - Reuse or extend `src/lib/url-tokenizer.ts`.
@@ -322,6 +346,9 @@ Internal dependencies:
   layer.
 - Sort-button removal does not depend on the cache layer or feature-origin task
   tab navigation.
+- Sidebar task timestamp rendering does not depend on backend changes or the
+  cache layer, because it uses each task item's existing
+  `execution.last_updated_at` field.
 - Log link rendering does not depend on the cache layer.
 - Final browser/network QA depends on all implementation tasks.
 
@@ -376,16 +403,20 @@ T5: Log link formatting
     └── Can begin now - T3 is done; update feature-origin task tabs and tab-switch flicker behavior
 
 T8: Remove board sort controls
-  └── Can begin now - no blockers; remove sort UI from both Feature Mode and Task Mode without changing default ordering
+  └── Complete - sort control removal is merged
+
+T9: Sidebar task last-updated timestamps
+  └── Can begin now - no blockers; read execution.last_updated_at from existing sidebar task items
   │
   T6: Regression tests and browser/network QA
     └── Completed prerequisites: T2, T3, T4, and T5
     └── BLOCKED on T7 (feature-origin task tab back behavior and tab flicker hardening must be implemented)
     └── BLOCKED on T8 (sort-button removal must be implemented in both board modes)
+    └── BLOCKED on T9 (sidebar task cards must render browser-time relative last-updated labels)
 ```
 
-T7 and T8 can proceed now. T6 remains the final
-verification task and must cover the new sort-button removal.
+T7 and T9 can proceed now. T8 is complete. T6 remains the final verification
+task and must cover sort-button removal plus sidebar task recency labels.
 
 ## Repository Impact
 
@@ -409,6 +440,9 @@ Expected files/areas:
 - `src/features/workspaces/context/WorkspaceContext.tsx`: invalidate/refetch
   workspace query keys after sync, preserve workspace-switch reset behavior, and
   store/activate feature return context for feature-origin task tabs.
+- Sidebar task components/hooks under `src/features/board/components/*` and
+  `src/features/board/hooks/*`: render compact relative timestamps from
+  `execution.last_updated_at` on task cards in the status lists.
 - `src/features/board/components/FeatureTabView/*`: open feature task rows as
   task tabs instead of inline drilldowns.
 - `src/features/tasks/components/TaskTabView/TaskTabView.tsx`: close/remove the
@@ -437,10 +471,16 @@ Testing expectations:
 - Render tests for removal of `Create Task` and `Recent updates`.
 - Render tests proving the sort button is absent in both Feature Mode and Task
   Mode, while default board ordering/filtering behavior remains intact.
+- Formatter and render tests proving sidebar task cards display compact
+  browser-time relative labels from `execution.last_updated_at` under
+  `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
+- Tests proving missing or invalid sidebar task timestamps do not crash the
+  sidebar or change task grouping/click behavior.
 - Render tests for Task Mode `In Reviewing` and Feature Mode exclusion.
 - Unit/render tests for HTTP/HTTPS log link formatting.
 - Browser QA verifying visible behavior, duplicate-fetch reduction, 1-minute
-  background refetch behavior, and no blank/flickering tab switches.
+  background refetch behavior, no blank/flickering tab switches, and sidebar
+  timestamp readability.
 
 Migration/config impact:
 

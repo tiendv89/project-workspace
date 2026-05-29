@@ -1,6 +1,6 @@
 # Tasks - digital-factory-ui-visual-bugfix
 
-> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; T1, T2, T3, T4, and T5 are done; T7 and T8 are ready; T6 remains final QA and waits for T7 and T8). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
+> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; T1, T2, T3, T4, T5, and T8 are done; T7 and T9 are ready; T6 remains final QA and waits for T7 and T9). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
 
 | ID | Wave | Title | Depends on |
 |---|---|---|---|
@@ -11,7 +11,8 @@
 | T5 | 1 | Log link formatting | none |
 | T7 | 3 | Feature-origin task tab navigation and tab flicker hardening | T3 |
 | T8 | 3 | Remove board sort controls | none |
-| T6 | 4 | Regression tests and browser/network QA | T2, T3, T4, T5, T7, T8 |
+| T9 | 3 | Sidebar task last-updated timestamps | none |
+| T6 | 4 | Regression tests and browser/network QA | T2, T3, T4, T5, T7, T8, T9 |
 
 ## T1 — Frontend API cache foundation
 
@@ -151,10 +152,30 @@ Remove the unnecessary sort button from `/board` in both Feature Mode and Task M
 - [ ] Add or update render tests proving the sort button is absent in Task Mode.
 - [ ] Add regression coverage proving removing the button does not change default board ordering/filtering behavior.
 
+## T9 — Sidebar task last-updated timestamps
+
+### Description
+Render compact relative last-updated labels on sidebar task cards. Each card should read the task item's `execution.last_updated_at` value, compute the elapsed time against the browser's current clock, and show compact labels such as `50s ago`, `2m ago`, and `1h ago` across the `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked` status lists.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Locate the sidebar task card/list rendering used by the `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked` task status sections.
+- [ ] Read `execution.last_updated_at` from the sidebar task item payload and update task/card types if the field is not already typed.
+- [ ] Add or reuse a browser-side compact relative-time formatter for ISO timestamps with `Z` or explicit offsets.
+- [ ] Render compact labels such as `50s ago`, `2m ago`, and `1h ago` in each sidebar task card without changing the card click target.
+- [ ] Refresh relative labels as browser time advances without refetching task data only to update the text label.
+- [ ] Handle missing or invalid `execution.last_updated_at` by omitting the label without crashing the sidebar.
+- [ ] Preserve existing sidebar task grouping, ordering, empty states, status visibility, and task-card click behavior.
+- [ ] Add focused formatter tests for seconds, minutes, hours, and invalid timestamps.
+- [ ] Add render tests proving labels appear in task cards under `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
+
 ## T6 — Regression tests and browser/network QA
 
 ### Description
-Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status, log link formatting, feature-origin task tab navigation, sort-button removal, and flicker fixes together. This task should prove both UI behavior and reduced duplicate-fetch behavior during mode switching, tab switching, and browser visit-back.
+Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status, log link formatting, feature-origin task tab navigation, sort-button removal, sidebar task timestamp labels, and flicker fixes together. This task should prove both UI behavior and reduced duplicate-fetch behavior during mode switching, tab switching, and browser visit-back.
 
 ### Required skills
 - browser-qa-frontend
@@ -172,6 +193,8 @@ Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status,
 - [ ] Run focused render tests for removal of `Create Task` and `Recent updates`.
 - [ ] Run focused render tests proving the sort button is absent in both Feature Mode and Task Mode.
 - [ ] Run regression tests proving default board ordering/filtering behavior is unchanged after sort-button removal.
+- [ ] Run focused formatter and render tests proving sidebar task cards show compact relative labels from `execution.last_updated_at` under `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked`.
+- [ ] Run focused tests proving missing or invalid sidebar task timestamps do not crash the sidebar or change task grouping/click behavior.
 - [ ] Run focused render tests for Task Mode `In Reviewing` and Feature Mode exclusion.
 - [ ] Run focused log-link tests for HTTP/HTTPS highlighting and safe new-tab links.
-- [ ] Run browser QA for `/board` mode switching, feature-origin task tab Back behavior, task/feature tab switching, and browser visit-back with network request observation.
+- [ ] Run browser QA for `/board` mode switching, sidebar timestamp readability, feature-origin task tab Back behavior, task/feature tab switching, and browser visit-back with network request observation.
