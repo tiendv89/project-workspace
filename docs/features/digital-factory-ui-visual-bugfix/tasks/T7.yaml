@@ -1,7 +1,7 @@
 id: T7
 title: Feature-origin task tab navigation and tab flicker hardening
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -9,8 +9,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T7
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T23:24:23+0700
+  last_updated_by: minhkienn203@gmail.com
+  last_updated_at: 2026-05-29T11:21:51+0700
 pr:
   url: null
   status: null
@@ -22,3 +22,7 @@ log:
       Task added after product-spec update for feature-origin task-tab
       navigation, parent feature return behavior, and tab-switch flicker
       hardening.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-29T11:21:51+0700
+    note: Dependency T3 is done, so T7 is ready for execution.
