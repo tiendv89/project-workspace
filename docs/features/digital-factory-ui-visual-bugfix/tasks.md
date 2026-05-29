@@ -1,6 +1,6 @@
 # Tasks - digital-factory-ui-visual-bugfix
 
-> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; T1, T2, T3, T4, T5, and T8 are done; T7 and T9 are ready; T6 remains final QA and waits for T7 and T9). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
+> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; all implementation tasks T1-T9 are done; T6 completed final regression QA). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
 
 | ID | Wave | Title | Depends on |
 |---|---|---|---|
