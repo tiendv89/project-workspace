@@ -33,3 +33,14 @@ log:
     by: spiderbot@gmail.com
     at: 2026-05-29T04:25:40.589Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: spiderbot@gmail.com
+    at: 2026-05-29T04:25:51.454Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/product-spec.md,
+      docs/features/digital-factory-ui-visual-bugfix/product-spec.md"
+    rag_query: Feature-origin task tab navigation and tab flicker hardening
+      digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
