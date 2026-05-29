@@ -1,7 +1,7 @@
 id: T9
 title: Sidebar task last-updated timestamps
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-29T08:41:34.313Z
+  last_updated_at: 2026-05-29T08:43:27.198Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/79
   status: open
@@ -61,3 +61,7 @@ log:
       subtasks are implemented."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/79#pullrequestreview-4388020029
     at: 2026-05-29T08:41:34.313Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-29T08:43:27.198Z
+    note: Fix agent claimed.
