@@ -1,9 +1,9 @@
 feature_id: workspace-github-adapter-multi-github-token
 title: Multi GitHub Token Support for Workspace GitHub Adapter
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown (tasks.md and tasks/T<n>.yaml files).
+next_action: Tasks approved — T1 is ready for implementation.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         at: "2026-05-29T16:46:20Z"
         comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-05-29T16:49:57Z"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-05-29T16:49:57Z"
+        comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -46,6 +50,9 @@ history:
   - event: technical_design_approved
     by: pentative@gmail.com
     at: "2026-05-29T16:46:20Z"
+  - event: tasks_approved
+    by: pentative@gmail.com
+    at: "2026-05-29T16:49:57Z"
 
 revalidation:
   product_spec_required: false
