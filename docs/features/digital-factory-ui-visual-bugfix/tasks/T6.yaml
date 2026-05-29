@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser/network QA
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T2
   - T3
@@ -24,22 +24,14 @@ log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
   - action: revised
     by: unknown@local
     at: 2026-05-28T23:24:23+0700
-    note: >-
-      Added T7 as a dependency so final QA covers feature-origin task-tab
+    note: Added T7 as a dependency so final QA covers feature-origin task-tab
       navigation and tab flicker hardening.
-  - action: revised
-    by: codex
-    at: 2026-05-29T13:06:52+0700
-    note: >-
-      Added T8 as a dependency so final QA covers removal of the /board sort
-      button in both Feature Mode and Task Mode.
-  - action: revised
-    by: codex
-    at: 2026-05-29T14:56:28+0700
-    note: >-
-      Added T9 as a dependency so final QA covers sidebar task card
-      last-updated labels from execution.last_updated_at.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-29T08:20:21.300Z
+    note: Task activated — dependency T7 merged and marked done.
