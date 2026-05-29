@@ -1,7 +1,7 @@
 id: T7
 title: Feature-origin task tab navigation and tab flicker hardening
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T3
 blocked_reason: null
@@ -11,8 +11,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T7
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-29T06:23:24.634Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T06:32:51.583Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/new/feature/digital-factory-ui-visual-bugfix-T7
   status: open
@@ -70,3 +70,11 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-29T06:23:24.634Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failed — docker check: pnpm type-check/build exited with code 2
+      (type error or build failure). 🟡 src/lib/query-client.ts:5 sets
+      STALE_TIME_MS=5min but product spec requires 1min (staleTime: 60_000,
+      gcTime: 60_000); test also needs update."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/77#pullrequestreview-4387158851
+    at: 2026-05-29T06:32:51.583Z
