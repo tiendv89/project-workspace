@@ -31,6 +31,8 @@ feel noisy, incomplete, and slower than needed:
 6. From a feature tab, clicking a task currently does not behave like a normal
    workspace task tab. The expected flow is feature tab -> task tab -> Back
    closes the task tab and returns to the parent feature tab.
+7. The board still shows a sort button in both Feature Mode and Task Mode, but
+   this control is not needed on `/board` and adds unnecessary UI noise.
 
 ## Goals
 
@@ -49,6 +51,7 @@ feel noisy, incomplete, and slower than needed:
 - Opening a task from inside a feature tab should create or activate a task tab,
   and the task tab Back action should close that task tab and return to the
   parent feature tab.
+- Remove the sort button from `/board` in both Feature Mode and Task Mode.
 - Preserve the existing board layout, status semantics, and detail workflows
   except for the targeted fixes listed in this spec.
 
@@ -57,6 +60,7 @@ feel noisy, incomplete, and slower than needed:
 - No backend API changes are required by this product spec.
 - No redesign of the full kanban board.
 - No new task-creation workflow on `/board`.
+- No new sort workflow or replacement sort control on `/board`.
 - No changes to Feature Mode status definitions beyond preserving its existing
   behavior.
 - No server-side caching or CDN behavior.
@@ -70,6 +74,7 @@ feel noisy, incomplete, and slower than needed:
 2. The board shows the workflow view and its mode controls.
 3. The `Create Task` button is not visible on this screen.
 4. The `Recent updates` section is not visible on this screen.
+5. The sort button is not visible in either Feature Mode or Task Mode.
 
 ### Journey 2 - Review tasks in Task Mode
 
@@ -126,6 +131,9 @@ feel noisy, incomplete, and slower than needed:
 
 - `/board` must not show a `Create Task` button.
 - `/board` must not show a `Recent updates` section.
+- `/board` must not show a sort button in either Feature Mode or Task Mode.
+- Removing the sort button must preserve the board's existing default ordering,
+  grouping, filtering, pagination, and detail-opening behavior.
 - Removing those elements must not break existing board navigation, mode
   switching, filtering, or task/feature detail opening.
 
@@ -193,6 +201,10 @@ feel noisy, incomplete, and slower than needed:
 
 - `/board` no longer displays `Create Task`.
 - `/board` no longer displays `Recent updates`.
+- `/board` no longer displays the sort button in Feature Mode.
+- `/board` no longer displays the sort button in Task Mode.
+- Removing the sort button does not change the board's existing default item
+  order, status grouping, filters, pagination, or detail-opening behavior.
 - Task Mode includes an `In Reviewing` column/status.
 - Tasks in the reviewing state appear under `In Reviewing`.
 - Feature Mode does not display the Task Mode-only `In Reviewing` status.

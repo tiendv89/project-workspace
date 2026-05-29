@@ -1,6 +1,6 @@
 # Tasks - digital-factory-ui-visual-bugfix
 
-> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; T1 and T4 are done; T2, T3, and T5 are ready; T7 waits for T3; T6 remains final QA). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
+> Feature status: `ready_for_implementation` - stage status: `tasks` (`approved`; T1, T2, T3, T4, and T5 are done; T7 and T8 are ready; T6 remains final QA and waits for T7 and T8). Machine state lives in `tasks/T<n>.yaml`; this file is the narrative task breakdown only.
 
 | ID | Wave | Title | Depends on |
 |---|---|---|---|
@@ -10,7 +10,8 @@
 | T4 | 1 | Board visual cleanup and In Reviewing status | none |
 | T5 | 1 | Log link formatting | none |
 | T7 | 3 | Feature-origin task tab navigation and tab flicker hardening | T3 |
-| T6 | 4 | Regression tests and browser/network QA | T2, T3, T4, T5, T7 |
+| T8 | 3 | Remove board sort controls | none |
+| T6 | 4 | Regression tests and browser/network QA | T2, T3, T4, T5, T7, T8 |
 
 ## T1 — Frontend API cache foundation
 
@@ -132,10 +133,28 @@ Update workspace tab behavior so clicking a task inside a feature tab opens or a
 - [ ] Prevent task/feature tab switches from clearing visible content when cached or previous data exists.
 - [ ] Add component tests for feature-to-task tab opening, Back cleanup, parent feature reactivation, and no blank/flicker tab switching.
 
+## T8 — Remove board sort controls
+
+### Description
+Remove the unnecessary sort button from `/board` in both Feature Mode and Task Mode. The board should keep its existing default ordering, status grouping, filtering, pagination, and detail-opening behavior; this task removes only the unused sort control and any now-dead sort-control wiring that is exclusive to that button.
+
+### Required skills
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+- [ ] Locate the board sort button/control rendered for Feature Mode and Task Mode.
+- [ ] Remove the sort button from the `/board` UI in both modes.
+- [ ] Remove dead sort-control state, props, handlers, labels, and tests only where they are exclusive to the removed button.
+- [ ] Preserve the board's current default item order, status grouping, filters, pagination, and detail-opening behavior.
+- [ ] Add or update render tests proving the sort button is absent in Feature Mode.
+- [ ] Add or update render tests proving the sort button is absent in Task Mode.
+- [ ] Add regression coverage proving removing the button does not change default board ordering/filtering behavior.
+
 ## T6 — Regression tests and browser/network QA
 
 ### Description
-Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status, log link formatting, feature-origin task tab navigation, and flicker fixes together. This task should prove both UI behavior and reduced duplicate-fetch behavior during mode switching, tab switching, and browser visit-back.
+Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status, log link formatting, feature-origin task tab navigation, sort-button removal, and flicker fixes together. This task should prove both UI behavior and reduced duplicate-fetch behavior during mode switching, tab switching, and browser visit-back.
 
 ### Required skills
 - browser-qa-frontend
@@ -151,6 +170,8 @@ Verify the cache migration, board visual fixes, Task Mode `In Reviewing` status,
 - [ ] Add tests proving manual refresh and workspace sync refetch or invalidate affected workspace data.
 - [ ] Add tests proving workspace switching cannot leak cached data from the previous workspace.
 - [ ] Run focused render tests for removal of `Create Task` and `Recent updates`.
+- [ ] Run focused render tests proving the sort button is absent in both Feature Mode and Task Mode.
+- [ ] Run regression tests proving default board ordering/filtering behavior is unchanged after sort-button removal.
 - [ ] Run focused render tests for Task Mode `In Reviewing` and Feature Mode exclusion.
 - [ ] Run focused log-link tests for HTTP/HTTPS highlighting and safe new-tab links.
 - [ ] Run browser QA for `/board` mode switching, feature-origin task tab Back behavior, task/feature tab switching, and browser visit-back with network request observation.
