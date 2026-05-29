@@ -1,7 +1,7 @@
 feature_id: digital-factory-ui-visual-bugfix
 title: Digital Factory UI Visual Bug Fix
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: All implementation tasks are done. Generate handoff and close the
   feature when ready.
 stages:
