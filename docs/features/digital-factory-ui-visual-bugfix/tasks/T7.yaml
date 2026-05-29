@@ -1,7 +1,7 @@
 id: T7
 title: Feature-origin task tab navigation and tab flicker hardening
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T3
 blocked_reason: null
@@ -10,8 +10,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T7
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: spiderbot@gmail.com
-  last_updated_at: 2026-05-29T04:38:14.991Z
+  last_updated_by: reviewer@example.com
+  last_updated_at: 2026-05-29T04:40:20.591Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/new/feature/digital-factory-ui-visual-bugfix-T7
   status: open
@@ -52,3 +52,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-29T04:38:14.991Z
+  - action: reviewer_started
+    by: reviewer@example.com
+    at: 2026-05-29T04:40:20.591Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
