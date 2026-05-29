@@ -1,7 +1,7 @@
 id: T9
 title: Sidebar task last-updated timestamps
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,21 +9,24 @@ branch: feature/digital-factory-ui-visual-bugfix-T9
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: codex
-  last_updated_at: 2026-05-29T14:56:28+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T08:16:50.940Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: codex
     at: 2026-05-29T14:56:28+0700
-    note: >-
-      Task added after product-spec update for rendering compact sidebar task
+    note: Task added after product-spec update for rendering compact sidebar task
       card last-updated labels from execution.last_updated_at.
   - action: ready
     by: codex
     at: 2026-05-29T14:56:28+0700
-    note: >-
-      No dependencies; timestamp display reads existing sidebar task item
+    note: No dependencies; timestamp display reads existing sidebar task item
       metadata and can begin immediately.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-29T08:16:50.940Z
+    note: Claimed via git-based claim protocol.
