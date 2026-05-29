@@ -17,7 +17,7 @@ pr:
   status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/370
-  status: open
+  status: merged
 log:
   - action: created
     by: unknown@local
@@ -79,3 +79,10 @@ log:
     note: 'Workspace PR merge failed — will require manual recovery. Details:
       {"message":"Base branch was modified. Review and try the merge
       again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: human
+    at: 2026-05-29T18:34:48+0700
+    note: >-
+      Human override — workspace PR #370 is actually MERGED (into
+      feature/digital-factory-ui-visual-bugfix). Corrected workspace_pr.status
+      from open to merged. Task confirmed done.
