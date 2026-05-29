@@ -1,26 +1,31 @@
 id: T8
 title: Remove board sort controls
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T8
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: codex
-  last_updated_at: 2026-05-29T13:06:52+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T06:16:00.449Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: codex
     at: 2026-05-29T13:06:52+0700
-    note: >-
-      Task added after product-spec update for removing the unnecessary sort
+    note: Task added after product-spec update for removing the unnecessary sort
       button from /board in both Feature Mode and Task Mode.
   - action: ready
     by: codex
     at: 2026-05-29T13:06:52+0700
     note: No dependencies; sort-button removal can begin immediately.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-29T06:16:00.449Z
+    note: Claimed via git-based claim protocol.
