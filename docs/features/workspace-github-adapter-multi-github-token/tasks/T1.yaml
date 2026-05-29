@@ -4,12 +4,14 @@ repo: workspace-github-adapter
 status: blocked
 depends_on: []
 blocked_reason: no_changes
+blocked_suggestion: Hermes exited without making any file changes. Re-run with a
+  clearer briefing or more iterations.
 blocked_context: null
 branch: feature/workspace-github-adapter-multi-github-token-T1
 execution:
   actor_type: agent
   last_updated_by: spiderbot@gmail.com
-  last_updated_at: 2026-05-29T17:16:34.930Z
+  last_updated_at: 2026-05-29T17:16:42.456Z
 pr:
   url: ""
   status: not_created
@@ -40,5 +42,9 @@ log:
     rag_query: "Adapter multi-token: splitTokens, tokenFor probe-and-cache
       workspace-github-adapter-multi-github-token"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+  - action: blocked
+    by: spiderbot@gmail.com
+    note: no_changes
+    executor_audit:
+      hermes: {}
+    at: 2026-05-29T17:16:42.456Z
