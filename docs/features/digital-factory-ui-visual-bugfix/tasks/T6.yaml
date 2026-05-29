@@ -43,3 +43,13 @@ log:
     by: spiderbot@gmail.com
     at: 2026-05-29T09:47:04.305Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: spiderbot@gmail.com
+    at: 2026-05-29T09:47:15.153Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/347,
+      github.com/tiendv89/digital-factory-ui/pull/55,
+      github.com/tiendv89/digital-factory-ui/pull/72"
+    rag_query: Regression tests and browser/network QA digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
