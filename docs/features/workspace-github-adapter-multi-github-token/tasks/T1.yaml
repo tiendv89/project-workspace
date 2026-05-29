@@ -29,3 +29,14 @@ log:
     by: spiderbot@gmail.com
     at: 2026-05-29T17:00:00.157Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: spiderbot@gmail.com
+    at: 2026-05-29T17:00:11.751Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-github-adapter-sync-multi-repo/product-spec.md,
+      docs/features/workspace-github-adapter-sync-multi-repo/handoffs/handoff.m\
+      d, github.com/tiendv89/project-workspace/pull/326"
+    rag_query: "Adapter multi-token: splitTokens, tokenFor probe-and-cache
+      workspace-github-adapter-multi-github-token"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
