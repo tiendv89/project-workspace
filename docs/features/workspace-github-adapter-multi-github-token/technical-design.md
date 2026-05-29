@@ -97,20 +97,25 @@ resolution. These two problems are parallel and do not conflict.
 
 ## 3. Options Considered
 
-### Option A — Per-owner token map in adapter constructor (chosen)
+### Option A — Per-owner token map, comma-separated string in config (chosen)
 
-Add `github.token_map` to config as a YAML list of `{owner, token}` objects. The adapter
-constructor gains a second parameter `tokenMap map[string]string`. Inside the adapter, add a
-`tokenFor(owner string) string` resolver: returns the map entry for that owner, or falls back to
-the global `a.token`. All four adapter methods call `tokenFor` before creating a client.
+Add `github.token_map` to config as a comma-separated string of `owner:token` pairs (e.g.
+`"org-A:ghp_abc,org-B:ghp_xyz"`). At startup the string is split on `,`, each entry split on `:`
+to build a `map[string]string`. The adapter constructor gains a second parameter `tokenMap
+map[string]string`. Inside the adapter, add a `tokenFor(owner string) string` resolver: returns
+the map entry for that owner, or falls back to the global `a.token`. All four adapter methods call
+`tokenFor` before creating a client.
 
 - **Pros**: zero interface change; single resolver function; all token logic in one place; backwards
-  compatible (empty map = existing behavior); no DB migration; `handler.Token` fields can be
-  cleanly removed.
-- **Cons**: requires process restart to add a new workspace/token; map lookup is exact-match on
-  owner (no wildcard).
+  compatible (empty string = existing behavior); no DB migration; consistent with how
+  `webhook_secrets` is handled in the previous feature; easy env-var override
+  (`GITHUB_TOKEN_MAP=org-A:ghp_abc,org-B:ghp_xyz`); `handler.Token` fields can be cleanly
+  removed.
+- **Cons**: requires process restart to add a new workspace/token; owner value must not contain
+  `,` or `:` (safe for all valid GitHub owner names); map lookup is exact-match on owner (no
+  wildcard).
 - **Implementation impact**: 3 files changed in `workspace-github-adapter` (configs, adapter,
-  wiring). No schema change.
+  wiring). No schema change. No new struct needed in config.
 - **Dependency impact**: none external.
 
 ### Option B — Per-workspace token stored in DB
@@ -144,20 +149,16 @@ invasive with no benefit over A for the goals stated.
 
 ## 4. Chosen Design
 
-### Config layer — new `TokenMap` field
+### Config layer — new `TokenMap` string field
 
-`configs.TokenEntry` is a new named struct. `GitHubConfig` gains `TokenMap []TokenEntry`:
+`GitHubConfig` gains a `TokenMap string` field — a comma-separated list of `owner:token` pairs.
+No new struct is needed:
 
 ```go
-type TokenEntry struct {
-    Owner string `mapstructure:"owner"`
-    Token string `mapstructure:"token"`
-}
-
 type GitHubConfig struct {
-    Token    string       `mapstructure:"token"`
-    TokenMap []TokenEntry `mapstructure:"token_map"`
-    WebhookSecret string  `mapstructure:"webhook_secret"`
+    Token         string `mapstructure:"token"`
+    TokenMap      string `mapstructure:"token_map"`
+    WebhookSecret string `mapstructure:"webhook_secret"`
 }
 ```
 
@@ -165,15 +166,14 @@ type GitHubConfig struct {
 ```yaml
 github:
   token: "ghp_default_fallback"
-  token_map:
-    - owner: "org-A"
-      token: "ghp_abc"
-    - owner: "org-B"
-      token: "ghp_xyz"
+  token_map: "org-A:ghp_abc,org-B:ghp_xyz"
 ```
 
-Single-workspace operators continue using only `github.token` — no `token_map` needed. Viper
-unmarshals an absent `token_map` as an empty slice, which the adapter treats as "no overrides".
+Environment variable override: `GITHUB_TOKEN_MAP=org-A:ghp_abc,org-B:ghp_xyz`.
+
+Single-workspace operators continue using only `github.token` — `token_map` stays empty.
+An absent or empty `token_map` string means "no overrides"; the adapter falls back to `a.token`
+for every call, preserving existing behaviour exactly.
 
 ### Adapter — `tokenMap` field + `tokenFor` resolver
 
@@ -220,14 +220,22 @@ behaviour (`input.Token != "" → use it`) is preserved.
 
 ### Wiring — handler `Token` fields removed
 
-The config `TokenMap []TokenEntry` slice is converted to `map[string]string` at startup and passed
-to `ghadapter.New`:
+The config `TokenMap` string is split at startup and passed to `ghadapter.New`. Each comma-delimited
+entry is split on the first `:` to extract owner and token:
 
 ```go
 // cmd/api/api.go and cmd/worker/worker.go
-tokenMap := make(map[string]string, len(cfg.GitHub.TokenMap))
-for _, e := range cfg.GitHub.TokenMap {
-    tokenMap[e.Owner] = e.Token
+tokenMap := make(map[string]string)
+for _, entry := range strings.Split(cfg.GitHub.TokenMap, ",") {
+    entry = strings.TrimSpace(entry)
+    if entry == "" {
+        continue
+    }
+    owner, token, ok := strings.Cut(entry, ":")
+    if !ok || owner == "" || token == "" {
+        log.Fatal().Str("entry", entry).Msg("invalid github.token_map entry: expected owner:token")
+    }
+    tokenMap[owner] = token
 }
 h := ... {
     GitHub: ghadapter.New(cfg.GitHub.Token, tokenMap),
@@ -286,8 +294,7 @@ No unresolved dependencies.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Config layer — TokenEntry struct, TokenMap field in GitHubConfig, Load/Init updates,
-    configs_test.go
+T1: Config layer — TokenMap string field in GitHubConfig, Load/Init updates, configs_test.go
   └── Can begin now — no blockers
 
 T2: Adapter token resolution — Adapter.tokenMap, tokenFor(), updated New() constructor,
@@ -319,8 +326,9 @@ T1 and T2 run in parallel.
 
 ### Tests
 
-- `configs/configs_test.go`: add cases for `token_map` list loading; verify empty map produces
-  correct zero-value; verify single-token backwards compat case.
+- `configs/configs_test.go`: add cases for `token_map` comma-separated string loading; verify
+  empty string produces empty map; verify single-token backwards compat case; verify malformed
+  entry triggers fatal at startup.
 - `internal/github/adapter_test.go` (and `fetch_targeted_test.go`): update `ghadapter.New` calls
   to pass second argument; add test cases for per-owner token selection and fallback-to-default
   behaviour.
