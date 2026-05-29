@@ -22,11 +22,21 @@ feel noisy, incomplete, and slower than needed:
    hard to identify useful references such as GitHub PRs, issue links, or
    external evidence.
 4. Switching between Task Mode and Feature Mode repeatedly causes fresh data
-   fetches even when the same board data was just loaded.
+   fetches and visible loading flicker even when the same board data was just
+   loaded.
 5. Within the same workspace, switching between open task/feature tabs and the
    default board screen reloads data again. Users have to wait for the sidebar
    and kanban board loading states even though they were just viewing the same
    workspace.
+6. From a feature tab, clicking a task currently does not behave like a normal
+   workspace task tab. The expected flow is feature tab -> task tab -> Back
+   closes the task tab and returns to the parent feature tab.
+7. The board still shows a sort button in both Feature Mode and Task Mode, but
+   this control is not needed on `/board` and adds unnecessary UI noise.
+8. Sidebar task cards are grouped by status, but they do not show when each task
+   was last updated. The task payload already includes
+   `execution.last_updated_at`, so users should be able to scan recency directly
+   in the sidebar without opening each task.
 
 ## Goals
 
@@ -36,10 +46,19 @@ feel noisy, incomplete, and slower than needed:
   `In Reviewing` column/status.
 - Make HTTP/HTTPS links inside logs visually recognizable and directly
   clickable.
-- Avoid unnecessary fetches when users switch between Task Mode and Feature Mode
-  within a short time window.
-- Avoid unnecessary fetches when users switch between workspace tabs and the
-  default board screen in the same workspace.
+- Avoid unnecessary fetches and loading flicker when users switch between Task
+  Mode and Feature Mode within a short time window.
+- Avoid unnecessary fetches and loading flicker when users switch between
+  workspace tabs and the default board screen in the same workspace.
+- Use TanStack Query for frontend read caching and automatic 1-minute refetches
+  instead of ad hoc `useEffect` fetch loops or manual intervals.
+- Opening a task from inside a feature tab should create or activate a task tab,
+  and the task tab Back action should close that task tab and return to the
+  parent feature tab.
+- Remove the sort button from `/board` in both Feature Mode and Task Mode.
+- Show compact browser-time relative last-updated labels on sidebar task cards
+  for `in_review`, `in_progress`, `in_reviewing`, `ready`, and `blocked` task
+  lists.
 - Preserve the existing board layout, status semantics, and detail workflows
   except for the targeted fixes listed in this spec.
 
@@ -48,6 +67,7 @@ feel noisy, incomplete, and slower than needed:
 - No backend API changes are required by this product spec.
 - No redesign of the full kanban board.
 - No new task-creation workflow on `/board`.
+- No new sort workflow or replacement sort control on `/board`.
 - No changes to Feature Mode status definitions beyond preserving its existing
   behavior.
 - No server-side caching or CDN behavior.
@@ -61,6 +81,7 @@ feel noisy, incomplete, and slower than needed:
 2. The board shows the workflow view and its mode controls.
 3. The `Create Task` button is not visible on this screen.
 4. The `Recent updates` section is not visible on this screen.
+5. The sort button is not visible in either Feature Mode or Task Mode.
 
 ### Journey 2 - Review tasks in Task Mode
 
@@ -81,11 +102,13 @@ feel noisy, incomplete, and slower than needed:
 4. The link opens in a new browser tab, and the current board remains open.
 5. Non-link text remains readable as normal log text.
 
-### Journey 4 - Switch modes without repeated refetches
+### Journey 4 - Switch modes without repeated refetches or flicker
 
 1. The user switches between Task Mode and Feature Mode on `/board`.
 2. The board uses cached data for recently loaded mode data.
-3. The board avoids fetching continuously when the user switches back and forth.
+3. The board avoids full loading resets when valid cached or previous data is
+   available.
+4. Background refetches may run, but the previous board content remains visible.
 
 ### Journey 5 - Switch between tabs and the default board smoothly
 
@@ -95,7 +118,31 @@ feel noisy, incomplete, and slower than needed:
 3. The board reuses recently loaded workspace data instead of showing a full
    loading wait again.
 4. The user can switch between tabs and the board repeatedly without repeated
-   fetch/loading interruptions for the same workspace.
+   fetch/loading interruptions or visual flicker for the same workspace.
+
+### Journey 6 - Open a task from a feature tab and return cleanly
+
+1. The user is viewing a feature tab.
+2. The user clicks a task in that feature's task list.
+3. The app opens or activates the corresponding task tab in the workspace tab
+   strip.
+4. The user clicks Back from the task tab.
+5. The task tab is removed from the tab strip.
+6. The parent feature tab becomes active again.
+7. If a task tab has no parent feature return target, Back keeps the existing
+   behavior of closing the task tab and returning to the default board.
+
+### Journey 7 - Scan sidebar task recency
+
+1. The user opens `/board`.
+2. The sidebar groups tasks under statuses such as `in_review`, `in_progress`,
+   `in_reviewing`, `ready`, and `blocked`.
+3. Each task card in those status lists reads its
+   `execution.last_updated_at` timestamp.
+4. The card displays a compact browser-time relative label such as `50s ago`,
+   `2m ago`, or `1h ago`.
+5. The user can compare task recency across sidebar status lists without opening
+   task details.
 
 ## Product Requirements
 
@@ -103,6 +150,9 @@ feel noisy, incomplete, and slower than needed:
 
 - `/board` must not show a `Create Task` button.
 - `/board` must not show a `Recent updates` section.
+- `/board` must not show a sort button in either Feature Mode or Task Mode.
+- Removing the sort button must preserve the board's existing default ordering,
+  grouping, filtering, pagination, and detail-opening behavior.
 - Removing those elements must not break existing board navigation, mode
   switching, filtering, or task/feature detail opening.
 
@@ -125,14 +175,21 @@ feel noisy, incomplete, and slower than needed:
 
 ### Mode-switch data caching
 
-- Frontend read API data used by the board should be cached for 5 minutes.
+- Frontend read API data used by the board must be managed through TanStack
+  Query.
+- Cached read data should use a 1-minute cache lifetime. In TanStack Query v5
+  terms, the relevant `gcTime` / cache time should be 1 minute.
+- Active board read queries should refresh through TanStack Query
+  `refetchInterval` every 1 minute instead of a separate manual interval.
 - Switching between Task Mode and Feature Mode should reuse recently loaded data
   instead of fetching continuously.
+- Switching between Task Mode and Feature Mode must not blank the board or show
+  a full loading state when valid cached or previous data exists.
 - Manual refresh, workspace change, or changed board controls should still load
   the correct current data.
-- TanStack Query or another equivalent frontend caching library may be used; the
-  required product behavior is fewer repeated API fetches when revisiting recent
-  board states.
+- The implementation should replace local `useEffect` + state fetch loops for
+  board read APIs with TanStack Query reads where those loops own backend API
+  request lifecycle.
 
 ### Workspace tab and default-screen data caching
 
@@ -142,12 +199,50 @@ feel noisy, incomplete, and slower than needed:
   full reload of the sidebar and kanban board if the data was recently loaded.
 - Reopening a recently viewed task or feature tab should avoid unnecessary
   loading waits for the same data.
+- Switching between task and feature tabs should keep the previous content or
+  cached content visible when available so the app does not flicker through
+  empty loading states.
 - Manual refresh and workspace sync must still fetch current data.
+
+### Feature-to-task tab navigation
+
+- Clicking a task from inside a feature tab must open or activate the task as a
+  workspace task tab.
+- The task tab should keep enough return context to know when it was opened from
+  a feature tab.
+- Back from a task tab opened from a feature tab must close the task tab, remove
+  its tab header, and reactivate the parent feature tab.
+- Back from a task tab opened directly from the board should keep the existing
+  behavior: close the task tab and return to the default board.
+- The feature tab itself must remain open when returning from the task tab.
+
+### Sidebar task relative update time
+
+- Sidebar task cards under `in_review`, `in_progress`, `in_reviewing`, `ready`,
+  and `blocked` status lists must show a compact last-updated label.
+- The label must be derived from the task item's `execution.last_updated_at`
+  field.
+- Timestamp parsing must support ISO timestamps with `Z` or explicit offsets,
+  including values such as `2026-05-28T07:14:20Z`.
+- The displayed value must be computed in the browser from the browser's current
+  time so the label reflects the user's live browser clock.
+- The label format must be compact relative English, including examples such as
+  `50s ago`, `2m ago`, and `1h ago`.
+- Relative labels should update as browser time advances without requiring a
+  task data refetch only to refresh the text label.
+- Missing or invalid `execution.last_updated_at` values must not crash the
+  sidebar; those task cards may omit the relative label.
+- Adding the timestamp label must not change the existing sidebar task grouping,
+  task ordering, click behavior, or status list visibility.
 
 ## Acceptance Criteria
 
 - `/board` no longer displays `Create Task`.
 - `/board` no longer displays `Recent updates`.
+- `/board` no longer displays the sort button in Feature Mode.
+- `/board` no longer displays the sort button in Task Mode.
+- Removing the sort button does not change the board's existing default item
+  order, status grouping, filters, pagination, or detail-opening behavior.
 - Task Mode includes an `In Reviewing` column/status.
 - Tasks in the reviewing state appear under `In Reviewing`.
 - Feature Mode does not display the Task Mode-only `In Reviewing` status.
@@ -157,7 +252,10 @@ feel noisy, incomplete, and slower than needed:
 - Plain log text remains unchanged.
 - Invalid URL-like text does not crash the page.
 - Switching between Task Mode and Feature Mode reuses cached frontend API data
-  for recently loaded board data instead of fetching continuously.
+  for recently loaded board data instead of fetching continuously or flickering
+  through full loading states.
+- Board read queries use TanStack Query `refetchInterval` set to 1 minute.
+- Board read query cache time is 1 minute.
 - Manual refresh, workspace changes, and changed board controls still fetch the
   appropriate latest data.
 - Switching between task/feature tabs and the default board screen in the same
@@ -165,3 +263,17 @@ feel noisy, incomplete, and slower than needed:
   states or duplicate fetches.
 - The sidebar and kanban board remain usable immediately when returning to the
   default board screen with valid cached data.
+- Clicking a task inside a feature tab opens or activates a task tab.
+- Back from a feature-origin task tab closes and removes that task tab, then
+  returns to the parent feature tab.
+- Switching between task and feature tabs keeps cached or previous content
+  visible when available and avoids visible blank/loading flicker.
+- Sidebar task cards under `in_review`, `in_progress`, `in_reviewing`, `ready`,
+  and `blocked` show compact relative last-updated labels from
+  `execution.last_updated_at`.
+- Sidebar relative labels render in browser time with compact formats such as
+  `50s ago`, `2m ago`, and `1h ago`.
+- Missing or invalid task `execution.last_updated_at` values do not crash the
+  sidebar.
+- Sidebar timestamp labels do not change existing task grouping, ordering, or
+  click behavior.

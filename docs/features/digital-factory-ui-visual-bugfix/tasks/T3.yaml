@@ -1,21 +1,74 @@
 id: T3
 title: Task/feature tab detail query cache migration
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T3
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T13:58:29+0700
+  last_updated_by: spiderbot@gmail.com
+  last_updated_at: 2026-05-29T03:20:37.953Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/75
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/371
+  status: open
 log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-28T10:45:15.157Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-28T10:48:10.922Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-28T10:48:21.423Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Task/feature tab detail query cache migration
+      digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-28T10:52:25+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/75"
+    executor_audit:
+      cost_usd: 0.438516
+      claude:
+        token_usage:
+          input: 212
+          output: 29192
+          model: claude-sonnet-4-6
+    at: 2026-05-28T10:59:34.702Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T11:01:51.791Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All T3 subtasks implemented. CI passed (no check runs). All three hooks
+      (useWorkspaceTask, useFeatureDetail, useFeatureTask) migrated to TanStack
+      Query with workspace-scoped keys matching the technical design. Cache
+      pre-seeding tests prove tab revisit avoids loading waits within 5-minute
+      window. Cross-workspace isolation verified. No 🔴/🟡 findings.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/75#pullrequestreview-4380374968
+    at: 2026-05-28T11:06:40.989Z
+  - action: done
+    by: spiderbot@gmail.com
+    at: 2026-05-29T03:20:37.953Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

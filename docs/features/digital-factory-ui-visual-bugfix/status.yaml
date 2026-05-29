@@ -1,10 +1,9 @@
 feature_id: digital-factory-ui-visual-bugfix
 title: Digital Factory UI Visual Bug Fix
-
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Execute tasks - T1, T4, and T5 are ready. T2 and T3 wait for T1; T6 waits for T2, T3, T4, and T5.
-
+feature_status: done
+current_stage: done
+next_action: All implementation tasks are done. Generate handoff and close the
+  feature when ready.
 stages:
   product_spec:
     review_status: approved
@@ -15,24 +14,23 @@ stages:
       - review_status: awaiting_approval
         reviewed_by: codex
         reviewed_at: 2026-05-28T13:08:40+0700
-        review_comment: Product spec drafted for the board cleanup, In Reviewing
-          Task Mode status, log-link formatting, and 5-minute mode-switch cache.
+        review_comment: Product spec drafted for the board cleanup, In Reviewing Task
+          Mode status, log-link formatting, and 5-minute mode-switch cache.
       - review_status: awaiting_approval
         reviewed_by: codex
         reviewed_at: 2026-05-28T13:43:17+0700
-        review_comment: Product spec revised to include caching when switching
-          between task/feature tabs and the default board screen.
+        review_comment: Product spec revised to include caching when switching between
+          task/feature tabs and the default board screen.
       - review_status: awaiting_approval
         reviewed_by: codex
         reviewed_at: 2026-05-28T13:52:09+0700
-        review_comment: Product spec clarified that frontend read API data
-          should be cached for 5 minutes to avoid duplicate fetches on revisit
-          and visit-back flows.
+        review_comment: Product spec clarified that frontend read API data should be
+          cached for 5 minutes to avoid duplicate fetches on revisit and
+          visit-back flows.
       - review_status: approved
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T13:57:09+0700
-        review_comment: Product spec approved. Feature advances to technical
-          design.
+        review_comment: Product spec approved. Feature advances to technical design.
   technical_design:
     review_status: approved
     reviewed_by: unknown@local
@@ -42,25 +40,22 @@ stages:
       - review_status: draft
         reviewed_by: codex
         reviewed_at: 2026-05-28T13:43:17+0700
-        review_comment: Technical design updated with a TanStack Query cache
-          approach for mode switching, sidebar/kanban return, and task/feature
-          tab detail reuse.
+        review_comment: Technical design updated with a TanStack Query cache approach
+          for mode switching, sidebar/kanban return, and task/feature tab detail
+          reuse.
       - review_status: draft
         reviewed_by: codex
         reviewed_at: 2026-05-28T13:52:09+0700
-        review_comment: Technical design clarified the 5-minute frontend API
-          cache contract and allows TanStack Query or an equivalent caching
-          library.
+        review_comment: Technical design clarified the 5-minute frontend API cache
+          contract and allows TanStack Query or an equivalent caching library.
       - review_status: awaiting_approval
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T13:57:09+0700
-        review_comment: Technical design submitted for review after product
-          spec approval.
+        review_comment: Technical design submitted for review after product spec approval.
       - review_status: approved
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T14:12:20+0700
-        review_comment: Technical design approved. Feature advances to task
-          planning.
+        review_comment: Technical design approved. Feature advances to task planning.
   tasks:
     review_status: approved
     reviewed_by: unknown@local
@@ -71,13 +66,12 @@ stages:
       - review_status: draft
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T13:58:29+0700
-        review_comment: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml.
-          Tasks remain todo pending technical design and tasks approval.
+        review_comment: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks
+          remain todo pending technical design and tasks approval.
       - review_status: awaiting_approval
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T14:12:20+0700
-        review_comment: Task breakdown submitted for approval after technical
-          design approval.
+        review_comment: Task breakdown submitted for approval after technical design approval.
       - review_status: approved
         reviewed_by: unknown@local
         reviewed_at: 2026-05-28T14:14:20+0700
@@ -89,13 +83,14 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/378
 history:
   - stage: product_spec
     action: created
     by: codex
     at: 2026-05-28T10:31:25+0700
-    note: Feature scaffold created for a separate Digital Factory UI visual bug-fix track.
+    note: Feature scaffold created for a separate Digital Factory UI visual bug-fix
+      track.
   - stage: product_spec
     action: submitted
     by: codex
@@ -116,15 +111,14 @@ history:
     action: clarified
     by: codex
     at: 2026-05-28T13:52:09+0700
-    note: Clarified that frontend read API responses should be cached for 5
-      minutes to avoid repeated fetches on revisit and browser visit-back flows.
+    note: Clarified that frontend read API responses should be cached for 5 minutes
+      to avoid repeated fetches on revisit and browser visit-back flows.
   - stage: technical_design
     action: clarified
     by: codex
     at: 2026-05-28T13:52:09+0700
-    note: Clarified that TanStack Query is recommended but any equivalent
-      frontend cache library is acceptable if it meets the same 5-minute cache
-      behavior.
+    note: Clarified that TanStack Query is recommended but any equivalent frontend
+      cache library is acceptable if it meets the same 5-minute cache behavior.
   - stage: product_spec
     action: approved
     by: unknown@local
@@ -139,14 +133,14 @@ history:
     action: revised
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Technical design normalized into tech-lead form with a per-task
-      dependency diagram.
+    note: Technical design normalized into tech-lead form with a per-task dependency
+      diagram.
   - stage: tasks
     action: drafted
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain
-      todo until technical design and tasks approval.
+    note: Task breakdown drafted in tasks.md and tasks/T1-T6.yaml. Tasks remain todo
+      until technical design and tasks approval.
   - stage: technical_design
     action: approved
     by: unknown@local
@@ -161,11 +155,77 @@ history:
     action: approved
     by: unknown@local
     at: 2026-05-28T14:14:20+0700
-    note: Task breakdown approved. Feature advances to ready_for_implementation.
-      T1, T4, and T5 activated.
-
+    note: Task breakdown approved. Feature advances to ready_for_implementation. T1,
+      T4, and T5 activated.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: Product spec updated for feature-origin task-tab navigation, TanStack
+      Query 1-minute refetch/cache behavior, and no-flicker task/feature tab
+      switching.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: Technical design updated to require TanStack Query refetchInterval and
+      cache time of 1 minute, remove manual board intervals, and add
+      feature-origin task tab return handling.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: Task breakdown updated with T7 and T6 now depends on T7 for final
+      regression QA.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: Product spec updated to require removing the /board sort button in both
+      Feature Mode and Task Mode.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: Technical design updated with sort-button removal scope, affected board
+      components, validation expectations, and task dependency impact.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-29T13:06:52+0700
+    note: Task breakdown updated with T8 for sort-button removal, and T6 now depends
+      on T8 for final regression QA.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: Product spec updated to require compact browser-time last-updated labels
+      on sidebar task cards from execution.last_updated_at.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: Technical design updated with sidebar task timestamp rendering scope,
+      formatter behavior, affected frontend areas, and QA expectations.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-29T14:56:28+0700
+    note: Task breakdown updated with T9 for sidebar task last-updated labels, and
+      T6 now depends on T9 for final regression QA.
+  - stage: tasks
+    action: completed
+    by: minhkienn203@gmail.com
+    at: 2026-05-29T11:48:11Z
+    note: T6 marked done after review_passed final regression QA; all implementation
+      tasks are complete.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/digital-factory-ui-visual-bugfix
+feature_branch_base_sha: 38649c0a512e6586fbe82d0d09700f8cc13c3ab2
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/366
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/378
+impl_feature_prs: []

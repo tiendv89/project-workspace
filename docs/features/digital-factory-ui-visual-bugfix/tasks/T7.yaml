@@ -1,0 +1,118 @@
+id: T7
+title: Feature-origin task tab navigation and tab flicker hardening
+repo: digital-factory-ui
+status: done
+depends_on:
+  - T3
+blocked_reason: null
+blocked_suggestion: null
+blocked_context: null
+branch: feature/digital-factory-ui-visual-bugfix-T7
+execution:
+  actor_type: agent
+  requires_human_review: true
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T08:20:20.899Z
+pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/77
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/372
+  status: open
+log:
+  - action: created
+    by: unknown@local
+    at: 2026-05-28T23:24:23+0700
+    note: Task added after product-spec update for feature-origin task-tab
+      navigation, parent feature return behavior, and tab-switch flicker
+      hardening.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-05-29T11:21:51+0700
+    note: Dependency T3 is done, so T7 is ready for execution.
+  - action: claimed
+    by: spiderbot@gmail.com
+    at: 2026-05-29T04:25:40.589Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: spiderbot@gmail.com
+    at: 2026-05-29T04:25:51.454Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/product-spec.md,
+      docs/features/digital-factory-ui-visual-bugfix/product-spec.md"
+    rag_query: Feature-origin task tab navigation and tab flicker hardening
+      digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: spiderbot@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/new/feature/digital-f\
+      actory-ui-visual-bugfix-T7"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-29T04:38:14.991Z
+  - action: reviewer_started
+    by: reviewer@example.com
+    at: 2026-05-29T04:40:20.591Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: spiderbot@gmail.com
+    note: reviewer exited without writing result.json — no prior GitHub review found
+    at: 2026-05-29T04:42:37.934Z
+  - action: in_review
+    by: minhkienn203@gmail.com
+    at: 2026-05-29T13:18:46+0700
+    note: Task unblocked and reset to in_review because the implementation PR
+      already exists and requires human review.
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-29T06:23:24.634Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 CI failed — docker check: pnpm type-check/build exited with code 2
+      (type error or build failure). 🟡 src/lib/query-client.ts:5 sets
+      STALE_TIME_MS=5min but product spec requires 1min (staleTime: 60_000,
+      gcTime: 60_000); test also needs update."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/77#pullrequestreview-4387158851
+    at: 2026-05-29T06:32:51.583Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-29T06:35:05.772Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/77"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-29T07:08:24.884Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-29T07:13:02.199Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 src/__tests__/t7-feature-origin-task-nav.test.ts — T7 subtask
+      explicitly requires component tests for no blank/flicker tab switching;
+      test file header acknowledges it ('Flicker hardening: loading stays false
+      when cached data exists') but no such test is implemented. All other
+      subtasks implemented correctly. CI passed, 1319/1319 tests pass, linter 0
+      errors."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/77#pullrequestreview-4387499690
+    at: 2026-05-29T07:29:18.176Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-29T07:32:08.525Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/77"
+    executor_audit:
+      hermes: {}
+    at: 2026-05-29T07:43:05.411Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-29T08:20:20.899Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

@@ -1,21 +1,88 @@
 id: T2
 title: Board/sidebar/mode query cache migration
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/digital-factory-ui-visual-bugfix-T2
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-28T13:58:29+0700
+  last_updated_by: spiderbot@gmail.com
+  last_updated_at: 2026-05-29T03:20:09.281Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/76
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/370
+  status: merged
 log:
   - action: created
     by: unknown@local
     at: 2026-05-28T13:58:29+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-28T10:45:15.156Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-28T10:47:56.532Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-28T10:48:07.861Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board/sidebar/mode query cache migration digital-factory-ui-visual-bugfix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-28T10:52:07+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/76"
+    executor_audit:
+      cost_usd: 0.6727679999999999
+      claude:
+        token_usage:
+          input: 271
+          output: 44797
+          model: claude-sonnet-4-6
+    at: 2026-05-28T11:05:48.638Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-28T11:06:30.082Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T2 subtasks implemented: useBoardData, useSidebarTasks,
+      useBackendTaskSearch, useBackendFeatureSearch migrated to TanStack Query.
+      usePullRequestTaskData inherits cache via useSidebarTasks delegation.
+      60-second auto-refresh correctly uses query invalidation+refetch without
+      loading reset. Workspace sync invalidates cache in WorkspaceContext. CI:
+      no check-runs. No 🔴/🟡 findings. Nits: debounce removed from search
+      hooks; test wrapper anti-pattern in workspace-switch-provider.test.ts."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/76#issuecomment-4563427142
+    at: 2026-05-28T11:14:12.365Z
+  - action: done
+    by: spiderbot@gmail.com
+    at: 2026-05-29T03:20:09.281Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-05-29T03:20:22.807Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Base branch was modified. Review and try the merge
+      again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: human
+    at: 2026-05-29T18:34:48+0700
+    note: >-
+      Human override — workspace PR #370 is actually MERGED (into
+      feature/digital-factory-ui-visual-bugfix). Corrected workspace_pr.status
+      from open to merged. Task confirmed done.
