@@ -1,7 +1,7 @@
 feature_id: digital-factory-ui-visual-bugfix
 title: Digital Factory UI Visual Bug Fix
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: All implementation tasks are done. Generate handoff and close the
   feature when ready.
 stages:
@@ -83,6 +83,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/378
 history:
   - stage: product_spec
     action: created
@@ -160,73 +161,63 @@ history:
     action: revised
     by: codex
     at: 2026-05-28T23:24:23+0700
-    note: >-
-      Product spec updated for feature-origin task-tab navigation, TanStack Query
-      1-minute refetch/cache behavior, and no-flicker task/feature tab
+    note: Product spec updated for feature-origin task-tab navigation, TanStack
+      Query 1-minute refetch/cache behavior, and no-flicker task/feature tab
       switching.
   - stage: technical_design
     action: revised
     by: codex
     at: 2026-05-28T23:24:23+0700
-    note: >-
-      Technical design updated to require TanStack Query refetchInterval and
+    note: Technical design updated to require TanStack Query refetchInterval and
       cache time of 1 minute, remove manual board intervals, and add
       feature-origin task tab return handling.
   - stage: tasks
     action: revised
     by: codex
     at: 2026-05-28T23:24:23+0700
-    note: >-
-      Task breakdown updated with T7 and T6 now depends on T7 for final
+    note: Task breakdown updated with T7 and T6 now depends on T7 for final
       regression QA.
   - stage: product_spec
     action: revised
     by: codex
     at: 2026-05-29T13:06:52+0700
-    note: >-
-      Product spec updated to require removing the /board sort button in both
+    note: Product spec updated to require removing the /board sort button in both
       Feature Mode and Task Mode.
   - stage: technical_design
     action: revised
     by: codex
     at: 2026-05-29T13:06:52+0700
-    note: >-
-      Technical design updated with sort-button removal scope, affected board
+    note: Technical design updated with sort-button removal scope, affected board
       components, validation expectations, and task dependency impact.
   - stage: tasks
     action: revised
     by: codex
     at: 2026-05-29T13:06:52+0700
-    note: >-
-      Task breakdown updated with T8 for sort-button removal, and T6 now depends
+    note: Task breakdown updated with T8 for sort-button removal, and T6 now depends
       on T8 for final regression QA.
   - stage: product_spec
     action: revised
     by: codex
     at: 2026-05-29T14:56:28+0700
-    note: >-
-      Product spec updated to require compact browser-time last-updated labels
+    note: Product spec updated to require compact browser-time last-updated labels
       on sidebar task cards from execution.last_updated_at.
   - stage: technical_design
     action: revised
     by: codex
     at: 2026-05-29T14:56:28+0700
-    note: >-
-      Technical design updated with sidebar task timestamp rendering scope,
+    note: Technical design updated with sidebar task timestamp rendering scope,
       formatter behavior, affected frontend areas, and QA expectations.
   - stage: tasks
     action: revised
     by: codex
     at: 2026-05-29T14:56:28+0700
-    note: >-
-      Task breakdown updated with T9 for sidebar task last-updated labels, and
+    note: Task breakdown updated with T9 for sidebar task last-updated labels, and
       T6 now depends on T9 for final regression QA.
   - stage: tasks
     action: completed
     by: minhkienn203@gmail.com
     at: 2026-05-29T11:48:11Z
-    note: >-
-      T6 marked done after review_passed final regression QA; all implementation
+    note: T6 marked done after review_passed final regression QA; all implementation
       tasks are complete.
 revalidation:
   product_spec_required: false
@@ -236,3 +227,5 @@ revalidation:
 feature_branch: feature/digital-factory-ui-visual-bugfix
 feature_branch_base_sha: 38649c0a512e6586fbe82d0d09700f8cc13c3ab2
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/366
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/378
+impl_feature_prs: []
