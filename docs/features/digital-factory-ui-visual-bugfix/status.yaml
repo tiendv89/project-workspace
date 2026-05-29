@@ -2,8 +2,8 @@ feature_id: digital-factory-ui-visual-bugfix
 title: Digital Factory UI Visual Bug Fix
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Execute tasks - T1, T4, and T5 are ready. T2 and T3 wait for T1; T6
-  waits for T2, T3, T4, and T5.
+next_action: Execute tasks - T2, T3, and T5 are ready. T1 and T4 are done. T7
+  waits for T3; T6 waits for T2, T3, T4, T5, and T7.
 stages:
   product_spec:
     review_status: approved
@@ -156,6 +156,29 @@ history:
     at: 2026-05-28T14:14:20+0700
     note: Task breakdown approved. Feature advances to ready_for_implementation. T1,
       T4, and T5 activated.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: >-
+      Product spec updated for feature-origin task-tab navigation, TanStack Query
+      1-minute refetch/cache behavior, and no-flicker task/feature tab
+      switching.
+  - stage: technical_design
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: >-
+      Technical design updated to require TanStack Query refetchInterval and
+      cache time of 1 minute, remove manual board intervals, and add
+      feature-origin task tab return handling.
+  - stage: tasks
+    action: revised
+    by: codex
+    at: 2026-05-28T23:24:23+0700
+    note: >-
+      Task breakdown updated with T7 and T6 now depends on T7 for final
+      regression QA.
 revalidation:
   product_spec_required: false
   technical_design_required: false
