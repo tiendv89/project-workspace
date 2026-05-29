@@ -1,7 +1,7 @@
 id: T7
 title: Feature-origin task tab navigation and tab flicker hardening
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T3
 blocked_reason: null
@@ -11,8 +11,8 @@ branch: feature/digital-factory-ui-visual-bugfix-T7
 execution:
   actor_type: agent
   requires_human_review: true
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-29T07:13:02.199Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-29T07:29:18.176Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/77
   status: open
@@ -92,3 +92,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-29T07:13:02.199Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 src/__tests__/t7-feature-origin-task-nav.test.ts — T7 subtask
+      explicitly requires component tests for no blank/flicker tab switching;
+      test file header acknowledges it ('Flicker hardening: loading stays false
+      when cached data exists') but no such test is implemented. All other
+      subtasks implemented correctly. CI passed, 1319/1319 tests pass, linter 0
+      errors."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/77#pullrequestreview-4387499690
+    at: 2026-05-29T07:29:18.176Z
