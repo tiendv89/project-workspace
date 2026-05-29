@@ -1,7 +1,7 @@
 id: T6
 title: Regression tests and browser/network QA
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -17,10 +17,10 @@ execution:
   actor_type: agent
   requires_human_review: true
   last_updated_by: spiderbot@gmail.com
-  last_updated_at: 2026-05-29T09:47:04.305Z
+  last_updated_at: 2026-05-29T09:58:23.511Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/new/feature/digital-factory-ui-visual-bugfix-T6
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/375
   status: open
