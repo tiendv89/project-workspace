@@ -1,7 +1,7 @@
 id: T7
 title: Integration + concurrent-coexistence parity test
 repo: workflow
-status: in_review
+status: reviewing
 depends_on:
   - T6
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T7
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T20:50:48.455Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-30T20:51:38.621Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/244
   status: open
@@ -56,3 +56,7 @@ log:
           output: 42665
           model: claude-sonnet-4-6
     at: 2026-05-30T20:50:48.455Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-30T20:51:38.621Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
