@@ -12,7 +12,9 @@ stages:
     reviewed_at: 2026-05-30T15:36:24Z
     review_comment: >-
       Approved — dispatch-service architecture, ephemeral spawn-on-the-fly,
-      S3/MinIO log sink, and per-instance topology selection accepted.
+      and per-instance topology selection. Log sink: standalone path takes logs
+      off the management repo. (Persistent S3/MinIO logging was descoped to
+      executor-log-object-storage AFTER this approval — see history scope_changed.)
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
@@ -51,6 +53,14 @@ history:
     action: stage_approved
     stage: product_spec
     note: product_spec approved; feature advanced to in_tdd / technical_design.
+  - at: 2026-05-30T16:21:03Z
+    actor: tiendv.52@gmai.com
+    action: scope_changed
+    stage: product_spec
+    note: >-
+      Post-approval descope (human-directed): persistent S3/MinIO log storage moved to
+      feature executor-log-object-storage. This feature now only takes standalone-path
+      logs off the management repo (LOG_SINK opt-out); ABI-neutral.
   - at: 2026-05-30T16:53:38Z
     actor: tiendv.52@gmai.com
     action: stage_approved
