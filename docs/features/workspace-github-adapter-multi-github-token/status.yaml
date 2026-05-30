@@ -1,7 +1,7 @@
 feature_id: workspace-github-adapter-multi-github-token
 title: Multi GitHub Token Support for Workspace GitHub Adapter
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Tasks approved — T1 is ready for implementation.
 stages:
   product_spec:
@@ -40,6 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/384
 history:
   - event: product_spec_approved
     by: pentative@gmail.com
@@ -58,3 +59,8 @@ revalidation:
 feature_branch: feature/workspace-github-adapter-multi-github-token
 feature_branch_base_sha: e61765f575e8ca92d1899358e5ae7d2f0bbf1c49
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/381
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/384
+impl_feature_prs:
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/26
+    status: open
