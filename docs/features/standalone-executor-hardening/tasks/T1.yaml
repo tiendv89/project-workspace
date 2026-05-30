@@ -1,22 +1,21 @@
 id: T1
 title: "ABI: DispatchJob payload + dispatch-stream contract + LOG_SINK env"
-
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-
-branch: null
-
+blocked_context: null
+branch: feature/standalone-executor-hardening-T1
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-31T00:05:23+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T17:41:28.874Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/238
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/388
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -26,3 +25,50 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-30T17:09:10Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:18:19.718Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:18:34.386Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/138,
+      github.com/tiendv89/agent-workflow/pull/5"
+    rag_query: "ABI: DispatchJob payload + dispatch-stream contract + LOG_SINK env
+      standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:21:19+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/238"
+    executor_audit:
+      cost_usd: 0.255579
+      claude:
+        token_usage:
+          input: 163
+          output: 17006
+          model: claude-sonnet-4-6
+    at: 2026-05-30T17:29:39.500Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-30T17:32:46.107Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T1 acceptance criteria met. CI passed (4/4 checks). DispatchJob
+      interface correct with no secret fields; three dispatch-stream constants
+      defined as named exports; LOG_SINK documented in runner env contract with
+      git default; ExecutorResult unchanged (ABI-neutral, explicitly
+      documented). One 🟢 nit only (redundant runtime secret-field checks in
+      tests). PR squash-merged.
+    review_url: https://github.com/tiendv89/agent-workflow/pull/238#pullrequestreview-4395700500
+    at: 2026-05-30T17:39:10.620Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:41:28.874Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
