@@ -94,22 +94,22 @@ cannot live in `localStorage` — so this feature is also where the dashboard gr
 server side. That is a bigger architectural step than "add a login screen," and it
 shapes items 4–6.
 
-### Open decisions to settle before writing the spec
+### Decisions / open
 
-1. **Build vs. buy identity** — a managed auth provider (Clerk / WorkOS / Auth0 /
-   Supabase Auth / Better Auth) vs. self-hosted auth in `workflow-backend`. Big
-   lever: it touches the thesis's open **hosting** (SaaS vs customer-hosted) and
-   **vendor-lock-in** questions, and data-residency for Enterprise.
-2. **GitHub/GitLab repo-access model** — *leaning resolved by item 6:* a VCS **App**
-   (per-install, fine-grained, revocable tokens) that the org grants, with a platform
-   **bot identity** for commits — not a user PAT. Confirm the App route and how it
-   relates to the deferred credential vault.
-3. **How today's GitHub-repo workspaces map onto accounts** — onboarding flow when a
-   workspace *is* a GitHub repo, and whether existing `localStorage` workspaces are
-   migrated or simply re-connected under the new account (currently leaning:
-   re-connect, no auto-migration).
-4. **Session model** — managed-provider sessions vs. own JWT/server sessions; token
-   lifetime and revocation. (Likely falls out of decision 1.)
+1. **Build vs. buy identity — DECIDED: self-hosted in `workflow-backend` (Go).** We
+   build auth ourselves (password, OAuth, sessions, invites, roles, audit) rather than
+   adopt a managed provider. More to build, but **full control, no vendor lock-in, no
+   per-MAU auth cost**, and it keeps customer-hosted possible later without ripping out
+   an external auth dependency. (We run **SaaS** today — see X.1.)
+2. **GitHub/GitLab repo-access model — RESOLVED by item 6:** a VCS **App** (per-install,
+   fine-grained, revocable tokens) the org grants, with a platform **bot identity** —
+   not a user PAT.
+3. **Existing GitHub-repo workspaces → accounts** *(open, leaning re-connect):*
+   onboarding when a workspace *is* a GitHub repo; existing `localStorage` workspaces
+   **re-connect** under the new account rather than auto-migrate.
+4. **Session model — DECIDED (follows #1): own JWT + server-side sessions** in the Go
+   backend, with explicit token lifetime + revocation (`session` table). No external
+   session provider.
 
 ### Phased roadmap (v1 → enterprise)
 
@@ -354,10 +354,10 @@ What this gives / costs us:
 - **BYO offloads COGS and answers vendor-lock-in** — a team brings its own
   Anthropic/OpenAI/… key, pays the discounted BYO per-tier price, and we never touch
   the provider bill. Zero-COGS revenue; large/regulated customers love it.
-- **Customer-hosted / air-gapped Enterprise** is now *easier*, not harder: BYO key +
-  a customer-scoped gateway deployment means the customer's keys and provider calls
-  stay in their environment. (Still needs a deliberate design — flag for the hosting
-  discussion.)
+- **Customer-hosted / air-gapped Enterprise is out of scope** (X.1 decided: SaaS). The
+  gateway + BYO-key design keeps it *possible* later (a customer-scoped gateway would
+  keep their keys/calls in their environment), but we don't build it now. Regulated
+  Enterprise is served by **regional SaaS hosting**, not on-prem.
 
 ### 2.6 Discounts, coupons & programs (one engine)
 
@@ -921,7 +921,7 @@ critical path. Gated only by the (resolved) git-as-gate question.*
 
 | Part | From | What it is | Size |
 |---|---|---|---|
-| Hosting decision | Q **X.1** | SaaS vs customer-hosted vs hybrid — shapes the rest | — |
+| Regional data residency | X.1 *(decided: SaaS)* | regional SaaS hosting for regulated Enterprise — not a separate self-host model | M |
 | Account security | item 1 **Phase 2** | MFA/passkeys, session/device mgmt, step-up auth, recovery | L |
 | Enterprise identity | item 1 **Phase 3** | SSO/SAML+OIDC, **SCIM**, verified-domain, IP/session policy, residency, audit export | XL |
 | Custom roles + 4-eyes | item 3 *deferred* | fine-grained roles, mandatory spec/design approvers | M |
@@ -965,9 +965,10 @@ These map directly onto the thesis's "what this thesis does not yet decide":
 - **Vendor lock-in** → **multi-provider** (Anthropic, OpenAI, Gemini, DeepSeek, …)
   behind our model gateway, plus BYO key. We are not locked to one vendor, and
   customers aren't locked to us.
-- **Copilot surface shape** → item 5 commits us to **chat-first** (with the
-  dashboard as the structured view). Is that the bet we want?
-- **Hosting model** (SaaS vs customer-hosted) — *still unaddressed here.* It strongly
-  affects the credential vault, the DB backend, and Enterprise data-residency.
-  Flagging it as the one big gap this roadmap does **not** yet cover — worth a
-  dedicated discussion.
+- **Copilot surface shape** → **decided: chat-first** (dashboard = the structured view).
+- **Hosting model** → **decided: SaaS.** We host the platform; no customer-hosted /
+  on-prem deployment in scope. This simplifies the credential vault, the DB backend,
+  and operations. Self-hosted auth (1.1) + BYO keys keep customer-hosted *possible*
+  later, but it is **not** a near-term commitment. Data-residency for regulated
+  Enterprise (regional hosting) stays a Stage-5 lever, not a separate deployment model.
+- **Identity build vs buy** → **decided: self-hosted in the Go backend** (item 1.1).
