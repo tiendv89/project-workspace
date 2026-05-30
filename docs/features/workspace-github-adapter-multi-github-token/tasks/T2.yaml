@@ -1,16 +1,17 @@
 id: T2
 title: "Wiring cleanup: remove handler Token fields"
 repo: workspace-github-adapter
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/workspace-github-adapter-multi-github-token-T2
 execution:
   actor_type: agent
-  last_updated_by: spiderbot@gmail.com
-  last_updated_at: 2026-05-30T04:45:24.809Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-30T04:54:14.792Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/25
   status: open
@@ -64,6 +65,10 @@ log:
     at: 2026-05-30T04:45:24.809Z
   - action: unblocked
     by: pye@swellnetwork.io
-    at: "2026-05-30T11:52:39+0700"
-    note: Human unblocked — pr.url is set, resetting to in_review for reviewer re-dispatch.
-blocked_suggestion: null
+    at: 2026-05-30T11:52:39+0700
+    note: Human unblocked — pr.url is set, resetting to in_review for reviewer
+      re-dispatch.
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-30T04:54:14.792Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
