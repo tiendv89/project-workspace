@@ -104,9 +104,10 @@ shapes items 4–6.
 2. **GitHub/GitLab repo-access model — RESOLVED by item 6:** a VCS **App** (per-install,
    fine-grained, revocable tokens) the org grants, with a platform **bot identity** —
    not a user PAT.
-3. **Existing GitHub-repo workspaces → accounts** *(open, leaning re-connect):*
-   onboarding when a workspace *is* a GitHub repo; existing `localStorage` workspaces
-   **re-connect** under the new account rather than auto-migrate.
+3. **Existing GitHub-repo workspaces → accounts — DECIDED: re-connect, no
+   auto-migration.** A one-time "import your workspace" prompt on first sign-in;
+   existing `localStorage` workspaces are re-connected under the new account, not
+   migrated by a fragile one-off.
 4. **Session model — DECIDED (follows #1): own JWT + server-side sessions** in the Go
    backend, with explicit token lifetime + revocation (`session` table). No external
    session provider.
@@ -216,7 +217,7 @@ uses agents as workers; real PO/architect/reviewer/QC collaboration is an org co
 | BYO price (own key) | free | **$10/mo** | **$50/mo** | **$15/seat·mo** | custom |
 | Concurrent agents | 1 | 2–3 | 5+ | Scales w/ seats | Configurable |
 | Workspaces | 1 | 3–5 | Unlimited | Unlimited | Unlimited |
-| Connected repos (item 6) | 1 | a few | more | many | unlimited |
+| Connected repos (item 6) | 1 | 5 | 20 | unlimited | unlimited |
 | Seats | 1 | 1 | 1 | Multi (no minimum) | Unlimited |
 | Delivery-role collab | self (all) | self | self | **real, per-person** | real + custom |
 | Governance roles + scoping | — | — | — | ✅ | ✅ |
@@ -295,6 +296,9 @@ scale) plus the trust/control features (SSO, custom roles, residency, SLA).
 - **Free is a hard stop**: a tiny trial credit grant on cheap models, 1 workspace,
   1 agent; when exhausted, the user attaches a BYO key or upgrades — no overage on
   Free. Caps our funded exposure and is the faucet/abuse guard.
+- **Accepted enhancement (I.1): prepaid credit packs** — buyers who dislike surprise
+  metered bills can top up a credit balance instead. Pairs with the spend cap. Lower
+  priority, lands after core billing.
 - **Model selection is a plan entitlement.** Lower tiers (**Free, Pro**) run on a
   **platform-managed default model** — the system picks/auto-routes (cheap model for
   simple steps, stronger model for hard ones) to keep cost predictable and the UX
@@ -321,6 +325,11 @@ plan/billing surface sits on top of it. Meter the cost drivers we price on:
 Metering emits events; billing, dashboards, quotas, spend-caps, and per-workspace
 **cost attribution** all read from the same ledger.
 
+> **Accepted enhancement (I.3):** a **customer-facing per-workspace cost dashboard**
+> (spend by workspace / feature / model) reads this same ledger — turns metering into a
+> visible value-add, not just billing plumbing. Ships in **Stage 3** (cheap once the
+> ledger exists).
+
 ### 2.4 Enforcement stays in the spine
 
 - A **plan → entitlement** map defines token allowance, seat/workspace/concurrency
@@ -343,6 +352,9 @@ through. The gateway is the heart of the billing model:
   table — one normalized currency over many vendors.
 - **Switches funding mode per run:** managed (our account → debit credits) or BYO
   (customer key → no credit charge, just the platform fee).
+- **Accepted enhancement (I.2): BYO _endpoint_, not just BYO key** — route to a
+  customer's **Azure OpenAI / AWS Bedrock / Vertex** endpoint so model calls stay in
+  their cloud. Enterprise (Stage 5); a natural extension of the funding-mode switch.
 - **Fails over / load-balances** across providers without changing the customer
   contract — they buy "credits," not "Anthropic."
 
@@ -452,11 +464,10 @@ Sonnet/seat. (Medium task: Sonnet 270, Codex 210, Opus 450, Haiku 90 credits.)
   with realized margin higher once caching/batch is in play.
 
 **Marketing-owned, not fixed in engineering:**
-- **Discount policy values** — OSS/non-profit eligibility rules + percentages, annual
-  discount %, stacking precedence — are a **marketing-strategy decision, not a fixed
-  constant**. The §2.6 engine is built so these are **configurable data**, set and
-  tuned by the business without an engineering deploy. No number to "decide" here; the
-  requirement is just that the engine makes them editable.
+- **Discount policy values** — marketing-strategy, not a fixed constant; the §2.6
+  engine keeps them **configurable data**. **Suggested launch defaults:** annual
+  **~17% off** (2 months free) · OSS **100% off platform fee** (BYO key required, zero
+  COGS) · non-profit / education **50% off**. Marketing tunes freely.
 
 **Decided:**
 - **BYO is a discounted per-tier price, not free:** **Pro $10 · Max $50 · Team
@@ -716,10 +727,11 @@ transitions only ever come from skills, never from `message` rows.
 - One **real-time transport** (5.1) reused everywhere; `gin-contrib/sse` is the start.
 - Tagging an agent = explicit worker dispatch; **never** auto-advances lifecycle state.
 
-**Open:**
-- Notification fan-out scope for v1 (in-app only, or email/Slack too on day one?).
-- Whether published threads are org-wide or scoped to workspace members (default:
-  workspace members per item 3 scoping).
+**Decided:**
+- **Notifications v1 = in-app + email; Slack fast-follow** (Slack is already wired in
+  `workspace.yaml`, so it's a cheap follow-up, not a v1 blocker).
+- **Published threads are workspace-scoped by default**, with an opt-in **"org-wide"**
+  toggle for announcements (matches item-3 scoping; least surprise).
 
 **Depends on:** auth (1); permissions (3) for chat visibility + roles. 5.2 rides the
 5.1 transport.
@@ -792,9 +804,11 @@ the credential vault — raw tokens are never stored in these rows.
 - A workspace binds **one VCS org + many repos**; access still flows through the
   platform permission model, not the VCS's own repo permissions.
 
-**Open:**
-- GitLab parity timing (GitHub App first, GitLab equivalent fast-follow?).
-- Exact per-tier **connected-repo caps** (a marketing/plan number, like the §2.7 set).
+**Decided:**
+- **GitHub App first (v1), GitLab fast-follow** — built behind a provider-agnostic
+  interface so GitLab is purely additive once the App pattern is proven.
+- **Connected-repo caps:** Free 1 · Pro 5 · Max 20 · Team unlimited (fair-use) ·
+  Enterprise unlimited. *(Plan number — marketing may tune.)*
 
 **Depends on:** auth (1) for the org + governance grant; credential vault for token
 storage; the `workspace-github-adapter` multi-repo work already underway.
@@ -891,6 +905,7 @@ accounts (Stage 0) to attribute usage.
 | Delivery roles → gates | item 3 **§3.2 / §3.3** | PO/Architect/Reviewer/QC wired to lifecycle gates | M |
 | Plan model + pricing | item 2 **§2.1 / §2.7 / §2.4** | tiers, allowances, overage, **spend-cap/auto-pause**, Stripe | L |
 | Discount engine | item 2 **§2.6** | coupons/OSS/non-profit/annual, configurable | M |
+| Cost dashboard (I.3) | item 2 **§2.3** | per-workspace spend by feature/model — reads the ledger | M |
 
 **Exit:** a Team org pays; an action passes only when plan + governance + delivery all
 agree; overage auto-pauses at the cap. *Needs:* metering (2) + accounts/roles (0).
@@ -926,8 +941,11 @@ critical path. Gated only by the (resolved) git-as-gate question.*
 | Enterprise identity | item 1 **Phase 3** | SSO/SAML+OIDC, **SCIM**, verified-domain, IP/session policy, residency, audit export | XL |
 | Custom roles + 4-eyes | item 3 *deferred* | fine-grained roles, mandatory spec/design approvers | M |
 | Machine/delegated | item 1 **Phase 4** | service accounts + API/MCP tokens, audited impersonation, ownership transfer | M |
+| BYO endpoint (I.2) | item 2 **§2.5** | Azure OpenAI / Bedrock / Vertex — model calls in the customer's cloud | M |
+| SOC 2 / compliance (I.4) | new track | start when chasing the first Enterprise deal; procurement asks early | L |
 
-**Exit:** an enterprise can SSO in, auto-provision via SCIM, and (if needed) self-host.
+**Exit:** an enterprise can SSO in, auto-provision via SCIM, use its own model endpoint,
+and pass a security review.
 
 ### Critical path & timeline
 
