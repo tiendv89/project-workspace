@@ -1,10 +1,10 @@
 id: T1
 title: "Adapter multi-token: splitTokens, tokenFor probe-and-cache"
 repo: workspace-github-adapter
-status: blocked
+status: in_review
 depends_on: []
-blocked_reason: reviewer exited without writing result.json — no prior GitHub review found
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/workspace-github-adapter-multi-github-token-T1
 execution:
@@ -87,3 +87,7 @@ log:
     by: spiderbot@gmail.com
     note: reviewer exited without writing result.json — no prior GitHub review found
     at: 2026-05-30T04:05:39.237Z
+  - action: ready
+    by: pentative@gmail.com
+    at: "2026-05-30T04:09:47Z"
+    note: Human unblock — reviewer_complete block resolved. PR exists, resetting to in_review.
