@@ -45,10 +45,12 @@ Repo boundary: all of the above is in the **`workflow`** repo (`git@github.com:t
 ## 3. Options considered
 
 ### 3.1 Dispatch transport
-- **A. Extend the existing broker service with a dispatch queue (chosen).** Orchestrator enqueues via broker HTTP (`POST /dispatch`); the dispatcher consumes via `POST /dispatch/claim` (peek-and-lock with `lockMs`) + `POST /dispatch/ack`. Reuses the broker's Redis sorted-set store and HTTP surface — one queue authority for both directions.
-  - *Pros:* zero new infra; identical, already-tested peek-and-lock/redelivery semantics; only the broker touches Redis. *Cons:* broker gains a second responsibility (mitigated — same store, additive endpoints).
-- **B. Dispatcher reads Redis directly (native Streams).** *Cons:* a second component touching Redis; diverges from the broker's deliberate sorted-set store.
+- **B. Dedicated dispatch Redis Stream owned by the dispatcher (chosen).** The dispatch queue is its own Redis Stream + consumer group: the orchestrator `XADD`s a job; the dispatcher pool consumes via `XREADGROUP`, with redelivery of stuck entries via `XAUTOCLAIM` and a dispatch DLQ after K deliveries. The **broker is not involved** in dispatch — it stays single-purpose (completion queue + handle registry). Redis is shared *infrastructure*, not shared *code*: broker and dispatcher each own their own queue, no shared endpoints.
+  - *Pros:* broker keeps one responsibility; the dispatcher owns dispatch end-to-end and is independently deployable; Streams consumer groups are the idiomatic work-distribution primitive (built-in redelivery, no custom lock bookkeeping); **M:N to a stateless dispatcher pool for free** — the orchestrator never addresses a specific dispatcher. *Cons:* the orchestrator gains a Redis client + credentials — minor, and Redis access is not host-level privilege, so it doesn't compromise the unprivileged-orchestrator goal.
+- **A. Extend the broker service with a dispatch queue (rejected).** Orchestrator and dispatcher would exchange jobs through broker HTTP endpoints (`POST /dispatch`, `/dispatch/claim`, `/dispatch/ack`). *Rejected* — overloads the broker with a second responsibility and couples the dispatcher to broker-specific endpoints (broker + dispatcher effectively share code and lifecycle). The "only one component touches Redis" property it preserved is not worth that coupling.
 - **C. External queue (NATS / RabbitMQ / SQS).** *Cons:* new infra for no capability we lack; a future adapter can swap it.
+
+> Symmetry: this mirrors the completion path (executor → broker → orchestrator). Both directions meet at shared Redis infrastructure; neither orchestrator nor executor/dispatcher calls the other directly.
 
 ### 3.2 Where credentials live
 - **A. Dispatcher is the sole credential holder (chosen).** `CredentialPort` moves out of the orchestrator into the dispatcher. Dev: dispatcher holds env and injects `-e` at spawn. Prod (future): the dispatcher creates a Job whose spec **references Secret names**; the kubelet injects. The **dispatch-job payload carries no secrets.**
@@ -70,24 +72,24 @@ Repo boundary: all of the above is in the **`workflow`** repo (`git@github.com:t
 orchestrator                      broker (Redis)                   dispatcher                 executor (ephemeral)
   │ claim task (git)                   │                               │                            │
   │ broker.register(handle,nonce) ───► │ handle: registered            │                            │
-  │ POST /dispatch {job, no secrets}─► │ dispatch queue (peek-lock)    │                            │
-  │                                    │ ◄── POST /dispatch/claim ──────│                            │
+  │ XADD dispatch-stream {job,nosecret}─► │ dispatch stream (Redis)       │                            │
+  │                                    │ ◄── XREADGROUP <group> ────────│                            │
   │                                    │                               │ inject creds + LOG_SINK=none│
   │                                    │                               │ docker run exec-<handle> ─►│ materialise repos
-  │                                    │ ◄── mark handle dispatched ────│ POST /dispatch/ack         │ run agent (logs → stdout)
+  │                                    │ ◄── mark handle dispatched ────│ XACK dispatch-stream       │ run agent (logs → stdout)
   │                                    │ ◄──────── POST /callback {handle,nonce,result} ────────────│ write result.json
   │ ◄── listCompleted (drain) ─────────│                               │                            │ (runner posts, exits)
   │ record result; advance FSM         │                               │
   │ broker.ack ───────────────────────►│ handle: acked                 │
 ```
-The orchestrator and executor never address each other. The orchestrator's `ExecutorPort.submit()` becomes **enqueue** (`QueueDispatchAdapter`); the relocated `DockerRunAdapter` lives in the dispatcher. `result.json` is unchanged.
+The **dispatch stream** is plain Redis owned by the dispatcher's consumer group; the **handle registry + completion queue** are the broker. The orchestrator and executor never address each other, and the orchestrator never addresses a specific dispatcher. `ExecutorPort.submit()` becomes **`XADD` to the dispatch stream** (`QueueDispatchAdapter`); the relocated `DockerRunAdapter` lives in the dispatcher. `result.json` is unchanged.
 
 ### New / changed components (all in `workflow` repo)
 
-- **`runtime/abi/`** — new `DispatchJob` type (payload below). New `LOG_SINK` entry in the runner env contract. **No change to `ExecutorResult`** (ABI-neutral).
-- **`runtime/broker/`** (Go) — dispatch queue endpoints: `POST /dispatch` (enqueue), `POST /dispatch/claim` (peek-and-lock, `lockMs`), `POST /dispatch/ack`, dispatch DLQ after K redeliveries; `POST /dispatch/mark` to flip handle `registered`→`dispatched`; and **`GET /registry-size`** (resolves the `dockerInFlight` debt). Same Redis sorted-set store.
-- **`runtime/dispatcher/`** (new folder, sibling of `broker`/`orchestrator`/`executors`) — consumes the dispatch queue; holds `DockerRunAdapter` + `CredentialPort`; injects creds + `LOG_SINK=none`; **idempotency guard** (skip if a container labelled `platform.handle=<handle>` exists); enforces the global spawn cap via `registry-size`; marks `dispatched`; acks / routes to DLQ.
-- **`runtime/orchestrator/`** — `QueueDispatchAdapter` (ExecutorPort → `POST /dispatch`); `createLocalDockerProfile` drops `DockerRunAdapter`, `EnvCredentialAdapter`, and the Docker socket; **dispatch reconciler** in the poll loop; registers handle+nonce before enqueue. No log-link persistence (descoped).
+- **`runtime/abi/`** — new `DispatchJob` type (payload below) + the **dispatch-stream contract** (stream key, consumer-group name). New `LOG_SINK` entry in the runner env contract. **No change to `ExecutorResult`** (ABI-neutral).
+- **`runtime/broker/`** (Go) — **does not host the dispatch queue.** Two small additions only: **`GET /registry-size`** (resolves the `dockerInFlight` debt) and `POST /handle/<h>/dispatched` (handle-registry flip `registered`→`dispatched`, for the reconciler). Completion queue + sorted-set store unchanged.
+- **`runtime/dispatcher/`** (new folder, sibling of `broker`/`orchestrator`/`executors`) — **owns the dispatch Redis Stream**: consumes via `XREADGROUP` (consumer group), redelivers stuck entries via `XAUTOCLAIM`, routes to a dispatch DLQ after K deliveries; holds `DockerRunAdapter` + `CredentialPort`; injects creds + `LOG_SINK=none`; **idempotency guard** (skip if a container labelled `platform.handle=<handle>` exists); enforces the global spawn cap via the broker `registry-size`; marks the handle `dispatched`; `XACK`s.
+- **`runtime/orchestrator/`** — `QueueDispatchAdapter` (ExecutorPort → `XADD` to the dispatch stream; gains a Redis client); `createLocalDockerProfile` drops `DockerRunAdapter`, `EnvCredentialAdapter`, and the Docker socket; **dispatch reconciler** in the poll loop; registers handle+nonce before enqueue. No log-link persistence (descoped).
 - **`runtime/executors/claude/`** — `flushLog` becomes a no-op when `LOG_SINK=none` (logs to stdout); `git` (default) keeps today's behaviour for the bundled path. No `result.json` change.
 - **Compose** — `local-docker` stack gains `dispatcher`; `redis` + `broker` already present; `orchestrator` loses the socket mount. No MinIO. `local-subprocess` compose unchanged.
 
@@ -119,7 +121,7 @@ Secrets (`GITHUB_TOKEN`, `SSH_PRIVATE_KEY`) are **not** in the payload — the d
 ### Resolutions to the product-spec open questions
 | Q | Resolution |
 |---|---|
-| **Q1 Dispatch transport & queue** | Extend the **broker** with a dispatch queue (peek-and-lock, same Redis sorted-set store) + DLQ; payload above; `local-subprocess` untouched. |
+| **Q1 Dispatch transport & queue** | Dedicated **Redis Stream + consumer group owned by the dispatcher** (orchestrator `XADD`; dispatcher `XREADGROUP`/`XAUTOCLAIM`; DLQ after K deliveries). Broker stays completion-only (+ `registry-size`, handle `dispatched` flip). `local-subprocess` untouched. |
 | **Q2 Log sink** | `LOG_SINK=git\|none` injected at spawn. Standalone (`local-docker`) → `none` (stdout). Bundled → `git` (unchanged). **Persistent S3 storage descoped to `executor-log-object-storage`.** |
 | **Q3 Claim location** | Already resolved — executor claim-agnostic; only the git-flush opt-out remains (Q2). |
 | **Q4 Credentials & isolation** | Dispatcher is sole credential holder (dev: env inject; prod: Secret references). Co-resident isolation via per-profile/instance roots + UUID handles + label scoping. |
@@ -140,33 +142,33 @@ Secrets (`GITHUB_TOKEN`, `SSH_PRIVATE_KEY`) are **not** in the payload — the d
 External decisions: none unresolved — all open questions are answered in §4.
 
 ```
-T1: ABI — DispatchJob payload + runner LOG_SINK env contract  (no ExecutorResult change)  (repo: workflow)
+T1: ABI — DispatchJob payload + dispatch-stream contract (key, consumer group) + runner LOG_SINK env  (no ExecutorResult change)  (repo: workflow)
   └── Can begin now — no blockers
+T2: Broker — GET /registry-size (+ handle dispatched flip); broker does NOT host the dispatch queue  (repo: workflow)
+  └── Can begin now — no blockers (independent of the DispatchJob schema)
+  └── T1 and T2 run in parallel
   │
-  T2: Broker — dispatch queue (enqueue/claim/ack/DLQ + mark dispatched) + registry-size endpoint  (repo: workflow)
   T3: Executor — gate flushLog on LOG_SINK (none → stdout, git → unchanged)  (repo: workflow)
-      └── T2 and T3 run in parallel
-      └── BLOCKED on T1 (T2: DispatchJob schema frozen; T3: LOG_SINK env contract frozen)
-      │
-      T4: Dispatcher service (runtime/dispatcher/) — relocate DockerRunAdapter, hold CredentialPort,
-      │   inject creds + LOG_SINK=none, idempotency guard, global cap via registry-size, mark dispatched, ack/DLQ  (repo: workflow)
-      │   └── BLOCKED on T1 (DispatchJob payload), T2 (dispatch + registry endpoints must exist)
-      │
-      T5: Orchestrator — QueueDispatchAdapter, drop socket+credential adapter from local-docker profile,
-          dispatch reconciler, register handle before enqueue  (repo: workflow)
-          └── BLOCKED on T1 (payload), T2 (dispatch endpoints must exist)
-          └── T4 and T5 run in parallel
-          │
-          T6: Compose + dev wiring — local-docker stack (redis, broker, dispatcher, orchestrator);
-          │   keep local-subprocess bundled compose working; .env templates  (repo: workflow)
-          │   └── BLOCKED on T3 (executor honours LOG_SINK), T4 (dispatcher service), T5 (orchestrator enqueue)
-          │
-          T7: Integration + parity test — bundled ∥ local-docker concurrently; prove decoupled flow,
-              idempotency, reconciliation, unprivileged orchestrator, no mgmt-repo log writes on standalone path  (repo: workflow)
-              └── BLOCKED on T6 (full stack wired)
+  │   └── BLOCKED on T1 (LOG_SINK env contract frozen)
+  T4: Dispatcher service (runtime/dispatcher/) — own the dispatch Redis stream (XREADGROUP/XAUTOCLAIM, DLQ),
+  │   relocate DockerRunAdapter, hold CredentialPort, inject creds + LOG_SINK=none, idempotency guard,
+  │   global cap via broker registry-size, mark dispatched, XACK  (repo: workflow)
+  │   └── BLOCKED on T1 (DispatchJob + stream contract frozen), T2 (registry-size + dispatched flip must exist)
+  T5: Orchestrator — QueueDispatchAdapter (XADD to dispatch stream), drop socket+credential adapter from
+  │   local-docker profile, dispatch reconciler, register handle before enqueue  (repo: workflow)
+  │   └── BLOCKED on T1 (DispatchJob + stream contract frozen)
+  │   └── T3, T4 and T5 run in parallel
+  │
+  T6: Compose + dev wiring — local-docker stack (redis, broker, dispatcher, orchestrator);
+  │   keep local-subprocess bundled compose working; .env templates  (repo: workflow)
+  │   └── BLOCKED on T3 (executor honours LOG_SINK), T4 (dispatcher service), T5 (orchestrator enqueue)
+  │
+  T7: Integration + parity test — bundled ∥ local-docker concurrently; prove decoupled flow,
+      idempotency, reconciliation, unprivileged orchestrator, no mgmt-repo log writes on standalone path  (repo: workflow)
+      └── BLOCKED on T6 (full stack wired)
 ```
 
-Wave 1: **T1**. Wave 2: **T2 ∥ T3**. Wave 3: **T4 ∥ T5**. Wave 4: **T6**. Wave 5: **T7**.
+Wave 1: **T1 ∥ T2**. Wave 2: **T3 ∥ T4 ∥ T5**. Wave 3: **T6**. Wave 4: **T7**.
 
 ## 7. Repository impact
 
@@ -179,7 +181,7 @@ Every task targets a single repo (`workflow`) — no cross-repo task.
 
 ## 8. Validation and release impact
 
-- **Testing:** unit (`QueueDispatchAdapter`; dispatcher idempotency + concurrency cap; `flushLog` LOG_SINK gating; reconciler state machine); broker fixture parity for the new dispatch endpoints (mirror existing `broker-protocol/fixtures`); integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
+- **Testing:** unit (`QueueDispatchAdapter` `XADD`; dispatcher consumer-group consume + `XAUTOCLAIM` redelivery + DLQ; idempotency + concurrency cap; `flushLog` LOG_SINK gating; reconciler state machine); broker tests for `registry-size` + the handle `dispatched` flip; integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
 - **ABI / compatibility:** **ABI-neutral** — no `result.json` change; `local-subprocess` byte-for-byte unchanged (git logging retained); no change to agent behaviour or prompts.
 - **Migration/config:** new dev infra — `dispatcher` service + dispatch/LOG_SINK env in `.env.template`; orchestrator loses the Docker socket mount. No MinIO, no data migration.
 - **Rollout:** purely additive — `local-docker` opt-in per orchestrator instance via `RUNTIME_PROFILE`; bundled remains the default/fallback. Production (k8s) deferred; spawn-adapter seam kept clean. **Known tradeoff:** until `executor-log-object-storage` lands, `local-docker` run logs are ephemeral (stdout / `docker logs` only) — not persisted or RAG-indexed.
