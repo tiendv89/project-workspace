@@ -1,7 +1,7 @@
 id: T5
 title: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch reconciler"
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/standalone-executor-hardening-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T19:12:46+0000
+  last_updated_at: 2026-05-30T19:37:51.856Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/242
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/391
   status: open
