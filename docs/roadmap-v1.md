@@ -832,22 +832,91 @@ Beyond the six, a few things fall out of looking at them together:
 
 ---
 
-## Suggested sequencing (for debate)
+## Implementation plan — stages & timeline
 
-| Phase | Ship | Why here |
-|---|---|---|
-| **0 — now** | Auth v1 (users, orgs, personal spaces, preset roles + scoping) | Foundation; in flight |
-| **0/1** | VCS App + bot identity, org/multi-repo binding (item 6) | Resolves repo-access; agents can't commit to customer repos without it |
-| **1** | Usage metering (tokens, runs, resource + repo counts), `workspace_id`-scoped | Nothing meaningful can be billed or capped without it |
-| **2** | Entitlements service + 5-tier plan model (Free/Pro/Max/Team/Enterprise) + billing provider | Turns metering into revenue; unifies role × plan |
-| **3** | Real-time transport backbone (item 5.1) | Reusable infra; unblocks the collaboration surface |
-| **4** | Collaborative chat + tagging + spec-by-conversation (item 5.2) | The differentiator; needs 0/3 and benefits from 1–2 |
-| **parallel** | Workspace DB backend behind adapter contract → migration | Independent of the surface stack; gated by the "git-as-gate" question |
-| **as needed** | Credential vault, custom roles, SSO/SAML | Enterprise-tier follow-ups, mostly demand-driven |
+Ordered by **dependency**, not by excitement. The rule that sets the order: *you
+can't meter what has no owner, can't bill what you don't meter, can't gate by plan
+without a permission model, and can't build the chat surface without all of it.*
+**Auth is first; Enterprise hardening is last; the chat surface is the payoff in the
+middle-late.**
 
-**Rationale:** metering before billing; billing before plan-gated permissions; the
-real-time transport before the chat surface that rides it; storage migration runs on
-its own track because it touches no gate. Auth underpins all of it.
+Sizes are T-shirt (S ≈ days, M ≈ 1–2 wks, L ≈ 3–5 wks, XL ≈ 6 wks+) for *one small
+team*; absolute dates depend on headcount.
+
+### Stage 0 — Identity foundation **(do first)**
+**Item 1 Phase 1.** Decide **build-vs-buy (1.1)** first — it gates everything below.
+- New backend gains accounts/users/sessions; data model (`account`, `user`,
+  `auth_identity`, `membership`, `workspace`, `workspace_role`). — **L**
+- Email+password + Google/GitHub OAuth; personal + org accounts; context switch. — **M**
+- Governance roles (owner/admin/member/viewer) + per-workspace scoping. — **M**
+- *Blocks:* literally everything. *Parallelizable with:* Stage 1 once orgs exist.
+
+### Stage 1 — Machine identity & repo access
+**Item 6 + minimal credential vault.** Can overlap the tail of Stage 0.
+- Credential vault (minimal) to hold secrets. — **M**
+- VCS App + bot identity; org-admin grant/install flow. — **L**
+- VCS org + multi-repo workspace binding. — **M**
+- *Why here:* agents can't commit to customer repos without it. *Needs:* org +
+  governance grant from Stage 0.
+
+### Stage 2 — Metering & model gateway **(billing substrate)**
+- **Model gateway** — multi-provider routing, per-model token→credit conversion,
+  managed/BYO funding switch, fail-over. — **L**
+- Usage metering ledger (tokens, runs, repos), `workspace_id`-scoped. — **M**
+- *Why here:* can't bill or cap what you don't meter; the gateway is the metering
+  hook. *Needs:* accounts (Stage 0) to attribute usage.
+
+### Stage 3 — Billing, entitlements & permissions **(monetization)**
+- Entitlements service (one `can(actor, action, context)` rail). — **M**
+- Delivery roles (PO/Architect/Reviewer/QC) wired to lifecycle gates. — **M**
+- Plan model + credit allowances + overage + **spend-cap/auto-pause**; Stripe. — **L**
+- Discount engine (§2.6). — **M**
+- *Why here:* needs metering (2) + accounts/roles (0). Turns usage into revenue and
+  gates by plan.
+
+### Stage 4 — Collaborative chat surface **(the differentiator)**
+**Item 5.**
+- Real-time transport backbone (SSE/WebSocket), reused everywhere. — **M**
+- Threaded chat, @mention/tagging (person + agent), notifications. — **L**
+- Spec-by-conversation (PO copilot through the spec skills). — **M**
+- *Why later:* needs auth + permissions (visibility) + the transport. The payoff that
+  sits on top of the stack.
+
+### ‖ Parallel track — Storage DB backend (item 4)
+Runs on its **own track** start-to-finish; touches no gate, so it never blocks the
+critical path. Gated only by the (resolved) git-as-gate question.
+- Claim **port** + two adapters; DB backend with lease/fencing/version claim;
+  `task_event` audit; `LISTEN/NOTIFY`. Subsumes `workflow-db`. — **L–XL**
+
+### Stage 5 — Enterprise hardening **(do last, demand-driven)**
+Item 1 Phases 3–4 + the deferred levers. Pulled forward only by specific deals.
+- **Hosting model (X.1)** decision, then: SSO/SAML + **SCIM**, custom roles,
+  mandatory 4-eyes, audit export/SIEM, data residency, customer-hosted, MFA/passkeys,
+  service accounts + API/MCP tokens. — **XL**
+
+### Critical path & timeline
+
+**Critical path:** `Stage 0 → Stage 2 → Stage 3 → Stage 4`. Stage 1 (VCS/bot) and the
+Storage track run alongside; Stage 5 trails as demand-driven.
+
+Illustrative calendar for one small team (relative, **not committed dates**):
+
+```
+        M1   M2   M3   M4   M5   M6   M7   M8+
+Stage0  ███████████                                 identity foundation
+Stage1       ██████████                             VCS App + bot + vault
+Stage2            ██████████                         metering + model gateway
+Stage3                 ████████████                  billing + entitlements + perms
+Stage4                          ███████████          collaborative chat surface
+DB ‖    ░░░░░░░░░░░░░░░░░░░░░░░░                      storage backend (parallel track)
+Stage5                                  ░░░░░░░░░░→   enterprise hardening (ongoing)
+```
+
+**First three things to build, in order:** (1) the **auth backend + account/org model**
+(decide build-vs-buy), (2) the **VCS App + bot identity** so agents can act on customer
+repos, (3) the **model gateway + metering** so usage is measurable. **Last:** Enterprise
+identity (SSO/SCIM/residency) and customer-hosted — biggest lift, least blocking, sold
+into deals rather than built speculatively.
 
 ---
 
