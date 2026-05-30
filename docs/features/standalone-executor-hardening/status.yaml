@@ -1,0 +1,89 @@
+feature_id: standalone-executor-hardening
+title: Standalone Executor Hardening — Harden local-docker Spawn-on-the-Fly for Concurrent Topologies
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: 'Teams: execute Wave 1 (T1, T2) via start-implementation. T3/T4/T5 unblock after T1 (and T2 for T4); T6 after T3/T4/T5; T7 after T6.'
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-30T15:36:24Z
+    review_comment: >-
+      Approved — dispatch-service architecture, ephemeral spawn-on-the-fly,
+      and per-instance topology selection. Log sink: standalone path takes logs
+      off the management repo. (Persistent S3/MinIO logging was descoped to
+      executor-log-object-storage AFTER this approval — see history scope_changed.)
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-05-30T15:36:24Z
+        comment: Product spec approved.
+  technical_design:
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-30T16:53:38Z
+    review_comment: >-
+      Approved — dispatch queue owned by the dispatcher (Redis Stream, broker
+      not involved); broker completion-only + registry-size; dispatcher owns
+      dispatch reliability (XAUTOCLAIM/DLQ + synthetic failed completion);
+      LOG_SINK git-flush opt-out in both executors (claude + hermes); ABI-neutral.
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-05-30T16:53:38Z
+        comment: Technical design approved.
+  tasks:
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-30T17:09:10Z
+    review_comment: >-
+      Approved — 7-task breakdown (all repo: workflow, single-repo each) matches the
+      technical design waves: T1∥T2, then T3∥T4∥T5, then T6, then T7. Issue #4c
+      workdir/bind-mount reconcile and the spawn-lock TTL + slow-spawn test folded
+      into T4/T7. Wave 1 (T1, T2) activated to ready.
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-05-30T17:09:10Z
+        comment: Tasks stage approved; feature advanced to ready_for_implementation.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-05-30T15:36:24Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: product_spec
+    note: product_spec approved; feature advanced to in_tdd / technical_design.
+  - at: 2026-05-30T16:21:03Z
+    actor: tiendv.52@gmai.com
+    action: scope_changed
+    stage: product_spec
+    note: >-
+      Post-approval descope (human-directed): persistent S3/MinIO log storage moved to
+      feature executor-log-object-storage. This feature now only takes standalone-path
+      logs off the management repo (LOG_SINK opt-out); ABI-neutral.
+  - at: 2026-05-30T16:53:38Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: technical_design
+    note: technical_design approved; current_stage advanced to tasks (Phase 2 breakdown).
+  - at: 2026-05-30T17:09:10Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: tasks
+    note: >-
+      tasks approved; feature_status advanced to ready_for_implementation.
+      Wave 1 tasks T1, T2 activated to ready (empty depends_on).
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
