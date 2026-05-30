@@ -1,7 +1,7 @@
 id: T4
 title: "Dispatcher service: own dispatch stream, spawn, credentials, idempotency"
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/standalone-executor-hardening-T4
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T19:13:29.510Z
+  last_updated_at: 2026-05-30T19:15:25.782Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/241
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/392
   status: open
@@ -95,3 +95,7 @@ log:
       (non-atomic lock release in error path; any cast for xAutoClaim).
     review_url: https://github.com/tiendv89/agent-workflow/pull/241#pullrequestreview-4395813902
     at: 2026-05-30T19:13:29.510Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:15:25.782Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
