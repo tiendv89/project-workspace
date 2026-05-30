@@ -23,7 +23,7 @@ The runtime is portable (ports/adapters/profiles, async submit/reap) after `runt
 - **Claim is orchestrator-owned and the executor is claim-agnostic** — status→`in_progress` + claim commit/push in `runtime/orchestrator/src/task/claim.ts` (`:281`, `:305-325`); executor spawned only if the claim is won (`main.ts:331-344`).
 - **`local-docker` today couples the orchestrator to infra:** the orchestrator itself runs `docker run` via a mounted Docker socket (`DockerRunAdapter`, `runtime/orchestrator/src/executor/docker-run.ts`), resolves credentials (`EnvCredentialAdapter`, `runtime/orchestrator/src/infra/credential/env.ts`) passing `GITHUB_TOKEN`/`SSH_PRIVATE_KEY` as `-e` vars, and tracks spawn concurrency with an **in-process `dockerInFlight` counter** that resets on restart and can't be shared across orchestrators (tech debt from `platform-byo-executor`; correct fix is a broker `registry-size` endpoint).
 - **Completion broker** (Go, `runtime/broker/`) is Redis-backed using a **sorted-set peek-and-lock** store (XREADGROUP/XACK semantics with explicit `lockMs`), reached over HTTP. Runner posts `{handle, nonce, result}` to `/callback`; any orchestrator drains via `listCompleted` (opportunistic M:N).
-- **Executor** (`runtime/executors/claude/`) self-materialises its repos (`materializeRepo`, `index.ts`) into per-handle `exec-<handle>` workdirs, runs the agent, writes `result.json`, and **flushes logs to the management git repo** via `flushLog()` (`runtime/executors/claude/src/flush-log.ts`).
+- **Executors** — there are **two** (`runtime/executors/claude/` and `runtime/executors/hermes/`), each driven by the same runner-wrapper over the same ABI. Both self-materialise their repos (`materializeRepo`, `index.ts`) into per-handle `exec-<handle>` workdirs, run the agent, write `result.json`, and **flush logs to the management git repo** via their own `flushLog()` (`runtime/executors/{claude,hermes}/src/flush-log.ts`).
 - The **runner wrapper** (`runtime/runner-wrapper/runner.js`) is the platform entrypoint in every profile.
 
 Repo boundary: all of the above is in the **`workflow`** repo (`git@github.com:tiendv89/agent-workflow.git`).
@@ -90,7 +90,7 @@ The **dispatch stream** is plain Redis owned by the dispatcher's consumer group;
 - **`runtime/broker/`** (Go) — **does not host the dispatch queue or any dispatch state.** One small addition only: **`GET /registry-size`** (count of in-flight handles — resolves the `dockerInFlight` debt; the dispatcher reads it to enforce the global spawn cap). Completion queue + sorted-set store otherwise unchanged. (No `dispatched` flag — dispatch state lives in the dispatch stream; terminal dispatch failure surfaces as a synthetic completion via the existing `/callback`.)
 - **`runtime/dispatcher/`** (new folder, sibling of `broker`/`orchestrator`/`executors`) — **owns the dispatch Redis Stream**: consumes via `XREADGROUP` (consumer group), redelivers stuck entries via `XAUTOCLAIM`, routes to a dispatch DLQ after K deliveries; holds `DockerRunAdapter` + `CredentialPort`; injects creds + `LOG_SINK=none`; **idempotency guard** (skip if a container labelled `platform.handle=<handle>` exists); enforces the global spawn cap via the broker `registry-size`; `XACK`s after a successful spawn. On terminal dispatch failure (DLQ after K deliveries) it posts a **synthetic `failed` completion** to the broker `/callback` for that `handle`/`nonce` — the same channel the crash safety-net uses — so the orchestrator learns through the normal completion path.
 - **`runtime/orchestrator/`** — `QueueDispatchAdapter` (ExecutorPort → `XADD` to the dispatch stream; gains a Redis client); `createLocalDockerProfile` drops `DockerRunAdapter`, `EnvCredentialAdapter`, and the Docker socket; **dispatch reconciler** in the poll loop; registers handle+nonce before enqueue. No log-link persistence (descoped).
-- **`runtime/executors/claude/`** — `flushLog` becomes a no-op when `LOG_SINK=none` (logs to stdout); `git` (default) keeps today's behaviour for the bundled path. No `result.json` change.
+- **`runtime/executors/claude/` and `runtime/executors/hermes/`** — **both** executors gate `flushLog` (`runtime/executors/{claude,hermes}/src/flush-log.ts`) on `LOG_SINK`: no-op → stdout when `none`; `git` (default) keeps today's behaviour for the bundled path. Both are driven by the same runner-wrapper over the same ABI, so the `LOG_SINK` env applies uniformly to whichever executor a run uses. No `result.json` change.
 - **Compose** — `local-docker` stack gains `dispatcher`; `redis` + `broker` already present; `orchestrator` loses the socket mount. No MinIO. `local-subprocess` compose unchanged.
 
 ### DispatchJob payload (credential-free)
@@ -146,7 +146,7 @@ T2: Broker — GET /registry-size only; broker does NOT host the dispatch queue 
   └── Can begin now — no blockers (independent of the DispatchJob schema)
   └── T1 and T2 run in parallel
   │
-  T3: Executor — gate flushLog on LOG_SINK (none → stdout, git → unchanged)  (repo: workflow)
+  T3: Executors (claude + hermes) — gate flushLog on LOG_SINK in BOTH executors (none → stdout, git → unchanged)  (repo: workflow)
   │   └── BLOCKED on T1 (LOG_SINK env contract frozen)
   T4: Dispatcher service (runtime/dispatcher/) — own the dispatch Redis stream (XREADGROUP/XAUTOCLAIM, DLQ),
   │   relocate DockerRunAdapter, hold CredentialPort, inject creds + LOG_SINK=none, idempotency guard,
@@ -172,14 +172,14 @@ Wave 1: **T1 ∥ T2**. Wave 2: **T3 ∥ T4 ∥ T5**. Wave 3: **T6**. Wave 4: **T
 
 | Repo (`workspace.yaml` id) | Why |
 |---|---|
-| `workflow` | All implementation: `runtime/abi` (T1), `runtime/broker` (T2), `runtime/executors/claude` (T3), `runtime/dispatcher` new (T4), `runtime/orchestrator` (T5), compose/env (T6), tests (T7). |
+| `workflow` | All implementation: `runtime/abi` (T1), `runtime/broker` (T2), `runtime/executors/{claude,hermes}` (T3), `runtime/dispatcher` new (T4), `runtime/orchestrator` (T5), compose/env (T6), tests (T7). |
 | `management-repo` | Only this feature's docs (design/tasks) — no implementation. |
 
 Every task targets a single repo (`workflow`) — no cross-repo task.
 
 ## 8. Validation and release impact
 
-- **Testing:** unit (`QueueDispatchAdapter` `XADD`; dispatcher consumer-group consume + `XAUTOCLAIM` redelivery + DLQ; idempotency + concurrency cap; `flushLog` LOG_SINK gating; reconciler state machine); broker test for `registry-size`; dispatcher test that a DLQ'd job posts a synthetic `failed` completion; integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
+- **Testing:** unit (`QueueDispatchAdapter` `XADD`; dispatcher consumer-group consume + `XAUTOCLAIM` redelivery + DLQ; idempotency + concurrency cap; `flushLog` LOG_SINK gating in both executors; reconciler state machine); broker test for `registry-size`; dispatcher test that a DLQ'd job posts a synthetic `failed` completion; integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
 - **ABI / compatibility:** **ABI-neutral** — no `result.json` change; `local-subprocess` byte-for-byte unchanged (git logging retained); no change to agent behaviour or prompts.
 - **Migration/config:** new dev infra — `dispatcher` service + dispatch/LOG_SINK env in `.env.template`; orchestrator loses the Docker socket mount. No MinIO, no data migration.
 - **Rollout:** purely additive — `local-docker` opt-in per orchestrator instance via `RUNTIME_PROFILE`; bundled remains the default/fallback. Production (k8s) deferred; spawn-adapter seam kept clean. **Known tradeoff:** until `executor-log-object-storage` lands, `local-docker` run logs are ephemeral (stdout / `docker logs` only) — not persisted or RAG-indexed.
