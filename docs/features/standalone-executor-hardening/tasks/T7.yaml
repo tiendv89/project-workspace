@@ -1,7 +1,7 @@
 id: T7
 title: Integration + concurrent-coexistence parity test
 repo: workflow
-status: reviewing
+status: change_requested
 depends_on:
   - T6
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T7
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-30T20:51:38.621Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T20:58:36.898Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/244
   status: open
@@ -60,3 +60,14 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-30T20:51:38.621Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: '🟡 reconciler max-retries test (D.3) tracks `blockedEventEmitted` via
+      `trackEmit` but never asserts it — the "→ blocked" half of T7 subtask
+      "lost dispatch → re-enqueue ≤ N then blocked" is unverified
+      (runtime/orchestrator/tests/integration/standalone-executor-hardening.integration.test.ts
+      ~line 1201). Fix: add `expect(blockedEventEmitted).toBe(true)`. 🟢 Nit:
+      unused `emit` variable in same test. CI passed 4/4; all other subtasks
+      covered.'
+    review_url: https://github.com/tiendv89/agent-workflow/pull/244#pullrequestreview-4395983459
+    at: 2026-05-30T20:58:36.898Z
