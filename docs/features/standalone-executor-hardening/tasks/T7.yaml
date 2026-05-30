@@ -30,3 +30,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T20:27:30.655Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T20:27:42.364Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/390,
+      github.com/tiendv89/project-workspace/pull/386,
+      github.com/tiendv89/agent-workflow/pull/179"
+    rag_query: Integration + concurrent-coexistence parity test
+      standalone-executor-hardening
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
