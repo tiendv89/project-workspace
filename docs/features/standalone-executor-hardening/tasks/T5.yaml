@@ -75,3 +75,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T19:08:29.529Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:08:35.772Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/standalone-executor-hardening/technical-design.md,
+      docs/features/standalone-executor-hardening/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/138"
+    rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
+      reconciler standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
