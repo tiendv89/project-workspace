@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T17:21:15.823Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:21:32.993Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/68,
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: "Broker: GET /registry-size (completion-only; no dispatch state)
+      standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
