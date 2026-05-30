@@ -1,11 +1,10 @@
 id: T1
 title: "Adapter multi-token: splitTokens, tokenFor probe-and-cache"
 repo: workspace-github-adapter
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: no_changes
-blocked_suggestion: Hermes exited without making any file changes. Re-run with a
-  clearer briefing or more iterations.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/workspace-github-adapter-multi-github-token-T1
 execution:
@@ -48,3 +47,7 @@ log:
     executor_audit:
       hermes: {}
     at: 2026-05-29T17:16:42.456Z
+  - action: ready
+    by: pentative@gmail.com
+    at: "2026-05-30T03:51:29Z"
+    note: Human unblock — no_changes resolved. Re-run agent for implementation.
