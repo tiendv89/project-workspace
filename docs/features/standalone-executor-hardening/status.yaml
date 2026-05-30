@@ -86,3 +86,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/standalone-executor-hardening
 feature_branch_base_sha: 6e95a203b10e723c6238987f212dce532288e340
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/387
