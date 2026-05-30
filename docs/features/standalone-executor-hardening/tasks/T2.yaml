@@ -1,7 +1,7 @@
 id: T2
 title: "Broker: GET /registry-size (completion-only; no dispatch state)"
 repo: workflow
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/standalone-executor-hardening-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T18:04:13.314Z
+  last_updated_at: 2026-05-30T18:13:06.698Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/239
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/389
   status: open
@@ -66,3 +66,7 @@ log:
       matching regKey(handle). No dispatch state or endpoints added. Tests cover
       empty, N-registered, and post-ack cases for both backends. Squash-merged.
     at: 2026-05-30T18:04:13.314Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T18:13:06.698Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
