@@ -1,7 +1,7 @@
 feature_id: workspace-github-adapter-multi-github-token
 title: Multi GitHub Token Support for Workspace GitHub Adapter
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Tasks approved — T1 is ready for implementation.
 stages:
   product_spec:
@@ -63,4 +63,4 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/384
 impl_feature_prs:
   - repo: workspace-github-adapter
     url: https://github.com/tiendv89/workspace-github-adapter/pull/26
-    status: open
+    status: merged
