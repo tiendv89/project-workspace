@@ -1,7 +1,7 @@
 id: T5
 title: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch reconciler"
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T5
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T18:03:34.633Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-31T01:45:25+0700
 pr:
   url: null
   status: null
@@ -64,3 +64,11 @@ log:
     rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
       reconciler standalone-executor-hardening"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-31T01:45:25+0700
+    note: >-
+      Manual recovery reset to ready after killing a hung executor. The claimed
+      run (18:03:34Z) stalled — claude process parked in futex_wait with a zombie
+      child, no file writes after 18:04Z, no result.json, pr.url still null.
+      Resetting in_progress → ready so the task can be re-claimed.
