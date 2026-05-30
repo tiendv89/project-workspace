@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T17:18:19.718Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:18:34.386Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/72,
+      github.com/tiendv89/agent-workflow/pull/138,
+      github.com/tiendv89/agent-workflow/pull/5"
+    rag_query: "ABI: DispatchJob payload + dispatch-stream contract + LOG_SINK env
+      standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
