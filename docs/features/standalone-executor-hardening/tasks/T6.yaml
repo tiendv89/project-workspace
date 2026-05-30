@@ -1,7 +1,7 @@
 id: T6
 title: "Compose + dev wiring: local-docker stack + .env templates"
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T3
   - T4
@@ -12,10 +12,10 @@ branch: feature/standalone-executor-hardening-T6
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T20:24:12.453Z
+  last_updated_at: 2026-05-30T20:25:17.862Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/243
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/393
   status: open
@@ -71,3 +71,7 @@ log:
       orchestrator-bundled dev profile — does not block). No 🔴/🟡 findings.
     review_url: https://github.com/tiendv89/agent-workflow/pull/243#pullrequestreview-4395927090
     at: 2026-05-30T20:24:12.453Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T20:25:17.862Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
