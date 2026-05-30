@@ -844,55 +844,90 @@ Sizes are T-shirt (S ≈ days, M ≈ 1–2 wks, L ≈ 3–5 wks, XL ≈ 6 wks+) 
 team*; absolute dates depend on headcount.
 
 ### Stage 0 — Identity foundation **(do first)**
-**Item 1 Phase 1.** Decide **build-vs-buy (1.1)** first — it gates everything below.
-- New backend gains accounts/users/sessions; data model (`account`, `user`,
-  `auth_identity`, `membership`, `workspace`, `workspace_role`). — **L**
-- Email+password + Google/GitHub OAuth; personal + org accounts; context switch. — **M**
-- Governance roles (owner/admin/member/viewer) + per-workspace scoping. — **M**
-- *Blocks:* literally everything. *Parallelizable with:* Stage 1 once orgs exist.
+*An account exists and you can sign in. Nothing else can start without this.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Build-vs-buy decision | Q **1.1** | Managed provider vs self-hosted Go — gates the stage | — |
+| Identity data model | item 1 *Data model* | `account`, `user`, `auth_identity`, `membership`, `workspace`, `workspace_role`, `session` | L |
+| Sign-in | item 1 §*Decisions* / Phase 1 | email+password (verify, reset), Google + GitHub OAuth, account linking | M |
+| Account model | item 1 §*Decisions* | personal (org-of-one) + org accounts + context switching | M |
+| Governance roles | item 3 **§3.1** | owner/admin/member/viewer + per-workspace scoping (on `membership`) | M |
+
+**Exit:** sign up → create/join org → switch context; access decided by the platform,
+not GitHub. *(The `workspace_role` table is created here; wiring delivery roles to
+gates is Stage 3.)* **Blocks everything.**
 
 ### Stage 1 — Machine identity & repo access
-**Item 6 + minimal credential vault.** Can overlap the tail of Stage 0.
-- Credential vault (minimal) to hold secrets. — **M**
-- VCS App + bot identity; org-admin grant/install flow. — **L**
-- VCS org + multi-repo workspace binding. — **M**
-- *Why here:* agents can't commit to customer repos without it. *Needs:* org +
-  governance grant from Stage 0.
+*Agents can commit to a customer's repos as a revocable bot. Overlaps tail of Stage 0.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Credential vault (minimal) | cross-cutting #7 | server-side secret store for bot tokens (`token_ref`) | M |
+| Bot identity | item 6 **§6.1** | GitHub/GitLab App, per-install revocable tokens, org-admin grant/install | L |
+| Org + repo binding | item 6 **§6.2 / §6.4** | `vcs_connection`, `bot_installation`, `repo_binding` | M |
+
+**Exit:** an org admin installs the App, binds repos, and the bot opens a PR. Resolves
+Q **1.2**. *Needs:* org + governance grant from Stage 0.
 
 ### Stage 2 — Metering & model gateway **(billing substrate)**
-- **Model gateway** — multi-provider routing, per-model token→credit conversion,
-  managed/BYO funding switch, fail-over. — **L**
-- Usage metering ledger (tokens, runs, repos), `workspace_id`-scoped. — **M**
-- *Why here:* can't bill or cap what you don't meter; the gateway is the metering
-  hook. *Needs:* accounts (Stage 0) to attribute usage.
+*Every model call is routed, measured, and converted to credits.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Model gateway | item 2 **§2.5** | multi-provider routing (Claude/OpenAI/Gemini/DeepSeek), managed/BYO switch, fail-over | L |
+| Conversion table | item 2 **§2.2** | per-model token→credit rates the gateway applies | S |
+| Metering ledger | item 2 **§2.3** | tokens/runs/repos, `workspace_id`-scoped, raw + credits + managed/BYO flag | M |
+
+**Exit:** a run shows up in the ledger as credits, attributed to a workspace. *Needs:*
+accounts (Stage 0) to attribute usage.
 
 ### Stage 3 — Billing, entitlements & permissions **(monetization)**
-- Entitlements service (one `can(actor, action, context)` rail). — **M**
-- Delivery roles (PO/Architect/Reviewer/QC) wired to lifecycle gates. — **M**
-- Plan model + credit allowances + overage + **spend-cap/auto-pause**; Stripe. — **L**
-- Discount engine (§2.6). — **M**
-- *Why here:* needs metering (2) + accounts/roles (0). Turns usage into revenue and
-  gates by plan.
+*Usage becomes revenue; actions are gated by plan + role.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Entitlements service | item 3 **§3.5** | the one `can(actor, action, context)` rail | M |
+| Delivery roles → gates | item 3 **§3.2 / §3.3** | PO/Architect/Reviewer/QC wired to lifecycle gates | M |
+| Plan model + pricing | item 2 **§2.1 / §2.7 / §2.4** | tiers, allowances, overage, **spend-cap/auto-pause**, Stripe | L |
+| Discount engine | item 2 **§2.6** | coupons/OSS/non-profit/annual, configurable | M |
+
+**Exit:** a Team org pays; an action passes only when plan + governance + delivery all
+agree; overage auto-pauses at the cap. *Needs:* metering (2) + accounts/roles (0).
 
 ### Stage 4 — Collaborative chat surface **(the differentiator)**
-**Item 5.**
-- Real-time transport backbone (SSE/WebSocket), reused everywhere. — **M**
-- Threaded chat, @mention/tagging (person + agent), notifications. — **L**
-- Spec-by-conversation (PO copilot through the spec skills). — **M**
-- *Why later:* needs auth + permissions (visibility) + the transport. The payoff that
-  sits on top of the stack.
+*People and agents collaborate in chat over the lifecycle.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Real-time transport | item 5 **§5.1** | SSE/WebSocket backbone, reused everywhere | M |
+| Chat + tagging | item 5 **§5.2 / §5.3** | `thread`/`message`/`mention`/`notification`; @tag person or agent | L |
+| Spec-by-conversation | item 5 **§5.2** | PO copilot that drafts the spec *through the spec skills* | M |
+
+**Exit:** a PO drafts a spec in chat, publishes it, tags a Reviewer/agent, work runs —
+no chat path bypasses a gate. *Needs:* Stage 0 + Stage 3 (visibility/roles).
 
 ### ‖ Parallel track — Storage DB backend (item 4)
-Runs on its **own track** start-to-finish; touches no gate, so it never blocks the
-critical path. Gated only by the (resolved) git-as-gate question.
-- Claim **port** + two adapters; DB backend with lease/fencing/version claim;
-  `task_event` audit; `LISTEN/NOTIFY`. Subsumes `workflow-db`. — **L–XL**
+*Runs on its own track start-to-finish; touches no gate, so it never blocks the
+critical path. Gated only by the (resolved) git-as-gate question.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Claim port + adapters | item 4 §*claim mechanism* | git-push-wins vs compare-and-set, one orchestrator-facing port | M |
+| DB backend | item 4 §*data model delta* | `feature`/`task`/`task_event`, lease/fencing/`version`, `LISTEN/NOTIFY`; subsumes `workflow-db` | L–XL |
 
 ### Stage 5 — Enterprise hardening **(do last, demand-driven)**
-Item 1 Phases 3–4 + the deferred levers. Pulled forward only by specific deals.
-- **Hosting model (X.1)** decision, then: SSO/SAML + **SCIM**, custom roles,
-  mandatory 4-eyes, audit export/SIEM, data residency, customer-hosted, MFA/passkeys,
-  service accounts + API/MCP tokens. — **XL**
+*Close enterprise deals. Pulled forward only by specific demand.*
+
+| Part | From | What it is | Size |
+|---|---|---|---|
+| Hosting decision | Q **X.1** | SaaS vs customer-hosted vs hybrid — shapes the rest | — |
+| Account security | item 1 **Phase 2** | MFA/passkeys, session/device mgmt, step-up auth, recovery | L |
+| Enterprise identity | item 1 **Phase 3** | SSO/SAML+OIDC, **SCIM**, verified-domain, IP/session policy, residency, audit export | XL |
+| Custom roles + 4-eyes | item 3 *deferred* | fine-grained roles, mandatory spec/design approvers | M |
+| Machine/delegated | item 1 **Phase 4** | service accounts + API/MCP tokens, audited impersonation, ownership transfer | M |
+
+**Exit:** an enterprise can SSO in, auto-provision via SCIM, and (if needed) self-host.
 
 ### Critical path & timeline
 
