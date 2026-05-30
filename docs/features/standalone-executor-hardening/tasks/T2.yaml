@@ -1,22 +1,19 @@
 id: T2
 title: "Broker: GET /registry-size (completion-only; no dispatch state)"
-
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-
-branch: null
-
+blocked_context: null
+branch: feature/standalone-executor-hardening-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-31T00:05:23+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T17:21:15.823Z
 pr:
   url: null
   status: null
-
+workspace_pr: null
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -26,3 +23,7 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-30T17:09:10Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:21:15.823Z
+    note: Claimed via git-based claim protocol.
