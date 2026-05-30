@@ -1,7 +1,7 @@
 id: T2
 title: "Wiring cleanup: remove handler Token fields"
 repo: workspace-github-adapter
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/workspace-github-adapter-multi-github-token-T2
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-30T04:24:23+0000
+  last_updated_at: 2026-05-30T04:41:54.471Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/25
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/383
   status: open
