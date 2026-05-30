@@ -76,7 +76,7 @@ orchestrator                      broker (Redis)                   dispatcher   
   │                                    │ ◄── XREADGROUP <group> ────────│                            │
   │                                    │                               │ inject creds + LOG_SINK=none│
   │                                    │                               │ docker run exec-<handle> ─►│ materialise repos
-  │                                    │ ◄── mark handle dispatched ────│ XACK dispatch-stream       │ run agent (logs → stdout)
+  │                                    │ ──────────────────────────────│ XACK dispatch-stream       │ run agent (logs → stdout)
   │                                    │ ◄──────── POST /callback {handle,nonce,result} ────────────│ write result.json
   │ ◄── listCompleted (drain) ─────────│                               │                            │ (runner posts, exits)
   │ record result; advance FSM         │                               │
@@ -87,8 +87,8 @@ The **dispatch stream** is plain Redis owned by the dispatcher's consumer group;
 ### New / changed components (all in `workflow` repo)
 
 - **`runtime/abi/`** — new `DispatchJob` type (payload below) + the **dispatch-stream contract** (stream key, consumer-group name). New `LOG_SINK` entry in the runner env contract. **No change to `ExecutorResult`** (ABI-neutral).
-- **`runtime/broker/`** (Go) — **does not host the dispatch queue.** Two small additions only: **`GET /registry-size`** (resolves the `dockerInFlight` debt) and `POST /handle/<h>/dispatched` (handle-registry flip `registered`→`dispatched`, for the reconciler). Completion queue + sorted-set store unchanged.
-- **`runtime/dispatcher/`** (new folder, sibling of `broker`/`orchestrator`/`executors`) — **owns the dispatch Redis Stream**: consumes via `XREADGROUP` (consumer group), redelivers stuck entries via `XAUTOCLAIM`, routes to a dispatch DLQ after K deliveries; holds `DockerRunAdapter` + `CredentialPort`; injects creds + `LOG_SINK=none`; **idempotency guard** (skip if a container labelled `platform.handle=<handle>` exists); enforces the global spawn cap via the broker `registry-size`; marks the handle `dispatched`; `XACK`s.
+- **`runtime/broker/`** (Go) — **does not host the dispatch queue or any dispatch state.** One small addition only: **`GET /registry-size`** (count of in-flight handles — resolves the `dockerInFlight` debt; the dispatcher reads it to enforce the global spawn cap). Completion queue + sorted-set store otherwise unchanged. (No `dispatched` flag — dispatch state lives in the dispatch stream; terminal dispatch failure surfaces as a synthetic completion via the existing `/callback`.)
+- **`runtime/dispatcher/`** (new folder, sibling of `broker`/`orchestrator`/`executors`) — **owns the dispatch Redis Stream**: consumes via `XREADGROUP` (consumer group), redelivers stuck entries via `XAUTOCLAIM`, routes to a dispatch DLQ after K deliveries; holds `DockerRunAdapter` + `CredentialPort`; injects creds + `LOG_SINK=none`; **idempotency guard** (skip if a container labelled `platform.handle=<handle>` exists); enforces the global spawn cap via the broker `registry-size`; `XACK`s after a successful spawn. On terminal dispatch failure (DLQ after K deliveries) it posts a **synthetic `failed` completion** to the broker `/callback` for that `handle`/`nonce` — the same channel the crash safety-net uses — so the orchestrator learns through the normal completion path.
 - **`runtime/orchestrator/`** — `QueueDispatchAdapter` (ExecutorPort → `XADD` to the dispatch stream; gains a Redis client); `createLocalDockerProfile` drops `DockerRunAdapter`, `EnvCredentialAdapter`, and the Docker socket; **dispatch reconciler** in the poll loop; registers handle+nonce before enqueue. No log-link persistence (descoped).
 - **`runtime/executors/claude/`** — `flushLog` becomes a no-op when `LOG_SINK=none` (logs to stdout); `git` (default) keeps today's behaviour for the bundled path. No `result.json` change.
 - **Compose** — `local-docker` stack gains `dispatcher`; `redis` + `broker` already present; `orchestrator` loses the socket mount. No MinIO. `local-subprocess` compose unchanged.
@@ -105,12 +105,10 @@ The **dispatch stream** is plain Redis owned by the dispatcher's consumer group;
 Secrets (`GITHUB_TOKEN`, `SSH_PRIVATE_KEY`) are **not** in the payload — the dispatcher injects them.
 
 ### Dispatch reliability (failure surface from async dispatch)
-- **Handle lifecycle at the broker:** `registered` (orchestrator) → `dispatched` (dispatcher) → `completed` (callback) → `acked`.
-- **Idempotency:** dispatcher checks for an existing `platform.handle=<handle>` container before spawning → redelivery (after `lockMs`) never double-spawns. Key = `handle`.
-- **Reconciler (orchestrator poll loop)** for `in_progress` tasks with a persisted handle:
-  - handle **not `dispatched`** and age > `DISPATCH_DEADLINE` → re-enqueue (lost/stuck dispatch), up to N times, then `blocked`.
-  - **`dispatched`** but no completion and age > `EXECUTION_DEADLINE` → executor crashed without callback; the broker safety-net/visibility timeout reclaims it → treat as failed and retry per `executor_max_retries`.
-- **DLQ:** dispatch jobs that fail to spawn after K redeliveries land in a dispatch DLQ; orchestrator/operator alerted via the existing escalation channel.
+- **Handle lifecycle at the broker:** `registered` (orchestrator) → `completed` (callback) → `acked`. Dispatch state (queued / claimed / done / DLQ) lives in the **dispatch stream**, not the broker.
+- **Idempotency:** dispatcher checks for an existing `platform.handle=<handle>` container before spawning → redelivery (via `XAUTOCLAIM`) never double-spawns. Key = `handle`.
+- **Dispatch reliability is owned by the dispatcher** (it owns the stream): `XAUTOCLAIM` redelivers stuck entries; after K deliveries the job goes to a DLQ and the dispatcher posts a **synthetic `failed` completion** to `/callback`. Dispatch failures therefore reach the orchestrator through the **normal completion path** — no dispatched-vs-not bookkeeping at the orchestrator.
+- **Reconciler (orchestrator poll loop)** is a simple backstop for the one case the stream can't self-heal — *no dispatcher alive at all* (job sits unclaimed, nothing `XAUTOCLAIM`s it): for an `in_progress` task with a persisted handle and **no completion past `EXECUTION_DEADLINE`**, re-enqueue (idempotent — the handle guard prevents double-spawn) up to N times, then `blocked`.
 
 ### Concurrent-coexistence & isolation
 - `local-subprocess` (bundled) and `local-docker` (dispatcher) run side by side: different `RUNTIME_PROFILE` per orchestrator service; bundled uses no containers/dispatcher/broker, so they don't contend.
@@ -125,7 +123,7 @@ Secrets (`GITHUB_TOKEN`, `SSH_PRIVATE_KEY`) are **not** in the payload — the d
 | **Q2 Log sink** | `LOG_SINK=git\|none` injected at spawn. Standalone (`local-docker`) → `none` (stdout). Bundled → `git` (unchanged). **Persistent S3 storage descoped to `executor-log-object-storage`.** |
 | **Q3 Claim location** | Already resolved — executor claim-agnostic; only the git-flush opt-out remains (Q2). |
 | **Q4 Credentials & isolation** | Dispatcher is sole credential holder (dev: env inject; prod: Secret references). Co-resident isolation via per-profile/instance roots + UUID handles + label scoping. |
-| **Q5 Dispatch reliability** | Handle register before enqueue (orchestrator); handle lifecycle states; idempotency by handle; reconciler with dispatch/execution deadlines; DLQ after K attempts. |
+| **Q5 Dispatch reliability** | Owned by the dispatcher (stream `XAUTOCLAIM` redelivery + DLQ); terminal dispatch failure posted as a synthetic `failed` completion (normal path). Handle register before enqueue; idempotency by handle. Orchestrator reconciler is a simple no-completion-by-`EXECUTION_DEADLINE` re-enqueue backstop. |
 
 ## 5. Dependency analysis
 
@@ -144,7 +142,7 @@ External decisions: none unresolved — all open questions are answered in §4.
 ```
 T1: ABI — DispatchJob payload + dispatch-stream contract (key, consumer group) + runner LOG_SINK env  (no ExecutorResult change)  (repo: workflow)
   └── Can begin now — no blockers
-T2: Broker — GET /registry-size (+ handle dispatched flip); broker does NOT host the dispatch queue  (repo: workflow)
+T2: Broker — GET /registry-size only; broker does NOT host the dispatch queue or any dispatch state  (repo: workflow)
   └── Can begin now — no blockers (independent of the DispatchJob schema)
   └── T1 and T2 run in parallel
   │
@@ -152,8 +150,8 @@ T2: Broker — GET /registry-size (+ handle dispatched flip); broker does NOT ho
   │   └── BLOCKED on T1 (LOG_SINK env contract frozen)
   T4: Dispatcher service (runtime/dispatcher/) — own the dispatch Redis stream (XREADGROUP/XAUTOCLAIM, DLQ),
   │   relocate DockerRunAdapter, hold CredentialPort, inject creds + LOG_SINK=none, idempotency guard,
-  │   global cap via broker registry-size, mark dispatched, XACK  (repo: workflow)
-  │   └── BLOCKED on T1 (DispatchJob + stream contract frozen), T2 (registry-size + dispatched flip must exist)
+  │   global cap via broker registry-size, XACK after spawn, synthetic failed completion on DLQ  (repo: workflow)
+  │   └── BLOCKED on T1 (DispatchJob + stream contract frozen), T2 (registry-size must exist)
   T5: Orchestrator — QueueDispatchAdapter (XADD to dispatch stream), drop socket+credential adapter from
   │   local-docker profile, dispatch reconciler, register handle before enqueue  (repo: workflow)
   │   └── BLOCKED on T1 (DispatchJob + stream contract frozen)
@@ -181,7 +179,7 @@ Every task targets a single repo (`workflow`) — no cross-repo task.
 
 ## 8. Validation and release impact
 
-- **Testing:** unit (`QueueDispatchAdapter` `XADD`; dispatcher consumer-group consume + `XAUTOCLAIM` redelivery + DLQ; idempotency + concurrency cap; `flushLog` LOG_SINK gating; reconciler state machine); broker tests for `registry-size` + the handle `dispatched` flip; integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
+- **Testing:** unit (`QueueDispatchAdapter` `XADD`; dispatcher consumer-group consume + `XAUTOCLAIM` redelivery + DLQ; idempotency + concurrency cap; `flushLog` LOG_SINK gating; reconciler state machine); broker test for `registry-size`; dispatcher test that a DLQ'd job posts a synthetic `failed` completion; integration in T7 — bundled ∥ local-docker concurrently, end-to-end decoupled flow, induced dispatcher-crash redelivery (no double-spawn), induced lost-dispatch (reconciler re-enqueue).
 - **ABI / compatibility:** **ABI-neutral** — no `result.json` change; `local-subprocess` byte-for-byte unchanged (git logging retained); no change to agent behaviour or prompts.
 - **Migration/config:** new dev infra — `dispatcher` service + dispatch/LOG_SINK env in `.env.template`; orchestrator loses the Docker socket mount. No MinIO, no data migration.
 - **Rollout:** purely additive — `local-docker` opt-in per orchestrator instance via `RUNTIME_PROFILE`; bundled remains the default/fallback. Production (k8s) deferred; spawn-adapter seam kept clean. **Known tradeoff:** until `executor-log-object-storage` lands, `local-docker` run logs are ephemeral (stdout / `docker logs` only) — not persisted or RAG-indexed.
