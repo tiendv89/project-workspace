@@ -1,7 +1,7 @@
 id: T3
 title: "Executors: gate flushLog on LOG_SINK (claude + hermes)"
 repo: workflow
-status: reviewing
+status: review_passed
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T3
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-30T18:39:38.411Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T18:44:58.917Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/240
   status: open
@@ -83,3 +83,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-30T18:39:38.411Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T3 subtasks implemented. CI green (4 checks: vitest unit + hermes
+      integration, all success). No 🔴/🟡 findings. LOG_SINK=none guard added
+      identically in both claude and hermes flush-log.ts. All 4 acceptance
+      criteria met: none→no git ops, git→flush, absent→flush, no result.json
+      change."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/240#pullrequestreview-4395773528
+    at: 2026-05-30T18:44:58.917Z
