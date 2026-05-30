@@ -1,7 +1,7 @@
 id: T4
 title: "Dispatcher service: own dispatch stream, spawn, credentials, idempotency"
 repo: workflow
-status: reviewing
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-30T18:44:33.601Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T18:53:55.119Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/241
   status: open
@@ -60,3 +60,11 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-30T18:44:33.601Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🟡 Test plan item 'synthetic-failed-completion-on-DLQ' not covered: DLQ
+      test mocks _moveToDlq entirely so the HTTP POST to /callback is never
+      exercised (consumer.test.ts:305). All functional acceptance criteria met;
+      🟢 nits only otherwise."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/241#pullrequestreview-4395784350
+    at: 2026-05-30T18:53:55.119Z
