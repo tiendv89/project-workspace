@@ -1,7 +1,7 @@
 id: T5
 title: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch reconciler"
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T5
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T17:48:41+0000
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-05-31T01:01:23+0700
 pr:
   url: null
   status: null
@@ -44,3 +44,10 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T17:48:41+0000
     note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-31T01:01:23+0700
+    note: >-
+      Manual recovery reset to ready after executor restart. Task was stuck in
+      in_progress with no implementation PR (pr.url null); resetting to ready so
+      it can be re-claimed.
