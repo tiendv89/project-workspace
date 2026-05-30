@@ -1,8 +1,8 @@
 feature_id: standalone-executor-hardening
 title: Standalone Executor Hardening — Harden local-docker Spawn-on-the-Fly for
   Concurrent Topologies
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: "Teams: execute Wave 1 (T1, T2) via start-implementation. T3/T4/T5
   unblock after T1 (and T2 for T4); T6 after T3/T4/T5; T7 after T6."
 stages:
@@ -53,6 +53,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/395
 history:
   - at: 2026-05-30T15:36:24Z
     actor: tiendv.52@gmai.com
@@ -87,3 +88,8 @@ revalidation:
 feature_branch: feature/standalone-executor-hardening
 feature_branch_base_sha: 6e95a203b10e723c6238987f212dce532288e340
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/387
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/395
+impl_feature_prs:
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/245
+    status: open
