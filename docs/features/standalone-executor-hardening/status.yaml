@@ -2,8 +2,8 @@ feature_id: standalone-executor-hardening
 title: Standalone Executor Hardening — Harden local-docker Spawn-on-the-Fly for Concurrent Topologies
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: 'Tech lead: produce technical-design.md (Phase 1) from the approved product spec.'
+current_stage: tasks
+next_action: 'Tech lead: produce the task breakdown (Phase 2) — tasks.md + tasks/T<n>.yaml.'
 
 stages:
   product_spec:
@@ -19,11 +19,19 @@ stages:
         reviewed_at: 2026-05-30T15:36:24Z
         comment: Product spec approved.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-30T16:53:38Z
+    review_comment: >-
+      Approved — dispatch queue owned by the dispatcher (Redis Stream, broker
+      not involved); broker completion-only + registry-size; dispatcher owns
+      dispatch reliability (XAUTOCLAIM/DLQ + synthetic failed completion);
+      LOG_SINK git-flush opt-out in both executors (claude + hermes); ABI-neutral.
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-05-30T16:53:38Z
+        comment: Technical design approved.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -43,6 +51,11 @@ history:
     action: stage_approved
     stage: product_spec
     note: product_spec approved; feature advanced to in_tdd / technical_design.
+  - at: 2026-05-30T16:53:38Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: technical_design
+    note: technical_design approved; current_stage advanced to tasks (Phase 2 breakdown).
 
 revalidation:
   product_spec_required: false
