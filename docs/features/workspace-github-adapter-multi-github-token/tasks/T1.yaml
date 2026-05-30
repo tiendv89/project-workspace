@@ -55,3 +55,11 @@ log:
     by: pentative@gmail.com
     at: 2026-05-30T03:52:51.913Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-30T03:52:57.849Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Adapter multi-token: splitTokens, tokenFor probe-and-cache
+      workspace-github-adapter-multi-github-token"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
