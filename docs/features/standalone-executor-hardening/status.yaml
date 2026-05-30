@@ -1,17 +1,23 @@
 feature_id: standalone-executor-hardening
 title: Standalone Executor Hardening — Harden local-docker Spawn-on-the-Fly for Concurrent Topologies
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: 'Tech lead: produce technical-design.md (Phase 1) from the approved product spec.'
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-05-30T15:36:24Z
+    review_comment: >-
+      Approved — dispatch-service architecture, ephemeral spawn-on-the-fly,
+      S3/MinIO log sink, and per-instance topology selection accepted.
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-05-30T15:36:24Z
+        comment: Product spec approved.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +37,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-05-30T15:36:24Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: product_spec
+    note: product_spec approved; feature advanced to in_tdd / technical_design.
 
 revalidation:
   product_spec_required: false
