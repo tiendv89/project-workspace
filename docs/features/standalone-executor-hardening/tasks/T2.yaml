@@ -1,7 +1,7 @@
 id: T2
 title: "Broker: GET /registry-size (completion-only; no dispatch state)"
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/standalone-executor-hardening-T2
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-30T17:25:14+0000
+  last_updated_at: 2026-05-30T17:39:34.273Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/239
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/389
   status: open
