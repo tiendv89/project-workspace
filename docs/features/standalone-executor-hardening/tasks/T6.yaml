@@ -1,7 +1,7 @@
 id: T6
 title: "Compose + dev wiring: local-docker stack + .env templates"
 repo: workflow
-status: reviewing
+status: review_passed
 depends_on:
   - T3
   - T4
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/standalone-executor-hardening-T6
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-30T20:18:41.272Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T20:24:12.453Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/243
   status: open
@@ -61,3 +61,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-30T20:18:41.272Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: All T6 subtasks implemented. CI passed (4/4 checks). Dispatcher service
+      added with Docker socket; orchestrator-1 stripped of socket privilege;
+      .env.template updated with dispatcher/LOG_SINK/dispatch-stream vars (no
+      MinIO); concurrent-bundled profile provides bundled ∥ standalone
+      coexistence for T7. One 🟢 nit (unused socket mount on
+      orchestrator-bundled dev profile — does not block). No 🔴/🟡 findings.
+    review_url: https://github.com/tiendv89/agent-workflow/pull/243#pullrequestreview-4395927090
+    at: 2026-05-30T20:24:12.453Z
