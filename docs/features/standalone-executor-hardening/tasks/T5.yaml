@@ -54,3 +54,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-30T18:03:34.633Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T18:03:41.600Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/138,
+      github.com/tiendv89/agent-workflow/pull/72,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
+      reconciler standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
