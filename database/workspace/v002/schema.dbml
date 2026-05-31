@@ -1,0 +1,187 @@
+// workspace-data-backend v002
+// Workspace data backend — GitHub Sync and Read API
+// Visualise at: https://dbdiagram.io (paste this file)
+//
+// Two backend services share this database:
+//   api-service     — read side; queries core tables only
+//   adapter-service — write side; owns GitHub adapter tables, upserts core tables
+//
+// Schema is split into two layers:
+//   Core           — adapter-agnostic workspace identity and state (read by api-service, written by adapter-service)
+//   GitHub adapter — GitHub connection, sync bookkeeping, task queue (owned exclusively by adapter-service; removable as a unit)
+//
+// Cross-service references:
+//   workspaces.organization_id → user-service organizations.id
+//     Plain UUID; NO foreign key (cross-database). Application code at the
+//     write boundary is responsible for referential integrity.
+
+// ─────────────────────────────────────────────
+// CORE
+// ─────────────────────────────────────────────
+
+Table workspaces {
+  id                 uuid        [primary key, default: `gen_random_uuid()`]
+  organization_id    uuid        [not null, note: 'Owning organization. Lives in user-service DB — plain UUID, NO foreign key (cross-DB).']
+  slug               text        [unique, not null, note: 'Human-readable key derived from workspace name']
+  name               text        [not null]
+  management_repo_id text        [not null, note: 'repos[].id entry that is the management repo']
+  branch_pattern     text        [note: 'git.branch_pattern from workspace.yaml; used for webhook branch routing']
+  created_at         timestamptz [not null, default: `now()`]
+  updated_at         timestamptz [not null, default: `now()`]
+
+  indexes {
+    slug [unique]
+    organization_id
+    updated_at
+  }
+}
+
+Table workspace_repos {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id uuid        [not null, ref: > workspaces.id]
+  repo_id      text        [not null, note: 'Logical repo id, e.g. workflow-backend; matches repos[].id in workspace.yaml and repo: in task YAMLs']
+  base_branch  text        [note: 'Default integration branch for this repo']
+  created_at   timestamptz [not null, default: `now()`]
+  updated_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, repo_id) [unique]
+    workspace_id
+  }
+}
+
+Table workspace_features {
+  id             uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id   uuid        [not null, ref: > workspaces.id]
+  feature_id     text        [not null, note: 'e.g. executor-self-briefing']
+  title          text        [not null]
+  feature_status text
+  current_stage  text
+  next_action    text
+  stages         jsonb       [note: 'Full parsed stages object from status.yaml']
+  source_path    text        [not null, note: 'e.g. docs/features/executor-self-briefing/status.yaml']
+  source_hash    text
+  created_at     timestamptz [not null, default: `now()`]
+  updated_at     timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, feature_id) [unique]
+    (workspace_id, feature_status)
+    (workspace_id, current_stage)
+  }
+}
+
+Table workspace_feature_documents {
+  id            uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id  uuid        [not null, ref: > workspaces.id]
+  feature_id    text        [not null]
+  document_type text        [not null, note: 'product_spec | technical_design | tasks_md | status_yaml']
+  source_path   text        [not null, note: 'Relative path in repo, e.g. docs/features/x/product-spec.md']
+  url    text        [note: 'GitHub web URL to the document file']
+  created_at    timestamptz [not null, default: `now()`]
+  updated_at    timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, feature_id, document_type) [unique]
+    (workspace_id, feature_id)
+  }
+}
+
+Table workspace_tasks {
+  id             uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id   uuid        [not null, ref: > workspaces.id]
+  feature_id     text        [not null]
+  task_id        text        [not null, note: 'e.g. T1']
+  title          text        [not null]
+  repo           text        [note: 'Implementation repo id; matches workspace_repos.repo_id']
+  status         text
+  depends_on     jsonb       [not null, note: 'Array of task ids; [] when none']
+  blocked_reason text
+  branch         text
+  execution      jsonb
+  pr             jsonb
+  workspace_pr   jsonb
+  source_path    text        [not null]
+  source_hash    text
+  created_at     timestamptz [not null, default: `now()`]
+  updated_at     timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, feature_id, task_id) [unique]
+    (workspace_id, feature_id)
+    (workspace_id, status)
+    (workspace_id, repo)
+  }
+}
+
+Table workspace_activity_events {
+  id           uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id uuid        [not null, ref: > workspaces.id]
+  scope_type   text        [not null, note: 'workspace | feature | task']
+  feature_id   text
+  task_id      text
+  action       text
+  actor        text
+  occurred_at  text        [note: 'Raw parseable timestamp from source event']
+  note         text
+  sequence     integer     [not null, note: 'Position in source array for stable ordering']
+  raw_event    jsonb       [not null]
+  created_at   timestamptz [not null, default: `now()`]
+
+  indexes {
+    (workspace_id, scope_type, occurred_at)
+    (workspace_id, feature_id, occurred_at)
+    (workspace_id, feature_id, task_id, occurred_at)
+  }
+}
+
+// ─────────────────────────────────────────────
+// GITHUB ADAPTER  (removable as a unit)
+// ─────────────────────────────────────────────
+
+Table workspace_github_sources {
+  id             uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id   uuid        [not null, ref: > workspaces.id]
+  repo_url       text        [not null, note: 'GitHub repository URL']
+  repo_owner     text        [not null]
+  repo_name      text        [not null]
+  default_branch text        [note: 'Branch used for sync; defaults to main when absent']
+  created_at     timestamptz [not null, default: `now()`]
+  updated_at     timestamptz [not null, default: `now()`]
+
+  indexes {
+    workspace_id [unique]
+    (repo_owner, repo_name) [unique]
+  }
+}
+
+Table workspace_sync_runs {
+  id            uuid        [primary key, default: `gen_random_uuid()`]
+  workspace_id  uuid        [not null, ref: > workspaces.id]
+  trigger       text        [not null, note: 'import | manual | webhook_base | webhook_feature | webhook_task_queue']
+  branch        text        [note: 'branch that triggered the sync; null for import and manual']
+  feature_id    text        [note: 'set for webhook_feature and webhook_task_queue triggers']
+  task_id       text        [note: 'set for webhook_task_queue trigger']
+  mode          text        [not null, note: 'full_reconciliation | targeted']
+  status        text        [not null, note: 'running | success | partial | failed | skipped']
+  commit_sha    text        [note: 'Git commit SHA at time of full reconciliation; null for targeted runs']
+  changed_paths jsonb       [note: 'file paths synced; populated for targeted runs']
+  started_at    timestamptz [not null]
+  finished_at   timestamptz
+  error_code    text
+  error_message text
+  metadata      jsonb       [note: 'counts, warnings, skipped files']
+
+  indexes {
+    (workspace_id, started_at)
+    (workspace_id, trigger)
+    (workspace_id, status)
+  }
+}
+
+// ── Task sync queue ───────────────────────────────────────
+// NOT a database table — backed by asynq + Redis.
+// Task payload: { WorkspaceID, FeatureID, TaskID }
+// Dedup: asynq.Unique(24h) — one pending item per payload key.
+// Clear on full reconciliation: inspector.DeleteAllPendingTasks("task-sync")
+// Monitor via asynqmon UI. REDIS_URL required in environment.

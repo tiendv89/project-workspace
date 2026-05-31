@@ -1,4 +1,4 @@
-// workspace-data-backend v001
+// workspace-data-backend v002
 // Workspace data backend — GitHub Sync and Read API
 // Visualise at: https://dbdiagram.io (paste this file)
 //
@@ -9,6 +9,11 @@
 // Schema is split into two layers:
 //   Core           — adapter-agnostic workspace identity and state (read by api-service, written by adapter-service)
 //   GitHub adapter — GitHub connection, sync bookkeeping, task queue (owned exclusively by adapter-service; removable as a unit)
+//
+// Cross-service references:
+//   workspaces.organization_id → user-service organizations.id
+//     Plain UUID; NO foreign key (cross-database). Application code at the
+//     write boundary is responsible for referential integrity.
 
 // ─────────────────────────────────────────────
 // CORE
@@ -16,6 +21,7 @@
 
 Table workspaces {
   id                 uuid        [primary key, default: `gen_random_uuid()`]
+  organization_id    uuid        [not null, note: 'Owning organization. Lives in user-service DB — plain UUID, NO foreign key (cross-DB).']
   slug               text        [unique, not null, note: 'Human-readable key derived from workspace name']
   name               text        [not null]
   management_repo_id text        [not null, note: 'repos[].id entry that is the management repo']
@@ -25,6 +31,7 @@ Table workspaces {
 
   indexes {
     slug [unique]
+    organization_id
     updated_at
   }
 }

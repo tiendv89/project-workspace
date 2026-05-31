@@ -1,29 +1,41 @@
 feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: ready_for_implementation
+current_stage: implementation
+next_action: Owning teams may begin execution. T0, T1a, T1b, T4 are ready; downstream tasks unblock as upstream tasks reach done.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-05-31T13:42:49+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-05-31T13:42:49+0700
+        decision: approved
+        comment: Approved.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-05-31T15:15:54+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-05-31T15:15:54+0700
+        decision: approved
+        comment: Approved.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-05-31T15:27:20+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-05-31T15:27:20+0700
+        decision: approved
+        comment: Approved.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -31,7 +43,25 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-05-31T13:42:49+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: product_spec
+    from_status: in_design
+    to_status: in_tdd
+  - at: 2026-05-31T15:15:54+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: technical_design
+    from_status: in_tdd
+    to_status: in_tdd
+  - at: 2026-05-31T15:27:20+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: tasks
+    from_status: in_tdd
+    to_status: ready_for_implementation
 
 revalidation:
   product_spec_required: false

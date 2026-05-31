@@ -60,31 +60,42 @@ Use `workspace.yaml` as source of truth. Summarize repos here for humans.
 
 ### Location and format
 
-The canonical database schema lives at `database/schema.dbml` (repo root). This file is the **single source of truth** for the current applied schema.
+Each service owns its own database, so schema docs are split by service under `database/<service-id>/`:
 
-Format: [DBML](https://dbml.org) — paste `database/schema.dbml` into [dbdiagram.io](https://dbdiagram.io) to visualise the current schema.
+- `database/workspace/schema.dbml` — current applied schema for the workflow / workspace-data backend
+- `database/user-service/schema.dbml` — current applied schema for the user / identity service
+
+Each `schema.dbml` is the **single source of truth** for the current applied schema of that service's database.
+
+Format: [DBML](https://dbml.org) — paste any `schema.dbml` into [dbdiagram.io](https://dbdiagram.io) to visualise.
 
 ### Version history
 
-Past schema versions are stored under `database/v<NNN>/`:
+Past schema versions are stored under `database/<service-id>/v<NNN>/`:
 
 ```
 database/
-├── schema.dbml        ← current applied schema (always up to date)
-├── v001/
-│   ├── changelog.md   ← what changed and why
-│   └── schema.dbml    ← schema snapshot at this version
-├── v002/
-│   ├── changelog.md
-│   └── schema.dbml
+├── workspace/
+│   ├── schema.dbml        ← current applied schema for workspace DB
+│   ├── v001/
+│   │   ├── changelog.md   ← what changed and why
+│   │   └── schema.dbml    ← schema snapshot at this version
+│   ├── v002/
+│   │   ├── changelog.md
+│   │   └── schema.dbml
+├── user-service/
+│   ├── schema.dbml        ← current applied schema for user-service DB
+│   ├── v001/
+│   │   ├── changelog.md
+│   │   └── schema.dbml
 ```
 
-Version folders are numbered sequentially (`v001`, `v002`, …). `v001` is the oldest. The root `schema.dbml` always reflects the newest applied version.
+Version folders are numbered sequentially **within each service** (`v001`, `v002`, …). The root `schema.dbml` in each service folder always reflects the newest applied version for that service. Different services advance their version numbers independently.
 
 ### Rules for contributors
 
-- Every schema change must create a new version folder (`v002`, `v003`, …) with `changelog.md` and `schema.dbml`.
-- After creating the version folder, update `database/schema.dbml` to match.
+- Every schema change must create a new version folder under the relevant service (`database/<service-id>/v<NNN>/`) with `changelog.md` and `schema.dbml`.
+- After creating the version folder, update `database/<service-id>/schema.dbml` to match.
 - `changelog.md` must describe which tables were added, altered, or dropped, and why.
 - All physical names (tables, columns, indexes, constraints) use lowercase `snake_case`.
 - Every table must include a `workspace_id` column for multi-tenancy partitioning, even in single-tenant v1.
