@@ -67,3 +67,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m1-identity-and-workspaces
 feature_branch_base_sha: 5d0592e8995d9ba560fd142d9dbb58cb9f7a093c
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/402
