@@ -302,7 +302,7 @@ user-service/
 | GET | `/api/me` | Returns `{user, memberships, accessible_workspace_ids}` for current session; 401 otherwise |
 
 **Internal HTTP surface** (service-token authenticated via `Authorization: Bearer
-<SERVICE_TOKEN>`):
+<USER_SERVICE_TOKEN>`):
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -389,7 +389,7 @@ workspaces  (existing — modified)
 ### `workflow-backend` changes
 
 - **`internal/serviceclient/user_service/`** — typed Go client for user-service's
-  `/internal/sessions/validate`. Uses `SERVICE_TOKEN` from env. Includes an
+  `/internal/sessions/validate`. Uses `USER_SERVICE_TOKEN` from env. Includes an
   in-process session cache (LRU, key = session cookie value, value =
   `{user_id, accessible_workspace_ids, fetched_at}`, TTL ~30s).
 - **`internal/authmw/`** — `RequireAuth` middleware. Reads session cookie, calls
@@ -446,7 +446,7 @@ A one-shot `cmd/seed` in `user-service`:
 | `SESSION_COOKIE_DOMAIN` | e.g. `.app.kitelabs.dev` for prod; `localhost` for dev |
 | `FRONTEND_BASE_URL` | Used for post-login redirect |
 | `PLATFORM_ADMIN_EMAILS` | Comma-separated emails auto-granted `platform_admin` on first login |
-| `SERVICE_TOKEN` | Shared secret accepted on `/internal/*` (also set in workflow-backend) |
+| `USER_SERVICE_TOKEN` | Shared secret accepted on `/internal/*` (must match the same env var in workflow-backend) |
 | `WORKFLOW_DB_DSN` (seed cmd only) | For one-time backfill of `workspaces.account_id` |
 
 **`workflow-backend`:**
@@ -454,7 +454,7 @@ A one-shot `cmd/seed` in `user-service`:
 | Var | Purpose |
 |---|---|
 | `USER_SERVICE_INTERNAL_URL` | Base URL for `/internal/sessions/validate` |
-| `SERVICE_TOKEN` | Same shared secret as user-service |
+| `USER_SERVICE_TOKEN` | Shared secret presented to user-service `/internal/*` (must match user-service's value) |
 
 ## Dependency Analysis
 
@@ -498,7 +498,7 @@ A one-shot `cmd/seed` in `user-service`:
 - **D4** — Migration tool for both DBs. Recommended: `golang-migrate` (most
   popular in Go ecosystem; simple SQL files; supports both `user_db` and
   `workflow_db` independently with no shared state).
-- **D5** — `SERVICE_TOKEN` rotation policy. M1: static, set once per environment.
+- **D5** — `USER_SERVICE_TOKEN` rotation policy. M1: static, set once per environment.
   Acceptable; documented as a known follow-up.
 - **D6** — Schema docs layout in `management-repo` — keep one `database/schema.dbml`
   with both services' tables annotated, or split into `database/user/` and
@@ -529,7 +529,7 @@ D1: OAuth scopes confirmed                ──┐
 D2: PLATFORM_ADMIN_EMAILS list            ──┤  all six are config/decision-level;
 D3: Cookie domain plan (FE + user-svc)    ──┤  none block writing T2a/T2b; must
 D4: Migration tool                        ──┤  land before T2b ships
-D5: SERVICE_TOKEN policy (static for M1)  ──┤
+D5: USER_SERVICE_TOKEN rotation policy    ──┤
 D6: Schema docs layout                    ──┘
 ```
 
@@ -600,7 +600,7 @@ Parallelism summary:
 |---|---|
 | `management-repo` | T0 (`workspace.yaml` entry for `user-service`); schema docs split into `database/user/` + `database/workflow/`; `database/workflow/schema.dbml` adds `workspaces.account_id`; `database/user/schema.dbml` is new. |
 | `user-service` (**new**) | Whole repo scaffold + OAuth + sessions + identity models + invitations + seeding cmd + Dockerfile + docker-compose. |
-| `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.account_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `SERVICE_TOKEN`). |
+| `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.account_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `USER_SERVICE_TOKEN`). |
 | `digital-factory-ui` | Login page, session-aware layout, account/workspace switcher, logout control; two new env vars (`NEXT_PUBLIC_USER_SERVICE_URL`, `NEXT_PUBLIC_WORKFLOW_API_URL`). |
 | `workspace-github-adapter` | **No change** — `workspace_id` partitioning preserved. |
 
@@ -635,7 +635,7 @@ Parallelism summary:
 
   No production client data exists yet, so risk is bounded.
 - New env vars (listed above) must be set before deploy. Backends must fail fast
-  on missing OAuth client IDs/secrets and `SERVICE_TOKEN`.
+  on missing OAuth client IDs/secrets and `USER_SERVICE_TOKEN`.
 
 **Rollout:**
 
@@ -662,4 +662,4 @@ Parallelism summary:
 - M6 (enterprise SSO / SCIM) will replace federated-only login with SAML/OIDC
   IdPs; the data model added here is compatible (`auth_identities` just gain new
   provider values).
-- `SERVICE_TOKEN` rotation and mTLS hardening are M6 concerns.
+- `USER_SERVICE_TOKEN` rotation and mTLS hardening are M6 concerns.
