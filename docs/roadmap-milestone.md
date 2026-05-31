@@ -12,7 +12,7 @@
 > client turns a services engagement into a product. M1 is therefore a **services → product
 > transition**, not a "smallest payable SaaS."
 >
-> The dependency-ordered view still lives in [`roadmap.md`](./roadmap.md) — keep it as
+> The dependency-ordered view still lives in [`roadmap-discussion.md`](roadmap-discussion.md) — keep it as
 > the engineering "what is safe to build next" reference. This doc is the
 > "what is smart to build next" companion.
 
