@@ -1,17 +1,21 @@
 feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead authors technical-design.md (tech-lead Phase 1).
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-05-31T13:24:51+0700
+    review_comment: Approved — federated-only (Google + GitHub) confirmed; email login deferred per non-goals.
+    review_history:
+      - reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-05-31T13:24:51+0700
+        review_status: approved
+        review_comment: Approved — federated-only (Google + GitHub) confirmed; email login deferred per non-goals.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +35,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-05-31T13:24:51+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: product_spec
+    note: Product spec approved; feature advanced to in_tdd.
 
 revalidation:
   product_spec_required: false
