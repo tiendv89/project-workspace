@@ -2,7 +2,7 @@ id: T3
 title: workflow-backend — service client + RequireAuth +
   workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: reviewing
+status: change_requested
 depends_on:
   - T1b
   - T2b
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-31T15:59:01.923Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-31T16:07:19.344Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/14
   status: open
@@ -137,3 +137,12 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-31T15:59:01.923Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Cross-tenant isolation test missing (tasks.md T3 subtask unchecked):
+      handler/workspace_test.go newTestRouter does not inject AuthCtx, so all
+      handler tests exercise the hasAuth=false path only. No test verifies that
+      a user with accessible_workspace_ids=[ws-A] gets HTTP 404 when accessing
+      ws-B. Implementation logic is correct; test is absent."
+    review_url: https://github.com/tiendv89/workflow-backend/pull/14#issuecomment-4587240648
+    at: 2026-05-31T16:07:19.344Z
