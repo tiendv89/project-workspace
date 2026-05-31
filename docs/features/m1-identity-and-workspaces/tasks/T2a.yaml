@@ -1,7 +1,7 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: reviewing
+status: change_requested
 depends_on:
   - T0
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T10:21:43.262Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T10:28:25.634Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/1
   status: open
@@ -84,3 +84,12 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T10:21:43.262Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 Dockerfile:3 uses golang:1.22-alpine but go.mod declares go 1.25.7 —
+      Go 1.21+ enforces this as a hard minimum, so docker build (and docker
+      compose up) would fail with 'note: module requires Go >= 1.25.7'. Fix:
+      update builder to golang:1.25-alpine. All other T2a subtasks are
+      implemented; CI lint and test both pass."
+    review_url: https://github.com/tiendv89/user-service/pull/1#pullrequestreview-4396706147
+    at: 2026-05-31T10:28:25.634Z
