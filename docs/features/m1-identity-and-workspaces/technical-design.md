@@ -25,41 +25,59 @@ What does exist:
   carries `workspace_id`. No identity tables exist.
 
 Repo-level boundaries (per `workspace.yaml`):
-- `workflow-backend` — owns all server-side identity, session, and scoping logic.
+- `workflow-backend` — owns workflow state reads and writes. Will gain a
+  service-to-service client for `user-service` and a `RequireAuth` middleware; will
+  **not** own identity tables.
 - `digital-factory-ui` — owns login UI, session-aware routing, and account/workspace UX.
-- `management-repo` (this repo) — owns `database/schema.dbml` and version folders.
-- `workspace-github-adapter` — unaffected. Its `workspace_id`-scoped writes continue to
-  work; it does not need an authenticated user.
+  Talks to **both** services after M1.
+- `management-repo` (this repo) — owns the canonical schema docs for **both** DBs and
+  the feature/workflow YAML.
+- `workspace-github-adapter` — unaffected. Its `workspace_id`-scoped writes continue
+  to work; it does not need an authenticated user.
+- `user-service` — **new repo, to be created.** Owns identity entirely.
 
 ## Problem Framing
 
 **What must change:**
 
-1. Introduce an identity spine: `users`, `auth_identities` (Google/GitHub), `accounts`,
-   `memberships`, `workspace_memberships`, `account_invitations`, `sessions`.
-2. Add `account_id` to `workspaces` so every workspace is owned by exactly one account.
-3. Add server-side OAuth flows for **Google** and **GitHub** in `workflow-backend`.
-4. Add a session/cookie layer (library-handled — not a custom auth system).
-5. Add a scoping middleware: every workspace-scoped read endpoint must filter by the
-   logged-in user's accessible workspaces.
-6. Add login UI + session-aware layout in `digital-factory-ui`.
-7. Seed an internal "Kitelabs" account and migrate existing workspaces onto it so
-   nothing breaks for the delivery team.
+1. Stand up a **new `user-service`** repo + service + database. Owns: `users`,
+   `auth_identities`, `accounts`, `memberships`, `workspace_memberships`,
+   `account_invitations`, `sessions`.
+2. Implement server-side OAuth flows for **Google** and **GitHub** in `user-service`
+   (Authorization Code, library-handled session/cookie — not a custom auth system).
+3. Expose two surfaces from `user-service`:
+   - **Public** (browser-facing): `/auth/*`, `/api/me`, `/auth/logout`.
+   - **Internal** (service-to-service): `/internal/sessions/validate` returning
+     `{user_id, accessible_workspace_ids}` to other services.
+4. Add `account_id` to `workspaces` in `workflow-backend`'s database — as a plain
+   UUID column, **no cross-DB FK** (the two services run separate Postgres instances).
+5. Add a `RequireAuth` middleware in `workflow-backend` that validates the session
+   via `user-service` and scopes every workspace-scoped read by
+   `accessible_workspace_ids`.
+6. Add login UI + session-aware layout + account/workspace switcher in
+   `digital-factory-ui`. The frontend gains two base URLs — one per service.
+7. Seed an internal "Kitelabs" account in `user-service`'s DB, backfill all existing
+   workspaces with that account's ID, and grant the delivery team `platform_admin`
+   memberships via an env-driven email list.
 
 **What must stay stable:**
 
-- The `workspace_id`-scoped read API surface — the sibling feature
-  `m1-client-delivery-visibility` consumes these endpoints once they're auth-gated.
-- The GitHub adapter's write path — no changes needed; it writes by `workspace_id`,
-  which is preserved.
-- All existing core table columns and indexes — additions only, no destructive change.
+- The existing `workspace_id`-scoped read API surface in `workflow-backend` — the
+  sibling feature `m1-client-delivery-visibility` consumes it once it sits behind
+  `RequireAuth`.
+- The GitHub adapter's write path — no changes; it writes by `workspace_id`, which
+  is preserved.
+- All existing v001 columns and indexes — additions only, no destructive change.
 
 **Fixed assumptions:**
 
-- Self-hosted identity in the Go backend (no managed provider like Auth0 / Clerk /
-  Supabase Auth). We consume Google and GitHub as IdPs only.
+- Self-hosted identity in our own Go code (no Auth0 / Clerk / Supabase Auth). We
+  consume Google + GitHub as IdPs only.
 - B2B services model — clients are invited; no self-serve account creation in M1.
 - Read-only client surface (per sibling feature) — no client mutations in M1.
+- **Microservice split from day one** — `user-service` and `workflow-backend` are
+  separate services with separate Postgres instances. This is a deliberate decision
+  to avoid a future extraction migration. See Option 6 and Option 7 below.
 
 ## Options Considered
 
@@ -72,105 +90,234 @@ Repo-level boundaries (per `workspace.yaml`):
   - Cookie is opaque and small.
   - Active maintenance, idiomatic Go, postgres-native store (no new infra).
 - Cons:
-  - One DB read per authenticated request (mitigatable with in-memory cache later).
+  - One DB read per `/internal/sessions/validate` call (mitigated by an in-process
+    cache in workflow-backend with short TTL).
 
 **Option 1B: Stateless JWT in cookie**
-- Pros:
-  - No DB read on every request.
-- Cons:
-  - Hard to invalidate (need a deny-list = state anyway).
-  - Larger cookie; key rotation is non-trivial.
-  - We don't need stateless scaling at M1 traffic; this is premature optimization.
+- Pros: no DB read on every request.
+- Cons: hard to invalidate (need a deny-list — state anyway); larger cookie; key
+  rotation is non-trivial. Not needed at M1 traffic.
 
-**Selected: 1A.** Postgres-backed sessions are the simplest correct choice and match
-the "library-handled glue, not an auth system" framing in the spec.
+**Selected: 1A.** Sessions live in `user_db`. workflow-backend never touches the
+session store directly — it calls `/internal/sessions/validate`.
 
 ### Option 2 — OAuth client architecture
 
-**Option 2A: Server-side Authorization Code flow (backend handles callback)**
-- Frontend redirects to backend `/auth/<provider>/start`; backend redirects to IdP;
-  IdP redirects back to backend `/auth/<provider>/callback`; backend exchanges code for
-  token, fetches user info, creates/links `user` + `auth_identity`, sets session cookie,
-  redirects to the frontend.
+**Option 2A: Server-side Authorization Code flow (`user-service` handles callback)**
+- Frontend redirects to `user-service` `/auth/<provider>/start`; service redirects
+  to IdP; IdP redirects back to `user-service` `/auth/<provider>/callback`; service
+  exchanges code, fetches user info, creates/links `user` + `auth_identity`, sets
+  session cookie, redirects to the frontend.
 - Pros:
-  - Client secret never leaves the server.
-  - Cookie set as `HttpOnly Secure SameSite=Lax` by the backend on its own domain.
-  - Single cookie domain story; no token shuttling between FE and BE.
-- Cons:
-  - Backend must host two routes per provider; frontend cannot host OAuth callbacks.
+  - Client secret stays inside `user-service`.
+  - Cookie set as `HttpOnly Secure SameSite=Lax` by `user-service` on its own
+    domain (must be a sibling subdomain of the FE — see D3).
+  - Service-to-service trust is the only place secrets travel.
+- Cons: requires cookie-domain coordination (covered by D3).
 
 **Option 2B: Frontend handles OAuth, exchanges with backend afterward**
-- Pros: SPA-friendly callback in Next.js.
-- Cons: Client secret either lives in Next.js server runtime (extra surface) or in a
-  serverless function — additional moving parts. Cookie domain coordination becomes
-  more awkward.
+- Cons: client secret lives in Next.js server runtime; extra surface; cookie domain
+  story is awkward across two backend services.
 
-**Selected: 2A.** Standard, secure, and matches a single-domain deployment.
+**Selected: 2A.**
 
 ### Option 3 — Account linking across providers
 
 **Option 3A: First-login creates user; subsequent same-provider login matches by
 `(provider, provider_sub)`; cross-provider linking only when a logged-in user adds
 the second provider.**
-- Pros: No automatic merge by email — avoids the GitHub-unverified-email pitfall.
-- Cons: A user who logs in with Google then later with GitHub (logged out) gets two
+- Pros: avoids GitHub-unverified-email pitfalls; deterministic.
+- Cons: a user who logs in with Google then later with GitHub (logged out) gets two
   separate `user` rows. Manual merge is a future feature.
 
 **Option 3B: Auto-link by verified email**
-- Pros: Single user identity across providers without manual linking.
-- Cons: GitHub's primary email may not always be verified or may differ from the user's
-  Google email. False merges (or false non-merges) are easy.
+- Cons: false merges (or false non-merges) easy to create.
 
-**Selected: 3A for M1.** Conservative and reversible. We can layer email-verified
-auto-linking in M3+ if it becomes a real client complaint.
+**Selected: 3A for M1.**
 
 ### Option 4 — Per-workspace scoping model
 
 **Option 4A: Account membership + optional per-workspace overrides**
-- `memberships(user_id, account_id, role)` grants account-wide access (all workspaces
-  in that account).
-- `workspace_memberships(user_id, workspace_id)` is **opt-in scoping** — if a user has
-  **any** rows in `workspace_memberships` for the account, they are limited to those
-  workspaces. Otherwise account membership grants access to everything in the account.
-- Pros:
-  - Default behaviour is the common case (small account, one workspace).
-  - Larger accounts (multiple engagements, multiple client teams) can scope members.
-  - Two-table model is clear to query.
+- `memberships(user_id, account_id, role)` grants account-wide access.
+- `workspace_memberships(user_id, workspace_id)` is **opt-in scoping** — if any rows
+  exist for that user in that account, they are limited to those workspaces.
+  Otherwise account membership grants access to everything in the account.
 
-**Option 4B: Per-workspace membership only (no account-wide grants)**
-- Every user has explicit rows for every workspace they can see.
-- Pros: Single rule for scoping; no fallback logic.
-- Cons: Provisioning overhead — every new workspace requires inserting N rows per
-  account member.
+**Option 4B: Per-workspace membership only**
+- Cons: provisioning overhead.
 
-**Selected: 4A.** Matches the product spec phrasing ("`user_id` ↔ `account_id` ↔
-role; per-workspace scoping") and keeps the common case ergonomic.
+**Selected: 4A.**
 
 ### Option 5 — Account provisioning model for M1
 
-**Option 5A: Invitation-only**
-- An internal `platform_admin` provisions accounts + workspaces + invitations.
-- New client logs in → backend matches a pending invitation by verified provider email
-  → consumes it, creates `membership` (and optional `workspace_memberships`).
-- No invitation match → user lands on an empty state ("contact your delivery team").
-- Pros: Matches B2B services model; no self-serve risk; aligns with "no client actions
-  in M1".
+**Option 5A: Invitation-only.** Internal admin creates accounts + workspaces +
+invitations; new client logs in, invitation matched by verified provider email
+consumed atomically inside `user-service`.
 
-**Option 5B: Self-serve account creation**
-- Any logged-in user can create an account and become its admin.
-- Pros: Faster onboarding for prospects.
-- Cons: Out of scope for M1 (we sell by hand); creates spam/identity-squatting risk.
+**Option 5B: Self-serve account creation.** Out of scope for M1.
 
 **Selected: 5A.**
 
+### Option 6 — Service topology
+
+**Option 6A: Monolith now, design seam for future extraction.**
+- Identity lives as three packages inside `workflow-backend`; narrow internal API;
+  extract later when M2/M3 needs it.
+- Pros: ~3–4 weeks less M1 work; no service-to-service auth needed yet; FKs intact
+  if the DB also stays single-instance.
+- Cons: extraction later requires app-level surgery; team builds identity habits
+  that bleed across the boundary.
+
+**Option 6B: Separate `user-service` from day one.**
+- Two services from M1: `user-service` (identity) + `workflow-backend` (workflow).
+- Pros: no future service split needed; forces clean API from the start; security
+  isolation of OAuth secrets and session table; reusable for M2 Hermes and M3
+  Thread without any rework.
+- Cons: doubles M1 service-scaffold work; introduces service-to-service auth;
+  requires a new repo and CI pipeline; local-dev grows by one container.
+
+**Selected: 6B.** The user has chosen to absorb the upfront cost now to avoid any
+future extraction work. See Chosen Design for the contract surface.
+
+### Option 7 — Database topology
+
+**Option 7A: Shared DB, shared schema.** Identity tables and workflow tables in one
+Postgres. FKs intact (`workspaces.account_id → accounts.id`). Cheapest path; ties
+hard to 6A.
+
+**Option 7B: Shared DB, separate Postgres schemas (`users.*` + `public.*`).** One
+Postgres instance, logical separation. Cross-schema FKs still work. Future
+extraction is `pg_dump --schema=users` into a new instance. Compatible with 6A or
+6B; cheap.
+
+**Option 7C: Separate Postgres instances per service from day one.** Two DBs
+deployed independently. `workspaces.account_id` is a plain UUID column with no
+cross-DB FK — application-level referential integrity only. No future DB
+migration.
+
+**Selected: 7C.** Mandated by 6B — each service owns its own DB. The cost is the
+loss of an FK on `workspaces.account_id` and the need to enforce that integrity in
+`user-service` (the service that issues `account_id` values in session payloads)
+and in `workflow-backend` (which trusts those values).
+
 ## Chosen Design
 
-### Identity tables (additions to `database/schema.dbml` v002)
+### Two services, two databases
+
+```
+┌────────────────────┐                ┌──────────────────────┐
+│ digital-factory-ui │                │     IdP (Google,     │
+│  (Next.js, browser)│                │       GitHub)        │
+└────┬──────────┬────┘                └──────────┬───────────┘
+     │          │                                │
+     │ /auth/*  │  /api/me                       │ OAuth redirect
+     │          │  /auth/logout                  │
+     │          ▼                                ▼
+     │  ┌───────────────────────────────────────────────────┐
+     │  │              user-service (NEW)                   │
+     │  │  Go + Gin + pgx + golang.org/x/oauth2 +           │
+     │  │  alexedwards/scs/v2 (postgresstore)               │
+     │  │                                                   │
+     │  │  PUBLIC:                                          │
+     │  │   GET  /auth/<provider>/start                     │
+     │  │   GET  /auth/<provider>/callback                  │
+     │  │   POST /auth/logout                               │
+     │  │   GET  /api/me                                    │
+     │  │                                                   │
+     │  │  INTERNAL (service-token auth):                   │
+     │  │   POST /internal/sessions/validate                │
+     │  │     → { user_id, accessible_workspace_ids[] }     │
+     │  │                                                   │
+     │  │  Owns: users, auth_identities, accounts,          │
+     │  │  memberships, workspace_memberships,              │
+     │  │  account_invitations, sessions                    │
+     │  └────────────────────┬──────────────────────────────┘
+     │                       │ pgx
+     │                       ▼
+     │                 ┌─────────────┐
+     │                 │  user_db    │ (Postgres instance #1)
+     │                 └─────────────┘
+     │
+     │ /api/* (everything else)
+     ▼
+┌─────────────────────────────────────────┐
+│        workflow-backend (existing)      │
+│                                         │
+│  + RequireAuth middleware               │
+│    → calls user-service                 │
+│      /internal/sessions/validate        │
+│    → caches result per session in       │
+│      memory (~30s TTL)                  │
+│  + AccessibleWorkspaceIDs from cache    │
+│  + workspaces.account_id (plain UUID,   │
+│    no cross-DB FK)                      │
+│                                         │
+│  Owns: workspaces, workspace_features,  │
+│  workspace_tasks, workspace_activity_   │
+│  events, workspace_repos,               │
+│  workspace_feature_documents,           │
+│  workspace_github_sources,              │
+│  workspace_sync_runs                    │
+└──────────────────┬──────────────────────┘
+                   │ pgx
+                   ▼
+            ┌──────────────┐
+            │ workflow_db  │ (Postgres instance #2)
+            └──────────────┘
+```
+
+### `user-service` (new repo)
+
+**Stack:** Go 1.22+, Gin, pgx, `golang.org/x/oauth2`, `alexedwards/scs/v2` +
+`scs/postgresstore`.
+
+**Repo layout (proposed):**
+
+```
+user-service/
+  cmd/server/main.go         # HTTP entrypoint
+  cmd/seed/main.go           # one-shot Kitelabs-account seeder
+  internal/
+    oauth/                   # provider configs, code exchange, userinfo fetch
+    sessions/                # scs configuration, /internal/sessions/validate
+    users/                   # users + auth_identities CRUD
+    accounts/                # accounts, memberships, workspace_memberships, invitations
+    httpapi/                 # gin routes wiring the above together
+    serviceauth/             # service-token middleware for /internal/*
+  database/
+    schema.dbml              # canonical DBML for user_db
+    migrations/              # SQL migrations (tool TBD per D4)
+  Dockerfile
+  docker-compose.yaml        # for local dev (service + Postgres)
+  go.mod / go.sum
+```
+
+**Public HTTP surface** (cookie-based, no service token required):
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/auth/<provider>/start` | Generates per-flow `state`, stores in scs, redirects to IdP authorize URL |
+| GET | `/auth/<provider>/callback` | Verifies `state`, exchanges code, fetches user info, upserts user + auth_identity, consumes any matching `account_invitation` inside a single user_db transaction, sets session cookie, redirects to FE |
+| POST | `/auth/logout` | Destroys session, clears cookie |
+| GET | `/api/me` | Returns `{user, memberships, accessible_workspace_ids}` for current session; 401 otherwise |
+
+**Internal HTTP surface** (service-token authenticated via `Authorization: Bearer
+<SERVICE_TOKEN>`):
+
+| Method | Path | Purpose |
+|---|---|---|
+| POST | `/internal/sessions/validate` | Body: `{cookie_value}` → Returns `{user_id, accessible_workspace_ids[]}` or 401. Used by workflow-backend's RequireAuth. |
+
+Cookie attributes: `HttpOnly`, `Secure`, `SameSite=Lax`, 30-day rolling. Cookie
+domain must be the parent of both FE and `user-service` (e.g. `.app.kitelabs.dev`)
+— covered by D3.
+
+### Tables in `user_db`
 
 ```text
 users(
   id uuid pk,
-  email text not null,            -- last-known primary email; not unique (linked accounts can share)
+  email text not null,            -- last-known primary email
   display_name text,
   avatar_url text,
   created_at, updated_at
@@ -181,7 +328,7 @@ auth_identities(
   id uuid pk,
   user_id uuid -> users.id not null,
   provider text not null,         -- 'google' | 'github'
-  provider_sub text not null,     -- the IdP's stable user id
+  provider_sub text not null,
   email text,
   email_verified boolean,
   created_at
@@ -207,7 +354,7 @@ indexes: (user_id, account_id) unique, account_id
 workspace_memberships(
   id uuid pk,
   user_id uuid -> users.id not null,
-  workspace_id uuid -> workspaces.id not null,
+  workspace_id uuid not null,     -- NOTE: workspace lives in workflow_db; no FK
   created_at
 )
 indexes: (user_id, workspace_id) unique, workspace_id
@@ -216,144 +363,162 @@ indexes: (user_id, workspace_id) unique, workspace_id
 account_invitations(
   id uuid pk,
   account_id uuid -> accounts.id not null,
-  email text not null,            -- matched against verified provider email at first login
+  email text not null,
   role text not null,
   invited_by_user_id uuid -> users.id,
-  workspace_ids jsonb,            -- null = all workspaces in the account
+  workspace_ids jsonb,            -- null = all workspaces in the account; otherwise specific UUIDs from workflow_db
   created_at, expires_at, accepted_at, accepted_by_user_id uuid -> users.id
 )
 indexes: (account_id, lower(email)), expires_at
 
 sessions(
   -- managed by scs/postgresstore — schema dictated by the library
-  -- recorded here so it appears in the canonical schema doc
 )
 ```
 
-### Modifications to existing tables
+### Tables in `workflow_db`
 
 ```text
-workspaces
-  + account_id uuid -> accounts.id not null   -- backfilled to internal Kitelabs account
+workspaces  (existing — modified)
+  + account_id uuid not null      -- plain UUID; no FK (account lives in user_db)
   + index on account_id
+
+-- All other workflow_db tables remain unchanged (v001 schema).
 ```
 
-No other core tables change. `workspace_id` continues to be the universal partition key
-and remains untouched.
+### `workflow-backend` changes
+
+- **`internal/serviceclient/user_service/`** — typed Go client for user-service's
+  `/internal/sessions/validate`. Uses `SERVICE_TOKEN` from env. Includes an
+  in-process session cache (LRU, key = session cookie value, value =
+  `{user_id, accessible_workspace_ids, fetched_at}`, TTL ~30s).
+- **`internal/authmw/`** — `RequireAuth` middleware. Reads session cookie, calls
+  the service client, attaches `AuthCtx{UserID, AccessibleWorkspaceIDs}` to the
+  request context; 401 on miss.
+- **Query layer** — every workspace-scoped read query gains a
+  `WHERE workspace_id = ANY($accessible)` filter. Helper:
+  `func (q *Queries) ScopedWorkspaceIDs(ctx) []uuid.UUID` reads from `AuthCtx`.
+- **`internal/workspaces/`** — `account_id` becomes a required field on create.
+  On create, the handler reads `account_id` from the validated session payload
+  (the caller's membership context) and stores it on the row.
 
 ### Roles (M1)
 
-Two preset roles, encoded as a string column:
-
-- `platform_admin` — Kitelabs internal team. Full access to all accounts and
-  workspaces. Created by seeding.
-- `client_member` — invited client user. Read-only at the application layer (the M1
-  surface has no write endpoints; the role exists so M2+ can layer permissions).
-
-Custom roles are out of scope (M6).
-
-### OAuth + session flow (Go backend)
-
-Libraries:
-- `golang.org/x/oauth2` + Google and GitHub endpoint configs.
-- `alexedwards/scs/v2` + `scs/postgresstore`.
-
-Routes added to `workflow-backend`:
-
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/auth/<provider>/start` | Generates per-flow `state`, stores in temp cookie, redirects to IdP authorize URL |
-| GET | `/auth/<provider>/callback` | Verifies `state`, exchanges code, fetches user info, upserts `user` + `auth_identity`, consumes any matching `account_invitation`, sets session cookie, redirects to FE |
-| POST | `/auth/logout` | Destroys session, clears cookie |
-| GET | `/api/me` | Returns `{ user, memberships, accessible_workspace_ids }` for the current session; 401 otherwise |
-
-Cookie attributes: `HttpOnly`, `Secure`, `SameSite=Lax`, 30-day rolling. CSRF on
-mutating endpoints uses a double-submit token derived from the session (out of M1
-scope beyond `/auth/logout`).
-
-### Scoping middleware
-
-A single `RequireAuth` middleware:
-
-1. Loads session via scs.
-2. Resolves `user_id`; on miss returns 401.
-3. Lazily resolves accessible workspace IDs for the user (cached per-request):
-   - For each membership, list workspaces in that account.
-   - If any `workspace_memberships` rows exist for that user **in that account**,
-     intersect down to just those workspace IDs.
-4. Attaches `AuthCtx{UserID, AccessibleWorkspaceIDs[]}` to the request context.
-
-Every existing workspace-scoped read handler is updated to filter by
-`AccessibleWorkspaceIDs`. The handler signature does not change; the filter is added
-at the query layer.
-
-### Frontend (`digital-factory-ui`)
-
-- New `/login` page: two buttons — "Sign in with Google", "Sign in with GitHub".
-  Both link to `/auth/<provider>/start` on the backend.
-- Session-aware root layout: on mount, fetch `/api/me`; on 401, redirect to `/login`.
-- Account / workspace context resolved from `/api/me` response.
-- Logout control in the header → `POST /auth/logout`.
-- No callback page on the frontend — the backend redirect lands directly on the home
-  route after the cookie is set.
+- `platform_admin` — Kitelabs internal team. Sees all accounts and workspaces.
+  Auto-granted on first login if the user's verified email is in
+  `PLATFORM_ADMIN_EMAILS`.
+- `client_member` — invited client user. Read-only at the application layer.
 
 ### Account seeding & data migration
 
-A one-time seed (in v002 migration or a one-shot Go cmd) creates:
+A one-shot `cmd/seed` in `user-service`:
+1. Creates `accounts(slug='kitelabs', name='Kitelabs')` if absent.
+2. Reads `WORKFLOW_DB_DSN` and updates `workflow_db.workspaces.account_id` for all
+   existing rows to the Kitelabs account ID. (This is the one cross-DB write in
+   M1; it runs once at deploy and is idempotent.)
+3. `PLATFORM_ADMIN_EMAILS` is consulted at first-login time inside
+   `user-service` — no seeded user rows. When an admin first logs in via Google
+   or GitHub, the callback handler checks the verified email against the env
+   list and creates the `platform_admin` membership.
 
-- `accounts(slug='kitelabs', name='Kitelabs')` — the internal account.
-- Backfills all existing `workspaces.account_id` to the Kitelabs account.
-- Provisions `platform_admin` memberships for the Kitelabs delivery team via an env-
-  driven email list (`PLATFORM_ADMIN_EMAILS=alice@kitelabs.dev,bob@…`). On first login
-  these emails auto-promote to `platform_admin`.
+### Frontend (`digital-factory-ui`)
+
+- New `/login` page: "Sign in with Google" + "Sign in with GitHub" buttons. Both
+  link to `${NEXT_PUBLIC_USER_SERVICE_URL}/auth/<provider>/start`.
+- Session-aware root layout: on mount, fetch `${NEXT_PUBLIC_USER_SERVICE_URL}/api/me`;
+  on 401, redirect to `/login`.
+- Account / workspace switcher reads from `/api/me`.
+- Logout control → `POST ${NEXT_PUBLIC_USER_SERVICE_URL}/auth/logout`.
+- All workflow data fetches go to `${NEXT_PUBLIC_WORKFLOW_API_URL}` and send the
+  session cookie (browser does this automatically once cookie domain is
+  configured per D3).
 
 ### Configuration (env)
 
-New env values required for the backend:
+**`user-service`:**
 
 | Var | Purpose |
 |---|---|
+| `USER_DB_DSN` | Postgres DSN for user_db |
 | `OAUTH_GOOGLE_CLIENT_ID`, `OAUTH_GOOGLE_CLIENT_SECRET` | Google OAuth app |
 | `OAUTH_GITHUB_CLIENT_ID`, `OAUTH_GITHUB_CLIENT_SECRET` | GitHub OAuth app |
-| `OAUTH_REDIRECT_BASE_URL` | Public URL of backend (used to build callback URLs) |
+| `OAUTH_REDIRECT_BASE_URL` | Public URL of user-service (used to build callback URLs) |
 | `SESSION_COOKIE_DOMAIN` | e.g. `.app.kitelabs.dev` for prod; `localhost` for dev |
-| `PLATFORM_ADMIN_EMAILS` | Comma-separated emails auto-granted `platform_admin` on first login |
 | `FRONTEND_BASE_URL` | Used for post-login redirect |
+| `PLATFORM_ADMIN_EMAILS` | Comma-separated emails auto-granted `platform_admin` on first login |
+| `SERVICE_TOKEN` | Shared secret accepted on `/internal/*` (also set in workflow-backend) |
+| `WORKFLOW_DB_DSN` (seed cmd only) | For one-time backfill of `workspaces.account_id` |
+
+**`workflow-backend`:**
+
+| Var | Purpose |
+|---|---|
+| `USER_SERVICE_INTERNAL_URL` | Base URL for `/internal/sessions/validate` |
+| `SERVICE_TOKEN` | Same shared secret as user-service |
 
 ## Dependency Analysis
 
 **Internal:**
-- Database schema lives in `management-repo` at `database/schema.dbml`. Schema bump to
-  v002 must be authored here. Migration runner lives in `workflow-backend`.
-- The sibling feature `m1-client-delivery-visibility` consumes the scoping middleware
-  + `/api/me`. It is **gated on this feature** but does not block any task here.
+- **New repo registration** in `workspace.yaml`:
+  ```yaml
+  - id: user-service
+    github: git@github.com:tiendv89/user-service.git
+    local_path: env:USER_SERVICE_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+  ```
+  The GitHub repo itself must be created (by ops with admin in the org). The
+  `USER_SERVICE_LOCAL_PATH` env value must be set by every operator's local `.env`.
+- The schema docs for both DBs live under `database/` in this management repo.
+  Proposal: rename current `database/schema.dbml` → `database/workflow/schema.dbml`
+  and add `database/user/schema.dbml`. (To be confirmed in T1.)
+- The sibling feature `m1-client-delivery-visibility` consumes the `RequireAuth`
+  middleware in `workflow-backend` + `/api/me` from `user-service`. It is **gated
+  on this feature** but does not block any task here.
 
 **External:**
-- **Google OAuth client registration** — must be created in the Kitelabs Google Cloud
-  project. Callback URL pattern: `<OAUTH_REDIRECT_BASE_URL>/auth/google/callback`.
-  Owner: ops / whoever holds GCP admin.
-- **GitHub OAuth App registration** — created in the Kitelabs GitHub org. Callback
-  URL: `<OAUTH_REDIRECT_BASE_URL>/auth/github/callback`. Owner: GitHub org admin.
-- **Deployment URLs locked** — both callback URLs must be known at OAuth-app creation
-  time; redirect URI mismatch will block end-to-end testing.
+- **Google OAuth client registration** in the Kitelabs GCP project. Callback URL
+  pattern: `<OAUTH_REDIRECT_BASE_URL>/auth/google/callback`.
+- **GitHub OAuth App registration** in the Kitelabs GitHub org. Callback URL:
+  `<OAUTH_REDIRECT_BASE_URL>/auth/github/callback`.
+- **Public DNS for `user-service`** — must be a sibling subdomain of the FE so a
+  parent-domain cookie covers both (e.g. FE on `app.kitelabs.dev`,
+  user-service on `users.app.kitelabs.dev`, cookie domain `.app.kitelabs.dev`).
 
-**Unresolved decisions** (must be locked before tasks T2/T3 reach implementation):
+**Unresolved decisions** (must be locked before tasks T2b/T3 reach implementation):
 
 - **D1** — Final OAuth scopes:
-  - Google: `openid email profile` (sufficient for identity).
-  - GitHub: `read:user user:email` (sufficient; **no `repo` scope** — bot work is M6).
-  - Lock: confirm scopes with security review.
+  - Google: `openid email profile`.
+  - GitHub: `read:user user:email` (**no `repo` scope** — bot work is M6).
+  - Lock: confirm with security review.
 - **D2** — Final list of `PLATFORM_ADMIN_EMAILS` for first deploy.
-- **D3** — Cookie domain for production (e.g. `.app.kitelabs.dev` vs single host).
-- **D4** — Migration runner: confirm `workflow-backend` already runs SQL migrations on
-  startup (or via a CLI) and which tool (`golang-migrate`, `goose`, or hand-rolled).
-  This affects how v002 is packaged.
+- **D3** — Domain plan: pick FE subdomain + user-service subdomain so a parent-
+  domain cookie covers both. Also pick the dev equivalent (loopback aliases or
+  `lvh.me`).
+- **D4** — Migration tool for both DBs. Recommended: `golang-migrate` (most
+  popular in Go ecosystem; simple SQL files; supports both `user_db` and
+  `workflow_db` independently with no shared state).
+- **D5** — `SERVICE_TOKEN` rotation policy. M1: static, set once per environment.
+  Acceptable; documented as a known follow-up.
+- **D6** — Schema docs layout in `management-repo` — keep one `database/schema.dbml`
+  with both services' tables annotated, or split into `database/user/` and
+  `database/workflow/`. Recommendation: split, because each DB has its own
+  migration cadence.
+
+**External provisioning (owner: ops):**
+- **P1**: GitHub `tiendv89/user-service` repo created.
+- **P2**: Google OAuth client created (callback URL configured).
+- **P3**: GitHub OAuth App created (callback URL configured).
+- **P4**: DNS for `user-service` in target environments (per D3).
+
+P1–P4 must land before T2b can be end-to-end tested but **do not block writing
+T2a (scaffold) or T2b (logic)**.
 
 **Vendor / tooling:**
-- Postgres ≥ 14 (already in use).
+- Postgres ≥ 14 (already in use). Two instances now.
 - Go ≥ 1.22 (already in use).
 - Next.js (already in use).
-- No new infra (no Redis, no managed identity service).
+- No new managed services (no Redis, no managed identity).
 
 ## Parallelization / Blocking Analysis
 
@@ -361,104 +526,140 @@ External decisions (low-effort; unblock early):
 
 ```
 D1: OAuth scopes confirmed                ──┐
-D2: PLATFORM_ADMIN_EMAILS list            ──┤  all four are config-level; run in parallel
-D3: Production cookie domain              ──┤  with task work, must land before T2 ships
-D4: Migration tool in workflow-backend    ──┘
+D2: PLATFORM_ADMIN_EMAILS list            ──┤  all six are config/decision-level;
+D3: Cookie domain plan (FE + user-svc)    ──┤  none block writing T2a/T2b; must
+D4: Migration tool                        ──┤  land before T2b ships
+D5: SERVICE_TOKEN policy (static for M1)  ──┤
+D6: Schema docs layout                    ──┘
 ```
 
 External provisioning (owner: ops):
-- **P1**: Google OAuth client created (callback URL configured)
-- **P2**: GitHub OAuth App created (callback URL configured)
-- P1/P2 must land before T2 can be end-to-end tested but **do not block writing T2**.
+
+```
+P1: Create user-service GitHub repo       ──┐  blocks T2a only at push time
+P2: Google OAuth client created           ──┤  blocks T2b E2E test
+P3: GitHub OAuth App created              ──┤  blocks T2b E2E test
+P4: Public DNS configured (per env)       ──┘  blocks first deploy
+```
 
 Task graph (proposed — finalised in Phase 2):
 
 ```
-T1: Schema v002 — add identity tables + workspaces.account_id (management-repo)
+T0: workspace.yaml — register user-service repo (management-repo)
   └── Can begin now — no blockers
   │
-  T2: workflow-backend — OAuth (Google + GitHub) + session + identity models + /auth/* + /api/me
-        └── BLOCKED on T1 (identity tables must exist in schema)
-        └── BLOCKED on D1/D4 (scopes + migration tool decided)
-        └── Soft-blocked on P1/P2 for E2E test; can be implemented + unit-tested without
-        │
-        T3: workflow-backend — scoping middleware + workspace queries filtered by AccessibleWorkspaceIDs
-              └── BLOCKED on T2 (session + AuthCtx must exist)
-              │
-              T6: workflow-backend — seed Kitelabs account + backfill workspaces.account_id + PLATFORM_ADMIN_EMAILS auto-grant on first login
-                    └── BLOCKED on T2 (auth_identities consume invitations on first login)
-                    └── BLOCKED on T3 (no point seeding scoping data before middleware reads it)
+  T1a: Schema for user_db (management-repo: database/user/schema.dbml)
+  T1b: Schema for workflow_db — add workspaces.account_id (management-repo: database/workflow/schema.dbml)
+       └── T1a and T1b run in parallel
+       └── Both can begin now once D6 is decided (schema docs layout)
 
-T4: digital-factory-ui — /login page + session-aware root layout + /api/me consumer + logout control
-  └── Can begin now using a stub /api/me contract (can be developed in parallel with T2)
-  └── BLOCKED on T2 for end-to-end test
-  │
-  T5: digital-factory-ui — account / workspace switcher driven by /api/me memberships
-        └── BLOCKED on T4 (layout + session context must exist)
-        └── BLOCKED on T2 for end-to-end test
+T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-service)
+       └── BLOCKED on T0 (workspace.yaml entry) and P1 (GitHub repo exists)
+       │
+       T2b: user-service — OAuth + sessions + identity + invitations
+            + /api/me + /internal/sessions/validate (user-service)
+              └── BLOCKED on T1a (user_db schema must exist)
+              └── BLOCKED on T2a (service scaffold must exist)
+              └── BLOCKED on D1, D3, D4, D5 (scopes, cookie domain, migration tool, service token)
+              └── Soft-blocked on P2/P3 for E2E test; can be implemented + unit-tested without
+              │
+              T3: workflow-backend — service client + RequireAuth middleware
+                  + workspaces.account_id + scoped queries (workflow-backend)
+                    └── BLOCKED on T1b (workspaces.account_id column must exist)
+                    └── BLOCKED on T2b (/internal/sessions/validate must exist)
+                    │
+                    T6: user-service seed — Kitelabs account + workspaces backfill
+                        + first-login PLATFORM_ADMIN_EMAILS auto-grant (user-service)
+                          └── BLOCKED on T2b (invitation + membership logic exists)
+                          └── BLOCKED on T3 (account_id column exists in workflow_db)
+                          └── BLOCKED on D2 (admin email list)
+
+T4: digital-factory-ui — /login page + session-aware root layout
+    + /api/me consumer + logout control (digital-factory-ui)
+      └── Can begin now using a stub /api/me contract (parallel with T2a/T2b)
+      └── BLOCKED on T2b for end-to-end test
+      │
+      T5: digital-factory-ui — account / workspace switcher driven by /api/me (digital-factory-ui)
+            └── BLOCKED on T4 (layout + session context must exist)
+            └── BLOCKED on T2b for end-to-end test
 ```
 
 Parallelism summary:
-- **T1** runs alone first (schema must be frozen).
-- **T2** and **T4** run in parallel once T1 lands and the `/api/me` contract is
-  agreed; T4 stubs the contract until T2 ships.
-- **T3** depends on T2.
+- **T0** runs first (just one workspace.yaml edit).
+- **T1a, T1b, T4** all run in parallel as soon as T0 lands and D6 is decided.
+  T4 uses a stub `/api/me` contract.
+- **T2a** runs in parallel with T1a/T1b once P1 lands.
+- **T2b** depends on T1a and T2a.
+- **T3** depends on T1b and T2b.
 - **T5** depends on T4.
-- **T6** depends on T2 and T3.
+- **T6** depends on T2b and T3.
 
 ## Repository Impact
 
 | Repo (`workspace.yaml -> repos[].id`) | Change |
 |---|---|
-| `management-repo` | New `database/v002/changelog.md` + `database/v002/schema.dbml`; updated root `database/schema.dbml`. |
-| `workflow-backend` | OAuth handlers, session middleware, identity models, scoping middleware, /api/me, seed/migration cmd, updated query layer. |
-| `digital-factory-ui` | Login page, session-aware layout, account/workspace switcher, logout control. |
-
-`workspace-github-adapter` is **not** affected — its writes are keyed by `workspace_id`
-which is preserved.
+| `management-repo` | T0 (`workspace.yaml` entry for `user-service`); schema docs split into `database/user/` + `database/workflow/`; `database/workflow/schema.dbml` adds `workspaces.account_id`; `database/user/schema.dbml` is new. |
+| `user-service` (**new**) | Whole repo scaffold + OAuth + sessions + identity models + invitations + seeding cmd + Dockerfile + docker-compose. |
+| `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.account_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `SERVICE_TOKEN`). |
+| `digital-factory-ui` | Login page, session-aware layout, account/workspace switcher, logout control; two new env vars (`NEXT_PUBLIC_USER_SERVICE_URL`, `NEXT_PUBLIC_WORKFLOW_API_URL`). |
+| `workspace-github-adapter` | **No change** — `workspace_id` partitioning preserved. |
 
 ## Validation and Release Impact
 
 **Testing expectations:**
 
-- Unit: OAuth state generation/verification; session resolver; AccessibleWorkspaceIDs
-  derivation for combined account + per-workspace membership shapes.
-- Integration (Go): full OAuth callback against a mocked IdP; invitation consumption;
-  scoping middleware applied to a sample workspace endpoint.
-- Frontend: login flow; protected route redirect; logout; account-with-multiple-
-  workspaces UX.
-- Cross-tenant isolation test: user A in account X gets 404 (not 403, no enumeration)
-  when accessing a workspace in account Y.
+- **user-service unit:** OAuth state generation/verification; session resolver;
+  AccessibleWorkspaceIDs derivation across account + per-workspace membership
+  shapes; invitation acceptance atomicity.
+- **user-service integration:** full OAuth callback against a mocked IdP;
+  `/internal/sessions/validate` with valid/invalid/expired sessions and missing
+  service tokens.
+- **workflow-backend integration:** `RequireAuth` middleware applied to a sample
+  workspace endpoint; service-client retry/timeout behaviour; cache TTL behaviour
+  under churn.
+- **Cross-service E2E (docker-compose):** boot both services + both DBs; full
+  login flow → land on workspace → see scoped data → logout. Repeat with two
+  test accounts to verify isolation (404, not 403, on cross-account access).
+- **Frontend:** login flow against the real user-service; protected route
+  redirect; logout; account-with-multiple-workspaces UX.
 
 **Migration / config:**
 
-- Schema v002 is additive except for `workspaces.account_id` (new NOT NULL column).
-  Backfill must run inside the migration: insert Kitelabs account first, then update
-  all existing `workspaces.account_id`, then add NOT NULL constraint. No production
-  client data exists yet, so risk is bounded.
-- New env vars (listed above) must be set before deploy. Backend must fail fast on
-  missing OAuth client IDs/secrets.
+- `user_db` is a brand-new database — clean schema install via `golang-migrate`
+  (or chosen tool per D4).
+- `workflow_db` schema gains `workspaces.account_id`. Migration sequence:
+  1. Add column as nullable.
+  2. Run the seed cmd (creates Kitelabs account in user_db, backfills
+     `workflow_db.workspaces.account_id` to that account's UUID).
+  3. Apply NOT NULL constraint in a follow-up migration.
+
+  No production client data exists yet, so risk is bounded.
+- New env vars (listed above) must be set before deploy. Backends must fail fast
+  on missing OAuth client IDs/secrets and `SERVICE_TOKEN`.
 
 **Rollout:**
 
-- Dev first; verify with two test Google accounts + one GitHub account.
-- Promote when E2E suite is green and P1/P2 (OAuth apps) are provisioned for the
-  target environment.
-- No staging environment in this workspace (`workspace.yaml -> staging: enabled: false`).
+- Dev first; verify with two test Google accounts + one GitHub account on
+  docker-compose.
+- Promote when E2E suite is green and P1–P4 are provisioned for the target
+  environment.
+- No staging environment in this workspace (`workspace.yaml -> staging: enabled:
+  false`).
 
 **Backward compatibility:**
 
-- The existing dashboard's API surface gains an auth gate. Internal callers (manual
-  curl, dashboards) must include a session cookie or be migrated to authenticated
-  service tokens later (out of M1 scope; document as known follow-up).
+- workflow-backend's existing API surface gains an auth gate. Internal callers
+  (manual curl, scripted dashboards) must include a session cookie or be migrated
+  to authenticated service tokens later — documented as known follow-up.
 - The GitHub adapter is unaffected.
 
 **Handoff implications:**
 
-- `m1-client-delivery-visibility` can begin once T2 (and ideally T3) merge — its read
-  endpoints sit behind the same scoping middleware.
-- M2/M3 inherit `users`, `accounts`, `memberships`, `sessions` — they do not need to
-  rebuild identity.
-- M6 (enterprise SSO / SCIM) will replace federated-only login with SAML/OIDC IdPs;
-  the data model added here is compatible (auth_identities just gain new provider
-  values).
+- `m1-client-delivery-visibility` can begin once T2b and T3 merge — its read
+  endpoints sit behind `RequireAuth`.
+- M2 (Hermes agent) and M3 (Thread) consume `user-service` from day one — no
+  rework required.
+- M6 (enterprise SSO / SCIM) will replace federated-only login with SAML/OIDC
+  IdPs; the data model added here is compatible (`auth_identities` just gain new
+  provider values).
+- `SERVICE_TOKEN` rotation and mTLS hardening are M6 concerns.
