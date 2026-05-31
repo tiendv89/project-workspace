@@ -1,28 +1,31 @@
 id: T4
 title: digital-factory-ui — /login page + session-aware root layout + logout
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T4
-
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:27:20+0700
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T08:36:31.406Z
 pr:
   url: null
   status: null
-
+workspace_pr: null
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-05-31T15:23:08+0700
-    note: >-
-      Task created by tech-lead Phase 2. No hard execution blockers — can begin
-      against a stubbed /api/me contract. Soft-blocked on T2b for end-to-end test.
+    note: Task created by tech-lead Phase 2. No hard execution blockers — can begin
+      against a stubbed /api/me contract. Soft-blocked on T2b for end-to-end
+      test.
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-05-31T15:27:20+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T08:36:31.406Z
+    note: Claimed via git-based claim protocol.
