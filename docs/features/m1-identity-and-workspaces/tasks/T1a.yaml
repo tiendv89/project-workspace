@@ -41,3 +41,7 @@ log:
     rag_query: user-service DB schema v001 (identity + tenancy + sessions)
       m1-identity-and-workspaces
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-31T08:40:13+0000
+    note: executor work phase begun.
