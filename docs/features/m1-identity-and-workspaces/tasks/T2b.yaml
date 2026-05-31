@@ -12,7 +12,7 @@ branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T11:51:18.348Z
+  last_updated_at: 2026-05-31T11:52:51.073Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/2
   status: open
@@ -86,3 +86,9 @@ log:
           output: 30949
           model: claude-sonnet-4-6
     at: 2026-05-31T11:51:18.348Z
+conflict_state: resolving
+rebase_log:
+  - at: 2026-05-31T11:52:51.073Z
+    action: rebase_started
+    by: pentative@gmail.com
+    note: Rebase claimed; targeting origin/feature/m1-identity-and-workspaces.
