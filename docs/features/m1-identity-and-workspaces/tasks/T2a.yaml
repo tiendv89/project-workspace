@@ -1,7 +1,7 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: reviewing
+status: change_requested
 depends_on:
   - T0
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T09:52:44.123Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T09:59:23.882Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/1
   status: open
@@ -58,3 +58,10 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T09:52:44.123Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: 🔴 CI lint job concluded failure. 🔴 pressly/goose/v3 and pgx/v5 missing
+      from go.mod (go.mod) — T2a subtask not fully implemented; migration
+      Makefile targets broken.
+    review_url: https://github.com/tiendv89/user-service/pull/1#pullrequestreview-4396680858
+    at: 2026-05-31T09:59:23.882Z
