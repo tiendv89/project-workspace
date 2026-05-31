@@ -1,7 +1,7 @@
 feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
-feature_status: ready_for_implementation
-current_stage: implementation
+feature_status: in_handoff
+current_stage: handoff
 next_action: Owning teams may begin execution. T0, T1a, T1b, T4 are ready;
   downstream tasks unblock as upstream tasks reach done.
 stages:
@@ -41,6 +41,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/413
 history:
   - at: 2026-05-31T13:42:49+0700
     actor: pye@swellnetwork.io
@@ -68,3 +69,14 @@ revalidation:
 feature_branch: feature/m1-identity-and-workspaces
 feature_branch_base_sha: 5d0592e8995d9ba560fd142d9dbb58cb9f7a093c
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/402
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/413
+impl_feature_prs:
+  - repo: user-service
+    url: https://github.com/tiendv89/user-service/pull/4
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/15
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/84
+    status: open
