@@ -55,3 +55,11 @@ log:
     by: pentative@gmail.com
     at: 2026-05-31T15:06:09.871Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T15:06:14.657Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend — service client + RequireAuth +
+      workspaces.organization_id + scoped queries m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
