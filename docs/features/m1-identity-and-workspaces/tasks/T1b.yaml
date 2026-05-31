@@ -13,7 +13,9 @@ execution:
 pr:
   url: https://github.com/tiendv89/project-workspace/pull/401
   status: open
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/405
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
