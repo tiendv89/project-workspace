@@ -1,15 +1,15 @@
 id: T4
 title: digital-factory-ui — /login page + session-aware root layout + logout
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-identity-and-workspaces-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T08:49:10.013Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T08:57:45.332Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/82
   status: open
@@ -58,3 +58,11 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T08:49:10.013Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 src/app/login/page.tsx: getProviderUrl() try/catch silently swallows
+      NEXT_PUBLIC_USER_SERVICE_URL missing error, returning a broken relative
+      URL fallback. Violates the fail-fast contract stated in .env.template and
+      inconsistent with getApiBase() in the workflow-backend client."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/82#pullrequestreview-4396621410
+    at: 2026-05-31T08:57:45.332Z
