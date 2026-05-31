@@ -19,10 +19,12 @@ What does exist:
   the core workspace tables (write side). Out of scope for M1 identity work.
 - `digital-factory-ui` — Next.js dashboard that reads workflow state and renders it.
   No auth-gated routes today; everything is implicitly "the operator".
-- `database/schema.dbml` (v001) — declares the **core** workspace tables: `workspaces`,
-  `workspace_repos`, `workspace_features`, `workspace_tasks`,
-  `workspace_feature_documents`, `workspace_activity_events`. Every core table already
-  carries `workspace_id`. No identity tables exist.
+- `database/workspace/schema.dbml` (was `database/schema.dbml` until this feature
+  introduced the per-service layout) — v001 declares the **core** workspace
+  tables: `workspaces`, `workspace_repos`, `workspace_features`, `workspace_tasks`,
+  `workspace_feature_documents`, `workspace_activity_events`. Every core table
+  already carries `workspace_id`. No identity tables exist; no `organization_id`
+  on `workspaces` yet (added by v002 in this feature).
 
 Repo-level boundaries (per `workspace.yaml`):
 - `workflow-backend` — owns workflow state reads and writes. Will gain a
@@ -479,9 +481,21 @@ A one-shot `cmd/seed` in `user-service`:
   ```
   The GitHub repo itself must be created (by ops with admin in the org). The
   `USER_SERVICE_LOCAL_PATH` env value must be set by every operator's local `.env`.
-- The schema docs for both DBs live under `database/` in this management repo.
-  Proposal: rename current `database/schema.dbml` → `database/workflow/schema.dbml`
-  and add `database/user/schema.dbml`. (To be confirmed in T1.)
+- The schema docs for both DBs live under `database/` in this management repo,
+  organised per service with the existing version-folder convention applied
+  inside each service subdirectory:
+  ```
+  database/
+    workspace/                  ← workflow / workspace-data backend (workflow_db)
+      schema.dbml               ← current applied schema
+      v001/{changelog.md, schema.dbml}
+      v002/{changelog.md, schema.dbml}   ← adds workspaces.organization_id (this feature)
+    user-service/               ← identity service (user_db)
+      schema.dbml               ← current applied schema
+      v001/{changelog.md, schema.dbml}   ← initial identity + tenancy (this feature)
+  ```
+  Version numbers advance independently per service. `docs/overview.md` §5
+  documents the convention.
 - The sibling feature `m1-client-delivery-visibility` consumes the `RequireAuth`
   middleware in `workflow-backend` + `/api/me` from `user-service`. It is **gated
   on this feature** but does not block any task here.
@@ -520,10 +534,11 @@ A one-shot `cmd/seed` in `user-service`:
   Set once at deploy time via env. No rotation tooling, no key versioning. A real
   rotation policy (and the mTLS upgrade discussed in §Constraints) is a known
   follow-up for M6 enterprise trust.
-- **D6 — Schema docs layout: split.** `database/user/schema.dbml` (new) +
-  `database/workflow/schema.dbml` (renamed from current `database/schema.dbml`).
-  Each DB has its own migration cadence, so a single combined DBML would obscure
-  ownership.
+- **D6 — Schema docs layout: per-service subdirectory.**
+  `database/user-service/` (new) + `database/workspace/` (moved from
+  `database/`), each containing its own `schema.dbml` plus sequential
+  `v<NNN>/{changelog.md, schema.dbml}` snapshots. Per-service version numbers
+  advance independently. See `docs/overview.md` §5 for the convention.
 - **D3 — Cookie domain: placeholder per environment.** The contract is fixed:
   FE and `user-service` must share a parent domain; `SESSION_COOKIE_DOMAIN` is
   set to that parent. Concrete values are operator-provided per environment.
@@ -570,7 +585,7 @@ D2 = placeholder PLATFORM_ADMIN_EMAILS (operator overrides per env)
 D3 = placeholder cookie domain (operator overrides per env)
 D4 = pressly/goose/v3
 D5 = static USER_SERVICE_TOKEN per env
-D6 = split schema docs (database/user/ + database/workflow/)
+D6 = per-service schema dirs (database/user-service/ + database/workspace/, with v<NNN>/ snapshots)
 ```
 
 External provisioning (owner: ops):
@@ -588,8 +603,8 @@ Task graph (proposed — finalised in Phase 2):
 T0: workspace.yaml — register user-service repo (management-repo)
   └── Can begin now — no blockers
   │
-  T1a: Schema for user_db (management-repo: database/user/schema.dbml)
-  T1b: Schema for workflow_db — add workspaces.organization_id (management-repo: database/workflow/schema.dbml)
+  T1a: Schema for user_db — database/user-service/v001/{changelog.md, schema.dbml} + database/user-service/schema.dbml (management-repo)
+  T1b: Schema for workflow_db — database/workspace/v002/{changelog.md, schema.dbml} + database/workspace/schema.dbml; adds workspaces.organization_id (management-repo)
        └── T1a and T1b run in parallel
        └── Both can begin now (D6 resolved — split layout)
 
@@ -638,7 +653,7 @@ Parallelism summary:
 
 | Repo (`workspace.yaml -> repos[].id`) | Change |
 |---|---|
-| `management-repo` | T0 (`workspace.yaml` entry for `user-service`); schema docs split into `database/user/` + `database/workflow/`; `database/workflow/schema.dbml` adds `workspaces.organization_id`; `database/user/schema.dbml` is new. |
+| `management-repo` | T0 (`workspace.yaml` entry for `user-service`); per-service schema docs under `database/user-service/` + `database/workspace/`, each with `v<NNN>/` snapshots; this feature adds `database/user-service/v001/` (new) and `database/workspace/v002/` (adds `workspaces.organization_id`). |
 | `user-service` (**new**) | Whole repo scaffold + OAuth + sessions + identity models + invitations + seeding cmd + Dockerfile + docker-compose. |
 | `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.organization_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `USER_SERVICE_TOKEN`). |
 | `digital-factory-ui` | Login page, session-aware layout, organization/workspace switcher, logout control; two new env vars (`NEXT_PUBLIC_USER_SERVICE_URL`, `NEXT_PUBLIC_WORKFLOW_API_URL`). |
