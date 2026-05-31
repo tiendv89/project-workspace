@@ -1,18 +1,20 @@
 id: T5
 title: digital-factory-ui — organization / workspace switcher driven by /api/me
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T4
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T5
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T09:11:04.714Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -22,3 +24,7 @@ log:
     by: pentative@gmail.com
     at: 2026-05-31T09:09:25.170Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T09:11:04.714Z
+    note: Claimed via git-based claim protocol.
