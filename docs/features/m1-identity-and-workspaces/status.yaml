@@ -2,8 +2,8 @@ feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead authors technical-design.md (tech-lead Phase 1).
+current_stage: tasks
+next_action: Tech lead runs tech-lead Phase 2 to produce tasks.md + tasks/T<n>.yaml.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         decision: approved
         comment: Approved.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-05-31T15:15:54+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-05-31T15:15:54+0700
+        decision: approved
+        comment: Approved.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -41,6 +45,12 @@ history:
     event: stage_approved
     stage: product_spec
     from_status: in_design
+    to_status: in_tdd
+  - at: 2026-05-31T15:15:54+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: technical_design
+    from_status: in_tdd
     to_status: in_tdd
 
 revalidation:
