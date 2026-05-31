@@ -1,16 +1,21 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: reviewing
+status: blocked
 depends_on:
   - T0
-blocked_reason: null
+blocked_reason: "GitHub REST API returns HTTP 404 for all tiendv89/user-service
+  endpoints with the current GITHUB_TOKEN (user: zbotdev). Cannot post review
+  comment (Step 6a failed non-422) or check CI. Local code review confirms all
+  T2a subtasks implemented correctly and tests pass, but review cannot be
+  posted. Human intervention required to post the GitHub review and merge PR
+  #1."
 blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-05-31T10:34:16.138Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-31T10:43:42.636Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/1
   status: open
@@ -112,3 +117,13 @@ log:
     by: noreply@tiendv.dev
     at: 2026-05-31T10:34:16.138Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "GitHub REST API returns HTTP 404 for all tiendv89/user-service endpoints
+      with the current GITHUB_TOKEN (user: zbotdev). Cannot post review comment
+      (Step 6a failed non-422) or check CI. Local code review confirms all T2a
+      subtasks implemented correctly and tests pass, but review cannot be
+      posted. Human intervention required to post the GitHub review and merge PR
+      #1."
+    at: 2026-05-31T10:43:42.636Z
+blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
