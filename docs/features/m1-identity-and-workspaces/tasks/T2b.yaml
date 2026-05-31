@@ -2,7 +2,7 @@ id: T2b
 title: user-service — OAuth + sessions + identity + invitations + /api/me +
   /internal/sessions/validate
 repo: user-service
-status: reviewing
+status: change_requested
 depends_on:
   - T1a
   - T2a
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T11:29:17.657Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T11:38:52.663Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/2
   status: open
@@ -61,3 +61,13 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T11:29:17.657Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: 🔴 upsertIdentityAndConsumeInvitations runs user/identity ops against
+      pool, not tx — atomicity broken (router.go:211). 🟡 handleValidateSession
+      bypasses scs.Load API, decodes gob internals directly (session_decode.go).
+      🟡 Missing mocked-IdP callback integration test. 🟡 Missing
+      /internal/sessions/validate session DB validation tests
+      (valid/invalid/expired).
+    review_url: https://github.com/tiendv89/user-service/pull/2#pullrequestreview-4396798699
+    at: 2026-05-31T11:38:52.663Z
