@@ -102,3 +102,9 @@ repos:
     local_path: env:WORKSPACE_GITHUB_ADAPTER_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
+
+  - id: user-service
+    github: git@github.com:tiendv89/user-service.git
+    local_path: env:USER_SERVICE_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
