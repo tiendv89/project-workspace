@@ -2,7 +2,7 @@ id: T3
 title: workflow-backend — service client + RequireAuth +
   workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: change_requested
+status: in_progress
 depends_on:
   - T1b
   - T2b
@@ -12,7 +12,7 @@ branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-31T15:36:22.682Z
+  last_updated_at: 2026-05-31T15:38:00.573Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/14
   status: open
@@ -91,3 +91,7 @@ log:
       read query' incomplete (internal/database/queries.go)."
     review_url: https://github.com/tiendv89/workflow-backend/pull/14#pullrequestreview-4397131145
     at: 2026-05-31T15:36:22.682Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-31T15:38:00.573Z
+    note: Fix agent claimed.
