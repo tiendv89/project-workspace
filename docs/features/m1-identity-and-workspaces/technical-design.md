@@ -286,7 +286,7 @@ user-service/
     serviceauth/             # service-token middleware for /internal/*
   database/
     schema.dbml              # canonical DBML for user_db
-    migrations/              # SQL migrations (tool TBD per D4)
+    migrations/              # SQL migrations (pressly/goose/v3 — same as workflow-backend)
   Dockerfile
   docker-compose.yaml        # for local dev (service + Postgres)
   go.mod / go.sum
@@ -485,25 +485,41 @@ A one-shot `cmd/seed` in `user-service`:
   parent-domain cookie covers both (e.g. FE on `app.kitelabs.dev`,
   user-service on `users.app.kitelabs.dev`, cookie domain `.app.kitelabs.dev`).
 
+**Resolved decisions:**
+
+- **D1 — OAuth scopes:**
+  - Google: `openid email profile`. (`openid` enables id_token + the `sub` claim
+    used as `auth_identities.provider_sub`; `email` and `profile` cover the user
+    info fetch.)
+  - GitHub: `read:user user:email`. (`read:user` enables `GET /user` for profile;
+    `user:email` enables `GET /user/emails` for the primary verified email,
+    which GitHub does not always return on the profile endpoint.)
+  - **No `repo` scope on GitHub** — repo-side bot work is M6, not M1. We will
+    request it under a separate OAuth flow at that time.
+- **D2 — `PLATFORM_ADMIN_EMAILS` for first deploy: placeholder.** `.env.template`
+  and deployment configs ship `PLATFORM_ADMIN_EMAILS=placeholder@example.com` and
+  the operator overrides per environment before first login. M1 does not block on
+  the real list.
+- **D4 — Migration tool: `pressly/goose/v3`** for both `user_db` and `workflow_db`.
+  This matches what `workflow-backend` already uses (`migrations/*.sql` with
+  `-- +goose Up` / `-- +goose Down` directives; Makefile targets `migrate-up` and
+  `new-migration`). `user-service` adopts the same layout and Makefile targets;
+  the binary embeds goose and the migration command runs via
+  `go run ./cmd migration -u 0` per workflow-backend's pattern.
+- **D5 — `USER_SERVICE_TOKEN` rotation policy: static per environment for M1.**
+  Set once at deploy time via env. No rotation tooling, no key versioning. A real
+  rotation policy (and the mTLS upgrade discussed in §Constraints) is a known
+  follow-up for M6 enterprise trust.
+- **D6 — Schema docs layout: split.** `database/user/schema.dbml` (new) +
+  `database/workflow/schema.dbml` (renamed from current `database/schema.dbml`).
+  Each DB has its own migration cadence, so a single combined DBML would obscure
+  ownership.
+
 **Unresolved decisions** (must be locked before tasks T2b/T3 reach implementation):
 
-- **D1** — Final OAuth scopes:
-  - Google: `openid email profile`.
-  - GitHub: `read:user user:email` (**no `repo` scope** — bot work is M6).
-  - Lock: confirm with security review.
-- **D2** — Final list of `PLATFORM_ADMIN_EMAILS` for first deploy.
 - **D3** — Domain plan: pick FE subdomain + user-service subdomain so a parent-
   domain cookie covers both. Also pick the dev equivalent (loopback aliases or
   `lvh.me`).
-- **D4** — Migration tool for both DBs. Recommended: `golang-migrate` (most
-  popular in Go ecosystem; simple SQL files; supports both `user_db` and
-  `workflow_db` independently with no shared state).
-- **D5** — `USER_SERVICE_TOKEN` rotation policy. M1: static, set once per environment.
-  Acceptable; documented as a known follow-up.
-- **D6** — Schema docs layout in `management-repo` — keep one `database/schema.dbml`
-  with both services' tables annotated, or split into `database/user/` and
-  `database/workflow/`. Recommendation: split, because each DB has its own
-  migration cadence.
 
 **External provisioning (owner: ops):**
 - **P1**: GitHub `tiendv89/user-service` repo created.
@@ -525,12 +541,14 @@ T2a (scaffold) or T2b (logic)**.
 External decisions (low-effort; unblock early):
 
 ```
-D1: OAuth scopes confirmed                ──┐
-D2: PLATFORM_ADMIN_EMAILS list            ──┤  all six are config/decision-level;
-D3: Cookie domain plan (FE + user-svc)    ──┤  none block writing T2a/T2b; must
-D4: Migration tool                        ──┤  land before T2b ships
-D5: USER_SERVICE_TOKEN rotation policy    ──┤
-D6: Schema docs layout                    ──┘
+D3: Cookie domain plan (FE + user-svc)    ──── one open item; config-level; does not block
+                                                writing T2a/T2b; must land before T2b ships
+
+(resolved: D1 = Google openid+email+profile / GitHub read:user+user:email;
+           D2 = placeholder PLATFORM_ADMIN_EMAILS;
+           D4 = pressly/goose/v3;
+           D5 = static USER_SERVICE_TOKEN per env;
+           D6 = split schema docs)
 ```
 
 External provisioning (owner: ops):
@@ -551,7 +569,7 @@ T0: workspace.yaml — register user-service repo (management-repo)
   T1a: Schema for user_db (management-repo: database/user/schema.dbml)
   T1b: Schema for workflow_db — add workspaces.account_id (management-repo: database/workflow/schema.dbml)
        └── T1a and T1b run in parallel
-       └── Both can begin now once D6 is decided (schema docs layout)
+       └── Both can begin now (D6 resolved — split layout)
 
 T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-service)
        └── BLOCKED on T0 (workspace.yaml entry) and P1 (GitHub repo exists)
@@ -560,7 +578,7 @@ T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-servi
             + /api/me + /internal/sessions/validate (user-service)
               └── BLOCKED on T1a (user_db schema must exist)
               └── BLOCKED on T2a (service scaffold must exist)
-              └── BLOCKED on D1, D3, D4, D5 (scopes, cookie domain, migration tool, service token)
+              └── BLOCKED on D3 (cookie domain plan)
               └── Soft-blocked on P2/P3 for E2E test; can be implemented + unit-tested without
               │
               T3: workflow-backend — service client + RequireAuth middleware
@@ -572,7 +590,7 @@ T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-servi
                         + first-login PLATFORM_ADMIN_EMAILS auto-grant (user-service)
                           └── BLOCKED on T2b (invitation + membership logic exists)
                           └── BLOCKED on T3 (account_id column exists in workflow_db)
-                          └── BLOCKED on D2 (admin email list)
+                          └── (D2 resolved as placeholder; operator overrides per env)
 
 T4: digital-factory-ui — /login page + session-aware root layout
     + /api/me consumer + logout control (digital-factory-ui)
@@ -586,8 +604,8 @@ T4: digital-factory-ui — /login page + session-aware root layout
 
 Parallelism summary:
 - **T0** runs first (just one workspace.yaml edit).
-- **T1a, T1b, T4** all run in parallel as soon as T0 lands and D6 is decided.
-  T4 uses a stub `/api/me` contract.
+- **T1a, T1b, T4** all run in parallel as soon as T0 lands. T4 uses a stub
+  `/api/me` contract.
 - **T2a** runs in parallel with T1a/T1b once P1 lands.
 - **T2b** depends on T1a and T2a.
 - **T3** depends on T1b and T2b.
@@ -625,8 +643,8 @@ Parallelism summary:
 
 **Migration / config:**
 
-- `user_db` is a brand-new database — clean schema install via `golang-migrate`
-  (or chosen tool per D4).
+- `user_db` is a brand-new database — clean schema install via `pressly/goose/v3`
+  (same tool used by `workflow-backend`).
 - `workflow_db` schema gains `workspaces.account_id`. Migration sequence:
   1. Add column as nullable.
   2. Run the seed cmd (creates Kitelabs account in user_db, backfills
