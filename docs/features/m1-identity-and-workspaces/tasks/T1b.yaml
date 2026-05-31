@@ -1,7 +1,7 @@
 id: T1b
 title: workspace DB schema v002 — add workspaces.organization_id
 repo: management-repo
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,9 +9,9 @@ branch: feature/m1-identity-and-workspaces-T1b
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-31T08:40:38+0000
+  last_updated_at: 2026-05-31T08:45:13.405Z
 pr:
-  url: https://github.com/tiendv89/project-workspace/pull/401
+  url: https://github.com/tiendv89/project-workspace/pull/405
   status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/405
