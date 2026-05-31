@@ -12,7 +12,7 @@ branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T13:02:44.241Z
+  last_updated_at: 2026-05-31T13:05:26+0000
 pr:
   url: null
   status: null
@@ -42,3 +42,7 @@ log:
     rag_query: workflow-backend — service client + RequireAuth +
       workspaces.organization_id + scoped queries m1-identity-and-workspaces
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T13:05:26+0000
+    note: executor work phase begun.
