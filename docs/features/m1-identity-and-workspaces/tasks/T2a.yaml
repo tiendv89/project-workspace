@@ -1,7 +1,7 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: in_review
+status: reviewing
 depends_on:
   - T0
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T09:52:29.918Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-31T09:52:44.123Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/1
   status: open
@@ -54,3 +54,7 @@ log:
           output: 21243
           model: claude-sonnet-4-6
     at: 2026-05-31T09:52:29.918Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T09:52:44.123Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
