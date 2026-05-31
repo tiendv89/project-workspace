@@ -9,7 +9,7 @@
 
 The platform today has **no identity layer**. The backend (`workflow-backend`,
 Go/Gin/pgx) and frontend (`digital-factory-ui`, Next.js) operate without a logged-in
-user — there is no `user`, no `account`/`org`, no `membership`, and the existing
+user — there is no `user`, no `organization`, no `membership`, and the existing
 `workspaces` table has no owner.
 
 What does exist:
@@ -28,7 +28,7 @@ Repo-level boundaries (per `workspace.yaml`):
 - `workflow-backend` — owns workflow state reads and writes. Will gain a
   service-to-service client for `user-service` and a `RequireAuth` middleware; will
   **not** own identity tables.
-- `digital-factory-ui` — owns login UI, session-aware routing, and account/workspace UX.
+- `digital-factory-ui` — owns login UI, session-aware routing, and organization/workspace UX.
   Talks to **both** services after M1.
 - `management-repo` (this repo) — owns the canonical schema docs for **both** DBs and
   the feature/workflow YAML.
@@ -42,23 +42,23 @@ Repo-level boundaries (per `workspace.yaml`):
 **What must change:**
 
 1. Stand up a **new `user-service`** repo + service + database. Owns: `users`,
-   `auth_identities`, `accounts`, `memberships`, `workspace_memberships`,
-   `account_invitations`, `sessions`.
+   `auth_identities`, `organizations`, `memberships`, `workspace_memberships`,
+   `organization_invitations`, `sessions`.
 2. Implement server-side OAuth flows for **Google** and **GitHub** in `user-service`
    (Authorization Code, library-handled session/cookie — not a custom auth system).
 3. Expose two surfaces from `user-service`:
    - **Public** (browser-facing): `/auth/*`, `/api/me`, `/auth/logout`.
    - **Internal** (service-to-service): `/internal/sessions/validate` returning
      `{user_id, accessible_workspace_ids}` to other services.
-4. Add `account_id` to `workspaces` in `workflow-backend`'s database — as a plain
+4. Add `organization_id` to `workspaces` in `workflow-backend`'s database — as a plain
    UUID column, **no cross-DB FK** (the two services run separate Postgres instances).
 5. Add a `RequireAuth` middleware in `workflow-backend` that validates the session
    via `user-service` and scopes every workspace-scoped read by
    `accessible_workspace_ids`.
-6. Add login UI + session-aware layout + account/workspace switcher in
+6. Add login UI + session-aware layout + organization/workspace switcher in
    `digital-factory-ui`. The frontend gains two base URLs — one per service.
-7. Seed an internal "Kitelabs" account in `user-service`'s DB, backfill all existing
-   workspaces with that account's ID, and grant the delivery team `platform_admin`
+7. Seed an internal "Kitelabs" organization in `user-service`'s DB, backfill all existing
+   workspaces with that organization's ID, and grant the delivery team `platform_admin`
    memberships via an env-driven email list.
 
 **What must stay stable:**
@@ -79,7 +79,7 @@ Repo-level boundaries (per `workspace.yaml`):
   `alexedwards/scs/v2` + `scs/postgresstore` (sessions).
 - Self-hosted identity in our own Go code (no Auth0 / Clerk / Supabase Auth). We
   consume Google + GitHub as IdPs only.
-- B2B services model — clients are invited; no self-serve account creation in M1.
+- B2B services model — clients are invited; no self-serve organization creation in M1.
 - Read-only client surface (per sibling feature) — no client mutations in M1.
 - **Microservice split from day one** — `user-service` and `workflow-backend` are
   separate services with separate Postgres instances. This is a deliberate decision
@@ -127,7 +127,7 @@ session store directly — it calls `/internal/sessions/validate`.
 
 **Selected: 2A.**
 
-### Option 3 — Account linking across providers
+### Option 3 — Identity linking across providers
 
 **Option 3A: First-login creates user; subsequent same-provider login matches by
 `(provider, provider_sub)`; cross-provider linking only when a logged-in user adds
@@ -143,24 +143,24 @@ the second provider.**
 
 ### Option 4 — Per-workspace scoping model
 
-**Option 4A: Account membership + optional per-workspace overrides**
-- `memberships(user_id, account_id, role)` grants account-wide access.
+**Option 4A: Organization membership + optional per-workspace overrides**
+- `memberships(user_id, organization_id, role)` grants organization-wide access.
 - `workspace_memberships(user_id, workspace_id)` is **opt-in scoping** — if any rows
-  exist for that user in that account, they are limited to those workspaces.
-  Otherwise account membership grants access to everything in the account.
+  exist for that user in that organization, they are limited to those workspaces.
+  Otherwise organization membership grants access to everything in the organization.
 
 **Option 4B: Per-workspace membership only**
 - Cons: provisioning overhead.
 
 **Selected: 4A.**
 
-### Option 5 — Account provisioning model for M1
+### Option 5 — Organization provisioning model for M1
 
-**Option 5A: Invitation-only.** Internal admin creates accounts + workspaces +
+**Option 5A: Invitation-only.** Internal admin creates organizations + workspaces +
 invitations; new client logs in, invitation matched by verified provider email
 consumed atomically inside `user-service`.
 
-**Option 5B: Self-serve account creation.** Out of scope for M1.
+**Option 5B: Self-serve organization creation.** Out of scope for M1.
 
 **Selected: 5A.**
 
@@ -188,7 +188,7 @@ future extraction work. See Chosen Design for the contract surface.
 ### Option 7 — Database topology
 
 **Option 7A: Shared DB, shared schema.** Identity tables and workflow tables in one
-Postgres. FKs intact (`workspaces.account_id → accounts.id`). Cheapest path; ties
+Postgres. FKs intact (`workspaces.organization_id → organizations.id`). Cheapest path; ties
 hard to 6A.
 
 **Option 7B: Shared DB, separate Postgres schemas (`users.*` + `public.*`).** One
@@ -197,13 +197,13 @@ extraction is `pg_dump --schema=users` into a new instance. Compatible with 6A o
 6B; cheap.
 
 **Option 7C: Separate Postgres instances per service from day one.** Two DBs
-deployed independently. `workspaces.account_id` is a plain UUID column with no
+deployed independently. `workspaces.organization_id` is a plain UUID column with no
 cross-DB FK — application-level referential integrity only. No future DB
 migration.
 
 **Selected: 7C.** Mandated by 6B — each service owns its own DB. The cost is the
-loss of an FK on `workspaces.account_id` and the need to enforce that integrity in
-`user-service` (the service that issues `account_id` values in session payloads)
+loss of an FK on `workspaces.organization_id` and the need to enforce that integrity in
+`user-service` (the service that issues `organization_id` values in session payloads)
 and in `workflow-backend` (which trusts those values).
 
 ## Chosen Design
@@ -234,9 +234,9 @@ and in `workflow-backend` (which trusts those values).
      │  │   POST /internal/sessions/validate                │
      │  │     → { user_id, accessible_workspace_ids[] }     │
      │  │                                                   │
-     │  │  Owns: users, auth_identities, accounts,          │
+     │  │  Owns: users, auth_identities, organizations,     │
      │  │  memberships, workspace_memberships,              │
-     │  │  account_invitations, sessions                    │
+     │  │  organization_invitations, sessions               │
      │  └────────────────────┬──────────────────────────────┘
      │                       │ pgx
      │                       ▼
@@ -255,8 +255,8 @@ and in `workflow-backend` (which trusts those values).
 │    → caches result per session in       │
 │      memory (~30s TTL)                  │
 │  + AccessibleWorkspaceIDs from cache    │
-│  + workspaces.account_id (plain UUID,   │
-│    no cross-DB FK)                      │
+│  + workspaces.organization_id (plain    │
+│    UUID, no cross-DB FK)                │
 │                                         │
 │  Owns: workspaces, workspace_features,  │
 │  workspace_tasks, workspace_activity_   │
@@ -286,12 +286,12 @@ this repo for M1** — all OAuth, session, and identity logic is implemented in 
 ```
 user-service/
   cmd/server/main.go         # HTTP entrypoint
-  cmd/seed/main.go           # one-shot Kitelabs-account seeder
+  cmd/seed/main.go           # one-shot Kitelabs-organization seeder
   internal/
     oauth/                   # provider configs, code exchange, userinfo fetch
     sessions/                # scs configuration, /internal/sessions/validate
     users/                   # users + auth_identities CRUD
-    accounts/                # accounts, memberships, workspace_memberships, invitations
+    organizations/           # organizations, memberships, workspace_memberships, invitations
     httpapi/                 # gin routes wiring the above together
     serviceauth/             # service-token middleware for /internal/*
   database/
@@ -307,7 +307,7 @@ user-service/
 | Method | Path | Purpose |
 |---|---|---|
 | GET | `/auth/<provider>/start` | Generates per-flow `state`, stores in scs, redirects to IdP authorize URL |
-| GET | `/auth/<provider>/callback` | Verifies `state`, exchanges code, fetches user info, upserts user + auth_identity, consumes any matching `account_invitation` inside a single user_db transaction, sets session cookie, redirects to FE |
+| GET | `/auth/<provider>/callback` | Verifies `state`, exchanges code, fetches user info, upserts user + auth_identity, consumes any matching `organization_invitation` inside a single user_db transaction, sets session cookie, redirects to FE |
 | POST | `/auth/logout` | Destroys session, clears cookie |
 | GET | `/api/me` | Returns `{user, memberships, accessible_workspace_ids}` for current session; 401 otherwise |
 
@@ -345,7 +345,7 @@ auth_identities(
 )
 indexes: (provider, provider_sub) unique, user_id
 
-accounts(
+organizations(
   id uuid pk,
   slug text unique not null,
   name text not null,
@@ -355,11 +355,11 @@ accounts(
 memberships(
   id uuid pk,
   user_id uuid -> users.id not null,
-  account_id uuid -> accounts.id not null,
+  organization_id uuid -> organizations.id not null,
   role text not null,             -- 'platform_admin' | 'client_member' for M1
   created_at, updated_at
 )
-indexes: (user_id, account_id) unique, account_id
+indexes: (user_id, organization_id) unique, organization_id
 
 workspace_memberships(
   id uuid pk,
@@ -368,18 +368,18 @@ workspace_memberships(
   created_at
 )
 indexes: (user_id, workspace_id) unique, workspace_id
--- presence of any row here for (user, account) scopes the user to those workspaces only
+-- presence of any row here for (user, organization) scopes the user to those workspaces only
 
-account_invitations(
+organization_invitations(
   id uuid pk,
-  account_id uuid -> accounts.id not null,
+  organization_id uuid -> organizations.id not null,
   email text not null,
   role text not null,
   invited_by_user_id uuid -> users.id,
-  workspace_ids jsonb,            -- null = all workspaces in the account; otherwise specific UUIDs from workflow_db
+  workspace_ids jsonb,            -- null = all workspaces in the organization; otherwise specific UUIDs from workflow_db
   created_at, expires_at, accepted_at, accepted_by_user_id uuid -> users.id
 )
-indexes: (account_id, lower(email)), expires_at
+indexes: (organization_id, lower(email)), expires_at
 
 sessions(
   -- managed by scs/postgresstore — schema dictated by the library
@@ -390,8 +390,8 @@ sessions(
 
 ```text
 workspaces  (existing — modified)
-  + account_id uuid not null      -- plain UUID; no FK (account lives in user_db)
-  + index on account_id
+  + organization_id uuid not null      -- plain UUID; no FK (organization lives in user_db)
+  + index on organization_id
 
 -- All other workflow_db tables remain unchanged (v001 schema).
 ```
@@ -408,23 +408,23 @@ workspaces  (existing — modified)
 - **Query layer** — every workspace-scoped read query gains a
   `WHERE workspace_id = ANY($accessible)` filter. Helper:
   `func (q *Queries) ScopedWorkspaceIDs(ctx) []uuid.UUID` reads from `AuthCtx`.
-- **`internal/workspaces/`** — `account_id` becomes a required field on create.
-  On create, the handler reads `account_id` from the validated session payload
+- **`internal/workspaces/`** — `organization_id` becomes a required field on create.
+  On create, the handler reads `organization_id` from the validated session payload
   (the caller's membership context) and stores it on the row.
 
 ### Roles (M1)
 
-- `platform_admin` — Kitelabs internal team. Sees all accounts and workspaces.
+- `platform_admin` — Kitelabs internal team. Sees all organizations and workspaces.
   Auto-granted on first login if the user's verified email is in
   `PLATFORM_ADMIN_EMAILS`.
 - `client_member` — invited client user. Read-only at the application layer.
 
-### Account seeding & data migration
+### Organization seeding & data migration
 
 A one-shot `cmd/seed` in `user-service`:
-1. Creates `accounts(slug='kitelabs', name='Kitelabs')` if absent.
-2. Reads `WORKFLOW_DB_DSN` and updates `workflow_db.workspaces.account_id` for all
-   existing rows to the Kitelabs account ID. (This is the one cross-DB write in
+1. Creates `organizations(slug='kitelabs', name='Kitelabs')` if absent.
+2. Reads `WORKFLOW_DB_DSN` and updates `workflow_db.workspaces.organization_id` for all
+   existing rows to the Kitelabs organization ID. (This is the one cross-DB write in
    M1; it runs once at deploy and is idempotent.)
 3. `PLATFORM_ADMIN_EMAILS` is consulted at first-login time inside
    `user-service` — no seeded user rows. When an admin first logs in via Google
@@ -437,7 +437,7 @@ A one-shot `cmd/seed` in `user-service`:
   link to `${NEXT_PUBLIC_USER_SERVICE_URL}/auth/<provider>/start`.
 - Session-aware root layout: on mount, fetch `${NEXT_PUBLIC_USER_SERVICE_URL}/api/me`;
   on 401, redirect to `/login`.
-- Account / workspace switcher reads from `/api/me`.
+- Organization / workspace switcher reads from `/api/me`.
 - Logout control → `POST ${NEXT_PUBLIC_USER_SERVICE_URL}/auth/logout`.
 - All workflow data fetches go to `${NEXT_PUBLIC_WORKFLOW_API_URL}` and send the
   session cookie (browser does this automatically once cookie domain is
@@ -457,7 +457,7 @@ A one-shot `cmd/seed` in `user-service`:
 | `FRONTEND_BASE_URL` | Used for post-login redirect |
 | `PLATFORM_ADMIN_EMAILS` | Comma-separated emails auto-granted `platform_admin` on first login |
 | `USER_SERVICE_TOKEN` | Shared secret accepted on `/internal/*` (must match the same env var in workflow-backend) |
-| `WORKFLOW_DB_DSN` (seed cmd only) | For one-time backfill of `workspaces.account_id` |
+| `WORKFLOW_DB_DSN` (seed cmd only) | For one-time backfill of `workspaces.organization_id` |
 
 **`workflow-backend`:**
 
@@ -589,7 +589,7 @@ T0: workspace.yaml — register user-service repo (management-repo)
   └── Can begin now — no blockers
   │
   T1a: Schema for user_db (management-repo: database/user/schema.dbml)
-  T1b: Schema for workflow_db — add workspaces.account_id (management-repo: database/workflow/schema.dbml)
+  T1b: Schema for workflow_db — add workspaces.organization_id (management-repo: database/workflow/schema.dbml)
        └── T1a and T1b run in parallel
        └── Both can begin now (D6 resolved — split layout)
 
@@ -604,14 +604,14 @@ T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-servi
               └── Concrete D3 cookie-domain values needed at deploy time only
               │
               T3: workflow-backend — service client + RequireAuth middleware
-                  + workspaces.account_id + scoped queries (workflow-backend)
-                    └── BLOCKED on T1b (workspaces.account_id column must exist)
+                  + workspaces.organization_id + scoped queries (workflow-backend)
+                    └── BLOCKED on T1b (workspaces.organization_id column must exist)
                     └── BLOCKED on T2b (/internal/sessions/validate must exist)
                     │
-                    T6: user-service seed — Kitelabs account + workspaces backfill
+                    T6: user-service seed — Kitelabs organization + workspaces backfill
                         + first-login PLATFORM_ADMIN_EMAILS auto-grant (user-service)
                           └── BLOCKED on T2b (invitation + membership logic exists)
-                          └── BLOCKED on T3 (account_id column exists in workflow_db)
+                          └── BLOCKED on T3 (organization_id column exists in workflow_db)
                           └── (D2 resolved as placeholder; operator overrides per env)
 
 T4: digital-factory-ui — /login page + session-aware root layout
@@ -619,7 +619,7 @@ T4: digital-factory-ui — /login page + session-aware root layout
       └── Can begin now using a stub /api/me contract (parallel with T2a/T2b)
       └── BLOCKED on T2b for end-to-end test
       │
-      T5: digital-factory-ui — account / workspace switcher driven by /api/me (digital-factory-ui)
+      T5: digital-factory-ui — organization / workspace switcher driven by /api/me (digital-factory-ui)
             └── BLOCKED on T4 (layout + session context must exist)
             └── BLOCKED on T2b for end-to-end test
 ```
@@ -638,10 +638,10 @@ Parallelism summary:
 
 | Repo (`workspace.yaml -> repos[].id`) | Change |
 |---|---|
-| `management-repo` | T0 (`workspace.yaml` entry for `user-service`); schema docs split into `database/user/` + `database/workflow/`; `database/workflow/schema.dbml` adds `workspaces.account_id`; `database/user/schema.dbml` is new. |
+| `management-repo` | T0 (`workspace.yaml` entry for `user-service`); schema docs split into `database/user/` + `database/workflow/`; `database/workflow/schema.dbml` adds `workspaces.organization_id`; `database/user/schema.dbml` is new. |
 | `user-service` (**new**) | Whole repo scaffold + OAuth + sessions + identity models + invitations + seeding cmd + Dockerfile + docker-compose. |
-| `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.account_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `USER_SERVICE_TOKEN`). |
-| `digital-factory-ui` | Login page, session-aware layout, account/workspace switcher, logout control; two new env vars (`NEXT_PUBLIC_USER_SERVICE_URL`, `NEXT_PUBLIC_WORKFLOW_API_URL`). |
+| `workflow-backend` | Service client for user-service; `RequireAuth` middleware; `workspaces.organization_id` column; scoped query layer; updated env (`USER_SERVICE_INTERNAL_URL`, `USER_SERVICE_TOKEN`). |
+| `digital-factory-ui` | Login page, session-aware layout, organization/workspace switcher, logout control; two new env vars (`NEXT_PUBLIC_USER_SERVICE_URL`, `NEXT_PUBLIC_WORKFLOW_API_URL`). |
 | `workspace-github-adapter` | **No change** — `workspace_id` partitioning preserved. |
 
 ## Validation and Release Impact
@@ -649,7 +649,7 @@ Parallelism summary:
 **Testing expectations:**
 
 - **user-service unit:** OAuth state generation/verification; session resolver;
-  AccessibleWorkspaceIDs derivation across account + per-workspace membership
+  AccessibleWorkspaceIDs derivation across organization + per-workspace membership
   shapes; invitation acceptance atomicity.
 - **user-service integration:** full OAuth callback against a mocked IdP;
   `/internal/sessions/validate` with valid/invalid/expired sessions and missing
@@ -659,18 +659,18 @@ Parallelism summary:
   under churn.
 - **Cross-service E2E (docker-compose):** boot both services + both DBs; full
   login flow → land on workspace → see scoped data → logout. Repeat with two
-  test accounts to verify isolation (404, not 403, on cross-account access).
+  test organizations to verify isolation (404, not 403, on cross-organization access).
 - **Frontend:** login flow against the real user-service; protected route
-  redirect; logout; account-with-multiple-workspaces UX.
+  redirect; logout; organization-with-multiple-workspaces UX.
 
 **Migration / config:**
 
 - `user_db` is a brand-new database — clean schema install via `pressly/goose/v3`
   (same tool used by `workflow-backend`).
-- `workflow_db` schema gains `workspaces.account_id`. Migration sequence:
+- `workflow_db` schema gains `workspaces.organization_id`. Migration sequence:
   1. Add column as nullable.
-  2. Run the seed cmd (creates Kitelabs account in user_db, backfills
-     `workflow_db.workspaces.account_id` to that account's UUID).
+  2. Run the seed cmd (creates Kitelabs organization in user_db, backfills
+     `workflow_db.workspaces.organization_id` to that organization's UUID).
   3. Apply NOT NULL constraint in a follow-up migration.
 
   No production client data exists yet, so risk is bounded.
@@ -679,7 +679,7 @@ Parallelism summary:
 
 **Rollout:**
 
-- Dev first; verify with two test Google accounts + one GitHub account on
+- Dev first; verify with two test Google identities + one GitHub identity on
   docker-compose.
 - Promote when E2E suite is green and P1–P4 are provisioned for the target
   environment.
