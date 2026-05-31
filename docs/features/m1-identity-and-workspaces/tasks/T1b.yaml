@@ -31,3 +31,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-31T08:36:16.195Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-31T08:36:28.307Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/workflow-migrations-transfer/handoffs/handoff.md,
+      docs/features/workspace-data-backend/technical-design.md"
+    rag_query: workspace DB schema v002 — add workspaces.organization_id
+      m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
