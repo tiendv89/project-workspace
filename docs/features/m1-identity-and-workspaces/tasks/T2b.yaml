@@ -2,7 +2,7 @@ id: T2b
 title: user-service — OAuth + sessions + identity + invitations + /api/me +
   /internal/sessions/validate
 repo: user-service
-status: reviewing
+status: change_requested
 depends_on:
   - T1a
   - T2a
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T12:01:34.722Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T12:09:38.545Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/2
   status: open
@@ -94,6 +94,17 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T12:01:34.722Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "3 🟡 findings: (1) Missing mocked-IdP OAuth callback integration test
+      (carry-over from cycle 1). (2) Missing /internal/sessions/validate
+      valid/invalid/expired session DB tests (carry-over from cycle 1). (3)
+      accessible_workspace_ids returns JSON [] instead of null when wsIDs is
+      nil, breaking the documented nil=all-workspaces API contract for platform
+      admins (internal/httpapi/router.go handleValidateSession and handleMe). CI
+      passed. 0 🔴 blockers."
+    review_url: https://github.com/tiendv89/user-service/pull/2#pullrequestreview-4396834086
+    at: 2026-05-31T12:09:38.545Z
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-31T11:52:51.073Z
