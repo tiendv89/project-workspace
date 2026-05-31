@@ -1,7 +1,7 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: in_review
+status: done
 depends_on:
   - T0
 blocked_reason: null
@@ -129,4 +129,12 @@ log:
       per unblock target rule (pr.url is set). GitHub token/permission issue
       preventing reviewer agent from posting review is for the operator to
       resolve; task work itself is complete pending external review.
+  - action: done
+    by: pye@swellnetwork.io
+    at: 2026-05-31T18:01:20+0700
+    note: >-
+      Human accept. Reviewer cycles exhausted at MAX_REVIEW_CYCLES=3 due to a
+      GITHUB_TOKEN permission issue on tiendv89/user-service (not a code
+      defect); local review on cycle 3 confirmed all T2a subtasks implemented
+      and tests passing. Marking done. PR #1 still open — merge separately.
 blocked_suggestion: null
