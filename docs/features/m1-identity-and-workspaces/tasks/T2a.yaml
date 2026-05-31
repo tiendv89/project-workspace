@@ -1,15 +1,10 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: blocked
+status: in_review
 depends_on:
   - T0
-blocked_reason: "GitHub REST API returns HTTP 404 for all tiendv89/user-service
-  endpoints with the current GITHUB_TOKEN (user: zbotdev). Cannot post review
-  comment (Step 6a failed non-422) or check CI. Local code review confirms all
-  T2a subtasks implemented correctly and tests pass, but review cannot be
-  posted. Human intervention required to post the GitHub review and merge PR
-  #1."
+blocked_reason: null
 blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
 execution:
@@ -126,4 +121,12 @@ log:
       posted. Human intervention required to post the GitHub review and merge PR
       #1."
     at: 2026-05-31T10:43:42.636Z
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
+  - action: unblocked
+    by: pye@swellnetwork.io
+    at: 2026-05-31T17:47:57+0700
+    note: >-
+      Unblocked for review. PR #1 already open; resetting blocked → in_review
+      per unblock target rule (pr.url is set). GitHub token/permission issue
+      preventing reviewer agent from posting review is for the operator to
+      resolve; task work itself is complete pending external review.
+blocked_suggestion: null
