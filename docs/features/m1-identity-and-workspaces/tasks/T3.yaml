@@ -2,7 +2,7 @@ id: T3
 title: workflow-backend — service client + RequireAuth +
   workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on:
   - T1b
   - T2b
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T15:58:05.040Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-05-31T15:59:01.923Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/14
   status: open
@@ -133,3 +133,7 @@ log:
           output: 6310
           model: claude-sonnet-4-6
     at: 2026-05-31T15:58:05.040Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-31T15:59:01.923Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
