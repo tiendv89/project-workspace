@@ -31,3 +31,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-05-31T08:35:58.338Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-31T08:36:10.483Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: docs/roadmap-discussion.md,
+      docs/features/workspace-data-backend/technical-design.md,
+      docs/features/m1-identity-and-workspaces/technical-design.md"
+    rag_query: user-service DB schema v001 (identity + tenancy + sessions)
+      m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
