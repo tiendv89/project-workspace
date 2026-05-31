@@ -2,7 +2,7 @@ id: T2b
 title: user-service — OAuth + sessions + identity + invitations + /api/me +
   /internal/sessions/validate
 repo: user-service
-status: reviewing
+status: review_passed
 depends_on:
   - T1a
   - T2a
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-05-31T12:27:42.727Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T12:34:20.857Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/2
   status: open
@@ -124,6 +124,15 @@ log:
     by: noreply@anthropic.com
     at: 2026-05-31T12:27:42.727Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All three cycle-2 findings resolved: mocked-IdP callback integration test
+      added (callback_integration_test.go), validate-session tests added
+      covering valid/invalid/expired/missing-token cases,
+      accessible_workspace_ids correctly returns null (not []) for unrestricted
+      users. CI passed (lint + test). Zero 🔴 or 🟡 findings. PR squash-merged."
+    review_url: https://github.com/tiendv89/user-service/pull/2#pullrequestreview-4396861233
+    at: 2026-05-31T12:34:20.857Z
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-31T11:52:51.073Z
