@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — organization / workspace switcher driven by /api/me
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T5
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-31T09:33:57.891Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T09:34:23.908Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/83
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/407
   status: open
@@ -66,3 +66,7 @@ log:
       WorkspaceContext on cold load."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/83#pullrequestreview-4396654791
     at: 2026-05-31T09:33:57.891Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-31T09:34:23.908Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
