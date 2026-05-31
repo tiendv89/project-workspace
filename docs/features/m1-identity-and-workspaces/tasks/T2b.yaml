@@ -2,7 +2,7 @@ id: T2b
 title: user-service — OAuth + sessions + identity + invitations + /api/me +
   /internal/sessions/validate
 repo: user-service
-status: in_review
+status: reviewing
 depends_on:
   - T1a
   - T2a
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T12:00:59.267Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-31T12:01:34.722Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/2
   status: open
@@ -90,6 +90,10 @@ log:
     by: pentative@gmail.com
     at: 2026-05-31T12:00:59.267Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T12:01:34.722Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-05-31T11:52:51.073Z
