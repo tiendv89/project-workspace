@@ -1,7 +1,7 @@
 id: T0
 title: Register user-service in workspace.yaml
 repo: management-repo
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/m1-identity-and-workspaces-T0
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T08:36:49+0000
+  last_updated_at: 2026-05-31T08:40:21.013Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/403
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/403
   status: open
