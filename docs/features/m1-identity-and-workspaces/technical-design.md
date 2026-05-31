@@ -514,12 +514,26 @@ A one-shot `cmd/seed` in `user-service`:
   `database/workflow/schema.dbml` (renamed from current `database/schema.dbml`).
   Each DB has its own migration cadence, so a single combined DBML would obscure
   ownership.
+- **D3 — Cookie domain: placeholder per environment.** The contract is fixed:
+  FE and `user-service` must share a parent domain; `SESSION_COOKIE_DOMAIN` is
+  set to that parent. Concrete values are operator-provided per environment.
+  `.env.template` ships placeholders that any operator can override before first
+  deploy of each env:
+  ```
+  # FE and user-service must be sibling subdomains of SESSION_COOKIE_DOMAIN.
+  # Example dev:  FRONTEND_BASE_URL=http://app.lvh.me:3000
+  #               OAUTH_REDIRECT_BASE_URL=http://users.lvh.me:8081
+  #               SESSION_COOKIE_DOMAIN=.lvh.me
+  # Example prod: FRONTEND_BASE_URL=https://app.example.com
+  #               OAUTH_REDIRECT_BASE_URL=https://users.app.example.com
+  #               SESSION_COOKIE_DOMAIN=.app.example.com
+  FRONTEND_BASE_URL=<placeholder>
+  OAUTH_REDIRECT_BASE_URL=<placeholder>
+  SESSION_COOKIE_DOMAIN=<placeholder>
+  ```
+  Concrete dev/prod values lock at deploy time, not at design time.
 
-**Unresolved decisions** (must be locked before tasks T2b/T3 reach implementation):
-
-- **D3** — Domain plan: pick FE subdomain + user-service subdomain so a parent-
-  domain cookie covers both. Also pick the dev equivalent (loopback aliases or
-  `lvh.me`).
+**Unresolved decisions:** none.
 
 **External provisioning (owner: ops):**
 - **P1**: GitHub `tiendv89/user-service` repo created.
@@ -538,17 +552,15 @@ T2a (scaffold) or T2b (logic)**.
 
 ## Parallelization / Blocking Analysis
 
-External decisions (low-effort; unblock early):
+External decisions: **all resolved.**
 
 ```
-D3: Cookie domain plan (FE + user-svc)    ──── one open item; config-level; does not block
-                                                writing T2a/T2b; must land before T2b ships
-
-(resolved: D1 = Google openid+email+profile / GitHub read:user+user:email;
-           D2 = placeholder PLATFORM_ADMIN_EMAILS;
-           D4 = pressly/goose/v3;
-           D5 = static USER_SERVICE_TOKEN per env;
-           D6 = split schema docs)
+D1 = Google openid+email+profile / GitHub read:user+user:email
+D2 = placeholder PLATFORM_ADMIN_EMAILS (operator overrides per env)
+D3 = placeholder cookie domain (operator overrides per env)
+D4 = pressly/goose/v3
+D5 = static USER_SERVICE_TOKEN per env
+D6 = split schema docs (database/user/ + database/workflow/)
 ```
 
 External provisioning (owner: ops):
@@ -578,8 +590,8 @@ T2a: user-service repo scaffold — Go + Gin + pgx + Dockerfile + CI (user-servi
             + /api/me + /internal/sessions/validate (user-service)
               └── BLOCKED on T1a (user_db schema must exist)
               └── BLOCKED on T2a (service scaffold must exist)
-              └── BLOCKED on D3 (cookie domain plan)
               └── Soft-blocked on P2/P3 for E2E test; can be implemented + unit-tested without
+              └── Concrete D3 cookie-domain values needed at deploy time only
               │
               T3: workflow-backend — service client + RequireAuth middleware
                   + workspaces.account_id + scoped queries (workflow-backend)
