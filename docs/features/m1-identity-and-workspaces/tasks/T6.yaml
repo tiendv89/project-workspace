@@ -2,7 +2,7 @@ id: T6
 title: user-service seed — Kitelabs organization + workspaces backfill +
   PLATFORM_ADMIN_EMAILS auto-grant
 repo: user-service
-status: in_review
+status: reviewing
 depends_on:
   - T2b
   - T3
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T6
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-05-31T17:15:14.061Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-05-31T17:15:52.812Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/3
   status: open
@@ -60,3 +60,7 @@ log:
           output: 17305
           model: claude-sonnet-4-6
     at: 2026-05-31T17:15:14.061Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T17:15:52.812Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
