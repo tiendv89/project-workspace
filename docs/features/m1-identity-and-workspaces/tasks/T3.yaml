@@ -2,7 +2,7 @@ id: T3
 title: workflow-backend — service client + RequireAuth +
   workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: in_review
+status: done
 depends_on:
   - T1b
   - T2b
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T16:16:23.986Z
+  last_updated_by: pye@swellnetwork.io
+  last_updated_at: 2026-06-01T00:00:49+0700
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/14
   status: open
@@ -161,3 +161,12 @@ log:
           output: 16427
           model: claude-sonnet-4-6
     at: 2026-05-31T16:16:23.986Z
+  - action: done
+    by: pye@swellnetwork.io
+    at: 2026-06-01T00:00:49+0700
+    note: >-
+      Human accepted T3 work. Implementation PR
+      https://github.com/tiendv89/workflow-backend/pull/14 carries the
+      organization_id + RequireAuth + scoped queries changes; remaining
+      cross-tenant isolation test follow-up to be tracked separately if
+      needed.

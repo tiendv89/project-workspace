@@ -1,7 +1,7 @@
 id: T6
 title: user-service seed — Kitelabs organization + workspaces backfill + PLATFORM_ADMIN_EMAILS auto-grant
 repo: user-service
-status: todo
+status: ready
 depends_on:
   - T2b
   - T3
@@ -11,7 +11,7 @@ branch: feature/m1-identity-and-workspaces-T6
 execution:
   actor_type: agent
   last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
+  last_updated_at: 2026-06-01T00:00:49+0700
 
 pr:
   url: null
@@ -24,3 +24,9 @@ log:
     note: >-
       Task created by tech-lead Phase 2. Cross-DB seed reads USER_DB_DSN and
       WORKFLOW_DB_DSN. Idempotent; safe to re-run.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-01T00:00:49+0700
+    note: >-
+      Auto-ready applied after T3 was marked done. Both depends_on (T2b, T3)
+      are now done.
