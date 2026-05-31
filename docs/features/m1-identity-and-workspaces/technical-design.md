@@ -34,7 +34,8 @@ Repo-level boundaries (per `workspace.yaml`):
   the feature/workflow YAML.
 - `workspace-github-adapter` — unaffected. Its `workspace_id`-scoped writes continue
   to work; it does not need an authenticated user.
-- `user-service` — **new repo, to be created.** Owns identity entirely.
+- `user-service` — **new Go repo, to be created.** Same stack family as
+  `workflow-backend` (Go + Gin + pgx). Owns identity entirely.
 
 ## Problem Framing
 
@@ -71,6 +72,11 @@ Repo-level boundaries (per `workspace.yaml`):
 
 **Fixed assumptions:**
 
+- **`user-service` is written in Go.** Same language as `workflow-backend`, same
+  team toolchain, same migration tool (`pressly/goose/v3`), same DB driver (`pgx`).
+  No new language is introduced by M1. Concrete stack: Go 1.22+, Gin (HTTP
+  router), pgx (Postgres driver), `golang.org/x/oauth2` (OAuth client),
+  `alexedwards/scs/v2` + `scs/postgresstore` (sessions).
 - Self-hosted identity in our own Go code (no Auth0 / Clerk / Supabase Auth). We
   consume Google + GitHub as IdPs only.
 - B2B services model — clients are invited; no self-serve account creation in M1.
@@ -266,10 +272,14 @@ and in `workflow-backend` (which trusts those values).
             └──────────────┘
 ```
 
-### `user-service` (new repo)
+### `user-service` (new Go repo)
 
-**Stack:** Go 1.22+, Gin, pgx, `golang.org/x/oauth2`, `alexedwards/scs/v2` +
-`scs/postgresstore`.
+**Language:** Go (same as `workflow-backend`). **No other language is allowed in
+this repo for M1** — all OAuth, session, and identity logic is implemented in Go.
+
+**Stack:** Go 1.22+, Gin (HTTP router), pgx (Postgres driver),
+`golang.org/x/oauth2` (OAuth client), `alexedwards/scs/v2` + `scs/postgresstore`
+(server-side sessions), `pressly/goose/v3` (migrations — matches workflow-backend).
 
 **Repo layout (proposed):**
 
