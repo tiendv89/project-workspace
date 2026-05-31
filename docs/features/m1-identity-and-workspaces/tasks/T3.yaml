@@ -2,7 +2,7 @@ id: T3
 title: workflow-backend — service client + RequireAuth +
   workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: in_progress
+status: ready
 depends_on:
   - T1b
   - T2b
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m1-identity-and-workspaces-T3
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-05-31T13:05:26+0000
+  last_updated_by: pye@swellnetwork.io
+  last_updated_at: 2026-05-31T22:04:55+0700
 pr:
   url: null
   status: null
@@ -46,3 +46,9 @@ log:
     by: pentative@gmail.com
     at: 2026-05-31T13:05:26+0000
     note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-05-31T22:04:55+0700
+    note: >-
+      Human reset status from in_progress back to ready. Prior agent claim is
+      vacated; task is re-eligible for execution.
