@@ -1,7 +1,7 @@
 id: T2b
 title: user-service — OAuth + sessions + identity + invitations + /api/me + /internal/sessions/validate
 repo: user-service
-status: todo
+status: ready
 depends_on:
   - T1a
   - T2a
@@ -11,7 +11,7 @@ branch: feature/m1-identity-and-workspaces-T2b
 execution:
   actor_type: agent
   last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
+  last_updated_at: 2026-05-31T18:01:20+0700
 
 pr:
   url: null
@@ -25,3 +25,7 @@ log:
       Task created by tech-lead Phase 2. Soft-blocked on P2 (Google OAuth client)
       and P3 (GitHub OAuth App) for end-to-end testing; implementation and unit
       tests can proceed without those.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-05-31T18:01:20+0700
+    note: Dependencies T1a and T2a both done — auto-ready rule applied.
