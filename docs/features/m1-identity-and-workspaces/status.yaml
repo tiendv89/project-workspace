@@ -1,10 +1,9 @@
 feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
-
 feature_status: ready_for_implementation
 current_stage: implementation
-next_action: Owning teams may begin execution. T0, T1a, T1b, T4 are ready; downstream tasks unblock as upstream tasks reach done.
-
+next_action: Owning teams may begin execution. T0, T1a, T1b, T4 are ready;
+  downstream tasks unblock as upstream tasks reach done.
 stages:
   product_spec:
     review_status: approved
@@ -42,7 +41,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-05-31T13:42:49+0700
     actor: pye@swellnetwork.io
@@ -62,9 +60,10 @@ history:
     stage: tasks
     from_status: in_tdd
     to_status: ready_for_implementation
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m1-identity-and-workspaces
+feature_branch_base_sha: 5d0592e8995d9ba560fd142d9dbb58cb9f7a093c
