@@ -1,17 +1,30 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Review and approve the product spec.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead authors technical-design.md (tech-lead Phase 1).
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-01T17:39:33+0700
+    review_comment: Approved. Dependency m1-identity-and-workspaces is shipped; spec
+      claims (login, workspace scoping, accessible_workspace_ids) all map to delivered
+      code. Open product decision to resolve in tech design - same digital-factory-ui
+      surface in read-only mode vs. separate client-facing surface; and confirm
+      vocabulary alignment with organizations/workspaces tables.
+    review_history:
+      - review_status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: 2026-06-01T17:39:33+0700
+        review_comment: Approved. Dependency m1-identity-and-workspaces is shipped;
+          spec claims (login, workspace scoping, accessible_workspace_ids) all map
+          to delivered code. Open product decision to resolve in tech design - same
+          digital-factory-ui surface in read-only mode vs. separate client-facing
+          surface; and confirm vocabulary alignment with organizations/workspaces
+          tables.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +44,15 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-06-01T17:39:33+0700
+    by: pye@swellnetwork.io
+    action: approve_stage
+    stage: product_spec
+    from_feature_status: in_design
+    to_feature_status: in_tdd
+    from_current_stage: product_spec
+    to_current_stage: technical_design
 
 revalidation:
   product_spec_required: false
