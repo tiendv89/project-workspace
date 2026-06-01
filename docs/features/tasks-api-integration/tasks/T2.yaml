@@ -1,7 +1,7 @@
 id: T2
 title: Add feature-task response with feature pagination
 repo: workflow-backend
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -27,17 +27,3 @@ log:
     by: spiderbot@gmail.com
     at: 2026-06-01T04:04:47.599Z
     note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: norepy@tiendv.dev
-    at: 2026-06-01T04:57:02.534Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: norepy@tiendv.dev
-    at: 2026-06-01T04:57:14.902Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      github.com/tiendv89/project-workspace/pull/415,
-      docs/features/tasks-api-integration/technical-design.md,
-      github.com/tiendv89/project-workspace/pull/379"
-    rag_query: Add feature-task response with feature pagination tasks-api-integration
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
