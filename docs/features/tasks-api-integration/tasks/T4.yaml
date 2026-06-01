@@ -1,7 +1,7 @@
 id: T4
 title: Wire Task Mode kanban to feature-task API
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -17,4 +17,9 @@ log:
   - action: created
     by: unknown@local
     at: 2026-05-29T20:14:02+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-06-01T11:15:03.168Z
+    note: Task activated — dependency T3 merged and marked done.
