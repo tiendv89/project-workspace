@@ -1,18 +1,22 @@
 id: T5
 title: Regression and browser/network QA
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T4
 blocked_reason: null
+blocked_context: null
 branch: feature/tasks-api-integration-T5
 execution:
   actor_type: agent
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-29T20:14:02+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T14:06:49.356Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/87
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/424
+  status: open
 log:
   - action: created
     by: unknown@local
@@ -23,3 +27,46 @@ log:
     by: pentative@gmail.com
     at: 2026-06-01T13:32:10.039Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T13:34:32.138Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-01T13:34:43.579Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Regression and browser/network QA tasks-api-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T13:38:43+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/87"
+    executor_audit:
+      cost_usd: 0.38622
+      claude:
+        token_usage:
+          input: 200
+          output: 25708
+          model: claude-sonnet-4-6
+    at: 2026-06-01T13:55:38.110Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-01T13:57:06.253Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "44/44 tests pass. All automatable T5 subtasks covered: endpoint call,
+      query params, updated_at, pagination, cache config, mode isolation, /tasks
+      backward compat. Live backend QA documented as manual pending deployment
+      (per tech design). Pre-existing test failures in 3 unrelated files not
+      introduced by T5. No 🔴/🟡 findings."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/87#pullrequestreview-4401827010
+    at: 2026-06-01T14:04:32.210Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-01T14:06:49.356Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
