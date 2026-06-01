@@ -1,15 +1,15 @@
 id: T1
 title: Wire `organization_id` end-to-end in workspace-github-adapter import path
 repo: workspace-github-adapter
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-fix-import-no-organization-T1
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-01T20:58:00+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T13:59:28.582Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/27
   status: open
@@ -69,6 +69,9 @@ log:
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-06-01T20:58:00+0700
-    note: >-
-      Human reset from blocked to ready (override of Unblock target rule).
-      PR #27 remains open but task is re-eligible for fresh claim.
+    note: "Human reset from blocked to ready (override of Unblock target rule). PR
+      #27 remains open but task is re-eligible for fresh claim."
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T13:59:28.582Z
+    note: Claimed via git-based claim protocol.
