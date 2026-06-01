@@ -31,3 +31,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-01T10:47:46.137Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-01T10:48:00.383Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/digital-factory-ui/pull/75,
+      docs/features/digital-factory-ui-visual-bugfix/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/415"
+    rag_query: Add feature-task query client and TanStack cache tasks-api-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
