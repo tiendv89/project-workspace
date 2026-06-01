@@ -1,28 +1,98 @@
 id: T4
 title: digital-factory-ui — /login page + session-aware root layout + logout
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T4
-
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:27:20+0700
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T09:09:25.156Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/82
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/406
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-05-31T15:23:08+0700
-    note: >-
-      Task created by tech-lead Phase 2. No hard execution blockers — can begin
-      against a stubbed /api/me contract. Soft-blocked on T2b for end-to-end test.
+    note: Task created by tech-lead Phase 2. No hard execution blockers — can begin
+      against a stubbed /api/me contract. Soft-blocked on T2b for end-to-end
+      test.
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-05-31T15:27:20+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T08:36:31.406Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T08:36:40.170Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: digital-factory-ui — /login page + session-aware root layout + logout
+      m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T08:39:10+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/82"
+    executor_audit:
+      cost_usd: 0.38457
+      claude:
+        token_usage:
+          input: 215
+          output: 25595
+          model: claude-sonnet-4-6
+    at: 2026-05-31T08:46:57.964Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T08:49:10.013Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 src/app/login/page.tsx: getProviderUrl() try/catch silently swallows
+      NEXT_PUBLIC_USER_SERVICE_URL missing error, returning a broken relative
+      URL fallback. Violates the fail-fast contract stated in .env.template and
+      inconsistent with getApiBase() in the workflow-backend client."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/82#pullrequestreview-4396621410
+    at: 2026-05-31T08:57:45.332Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-31T08:59:18.793Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/82"
+    executor_audit:
+      cost_usd: 0.071769
+      claude:
+        token_usage:
+          input: 68
+          output: 4771
+          model: claude-sonnet-4-6
+    at: 2026-05-31T09:03:15.699Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T09:03:48.306Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All 10 T4 subtasks implemented. Previous cycle-1 🟡 finding (silent
+      try/catch in getProviderUrl) resolved in fc075cf — getUserServiceBase()
+      now throws on missing env var. No 🔴/🟡 findings. PR squash-merged.
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/82#issuecomment-4586251488
+    at: 2026-05-31T09:09:03.219Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-31T09:09:25.156Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

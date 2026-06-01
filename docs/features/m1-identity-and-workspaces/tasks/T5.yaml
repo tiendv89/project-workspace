@@ -1,23 +1,72 @@
 id: T5
 title: digital-factory-ui — organization / workspace switcher driven by /api/me
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T4
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T5
-
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-05-31T09:34:23.908Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/83
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/407
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-05-31T15:23:08+0700
     note: Task created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-05-31T09:09:25.170Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T09:11:04.714Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T09:11:14.731Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: digital-factory-ui — organization / workspace switcher driven by
+      /api/me m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T09:16:42+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/83"
+    executor_audit:
+      cost_usd: 0.699465
+      claude:
+        token_usage:
+          input: 240
+          output: 46583
+          model: claude-sonnet-4-6
+    at: 2026-05-31T09:26:19.797Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-31T09:27:30.209Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented (org selector, workspace selector, URL param
+      persistence, loading/empty states). CI passed (no check-runs). No 🔴/🟡
+      findings. Three 🟢 nits: DRY violation in outside-click handlers,
+      useSearchParams Suspense wrapping, URL param not propagating to
+      WorkspaceContext on cold load."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/83#pullrequestreview-4396654791
+    at: 2026-05-31T09:33:57.891Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-05-31T09:34:23.908Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
