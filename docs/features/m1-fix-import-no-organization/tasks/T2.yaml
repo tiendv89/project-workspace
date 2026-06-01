@@ -10,7 +10,7 @@ branch: feature/m1-fix-import-no-organization-T2
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-01T14:22:30.683Z
+  last_updated_at: 2026-06-01T14:25:43+0000
 pr:
   url: ""
   status: not_created
@@ -38,3 +38,7 @@ log:
     rag_query: Cross-service verification — workflow-backend round-trips
       `organization_id` m1-fix-import-no-organization
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T14:25:43+0000
+    note: executor work phase begun.
