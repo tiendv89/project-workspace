@@ -99,3 +99,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m1-fix-import-no-organization
 feature_branch_base_sha: 3d54c5ddd3d790aa90bf27a1dcd41f7e24612760
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/422
