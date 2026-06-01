@@ -1,7 +1,7 @@
 id: T3
 title: Add feature-task query client and TanStack cache
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/tasks-api-integration-T3
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-01T11:12:35.898Z
+  last_updated_at: 2026-06-01T11:15:02.905Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/85
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/419
   status: open
@@ -57,3 +57,7 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer approved.
     at: 2026-06-01T11:12:35.898Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-01T11:15:02.905Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
