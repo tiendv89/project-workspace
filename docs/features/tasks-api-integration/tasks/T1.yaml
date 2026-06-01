@@ -1,7 +1,7 @@
 id: T1
 title: Add updated_at to existing tasks API
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/tasks-api-integration-T1
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-01T03:45:17+0000
+  last_updated_at: 2026-06-01T03:56:00.812Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/16
+  status: open
 workspace_pr: null
 log:
   - action: created
