@@ -1,0 +1,239 @@
+feature_id: tasks-api-integration
+title: Feature Tasks API Integration
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute tasks - T1 is ready. T2 waits for T1; T3 waits for T2; T4 waits for T3; T5 waits for T4.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-29T20:05:02+0700
+    review_comment: Product spec approved. Feature advances to technical design.
+    review_history:
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:05:02+0700
+        review_comment: Product spec approved. Feature advances to technical design.
+  technical_design:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-29T21:17:09+0700
+    review_comment: Technical design approved. Feature advances to task planning.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:14:02+0700
+        review_comment: Technical design drafted and submitted for review.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:19:53+0700
+        review_comment: Technical design response contract changed from example payload to JSON Schema.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:26:04+0700
+        review_comment: Technical design response contract changed from JSON Schema to sample response shape.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:29:29+0700
+        review_comment: Technical design clarified pagination metadata.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:43:18+0700
+        review_comment: Technical design current state changed to a concrete feature-plus-tasks response shape.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:46:44+0700
+        review_comment: Technical design removed non-required row metadata from the response contract.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:52:19+0700
+        review_comment: Technical design rewritten with explicit API inputs, response fields, pagination semantics, and frontend integration requirements.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:11:52+0700
+        review_comment: Technical design changed pagination to feature-list level fields.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:14:12+0700
+        review_comment: Technical design changed pagination metadata to feature-list level data.page, data.limit, and data.total.
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:17:09+0700
+        review_comment: Technical design approved. Feature advances to task planning.
+  tasks:
+    review_status: approved
+    reviewed_by: unknown@local
+    reviewed_at: 2026-05-29T21:32:05+0700
+    review_comment: Task breakdown approved. Feature advances to ready_for_implementation. T1 activated.
+    review_history:
+      - review_status: draft
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T20:14:02+0700
+        review_comment: Task breakdown drafted from the technical design. Tasks remain todo pending technical design and tasks approval.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:17:09+0700
+        review_comment: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:19:36+0700
+        review_comment: Task breakdown revised to match the approved product spec and technical design. Tasks remain todo until tasks-stage approval.
+      - review_status: awaiting_approval
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:23:12+0700
+        review_comment: Task breakdown revised after removing progress from the feature-task response contract. Tasks remain todo until tasks-stage approval.
+      - review_status: approved
+        reviewed_by: unknown@local
+        reviewed_at: 2026-05-29T21:32:05+0700
+        review_comment: Task breakdown approved. Feature advances to ready_for_implementation. T1 activated.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: created
+    by: codex
+    at: 2026-05-29T19:14:41+0700
+    note: Feature scaffold created for a workflow-backend combined feature/tasks response and digital-factory-ui integration.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:22:08+0700
+    note: Added requirement for the existing workspace tasks API used by Task Mode to return updated_at on every task item.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:27:58+0700
+    note: Added requirement for the new combined API to support the same task query inputs while keeping a distinct feature-plus-tasks response shape.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:36:57+0700
+    note: Clarified that Task Mode currently lacks a dedicated backend API and must integrate after the backend API is created.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:37:40+0700
+    note: Clarified that the existing tasks API currently lacks updated_at and requires a backend response update.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:39:58+0700
+    note: Simplified product spec language and moved endpoint/query/response-shape details into technical design notes.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:50:31+0700
+    note: Shortened product spec to the required combined response, updated_at, Task Mode integration, and existing list preservation scope.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:54:23+0700
+    note: Added explicit requirement that the current Task Mode tasks API query must return updated_at on every task item.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T19:58:27+0700
+    note: Added the current Task Mode tasks API query directly to the product goals.
+  - stage: product_spec
+    action: revised
+    by: codex
+    at: 2026-05-29T20:01:25+0700
+    note: Shortened the Task Mode API reference while preserving host, workspace, path, and query details.
+  - stage: product_spec
+    action: approved
+    by: unknown@local
+    at: 2026-05-29T20:05:02+0700
+    note: Product spec approved. Feature advances to in_tdd and technical design.
+  - stage: technical_design
+    action: submitted
+    by: unknown@local
+    at: 2026-05-29T20:14:02+0700
+    note: Technical design drafted for workflow-backend API changes and digital-factory-ui Task Mode integration.
+  - stage: tasks
+    action: drafted
+    by: unknown@local
+    at: 2026-05-29T20:14:02+0700
+    note: Task breakdown drafted across workflow-backend and digital-factory-ui. Tasks remain todo pending technical design and tasks approval.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:19:53+0700
+    note: Replaced the feature-task API response example with a JSON Schema contract.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:26:04+0700
+    note: Replaced the JSON Schema contract with a sample feature-task API response shape.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:29:29+0700
+    note: Clarified pagination metadata in the API response.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:43:18+0700
+    note: Replaced explanatory current-state prose with a concrete feature-plus-tasks API response shape.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:46:44+0700
+    note: Removed non-required row metadata from the feature-task API contract.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T20:52:19+0700
+    note: Rewrote the technical design with explicit API inputs, response fields, pagination semantics, and frontend integration requirements.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T21:11:52+0700
+    note: Changed pagination to feature-list level fields and removed per-feature task pagination.
+  - stage: technical_design
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T21:14:12+0700
+    note: Replaced the removed pagination flag with data.total for feature-list pagination metadata.
+  - stage: technical_design
+    action: approved
+    by: unknown@local
+    at: 2026-05-29T21:17:09+0700
+    note: Technical design approved. Feature advances to task planning.
+  - stage: tasks
+    action: submitted
+    by: unknown@local
+    at: 2026-05-29T21:17:09+0700
+    note: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+  - stage: tasks
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T21:19:36+0700
+    note: Task breakdown revised for feature-list pagination metadata and embedded task field requirements.
+  - stage: tasks
+    action: revised
+    by: unknown@local
+    at: 2026-05-29T21:23:12+0700
+    note: Removed progress from the feature-task response contract and task breakdown.
+  - stage: tasks
+    action: approved
+    by: unknown@local
+    at: 2026-05-29T21:32:05+0700
+    note: Task breakdown approved. Feature advances to ready_for_implementation. T1 activated.
+  - stage: tasks
+    action: renamed
+    by: unknown@local
+    at: 2026-05-29T21:29:33+0700
+    note: Feature ID and branch renamed to avoid duplicate feature prefix in branch names.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

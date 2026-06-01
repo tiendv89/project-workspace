@@ -1,0 +1,20 @@
+id: T2
+title: Add feature-task response with feature pagination
+repo: workflow-backend
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/tasks-api-integration-T2
+execution:
+  actor_type: agent
+  last_updated_by: unknown@local
+  last_updated_at: 2026-05-29T21:19:36+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: unknown@local
+    at: 2026-05-29T20:14:02+0700
+    note: Task drafted by tech-lead from the approved product spec and technical design.
