@@ -31,3 +31,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-01T11:17:50.929Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-01T11:18:05.596Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/415,
+      docs/features/feature-kanban-board/product-spec.md,
+      docs/features/tasks-api-integration/technical-design.md"
+    rag_query: Wire Task Mode kanban to feature-task API tasks-api-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
