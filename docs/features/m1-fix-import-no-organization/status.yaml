@@ -1,0 +1,99 @@
+feature_id: m1-fix-import-no-organization
+title: Workspace Import — Attach to Organization
+
+feature_status: ready_for_implementation
+current_stage: implementation
+next_action: T1 is ready — agent can claim and begin implementation in workspace-github-adapter. T2 unblocks when T1 is done.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-01T18:15:30+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-06-01T18:15:30+0700
+        decision: approved
+        comment: Approved.
+  technical_design:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-01T18:32:46+0700
+    review_comment: Re-approved after request-body example correction (replaced placeholder UUID with kitelabs-slug guidance).
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-06-01T18:25:19+0700
+        decision: approved
+        comment: Approved.
+      - actor: pye@swellnetwork.io
+        at: 2026-06-01T18:32:46+0700
+        decision: approved
+        comment: Re-approved after request-body example correction (replaced placeholder UUID with kitelabs-slug guidance).
+  tasks:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-01T18:35:36+0700
+    review_comment: Approved.
+    review_history:
+      - actor: pye@swellnetwork.io
+        at: 2026-06-01T18:29:32+0700
+        decision: approved
+        comment: Approved (superseded — tasks recreated after design revision).
+      - actor: pye@swellnetwork.io
+        at: 2026-06-01T18:35:36+0700
+        decision: approved
+        comment: Approved.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-06-01T18:15:30+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: product_spec
+    from_status: in_design
+    to_status: in_tdd
+  - at: 2026-06-01T18:25:19+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: technical_design
+    from_status: in_tdd
+    to_status: in_tdd
+  - at: 2026-06-01T18:29:32+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: tasks
+    from_status: in_tdd
+    to_status: ready_for_implementation
+  - at: 2026-06-01T18:32:46+0700
+    actor: pye@swellnetwork.io
+    event: stage_reset
+    stage: tasks
+    from_status: ready_for_implementation
+    to_status: in_tdd
+    note: Tasks reset to draft so they can be recreated against the post-fix technical design.
+  - at: 2026-06-01T18:32:46+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: technical_design
+    from_status: in_tdd
+    to_status: in_tdd
+    note: Re-approval after request-body example correction.
+  - at: 2026-06-01T18:35:36+0700
+    actor: pye@swellnetwork.io
+    event: stage_approved
+    stage: tasks
+    from_status: in_tdd
+    to_status: ready_for_implementation
+    note: Re-approval after task recreation.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
