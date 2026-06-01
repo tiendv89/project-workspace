@@ -1,7 +1,7 @@
 id: T3
 title: Add feature-task query client and TanStack cache
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -17,4 +17,9 @@ log:
   - action: created
     by: unknown@local
     at: 2026-05-29T20:14:02+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-06-01T10:44:54.936Z
+    note: Task activated — dependency T2 merged and marked done.

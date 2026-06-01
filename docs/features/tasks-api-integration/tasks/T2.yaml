@@ -1,18 +1,22 @@
 id: T2
 title: Add feature-task response with feature pagination
 repo: workflow-backend
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/tasks-api-integration-T2
 execution:
   actor_type: agent
-  last_updated_by: unknown@local
-  last_updated_at: 2026-05-29T21:19:36+0700
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-01T10:44:54.700Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/17
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/416
+  status: open
 log:
   - action: created
     by: unknown@local
@@ -23,3 +27,50 @@ log:
     by: spiderbot@gmail.com
     at: 2026-06-01T04:04:47.599Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-01T05:36:33.279Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-01T05:36:39.815Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/415,
+      docs/features/tasks-api-integration/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/379"
+    rag_query: Add feature-task response with feature pagination tasks-api-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-01T05:41:47+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/17"
+    at: 2026-06-01T05:55:04.529Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-01T05:57:42.461Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: manual_reset
+    by: matthew@swellnetwork.io
+    at: 2026-06-01T17:33:18+0700
+    note: "Human reset reviewing -> in_review. The reviewer dispatched at 05:57:42Z
+      never reported a verdict and the task was stuck in reviewing (the
+      duplicate-claim guard), so no fresh reviewer could be dispatched. pr.url
+      is set, so in_review is the correct unblock target — it re-enters
+      findReviewableTasks for a clean re-dispatch. Likely a casualty of the
+      reviewer-dispatch defect fixed by workflow PRs #252/#253."
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-01T10:36:18.151Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-01T10:42:23.271Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-01T10:44:54.700Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
