@@ -7,359 +7,341 @@
 ## 1. Current state
 
 ### Identity and scoping (delivered by `m1-identity-and-workspaces`)
-- `user-service` issues OAuth-backed sessions, exposes `/api/me` (UI) and
+- `user-service` issues OAuth-backed sessions; exposes `/api/me` (UI) and
   `/internal/sessions/validate` (service-to-service).
-- `workflow-backend` validates session cookies via `authmw.RequireAuth`, which attaches an
-  `AuthCtx{UserID, OrganizationID, AccessibleWorkspaceIDs}` to the request context.
-- All read queries in `workflow-backend/internal/database/queries.go` filter by
-  `ScopedWorkspaceIDs(ctx)` when an `AuthCtx` is present; unauthenticated requests
-  remain unscoped (legacy/service path).
-- `digital-factory-ui` has `SessionProvider` (loads `/api/me` on mount, redirects to
-  `/login` on failure), `OrgWorkspaceSwitcher`, and a session-aware root layout.
-- `user-service` seeds the Kitelabs organization and auto-grants `platform_admin`
-  role on Kitelabs membership for users matching `PLATFORM_ADMIN_EMAILS`.
+- `workflow-backend.authmw.RequireAuth` validates session cookies and attaches an
+  `AuthCtx{UserID, OrganizationID, AccessibleWorkspaceIDs}` to the request
+  context.
+- `workflow-backend/internal/database/queries.go` filters all read queries via
+  `ScopedWorkspaceIDs(ctx)` when an `AuthCtx` is present.
+- `digital-factory-ui` has `SessionProvider` (loads `/api/me` on mount;
+  redirects to `/login` on failure), `OrgWorkspaceSwitcher`, session-aware root
+  layout, and logout.
+- The data model: `users` × `memberships` × `organizations` × `workspaces`. A
+  user sees a workspace iff they have a membership on that workspace's
+  organization and that workspace ID is included in their session's
+  `accessible_workspace_ids`.
 
 ### Read surfaces already in place
-- `workflow-backend` exposes a read-only API surface for delivery state:
-  - `GET /api/workspaces`, `GET /api/workspaces/:id`
-  - `GET /api/workspaces/:id/features`, `GET /api/workspaces/:id/features/:fid`
-  - `GET /api/workspaces/:id/tasks`, `GET /api/workspaces/:id/tasks/:tid`
-  - `GET /api/workspaces/:id/features/:fid/tasks[/:tid]`
-  - `GET /api/workspaces/:id/activity` — `ActivityEvent` model already defined in
-    `internal/domain/dto.go`
-- The only two non-GET endpoints today are `POST /api/workspaces/import` and
-  `POST /api/workspaces/:id/sync` — both are operator/admin actions.
-- `digital-factory-ui` renders the delivery state today at `/board`, drill-downs at
-  `/feature/[sessionId]` and `/task/[sessionId]`. The board surface
-  (`src/features/board/components/*`) already shows features, tasks, kanban columns,
-  task tracking panel, feature detail sheet, and feature drill-down with
-  documents/tasks/logs.
+- `workflow-backend` exposes a GET API surface for workspaces, features, tasks,
+  drill-downs, and `ListActivity` (events are already modelled in
+  `internal/domain/dto.go`).
+- `digital-factory-ui` renders delivery state today at `/board`, with
+  drill-downs at `/feature/[sessionId]` and `/task/[sessionId]`. The board
+  surface (`src/features/board/components/*`) shows features, tasks, kanban
+  columns, task tracking panel, feature detail sheet, and feature drill-down
+  with documents / tasks / logs.
 
-### Current write/action surfaces in the UI (must be hidden for clients)
-- `CreateTaskButton/CreateTaskButton.tsx` — create-task control on the board.
+### Current write surfaces in the UI (must be removed for M1)
+- `CreateTaskButton/CreateTaskButton.tsx` — create-task control.
 - `KanbanBoard/KanbanBoard.tsx` — drag-to-move-status interaction.
-- `FeatureDetailSheet/FeatureDetailSheet.tsx` and `FeatureTabView/*` — edit controls
-  inside feature drill-down.
+- `FeatureDetailSheet/FeatureDetailSheet.tsx` and `FeatureTabView/*` — edit
+  affordances inside feature drill-down.
 - `BoardHeader/BoardHeader.tsx` — sync workspace action.
-- Other components in `src/features/board/components/*` contain `onClick` handlers
-  that write workflow state (search produced 17 files with mutation paths).
+- `ConnectForm.tsx` (`/connect` page) — workspace-import form. Operator-only;
+  see §4.5.
+- `grep` produces 17 files under `src/features/board/components/*` that contain
+  mutation-related handlers — all in scope for control removal.
+
+### Gap in current model: a user with zero memberships
+- `m1-identity-and-workspaces` made `workspaces.organization_id NOT NULL` (T1b).
+- A new authenticated user has no `memberships` until Kitelabs ops invites them.
+  `/api/me` returns `memberships: []` and `accessible_workspace_ids: []`.
+- `/board` currently redirects to `/connect` in that case
+  (`src/app/board/page.tsx:38-46`). `/connect` is a workspace-import form — not
+  a meaningful destination for a client without an invitation. The M1 design
+  must replace that branch with a client-appropriate empty state.
 
 ### Repo / system boundaries
-- Three repos in scope: `user-service`, `workflow-backend`, `digital-factory-ui`.
-- No new service, no new database, no new contract surface beyond extending two
-  existing JSON payloads (`/internal/sessions/validate` and `/api/me`) with a single
-  derived boolean.
+- Two repos in scope for the UI / API delta: `workflow-backend`,
+  `digital-factory-ui`.
+- No `user-service` change (the identity model is sufficient as-is).
+- No new database, no new contract surface.
 
 ## 2. Problem framing
 
 ### What needs to change
-- The board and drill-downs must render the same delivery state without write
-  affordances for client users.
-- "Client user" needs a stable, server-authoritative definition usable by both the
-  UI (to gate controls) and the backend (to refuse writes as defence-in-depth).
-- Vocabulary in the product spec ("client org", "workspace") must align with the
-  identity model now in place (`organizations`, `workspaces`, membership roles).
-- The activity feed (already in the API DTOs) needs a client-legible presentation.
+- The board and drill-downs must render delivery state without any write
+  affordances.
+- A signed-in user with zero memberships must land on a useful state, not on
+  the operator-facing `/connect` form.
+- Activity (already in the API DTOs) needs a non-engineer-legible presentation.
+- Status vocabulary (`in_progress`, `review_passed`, etc.) needs a
+  non-engineer-legible mapping on the client surface.
 
 ### What must remain stable
-- The existing read API contract on `workflow-backend` (URL shape, response schema,
-  scoping behaviour) — clients consume the same endpoints as staff.
-- The identity contract on `user-service` (`/api/me`, `/internal/sessions/validate`)
-  — extensions only, no removals or renames.
-- Staff workflow on `/board` — adding a client-mode branch must not regress the
-  internal experience.
+- The existing read API contract on `workflow-backend` (URL shape, response
+  schema, scoping). All users — Kitelabs ops included — consume the same
+  endpoints.
+- The identity contract on `user-service`. No payload changes.
+- The existing workflow CLI / agent toolchain — that is the way delivery state
+  is mutated, not the UI.
 
 ### Assumptions already fixed
-- Identity, sessions, organizations, workspaces, and workspace scoping are shipped
-  and live (`m1-identity-and-workspaces` is `done`).
-- Membership role is a free-form string today (`MeMembership.role: string`); T6 in
-  the identity feature populates `platform_admin` for the Kitelabs org via
-  `PLATFORM_ADMIN_EMAILS`. This is the only role currently emitted by the seed; any
-  non-platform-admin membership is treated as a client membership.
-- The product team accepts the "single surface, role-gated" rule below; the
-  alternative (separate `/client/*` tree) is rejected in §3.
+- All users in the platform have the same identity model. There is no
+  "platform_staff" privilege flag and the design does not introduce one.
+- Delivery state is driven by the workflow CLI and agents (init-feature,
+  tech-lead, start-implementation, orchestrator). The UI is observational. The
+  write controls that exist on the board today are operator artefacts that
+  predate the M1 product framing and are being retired for M1.
+- Org and workspace creation for clients is an **ops process** (Kitelabs sets up
+  the org, creates workspaces, invites the client). Self-serve org creation is
+  out of scope for M1 and is captured as a follow-up (§5 D2).
 
 ## 3. Options considered
 
-### Option A — Same `/board` surface; client mode derived from membership role
-
-- **What it is**: keep `/board`, `/feature/[id]`, `/task/[id]` as the only delivery
-  surface. Derive `isPlatformStaff` from the session (`memberships[].role ===
-  "platform_admin"` on the Kitelabs org). Hide write controls when
-  `!isPlatformStaff`. Backend rejects writes from non-staff with 403.
+### Option A — Strip write controls from `/board`; treat the surface as observational for everyone
+- **What it is**: remove `CreateTaskButton`, drag-to-move-status,
+  `FeatureDetailSheet` edit affordances, and the sync button from the board UI
+  for **all users**. The workflow CLI and agents continue to drive delivery
+  state outside the UI. Backend GET endpoints unchanged. Backend POST endpoints
+  unchanged (still callable by internal tooling and operators using their
+  session cookie — but no longer surfaced in the UI for anyone).
 - **Pros**:
-  - One UI codebase; consistent mental model between client and staff.
-  - When **M3 (The Thread)** introduces participation, the path is "expose hidden
-    control" — no second UI to retrofit.
-  - Existing component tree, routing, and data-fetching are reused; no duplication
-    of feature/task rendering.
-  - Backend changes are additive (one new boolean in two payloads, one new
-    authorization branch on two write endpoints).
+  - One UI for everyone — no per-user privilege model to maintain.
+  - Matches the M1 product framing ("crack the black box open"): the platform's
+    UI becomes the observation surface; the orchestration surface remains the
+    CLI / agents.
+  - Smallest backend change (none — only a UI delta).
+  - When M3 (The Thread) adds participation, controls return as **first-class
+    product** affordances, not as resurrected operator artefacts.
 - **Cons**:
-  - Every new write-capable component must remember the client-mode check; risk of
-    accidental leakage if a developer forgets.
-  - Branding / aesthetic for clients is constrained to the staff shell. Acceptable
-    for M1 ("crack the black box open") — not for a long-term polished offering.
-- **Implementation impact**: 7 tasks across 3 repos. ~half a sprint of UI work
-  centered on hiding controls; small backend deltas.
-- **Dependency impact**: relies on `memberships[].role` populated correctly by the
-  identity feature (already the case for Kitelabs platform admins). No new
-  service-to-service surface.
+  - Kitelabs ops can no longer use the board UI to manually drag a card or hit
+    sync. They lose a convenience affordance. Mitigation: those workflows are
+    available via the existing CLI/agents and via direct API calls.
+  - The `/connect` page (workspace import) becomes the only legacy write
+    surface in the UI. Kept for now (operator use); not part of the client
+    flow. See §4.5.
 
-### Option B — Separate `/client/*` route tree with read-only components
+### Option B — Same surface, role-gated client mode (rejected by Pye)
+- A `is_platform_staff` boolean would gate write controls.
+- Rejected because it conflicts with the "all users are the same identity
+  model" rule. Not pursued.
 
-- **What it is**: build a parallel set of routes (`/client/board`,
-  `/client/feature/:id`, `/client/task/:id`) and a separate set of components that
-  render the same data shapes but contain no mutation paths.
-- **Pros**:
-  - Strong physical isolation — no chance of accidental write leakage from a forgotten
-    flag check.
-  - Independent UX evolution for clients without affecting staff.
-- **Cons**:
-  - Significant duplication of feature/task/board/drill-down components. Estimated
-    ~60% of `src/features/board/components/*` would need a parallel implementation.
-  - Two surfaces to keep in sync as the workflow state model evolves; cost grows
-    every milestone.
-  - When **M3** adds participate, the parallel client tree has to absorb the same
-    components again. The duplication keeps compounding.
-  - Routing model becomes load-bearing for tenancy, on top of the existing
-    workspace scoping. More invariants to enforce.
-- **Implementation impact**: roughly double the UI task count; full re-implementation
-  of board UI under a new route.
-- **Dependency impact**: same identity surface; no service changes — but a much
-  larger UI surface area.
+### Option C — Separate `/client/*` route tree
+- Parallel routes with read-only components.
+- Rejected: ~60% of `src/features/board/components/*` would need duplicate
+  implementations; two surfaces to maintain; the M3 participation work would
+  have to merge them back together anyway.
 
-### Option C — Single surface with backend write-block only (no UI gating)
-
-- **What it is**: hide nothing in the UI; rely on backend returning 403 to fail
-  mutations. Client users see action controls that don't work.
-- **Pros**: trivial UI change (none); fully server-enforced.
-- **Cons**:
-  - Failed actions in the UI surface as error toasts; the product spec is explicit
-    that clients "never see an action control". This violates that goal.
-  - Bad UX for the audience the feature is designed for (non-engineers).
-- **Rejected** — fails the product spec.
-
-### Chosen: Option A
-- One surface, role-gated mode, with backend write authorization as defence in
-  depth. This is detailed in §4.
+### Chosen: Option A.
 
 ## 4. Chosen design
 
-### 4.1 Role surface (user-service)
-- Extend `/api/me` (UI) and `/internal/sessions/validate` (service-to-service) to
-  include a derived boolean field:
-  - Wire name: `is_platform_staff` (snake_case on the wire).
-  - Definition: `true` iff the user has any membership with `role === "platform_admin"`
-    on the platform-admin organization (Kitelabs, identified by configurable
-    `PLATFORM_ADMIN_ORG_SLUG`, default `"kitelabs"`).
-  - Backwards-compatible: existing clients ignore the new field.
+### 4.1 Write-control removal in the board UI (digital-factory-ui)
+- Remove (not hide — remove) the following from the M1 board surface:
+  - `CreateTaskButton` — delete the component or stop rendering it from
+    `BoardHeader`.
+  - Drag handlers in `KanbanBoard/KanbanBoard.tsx` — make cards click-to-open
+    only.
+  - Sync workspace control in `BoardHeader/BoardHeader.tsx`.
+  - Edit affordances in `FeatureDetailSheet` and `FeatureTabView/*` — keep
+    document / task / log panels visible and read-only.
+- The mutation-related onClick handlers identified by the audit (17 files
+  under `src/features/board/components/*`) are reviewed individually; only
+  those that perform state mutations are removed. Navigation / drill-down /
+  filter / pagination handlers stay.
+- No role check is performed anywhere in the UI. Every user gets the same
+  read-only board.
 
-### 4.2 Backend write authorization (workflow-backend)
-- Extend `authmw.AuthCtx` with `IsPlatformStaff bool`; populate from
-  `SessionInfo.IsPlatformStaff` returned by the `user-service` client.
-- Add a `RequirePlatformStaff` middleware (or inline check) that rejects with HTTP
-  403 when `!ac.IsPlatformStaff`. Apply to:
-  - `POST /api/workspaces/import`
-  - `POST /api/workspaces/:workspaceId/sync`
-- Read endpoints remain unchanged — the existing `ScopedWorkspaceIDs` filter already
-  limits clients to their accessible workspaces.
+### 4.2 No-memberships landing state (digital-factory-ui)
+- When `/api/me` resolves with `memberships: []` and
+  `accessible_workspace_ids: []`, route the user to a dedicated landing page
+  (e.g. `/`, or a new `/welcome` — placement decided in implementation review)
+  showing a friendly empty state: "You're signed in but not connected to a
+  workspace yet. Contact your Kitelabs delivery lead to be invited."
+- Replace the current `/board` → `/connect` redirect for this case. `/connect`
+  remains accessible as an operator path (§4.5) but is no longer the default
+  landing for a memberships-less user.
+- The empty state is server-truth driven: the same condition
+  (`memberships.length === 0`) is checked once in a layout / guard and routed
+  accordingly.
 
-### 4.3 UI client mode (digital-factory-ui)
-- Extend `MeResponse` in `src/services/user-service/types.ts` to include
-  `is_platform_staff: boolean`.
-- `SessionContext` exposes `isPlatformStaff` as a top-level derived value alongside
-  `session`.
-- `useSession()` consumers branch on `isPlatformStaff`:
-  - `BoardHeader` — hide sync button when client.
-  - `CreateTaskButton` — render `null` when client.
-  - `KanbanBoard` — disable drag handlers when client (cursor stays default; cards
-    are still clickable to open drill-downs).
-  - `FeatureDetailSheet` / `FeatureTabView/*` — hide edit affordances; keep
-    document/log/task panels read-only.
-- A single helper (e.g. `useClientMode()` in `src/features/auth`) exposes the
-  derived flag so every component imports the same source of truth.
+### 4.3 Client-legible presentation (digital-factory-ui)
+- A mapping module in `src/features/board/lib/clientStatusLabels.ts` translates
+  the internal workflow vocabulary into non-engineer language:
+  `in_progress` → "Being built", `in_review` → "Being reviewed",
+  `review_passed` → "Approved, almost done", `done` → "Done",
+  `blocked` → "Blocked", `change_requested` → "Revising", etc.
+- The mapping is applied to kanban columns, task cards, and the feature/task
+  drill-downs.
+- Since this is M1 and everyone gets the same surface, the friendly labels
+  apply to all users (the internal vocabulary is not surfaced on `/board`).
+  Internal-only diagnostic views can keep the raw labels if/when they are
+  introduced; out of scope for M1.
 
-### 4.4 Client-legible presentation
-- Status labels on the kanban columns and task cards translate the internal
-  workflow vocabulary (`in_progress`, `in_review`, `review_passed`, etc.) into a
-  non-engineer reading: "Being built", "Being reviewed", "Done", "Blocked",
-  "Waiting on something". A single mapping module in
-  `src/features/board/lib/clientStatusLabels.ts` is applied only when in client
-  mode; staff continue to see the raw status.
-- The activity feed (already exposed via `GET /api/workspaces/:id/activity`) is
-  presented to clients as a chronological "what the team did" stream; internal-only
-  events (e.g. `rag_pre_flight`, `reviewer_started`) are filtered out client-side
-  for M1. The same filter list lives in `clientActivityFilter.ts`.
+### 4.4 Activity feed presentation (digital-factory-ui)
+- `GET /api/workspaces/:id/activity` is already available. The activity feed is
+  surfaced on the board as a "what the team did" chronological stream.
+- A client-side filter module
+  (`src/features/board/lib/clientActivityFilter.ts`) suppresses internal-only
+  event types for M1 (`rag_pre_flight`, `reviewer_started`, `fix_started`,
+  `run_completed` — they're agent-runtime audit entries that don't mean
+  anything to a non-engineer). The filter is applied to all users for M1; the
+  underlying API still returns the full stream.
 
-### 4.5 Vocabulary alignment (carried forward from product-spec open question)
-- "Client organization" in the product spec ⇔ a row in the `organizations` table.
-- "Client workspace" ⇔ a row in `workspaces` with `organization_id` matching the
-  client's organization, where the user's `accessible_workspace_ids` includes the
-  workspace's ID.
-- "Client user" ⇔ any authenticated user where `is_platform_staff === false`.
+### 4.5 Operator path: `/connect` (digital-factory-ui)
+- The existing `/connect` page (workspace-import form) remains accessible by
+  URL. It is not linked from the read-only board.
+- It is **not** the no-membership landing destination. The no-membership
+  redirect (§4.2) replaces that role.
+- Kitelabs ops can still hit `/connect` directly during dev / setup. Long-term
+  this should move to a dedicated operator console; out of scope for M1.
 
-### 4.6 Affected repositories
-- `user-service` — add `is_platform_staff` to two response payloads; one
-  database-level derivation (one join already available via existing schema). T0
-  below.
-- `workflow-backend` — propagate flag into `AuthCtx`; add write authorization on
-  two endpoints; carry-over isolation test from the identity feature. T1/T2/T3
-  below.
-- `digital-factory-ui` — type extension, session-context flag, control hiding,
-  client-legible labels, activity-feed presentation, drill-down polish.
-  T4/T5/T6/T7 below.
+### 4.6 Cross-tenant isolation test (workflow-backend)
+- T3 of the identity feature flagged that handler tests do not inject
+  `AuthCtx`, so no test currently proves that a user with
+  `accessible_workspace_ids=[ws-A]` gets HTTP 404 when accessing `ws-B`.
+- This feature's safety story depends on that test. Adding it is in scope.
 
-### 4.7 Compatibility and release implications
-- All payload changes are additive; existing consumers are unaffected.
-- The 403 behaviour on the two `POST` endpoints is a tightening — but the only
-  current callers (the workspace seed and operator tooling) are platform staff, so
-  no client-side regression is expected.
-- No database migrations are required for this feature; all state needed is already
-  in `users`, `memberships`, `organizations`, and `workspaces` from the identity
-  feature.
+### 4.7 Vocabulary alignment
+| Product-spec term | Identity model term |
+|---|---|
+| "Client" | A user (a row in `users`) — same identity as any other user |
+| "Client organization" | An `organizations` row — the org the client was invited into |
+| "Client workspace" | A `workspaces` row where `organization_id` matches the client's org and the workspace ID is in the user's `accessible_workspace_ids` |
+| "Delivery state" | Feature + task records read from the workflow management repo via `workflow-backend` |
+| "Activity" | `ActivityEvent` rows from `GET /api/workspaces/:id/activity` |
+
+There is **no privilege role** in this vocabulary. "Client" is a product-spec
+audience label, not an identity-model role.
+
+### 4.8 Affected repositories
+- `digital-factory-ui` — write-control removal, no-membership landing,
+  client-legible labels, activity filtering, read-only drill-down polish.
+- `workflow-backend` — cross-tenant isolation test (carry-over).
+
+### 4.9 Compatibility and release implications
+- The UI no longer renders the operator write controls on `/board`. The
+  corresponding backend POST endpoints remain functional; Kitelabs ops who
+  relied on the UI controls will need to use the CLI / agents (which is what
+  they predominantly use already).
+- No database migrations.
+- No service contract changes.
 
 ## 5. Dependency analysis
 
 ### Internal (resolved)
 - `m1-identity-and-workspaces` is `done`. Login, organizations, workspaces,
-  memberships, `accessible_workspace_ids`, `RequireAuth`, and scoped queries are
-  live.
+  memberships, `accessible_workspace_ids`, `RequireAuth`, and scoped queries
+  are live.
 
-### Internal (carry-over follow-ups from `m1-identity-and-workspaces`)
-- **D1 — cross-tenant isolation test in `workflow-backend`** — T3 of the identity
-  feature flagged a missing test: handler tests do not inject `AuthCtx`, so no test
-  proves that a user with `accessible_workspace_ids=[ws-A]` gets HTTP 404 when
-  accessing `ws-B`. Implementation is correct; test is absent. This feature owns
-  closing that gap because client visibility hinges on the test holding.
-- **D2 — platform-admin null semantics in the user-service client** — the
-  `workflow-backend` user-service client (`internal/serviceclient/user_service/client.go:209`)
-  normalises `accessible_workspace_ids: null` (platform admin = unrestricted) into
-  `[]` (empty list = zero workspaces). The current `ListWorkspaces` query then
-  returns an empty list for platform admins. This affects staff, not clients —
-  staff would see no workspaces today — so it's not a client-feature blocker, but
-  T1 below fixes it as a side effect of widening the flag-passing path.
+### Internal (carry-over follow-ups)
+- **D1 — cross-tenant isolation test in `workflow-backend`** (m1-identity T3
+  reviewer note). Handler tests do not inject `AuthCtx`. This feature owns
+  closing the gap because the read-only safety story rests on the scoping
+  filter being correctly tested. Captured as T1 below.
+
+### Internal (out of scope — flagged for future work)
+- **D2 — Self-serve organization creation and client invitation UI.** Today,
+  Kitelabs ops set up the client's org and invite them out-of-band (DB / CLI).
+  For M1 this is acceptable because the M1 audience is **invited clients**, so
+  the typical M1 user already has a membership at sign-in. A new user without
+  an invitation lands on the empty state (§4.2). Self-serve org / invitation
+  UI is a separate future feature and is not gated by this one.
 
 ### External
-- None. No third-party APIs, no design vendor, no infra change.
+- None.
 
 ### Configuration
-- `user-service` requires a `PLATFORM_ADMIN_ORG_SLUG` (default `"kitelabs"`) to
-  resolve which organization confers platform-admin status. Already implicit in T6
-  of the identity feature (uses `PLATFORM_ADMIN_EMAILS` to grant the role on a
-  fixed-name org); promoting this to a named constant in user-service is a small
-  delta inside T0.
+- None new.
 
 ### Vendor / tooling
 - None.
 
 ### Unresolved
-- None blocking. The Figma question does not apply — `product-spec.md` has no
-  Figma link, and the existing `digital-factory-ui` styling system is reused.
+- None blocking.
 
 ## 6. Parallelization / blocking analysis
 
 ```
-T0: user-service — add is_platform_staff to /api/me + /internal/sessions/validate
+T1: workflow-backend — cross-tenant isolation test (m1-identity T3 follow-up)
   └── Can begin now — no blockers
   │
-  T1: workflow-backend — propagate IsPlatformStaff into AuthCtx + fix null → unrestricted
-      └── BLOCKED on T0 (validate-session payload must carry is_platform_staff)
-      │
-      T2: workflow-backend — write-path authorization (403 on POST when !staff)
-          └── BLOCKED on T1 (AuthCtx must carry IsPlatformStaff)
+T2: digital-factory-ui — remove write controls from board (CreateTaskButton, drag handlers, sync button, edit affordances)
+  └── Can begin now — no blockers
   │
-T3: workflow-backend — cross-tenant isolation test (m1-identity T3 follow-up)
-  └── Can begin now — no blockers (test-only; touches handler tests)
+T3: digital-factory-ui — no-memberships landing state (replace /board → /connect redirect for clients)
+  └── Can begin now — no blockers
   │
-  T4: digital-factory-ui — SessionContext exposes isPlatformStaff
-      └── BLOCKED on T0 (/api/me must include is_platform_staff)
-      │
-      T5: digital-factory-ui — hide write controls in board when !isPlatformStaff
-      T6: digital-factory-ui — client-legible status labels + activity feed
-      T7: digital-factory-ui — read-only polish on feature + task drill-downs
-          └── T5, T6, T7 run in parallel
-          └── BLOCKED on T4 respectively (each component imports the shared flag from SessionContext)
+T4: digital-factory-ui — client-legible status labels mapping (clientStatusLabels.ts) + apply on board, drill-downs
+  └── Can begin now — no blockers
+  │
+T5: digital-factory-ui — activity feed presentation (clientActivityFilter.ts) + render on board
+  └── Can begin now — no blockers
+  │
+T6: digital-factory-ui — read-only polish on feature drill-down (/feature/[sessionId]) and task drill-down (/task/[sessionId])
+  └── BLOCKED on T2 (drill-down components share the write-removed FeatureDetailSheet / FeatureTabView from T2)
+  └── BLOCKED on T4 (drill-downs render status labels via the mapping module)
+  └── T2 and T4 are not mutually blocking — they touch disjoint components — so T6 can begin once both are merged
 ```
 
-- T0 is the single upstream blocker. It is short (one derived field in two payloads)
-  and should land first.
-- T3 is fully independent of the rest and can start immediately — it closes the
-  identity-feature follow-up and tightens the test surface this feature depends on.
-- T1 and T2 are sequential (both in `workflow-backend`); T2 cannot exist without T1.
-- T4 is the UI fan-in point — once it lands, T5/T6/T7 run in parallel because each
-  touches a disjoint slice of the board UI:
-  - T5: write-control components (`CreateTaskButton`, `KanbanBoard`, header sync,
-    edit controls in detail sheet).
-  - T6: status/label mapping module + activity feed presentation.
-  - T7: feature drill-down (`src/app/feature/[sessionId]`) and task drill-down
-    (`src/app/task/[sessionId]`) — separate route tree.
+- T1 is independent (touches `workflow-backend` only) and runs in parallel with
+  all UI tasks.
+- T2, T3, T4, T5 all touch `digital-factory-ui` but in disjoint files and can
+  run in parallel. The board surface is large enough that parallel work in
+  different components is safe; conflicts, if any, are at the index/export
+  level and easy to resolve.
+- T6 is the only dependent task — it consolidates the drill-down read-only
+  experience and uses pieces from T2 (write-removal) and T4 (status labels).
 
 ## 7. Repository impact
 
 | Task | Repo (`workspace.yaml -> repos[].id`) | Why |
 |---|---|---|
-| T0 | `user-service` | Identity service owns role and session payloads |
-| T1 | `workflow-backend` | Auth middleware + service client live here |
-| T2 | `workflow-backend` | Write authorization belongs at the API surface |
-| T3 | `workflow-backend` | Carry-over test gap from identity T3 |
-| T4 | `digital-factory-ui` | Session-context-level type + value extension |
-| T5 | `digital-factory-ui` | Board write controls are in this UI |
-| T6 | `digital-factory-ui` | Board labels + activity feed are in this UI |
-| T7 | `digital-factory-ui` | Drill-down pages are in this UI |
+| T1 | `workflow-backend` | Auth + scoping enforcement lives here; closes the m1-identity T3 follow-up |
+| T2 | `digital-factory-ui` | Write controls live in this UI |
+| T3 | `digital-factory-ui` | Routing + session-aware landing flow lives here |
+| T4 | `digital-factory-ui` | Status labels are presentation-layer mapping |
+| T5 | `digital-factory-ui` | Activity feed component + filter live here |
+| T6 | `digital-factory-ui` | Drill-down pages live here |
 
-Every task changes exactly one repository (per the one-repo-per-task workflow
-rule).
+Every task changes exactly one repository.
 
 ## 8. Validation and release impact
 
 ### Testing expectations
-- `user-service`:
-  - Unit test on the derivation: a user with platform-admin role on the configured
-    org returns `is_platform_staff: true`; all other configurations return `false`.
-  - Contract test on `/api/me` and `/internal/sessions/validate` responses including
-    the new field.
-- `workflow-backend`:
-  - Unit test: `AuthCtx.IsPlatformStaff` is populated from the validate response.
-  - Integration test: `POST /api/workspaces/import` and `POST /api/workspaces/:id/sync`
-    return 403 when the caller is not platform staff.
-  - Cross-tenant isolation test (T3): a user whose `accessible_workspace_ids=[ws-A]`
-    receives HTTP 404 (not 200, not 403) when accessing endpoints under `ws-B`.
-- `digital-factory-ui`:
-  - Component tests: when `isPlatformStaff` is `false`, `CreateTaskButton`,
-    `BoardHeader` sync, and `KanbanBoard` drag affordances are not rendered or are
-    disabled.
-  - Integration test: a session response with `is_platform_staff: false` results in
-    a board view with zero write controls.
-  - Snapshot/story tests for the client-legible status labels and activity feed
-    presentation.
+- `workflow-backend` (T1):
+  - Integration test: a user whose `accessible_workspace_ids=[ws-A]` receives
+    HTTP 404 (not 200, not 403) when accessing endpoints under `ws-B`. Covers
+    `GET /workspaces/:id`, `GET /workspaces/:id/features`,
+    `GET /workspaces/:id/features/:fid`, `GET /workspaces/:id/tasks`,
+    `GET /workspaces/:id/tasks/:tid`, `GET /workspaces/:id/activity`.
+- `digital-factory-ui` (T2):
+  - Component tests verify no write controls render anywhere on `/board` —
+    `CreateTaskButton`, drag handlers, sync button, edit menus are absent.
+  - Snapshot of board with sample state to lock the read-only shape.
+- `digital-factory-ui` (T3):
+  - Integration test: `/api/me` returns `memberships: []` → user is routed to
+    the empty-state landing (not `/connect`).
+- `digital-factory-ui` (T4, T5):
+  - Unit tests on the label and activity-filter mapping modules covering every
+    documented status value and every filtered activity type.
+- `digital-factory-ui` (T6):
+  - Integration test: feature drill-down and task drill-down render with no
+    edit affordances; status labels are client-legible; activity log items
+    apply the filter.
 
 ### Migration / config impact
-- No database migrations.
-- One new config value: `PLATFORM_ADMIN_ORG_SLUG` in `user-service`
-  (`.env.template`). Default `"kitelabs"` keeps current behaviour.
+- No migrations. No config changes.
 
 ### Rollout concerns
-- The 403 on the two write endpoints is the only behaviour change for existing
-  staff. Validate via an integration test using a staff session before rollout.
-- Internal/service-to-service callers of the workflow-backend (e.g. the seed) that
-  use the unauthenticated path remain unaffected — `RequireAuth` is not enforced on
-  that path today and this feature does not change that.
+- The removal of write controls is the only behaviour change visible to
+  existing users. Kitelabs ops should be notified before rollout that the
+  board's write affordances move to CLI/agents.
+- No breaking change for clients (none exist on the platform yet).
 
 ### Backward compatibility
-- All API contract changes are additive booleans defaulting to `false`. A stale
-  client that ignores `is_platform_staff` simply renders the client (read-only)
-  view — the safer default.
+- API contracts unchanged. The UI removal is forward-only; no need to keep the
+  write controls behind a flag.
 
 ### Deployment / handoff
-- Roll order: `user-service` (T0) → `workflow-backend` (T1, T2; T3 independent) →
-  `digital-factory-ui` (T4, then T5/T6/T7). Each repo's PR is independent and can
-  merge in this order.
-- The handoff document records each PR per task as in `m1-identity-and-workspaces`.
-- No infra changes; no environment variable other than the optional
-  `PLATFORM_ADMIN_ORG_SLUG`.
+- Roll order: `workflow-backend` (T1) and `digital-factory-ui` (T2–T6) are
+  independent and can merge in any order; the UI changes do not depend on T1
+  beyond the safety story it codifies.
+- Handoff document records each PR per task as in `m1-identity-and-workspaces`.
 
 ## Figma
 _None — the product spec has no Figma links. The existing `digital-factory-ui`
-visual system is reused; status-label and activity-feed presentation choices are
-made in code review._
+visual system is reused; status-label and activity-feed presentation choices
+are made in code review._
