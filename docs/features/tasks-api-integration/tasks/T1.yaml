@@ -1,15 +1,15 @@
 id: T1
 title: Add updated_at to existing tasks API
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/tasks-api-integration-T1
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-01T03:56:09.932Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-06-01T03:57:15.990Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/16
   status: open
@@ -53,3 +53,7 @@ log:
           output: 20084
           model: claude-sonnet-4-6
     at: 2026-06-01T03:56:09.932Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-01T03:57:15.990Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
