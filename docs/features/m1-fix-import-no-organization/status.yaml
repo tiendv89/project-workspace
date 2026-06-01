@@ -1,7 +1,7 @@
 feature_id: m1-fix-import-no-organization
 title: Workspace Import — Attach to Organization
-feature_status: ready_for_implementation
-current_stage: implementation
+feature_status: in_handoff
+current_stage: handoff
 next_action: T1 is ready — agent can claim and begin implementation in
   workspace-github-adapter. T2 unblocks when T1 is done.
 stages:
@@ -51,6 +51,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/427
 history:
   - at: 2026-06-01T18:15:30+0700
     actor: pye@swellnetwork.io
@@ -100,3 +101,11 @@ revalidation:
 feature_branch: feature/m1-fix-import-no-organization
 feature_branch_base_sha: 3d54c5ddd3d790aa90bf27a1dcd41f7e24612760
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/422
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/427
+impl_feature_prs:
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/28
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/20
+    status: open
