@@ -1,15 +1,15 @@
 id: T1
 title: Wire `organization_id` end-to-end in workspace-github-adapter import path
 repo: workspace-github-adapter
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-fix-import-no-organization-T1
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-01T20:34:39+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T13:37:00.044Z
 pr:
   url: ""
   status: not_created
@@ -44,6 +44,9 @@ log:
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-06-01T20:34:39+0700
-    note: >-
-      Human reset from in_progress back to ready — prior agent claim released.
+    note: Human reset from in_progress back to ready — prior agent claim released.
       No PR opened yet (pr.url empty); task is re-eligible for claim.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T13:37:00.044Z
+    note: Claimed via git-based claim protocol.
