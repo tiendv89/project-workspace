@@ -1,7 +1,7 @@
 id: T4
 title: Wire Task Mode kanban to feature-task API
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T3
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/tasks-api-integration-T4
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-06-01T11:40:59.682Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-01T11:47:29.512Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/86
   status: open
@@ -53,3 +53,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-06-01T11:40:59.682Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-01T11:47:29.512Z
