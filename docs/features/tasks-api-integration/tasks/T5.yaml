@@ -1,7 +1,7 @@
 id: T5
 title: Regression and browser/network QA
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T4
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/tasks-api-integration-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-06-01T13:57:06.253Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T14:04:32.210Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/87
   status: open
@@ -57,3 +57,12 @@ log:
     by: noreply@anthropic.com
     at: 2026-06-01T13:57:06.253Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "44/44 tests pass. All automatable T5 subtasks covered: endpoint call,
+      query params, updated_at, pagination, cache config, mode isolation, /tasks
+      backward compat. Live backend QA documented as manual pending deployment
+      (per tech design). Pre-existing test failures in 3 unrelated files not
+      introduced by T5. No 🔴/🟡 findings."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/87#pullrequestreview-4401827010
+    at: 2026-06-01T14:04:32.210Z
