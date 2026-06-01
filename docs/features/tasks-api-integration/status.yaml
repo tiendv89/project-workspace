@@ -270,3 +270,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/tasks-api-integration
 feature_branch_base_sha: 1b4a1cb8364fda3e5a9dbedc1612928295dd22c3
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/414
