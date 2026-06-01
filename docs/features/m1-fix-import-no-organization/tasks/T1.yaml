@@ -83,3 +83,7 @@ log:
     rag_query: Wire `organization_id` end-to-end in workspace-github-adapter import
       path m1-fix-import-no-organization
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T14:03:58+0000
+    note: executor work phase begun.
