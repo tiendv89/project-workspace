@@ -1,15 +1,15 @@
 id: T1
 title: Wire `organization_id` end-to-end in workspace-github-adapter import path
 repo: workspace-github-adapter
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-fix-import-no-organization-T1
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-06-01T14:14:35.631Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T14:20:14.598Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/27
   status: open
@@ -103,3 +103,11 @@ log:
     by: noreply@anthropic.com
     at: 2026-06-01T14:14:35.631Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All subtasks implemented. CI passed (no check-runs). No 🔴/🟡 findings.
+      SQL ON CONFLICT correctly preserves organization_id (Option 2B). All
+      validation branches tested. 💡 Nit only: importSuccessRow.Scan silently
+      returns nil for wrong dest count (test-only)."
+    review_url: https://github.com/tiendv89/workspace-github-adapter/pull/27#pullrequestreview-4401954652
+    at: 2026-06-01T14:20:14.598Z
