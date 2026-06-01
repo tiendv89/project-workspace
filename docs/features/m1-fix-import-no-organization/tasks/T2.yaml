@@ -1,7 +1,7 @@
 id: T2
 title: Cross-service verification — workflow-backend round-trips `organization_id`
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m1-fix-import-no-organization-T2
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-01T14:25:43+0000
+  last_updated_at: 2026-06-01T14:33:37.507Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workflow-backend/pull/19
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/426
   status: open
