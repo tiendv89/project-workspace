@@ -1,7 +1,7 @@
 feature_id: m1-identity-and-workspaces
 title: Identity, Org & Workspace Foundation
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Owning teams may begin execution. T0, T1a, T1b, T4 are ready;
   downstream tasks unblock as upstream tasks reach done.
 stages:
@@ -73,10 +73,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/413
 impl_feature_prs:
   - repo: user-service
     url: https://github.com/tiendv89/user-service/pull/4
-    status: open
+    status: merged
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/15
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/84
-    status: open
+    status: merged
