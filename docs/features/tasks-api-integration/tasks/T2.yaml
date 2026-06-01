@@ -1,7 +1,7 @@
 id: T2
 title: Add feature-task response with feature pagination
 repo: workflow-backend
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -17,4 +17,9 @@ log:
   - action: created
     by: unknown@local
     at: 2026-05-29T20:14:02+0700
-    note: Task drafted by tech-lead from the approved product spec and technical design.
+    note: Task drafted by tech-lead from the approved product spec and technical
+      design.
+  - action: ready
+    by: spiderbot@gmail.com
+    at: 2026-06-01T04:04:47.599Z
+    note: Task activated — dependency T1 merged and marked done.
