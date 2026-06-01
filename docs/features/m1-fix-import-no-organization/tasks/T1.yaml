@@ -1,7 +1,7 @@
 id: T1
 title: Wire `organization_id` end-to-end in workspace-github-adapter import path
 repo: workspace-github-adapter
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m1-fix-import-no-organization-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-01T13:59:28.582Z
+  last_updated_at: 2026-06-01T14:13:52.435Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/27
   status: open
