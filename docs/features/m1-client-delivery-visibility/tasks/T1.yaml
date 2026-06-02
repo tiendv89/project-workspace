@@ -29,3 +29,11 @@ log:
     by: pentative@gmail.com
     at: 2026-06-02T04:41:29.177Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-02T04:41:39.025Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend — activate workspace scoping in service layer
+      m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
