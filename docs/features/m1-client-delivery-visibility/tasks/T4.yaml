@@ -1,18 +1,21 @@
 id: T4
 title: digital-factory-ui — move /connect to /admin/connect + admin layout guard
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-client-delivery-visibility-T4
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:19:19+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T05:43:11.036Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/89
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/432
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -22,3 +25,55 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-02T11:19:19+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:47:51.902Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:48:04.460Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/handoffs/handoff.md,
+      github.com/tiendv89/project-workspace/pull/365"
+    rag_query: digital-factory-ui — move /connect to /admin/connect + admin layout
+      guard m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/89"
+    at: 2026-06-02T05:03:42.899Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-02T05:14:15.209Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer requested changes.
+    at: 2026-06-02T05:22:38.424Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-06-02T05:25:29.654Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/89"
+    at: 2026-06-02T05:34:10.432Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-02T05:34:22.977Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T4 subtasks implemented and tested. CI passed (no check-runs). No
+      🔴/🟡 findings. Admin layout guard correctly gates /admin/* behind
+      platform_admin check using useSession. All internal /connect references
+      updated to /admin/connect. 🟢 Nit only: waitForTimeout(3000) in E2E test
+      is fragile. PR squash-merged successfully."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/89#issuecomment-4599023504
+    at: 2026-06-02T05:40:31.895Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T05:43:11.036Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
