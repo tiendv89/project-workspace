@@ -1,11 +1,12 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
 
-feature_status: in_tdd
-current_stage: tasks
+feature_status: ready_for_implementation
+current_stage: handoff
 next_action: >-
-  Technical design approved. Tech lead authors task breakdown
-  (tech-lead Phase 2) under docs/features/m1-client-delivery-visibility/tasks/.
+  Tasks approved. Wave 1 tasks (T1, T2, T3, T4, T6) are ready — owning teams
+  may begin execution. T5 (after T4), T7 (after T3), and T8 (after T2)
+  auto-ready as their dependencies reach done.
 
 stages:
   product_spec:
@@ -52,11 +53,28 @@ stages:
           map, and introduces a server-side activity allowlist with audience=client
           relabeling. No DB migration required.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-02T11:19:19+0700
+    review_comment: >-
+      Approved. Eight tasks across workflow-backend (T1, T2) and digital-factory-ui
+      (T3-T8) cover the four Phase 2 implementation streams from the technical
+      design: workspace scoping activation, activity allowlist, write-affordance
+      removal, /admin route move, no-membership EmptyState, vocabulary mapping,
+      polling refresh, and client activity wiring. Wave 1 (T1, T2, T3, T4, T6)
+      activated immediately; T5/T7/T8 auto-ready as their dependencies complete.
+    review_history:
+      - review_status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: 2026-06-02T11:19:19+0700
+        review_comment: >-
+          Approved. Eight tasks across workflow-backend (T1, T2) and
+          digital-factory-ui (T3-T8) cover the four Phase 2 implementation streams
+          from the technical design: workspace scoping activation, activity
+          allowlist, write-affordance removal, /admin route move, no-membership
+          EmptyState, vocabulary mapping, polling refresh, and client activity
+          wiring. Wave 1 (T1, T2, T3, T4, T6) activated immediately; T5/T7/T8
+          auto-ready as their dependencies complete.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -105,6 +123,18 @@ history:
     to_feature_status: in_tdd
     from_current_stage: technical_design
     to_current_stage: tasks
+  - at: 2026-06-02T11:19:19+0700
+    by: pye@swellnetwork.io
+    action: approve_stage
+    stage: tasks
+    from_feature_status: in_tdd
+    to_feature_status: ready_for_implementation
+    from_current_stage: tasks
+    to_current_stage: handoff
+    note: >-
+      Wave 1 tasks (T1, T2, T3, T4, T6) activated to ready by the auto-ready
+      rule applied during this approval. T5, T7, T8 remain todo until their
+      respective dependencies reach done.
 
 revalidation:
   product_spec_required: false
