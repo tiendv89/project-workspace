@@ -1,6 +1,6 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Tasks approved. Wave 1 tasks (T1, T2, T3, T4, T6) are ready —
   owning teams may begin execution. T5 (after T4), T7 (after T3), and T8 (after
@@ -76,6 +76,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/437
 history:
   - at: 2026-06-01T17:39:33+0700
     by: pye@swellnetwork.io
@@ -134,3 +135,11 @@ revalidation:
 feature_branch: feature/m1-client-delivery-visibility
 feature_branch_base_sha: 9644356b00fb207d438794d563e098028d86ac3f
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/428
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/437
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/23
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/95
+    status: open
