@@ -1,7 +1,7 @@
 id: T1
 title: workflow-backend — activate workspace scoping in service layer
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/m1-client-delivery-visibility-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-02T04:47:06+0000
+  last_updated_at: 2026-06-02T04:57:41.896Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/22
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/429
   status: open
