@@ -29,3 +29,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-02T04:51:02.123Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:51:15.182Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/418,
+      docs/features/m1-client-delivery-visibility/product-spec.md,
+      docs/features/m1-client-delivery-visibility/technical-design.md"
+    rag_query: digital-factory-ui — client vocabulary mapping at status-render sites
+      m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
