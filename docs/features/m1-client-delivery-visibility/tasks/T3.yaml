@@ -29,3 +29,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-02T04:44:49.121Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:45:02.410Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m1-client-delivery-visibility/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/m1-client-delivery-visibility/technical-design.md"
+    rag_query: digital-factory-ui — remove write affordances from client-reachable
+      routes m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
