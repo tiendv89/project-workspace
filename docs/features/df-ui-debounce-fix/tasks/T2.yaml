@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-02T10:20:29.173Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T10:20:41.956Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/349,
+      github.com/tiendv89/digital-factory-ui/pull/61,
+      docs/features/df-ui-bugfix/handoffs/handoff.md"
+    rag_query: Spinner for active statuses df-ui-debounce-fix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
