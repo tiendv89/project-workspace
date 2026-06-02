@@ -1,7 +1,7 @@
 feature_id: m1-fix-import-no-organization
 title: Workspace Import — Attach to Organization
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: T1 is ready — agent can claim and begin implementation in
   workspace-github-adapter. T2 unblocks when T1 is done.
 stages:
@@ -105,7 +105,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/427
 impl_feature_prs:
   - repo: workspace-github-adapter
     url: https://github.com/tiendv89/workspace-github-adapter/pull/28
-    status: open
+    status: merged
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/20
-    status: open
+    status: merged
