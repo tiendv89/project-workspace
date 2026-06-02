@@ -1,87 +1,81 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
-
 feature_status: ready_for_implementation
 current_stage: handoff
-next_action: >-
-  Tasks approved. Wave 1 tasks (T1, T2, T3, T4, T6) are ready — owning teams
-  may begin execution. T5 (after T4), T7 (after T3), and T8 (after T2)
-  auto-ready as their dependencies reach done.
-
+next_action: Tasks approved. Wave 1 tasks (T1, T2, T3, T4, T6) are ready —
+  owning teams may begin execution. T5 (after T4), T7 (after T3), and T8 (after
+  T2) auto-ready as their dependencies reach done.
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-01T17:39:33+0700
     review_comment: Approved. Dependency m1-identity-and-workspaces is shipped; spec
-      claims (login, workspace scoping, accessible_workspace_ids) all map to delivered
-      code. Open product decision to resolve in tech design - same digital-factory-ui
-      surface in read-only mode vs. separate client-facing surface; and confirm
-      vocabulary alignment with organizations/workspaces tables.
+      claims (login, workspace scoping, accessible_workspace_ids) all map to
+      delivered code. Open product decision to resolve in tech design - same
+      digital-factory-ui surface in read-only mode vs. separate client-facing
+      surface; and confirm vocabulary alignment with organizations/workspaces
+      tables.
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-01T17:39:33+0700
-        review_comment: Approved. Dependency m1-identity-and-workspaces is shipped;
-          spec claims (login, workspace scoping, accessible_workspace_ids) all map
-          to delivered code. Open product decision to resolve in tech design - same
-          digital-factory-ui surface in read-only mode vs. separate client-facing
-          surface; and confirm vocabulary alignment with organizations/workspaces
-          tables.
+        review_comment: Approved. Dependency m1-identity-and-workspaces is shipped; spec
+          claims (login, workspace scoping, accessible_workspace_ids) all map to
+          delivered code. Open product decision to resolve in tech design - same
+          digital-factory-ui surface in read-only mode vs. separate
+          client-facing surface; and confirm vocabulary alignment with
+          organizations/workspaces tables.
   technical_design:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-02T11:03:34+0700
-    review_comment: >-
-      Approved. Fresh draft (commit 692343d) reuses digital-factory-ui as the
-      single read-only surface, moves operator screens under /admin/*, activates
-      the previously-commented server-side workspace scoping in workflow-backend,
-      resolves no-membership landing with an in-place empty state (no redirect to
-      /connect), adds a client-facing status-vocabulary map, and introduces a
-      server-side activity allowlist with audience=client relabeling. No DB
-      migration required.
+    review_comment: Approved. Fresh draft (commit 692343d) reuses digital-factory-ui
+      as the single read-only surface, moves operator screens under /admin/*,
+      activates the previously-commented server-side workspace scoping in
+      workflow-backend, resolves no-membership landing with an in-place empty
+      state (no redirect to /connect), adds a client-facing status-vocabulary
+      map, and introduces a server-side activity allowlist with audience=client
+      relabeling. No DB migration required.
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-02T11:03:34+0700
-        review_comment: >-
-          Approved. Fresh draft (commit 692343d) reuses digital-factory-ui as the
-          single read-only surface, moves operator screens under /admin/*,
-          activates the previously-commented server-side workspace scoping in
-          workflow-backend, resolves no-membership landing with an in-place empty
-          state (no redirect to /connect), adds a client-facing status-vocabulary
-          map, and introduces a server-side activity allowlist with audience=client
-          relabeling. No DB migration required.
+        review_comment: Approved. Fresh draft (commit 692343d) reuses digital-factory-ui
+          as the single read-only surface, moves operator screens under
+          /admin/*, activates the previously-commented server-side workspace
+          scoping in workflow-backend, resolves no-membership landing with an
+          in-place empty state (no redirect to /connect), adds a client-facing
+          status-vocabulary map, and introduces a server-side activity allowlist
+          with audience=client relabeling. No DB migration required.
   tasks:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-02T11:19:19+0700
-    review_comment: >-
-      Approved. Eight tasks across workflow-backend (T1, T2) and digital-factory-ui
-      (T3-T8) cover the four Phase 2 implementation streams from the technical
-      design: workspace scoping activation, activity allowlist, write-affordance
-      removal, /admin route move, no-membership EmptyState, vocabulary mapping,
-      polling refresh, and client activity wiring. Wave 1 (T1, T2, T3, T4, T6)
-      activated immediately; T5/T7/T8 auto-ready as their dependencies complete.
+    review_comment: "Approved. Eight tasks across workflow-backend (T1, T2) and
+      digital-factory-ui (T3-T8) cover the four Phase 2 implementation streams
+      from the technical design: workspace scoping activation, activity
+      allowlist, write-affordance removal, /admin route move, no-membership
+      EmptyState, vocabulary mapping, polling refresh, and client activity
+      wiring. Wave 1 (T1, T2, T3, T4, T6) activated immediately; T5/T7/T8
+      auto-ready as their dependencies complete."
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-02T11:19:19+0700
-        review_comment: >-
-          Approved. Eight tasks across workflow-backend (T1, T2) and
-          digital-factory-ui (T3-T8) cover the four Phase 2 implementation streams
-          from the technical design: workspace scoping activation, activity
-          allowlist, write-affordance removal, /admin route move, no-membership
-          EmptyState, vocabulary mapping, polling refresh, and client activity
-          wiring. Wave 1 (T1, T2, T3, T4, T6) activated immediately; T5/T7/T8
-          auto-ready as their dependencies complete.
+        review_comment: "Approved. Eight tasks across workflow-backend (T1, T2) and
+          digital-factory-ui (T3-T8) cover the four Phase 2 implementation
+          streams from the technical design: workspace scoping activation,
+          activity allowlist, write-affordance removal, /admin route move,
+          no-membership EmptyState, vocabulary mapping, polling refresh, and
+          client activity wiring. Wave 1 (T1, T2, T3, T4, T6) activated
+          immediately; T5/T7/T8 auto-ready as their dependencies complete."
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-06-01T17:39:33+0700
     by: pye@swellnetwork.io
@@ -99,8 +93,7 @@ history:
     to_feature_status: in_design
     from_current_stage: technical_design
     to_current_stage: product_spec
-    note: >-
-      Rolled back to product_spec stage. technical-design.md preserved on disk
+    note: Rolled back to product_spec stage. technical-design.md preserved on disk
       per workflow artifact-preservation rule; technical_design marked for
       revalidation. Product spec approval retained.
   - at: 2026-06-02T11:03:34+0700
@@ -111,8 +104,7 @@ history:
     to_feature_status: in_tdd
     from_current_stage: product_spec
     to_current_stage: technical_design
-    note: >-
-      Re-advanced from product_spec rollback. Fresh technical-design.md draft
+    note: Re-advanced from product_spec rollback. Fresh technical-design.md draft
       (commit 692343d, 2026-06-02) supersedes the prior reverted draft and is
       ready for approval.
   - at: 2026-06-02T11:03:34+0700
@@ -131,13 +123,13 @@ history:
     to_feature_status: ready_for_implementation
     from_current_stage: tasks
     to_current_stage: handoff
-    note: >-
-      Wave 1 tasks (T1, T2, T3, T4, T6) activated to ready by the auto-ready
+    note: Wave 1 tasks (T1, T2, T3, T4, T6) activated to ready by the auto-ready
       rule applied during this approval. T5, T7, T8 remain todo until their
       respective dependencies reach done.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m1-client-delivery-visibility
+feature_branch_base_sha: 9644356b00fb207d438794d563e098028d86ac3f
