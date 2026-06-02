@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-02T10:17:39.096Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T10:17:52.213Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/374,
+      github.com/tiendv89/project-workspace/pull/359,
+      github.com/tiendv89/project-workspace/pull/360"
+    rag_query: Relative timestamps in task sidebar df-ui-debounce-fix
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
