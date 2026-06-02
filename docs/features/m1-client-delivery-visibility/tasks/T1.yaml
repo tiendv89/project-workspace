@@ -9,7 +9,7 @@ branch: feature/m1-client-delivery-visibility-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-02T04:41:29.177Z
+  last_updated_at: 2026-06-02T04:47:06+0000
 pr:
   url: null
   status: null
@@ -37,3 +37,7 @@ log:
     rag_query: workflow-backend — activate workspace scoping in service layer
       m1-client-delivery-visibility
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-02T04:47:06+0000
+    note: executor work phase begun.
