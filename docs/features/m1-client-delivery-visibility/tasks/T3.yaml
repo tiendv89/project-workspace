@@ -1,18 +1,21 @@
 id: T3
 title: digital-factory-ui — remove write affordances from client-reachable routes
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-client-delivery-visibility-T3
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:19:19+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T05:20:24.280Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/90
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/431
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -22,3 +25,44 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-02T11:19:19+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-02 04:44:49.121000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02 04:45:02.410000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m1-client-delivery-visibility/technical-design.md,
+      docs/features/digital-factory-ui-bugfix/technical-design.md,
+      docs/features/m1-client-delivery-visibility/technical-design.md"
+    rag_query: digital-factory-ui — remove write affordances from client-reachable
+      routes m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:52:27+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/90"
+    at: 2026-06-02T05:07:10.679Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-02T05:10:17.075Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-02T05:18:34.798Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T05:20:24.280Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-02T05:20:36.985Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
