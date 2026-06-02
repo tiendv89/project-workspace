@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — no-membership EmptyState + replace /connect redirects
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,11 +9,14 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T5
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:11:13+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T06:07:50.255Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/93
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/435
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -23,3 +26,52 @@ log:
     by: pentative@gmail.com
     at: 2026-06-02T05:43:11.062Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-02T05:46:11.923Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-02T05:46:21.966Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: digital-factory-ui — no-membership EmptyState + replace /connect
+      redirects m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-02T05:49:19+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/93"
+    executor_audit:
+      cost_usd: 0.384309
+      claude:
+        token_usage:
+          input: 213
+          output: 25578
+          model: claude-sonnet-4-6
+    at: 2026-06-02T05:57:46.835Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-02T05:58:35.391Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All 7 T5 subtasks implemented. CI passed (no check-runs). No 🔴/🟡
+      findings. EmptyState role-aware variants correct; board and root-page
+      /connect redirects replaced cleanly. Two 🟢 nits: test co-location and
+      waitForTimeout usage."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/93#pullrequestreview-4406960768
+    at: 2026-06-02T06:06:43.027Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T06:07:50.255Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-02T06:08:02.301Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
