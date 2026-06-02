@@ -1,7 +1,7 @@
 id: T7
 title: digital-factory-ui — 30s focus-aware polling + manual Refresh button
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T3
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T7
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-06-02T06:56:02.656Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T07:01:39.402Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/94
   status: open
@@ -57,3 +57,10 @@ log:
     by: noreply@anthropic.com
     at: 2026-06-02T06:56:02.656Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T7 subtasks implemented. 30s focus-aware polling and Refresh button
+      match technical-design.md Option 3A exactly. No 🔴/🟡 findings. CI: no
+      check-runs (treated as passed). PR squash-merged successfully."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/94#pullrequestreview-4407301016
+    at: 2026-06-02T07:01:39.402Z
