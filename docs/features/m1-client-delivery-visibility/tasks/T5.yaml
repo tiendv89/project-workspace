@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — no-membership EmptyState + replace /connect redirects
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T4
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T5
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-06-02T05:58:35.391Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T06:06:43.027Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/93
   status: open
@@ -57,3 +57,11 @@ log:
     by: noreply@anthropic.com
     at: 2026-06-02T05:58:35.391Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All 7 T5 subtasks implemented. CI passed (no check-runs). No 🔴/🟡
+      findings. EmptyState role-aware variants correct; board and root-page
+      /connect redirects replaced cleanly. Two 🟢 nits: test co-location and
+      waitForTimeout usage."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/93#pullrequestreview-4406960768
+    at: 2026-06-02T06:06:43.027Z
