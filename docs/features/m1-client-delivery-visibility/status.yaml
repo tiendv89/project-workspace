@@ -1,12 +1,11 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
 
-feature_status: in_design
-current_stage: product_spec
+feature_status: in_tdd
+current_stage: tasks
 next_action: >-
-  Stage rolled back to product_spec. Product spec remains approved.
-  Decide whether to revise the product spec or re-advance to technical_design
-  and re-author tech design from scratch.
+  Technical design approved. Tech lead authors task breakdown
+  (tech-lead Phase 2) under docs/features/m1-client-delivery-visibility/tasks/.
 
 stages:
   product_spec:
@@ -29,11 +28,29 @@ stages:
           surface; and confirm vocabulary alignment with organizations/workspaces
           tables.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-02T11:03:34+0700
+    review_comment: >-
+      Approved. Fresh draft (commit 692343d) reuses digital-factory-ui as the
+      single read-only surface, moves operator screens under /admin/*, activates
+      the previously-commented server-side workspace scoping in workflow-backend,
+      resolves no-membership landing with an in-place empty state (no redirect to
+      /connect), adds a client-facing status-vocabulary map, and introduces a
+      server-side activity allowlist with audience=client relabeling. No DB
+      migration required.
+    review_history:
+      - review_status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: 2026-06-02T11:03:34+0700
+        review_comment: >-
+          Approved. Fresh draft (commit 692343d) reuses digital-factory-ui as the
+          single read-only surface, moves operator screens under /admin/*,
+          activates the previously-commented server-side workspace scoping in
+          workflow-backend, resolves no-membership landing with an in-place empty
+          state (no redirect to /connect), adds a client-facing status-vocabulary
+          map, and introduces a server-side activity allowlist with audience=client
+          relabeling. No DB migration required.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -68,9 +85,29 @@ history:
       Rolled back to product_spec stage. technical-design.md preserved on disk
       per workflow artifact-preservation rule; technical_design marked for
       revalidation. Product spec approval retained.
+  - at: 2026-06-02T11:03:34+0700
+    by: pye@swellnetwork.io
+    action: set_stage
+    stage: technical_design
+    from_feature_status: in_design
+    to_feature_status: in_tdd
+    from_current_stage: product_spec
+    to_current_stage: technical_design
+    note: >-
+      Re-advanced from product_spec rollback. Fresh technical-design.md draft
+      (commit 692343d, 2026-06-02) supersedes the prior reverted draft and is
+      ready for approval.
+  - at: 2026-06-02T11:03:34+0700
+    by: pye@swellnetwork.io
+    action: approve_stage
+    stage: technical_design
+    from_feature_status: in_tdd
+    to_feature_status: in_tdd
+    from_current_stage: technical_design
+    to_current_stage: tasks
 
 revalidation:
   product_spec_required: false
-  technical_design_required: true
+  technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
