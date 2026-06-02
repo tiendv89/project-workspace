@@ -1,7 +1,7 @@
 id: T7
 title: digital-factory-ui — 30s focus-aware polling + manual Refresh button
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
@@ -9,11 +9,12 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T7
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:11:13+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T06:42:30.265Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -23,3 +24,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-02T05:20:24.324Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-02T06:42:30.265Z
+    note: Claimed via git-based claim protocol.
