@@ -1,15 +1,15 @@
 id: T2
 title: Spinner for active statuses
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-debounce-fix-T2
 execution:
   actor_type: agent
-  last_updated_by: noreply@anthropic.com
-  last_updated_at: 2026-06-02T12:28:29.273Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T12:55:46.429Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/99
   status: open
@@ -51,3 +51,13 @@ log:
     by: noreply@anthropic.com
     at: 2026-06-02T12:28:29.273Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T2 subtasks implemented. SVG spinner, CSS @keyframes animation,
+      prefers-reduced-motion, and accessibility attributes (aria-label, title,
+      role) all in place. StatusBadge component deduplicates status rendering
+      across FeatureDetailSheet, FeatureTasksPanel, TaskDetailSheet. No 🔴/🟡
+      findings. CI: no check-runs. Only 🟢 nits: test not co-located, SVG width
+      12px vs 14px spec. PR squash-merged."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/99#issuecomment-4602565612
+    at: 2026-06-02T12:55:46.429Z
