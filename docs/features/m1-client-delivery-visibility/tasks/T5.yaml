@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — no-membership EmptyState + replace /connect redirects
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T4
 blocked_reason: null
@@ -19,3 +19,7 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-02T11:11:13+0700
     note: Task created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-02T05:43:11.062Z
+    note: Task activated — dependency T4 merged and marked done.
