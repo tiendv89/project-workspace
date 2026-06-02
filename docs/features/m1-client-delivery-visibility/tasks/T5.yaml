@@ -69,3 +69,9 @@ log:
     by: pentative@gmail.com
     at: 2026-06-02T06:07:50.255Z
     note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-02T06:08:02.301Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
