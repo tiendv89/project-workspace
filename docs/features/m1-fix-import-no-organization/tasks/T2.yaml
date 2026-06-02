@@ -1,25 +1,72 @@
 id: T2
 title: Cross-service verification — workflow-backend round-trips `organization_id`
 repo: workflow-backend
-status: todo
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/m1-fix-import-no-organization-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T14:40:50.244Z
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/19
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/426
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-01T18:32:46+0700
     note: Task recreated from approved (revised) technical design.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-01T14:20:44.628Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T14:22:30.683Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-01T14:22:41.370Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Cross-service verification — workflow-backend round-trips
+      `organization_id` m1-fix-import-no-organization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T14:25:43+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/19"
+    executor_audit:
+      cost_usd: 0.241626
+      claude:
+        token_usage:
+          input: 177
+          output: 16073
+          model: claude-sonnet-4-6
+    at: 2026-06-01T14:33:44.416Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-01T14:34:24.434Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All T2 subtasks implemented. CI passed (no check-runs).
+      TestImportWorkspace_OrganizationIDPresentInRequestBody correctly captures
+      and asserts organization_id in the RPC request body.
+      TestImportWorkspace_SessionOrganizationIDOverridesBodyValue correctly
+      asserts the session value reaches the adapter. No 🔴 or 🟡 findings.
+    review_url: https://github.com/tiendv89/workflow-backend/pull/19#pullrequestreview-4402111509
+    at: 2026-06-01T14:40:07.043Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-01T14:40:50.244Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
