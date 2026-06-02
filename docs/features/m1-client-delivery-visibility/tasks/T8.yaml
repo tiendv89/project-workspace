@@ -30,3 +30,11 @@ log:
     by: pentative@gmail.com
     at: 2026-06-02T05:07:19.927Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-02T05:07:29.460Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: digital-factory-ui — wire activity feed to audience=client
+      m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
