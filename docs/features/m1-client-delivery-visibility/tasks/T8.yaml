@@ -1,7 +1,7 @@
 id: T8
 title: digital-factory-ui — wire activity feed to audience=client
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T2
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T8
 execution:
   actor_type: agent
-  last_updated_by: noreply@tiendv.dev
-  last_updated_at: 2026-06-02T05:37:59.075Z
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-02T05:44:17.643Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/92
   status: open
@@ -57,3 +57,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-06-02T05:37:59.075Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-02T05:44:17.643Z
