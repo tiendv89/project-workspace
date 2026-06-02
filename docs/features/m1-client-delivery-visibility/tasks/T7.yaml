@@ -1,7 +1,7 @@
 id: T7
 title: digital-factory-ui — 30s focus-aware polling + manual Refresh button
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -9,13 +9,62 @@ blocked_context: null
 branch: feature/m1-client-delivery-visibility-T7
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:11:13+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T07:02:04.009Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/94
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/436
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-06-02T11:11:13+0700
     note: Task created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-02T05:20:24.324Z
+    note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-02T06:42:30.265Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-02T06:42:44.914Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: digital-factory-ui — 30s focus-aware polling + manual Refresh button
+      m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-02T06:46:43+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/94"
+    executor_audit:
+      cost_usd: 0.5229659999999999
+      claude:
+        token_usage:
+          input: 352
+          output: 34794
+          model: claude-sonnet-4-6
+    at: 2026-06-02T06:55:24.058Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-02T06:56:02.656Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All T7 subtasks implemented. 30s focus-aware polling and Refresh button
+      match technical-design.md Option 3A exactly. No 🔴/🟡 findings. CI: no
+      check-runs (treated as passed). PR squash-merged successfully."
+    review_url: https://github.com/tiendv89/digital-factory-ui/pull/94#pullrequestreview-4407301016
+    at: 2026-06-02T07:01:39.402Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T07:02:04.009Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
