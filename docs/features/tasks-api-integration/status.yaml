@@ -1,7 +1,7 @@
 feature_id: tasks-api-integration
 title: Feature Tasks API Integration
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Execute tasks - T1 is ready. T2 waits for T1; T3 waits for T2; T4
   waits for T3; T5 waits for T4.
 stages:
@@ -276,7 +276,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/425
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/18
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/88
-    status: open
+    status: merged
