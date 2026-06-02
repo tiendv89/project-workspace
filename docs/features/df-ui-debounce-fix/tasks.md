@@ -17,7 +17,8 @@ Feature status: `in_tdd`. Stage: `technical_design` (draft). Machine state lives
 Add a client-side relative timestamp to each task card in the sidebar using `updated_at` compared to browser time. The timestamp must be visually prominent and recalculate on window focus or data refresh. Implement a small `useRelativeTime` hook with no external dependencies.
 
 ### Required skills
-- <!-- none -->
+- frontend-engineer
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Implement `useRelativeTime` hook (seconds/minutes/hours/days) with fallback for missing `updated_at`
@@ -33,7 +34,8 @@ Add a client-side relative timestamp to each task card in the sidebar using `upd
 Add a visible, animated spinner icon for tasks in `in_progress` and `reviewing` statuses to indicate active processing. Use an inline SVG + CSS animation (no new dependencies) and respect `prefers-reduced-motion`.
 
 ### Required skills
-- <!-- none -->
+- frontend-engineer
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Add SVG spinner element in the status badge component
@@ -49,7 +51,8 @@ Add a visible, animated spinner icon for tasks in `in_progress` and `reviewing` 
 Add a 300ms debounce to search input in both task list and feature list modes to prevent API calls on every keystroke. Implement a small `useDebounce` hook and wire it into the existing search effect.
 
 ### Required skills
-- <!-- none -->
+- frontend-engineer
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Implement `useDebounce` hook (React)
@@ -65,7 +68,8 @@ Add a 300ms debounce to search input in both task list and feature list modes to
 Display full task titles in the sidebar and in task cards across feature/task modes without shorthand by allowing line wrapping up to 5 rows. Apply a CSS line clamp to prevent extremely long titles from expanding the card beyond 5 lines.
 
 ### Required skills
-- <!-- none -->
+- frontend-engineer
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Update task card title styles in sidebar + feature/task cards to allow multi-line wrapping
