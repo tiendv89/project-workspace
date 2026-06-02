@@ -14,8 +14,8 @@ pr:
   url: null
   status: not_created
 workspace_pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/project-workspace/pull/442
+  status: open
 log:
   - action: created
     by: tech_lead
