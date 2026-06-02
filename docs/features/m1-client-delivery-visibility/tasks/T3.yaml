@@ -1,15 +1,15 @@
 id: T3
 title: digital-factory-ui — remove write affordances from client-reachable routes
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-client-delivery-visibility-T3
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-02T05:07:10.679Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-06-02T05:10:17.075Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/90
   status: open
@@ -48,3 +48,7 @@ log:
     by: norepy@tiendv.dev
     note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/90"
     at: 2026-06-02T05:07:10.679Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-02T05:10:17.075Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
