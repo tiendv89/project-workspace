@@ -93,3 +93,13 @@ impl_feature_prs:
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/245
     status: open
+drift_detected: true
+drift_reason: "Rebase conflict: 12 new commits on main. checkout failed: Error:
+  Command failed: git fetch origin
+
+  Connection closed by 20.205.243.166 port 22\r
+
+  fatal: Could not read from remote repository.
+
+
+  Please make sure you have the correct access rights"
