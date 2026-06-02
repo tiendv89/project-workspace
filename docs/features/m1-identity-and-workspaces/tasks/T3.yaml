@@ -1,24 +1,172 @@
 id: T3
-title: workflow-backend — service client + RequireAuth + workspaces.organization_id + scoped queries
+title: workflow-backend — service client + RequireAuth +
+  workspaces.organization_id + scoped queries
 repo: workflow-backend
-status: todo
+status: done
 depends_on:
   - T1b
   - T2b
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T3
-
 execution:
   actor_type: agent
   last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
-
+  last_updated_at: 2026-06-01T00:00:49+0700
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/14
+  status: open
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/411
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-05-31T15:23:08+0700
     note: Task created by tech-lead Phase 2.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-05-31T19:55:22+0700
+    note: Auto-ready transition applied after the fact. Dependencies T1b and T2b are
+      both done; the actor who marked the last dependency done missed the
+      auto-ready step.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T13:02:44.241Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T13:02:54.388Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend — service client + RequireAuth +
+      workspaces.organization_id + scoped queries m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T13:05:26+0000
+    note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-05-31T22:04:55+0700
+    note: Human reset status from in_progress back to ready. Prior agent claim is
+      vacated; task is re-eligible for execution.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T15:06:09.871Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T15:06:14.657Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend — service client + RequireAuth +
+      workspaces.organization_id + scoped queries m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T15:08:45+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/14"
+    executor_audit:
+      cost_usd: 0.880269
+      claude:
+        token_usage:
+          input: 333
+          output: 58618
+          model: claude-sonnet-4-6
+    at: 2026-05-31T15:26:37.006Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-31T15:27:58.171Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Security: ImportWorkspace handler accepts client-supplied
+      organization_id, bypassing session-derived value
+      (internal/handler/workspace.go). 🟡 Correctness: ListGitHubSources not
+      filtered by ScopedWorkspaceIDs — subtask 'Update every workspace-scoped
+      read query' incomplete (internal/database/queries.go)."
+    review_url: https://github.com/tiendv89/workflow-backend/pull/14#pullrequestreview-4397131145
+    at: 2026-05-31T15:36:22.682Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-31T15:38:00.573Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/14"
+    executor_audit:
+      cost_usd: 0.073293
+      claude:
+        token_usage:
+          input: 71
+          output: 4872
+          model: claude-sonnet-4-6
+    at: 2026-05-31T15:43:48.959Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T15:44:30.231Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: 🔴 ListGitHubSources not filtered by ScopedWorkspaceIDs
+      (internal/database/queries.go:173-192) — subtask 'Update every
+      workspace-scoped read query' still incomplete after fix-agent cycle. 🔴
+      Cross-tenant isolation test missing (tasks.md T3 subtask unchecked).
+    review_url: https://github.com/tiendv89/workflow-backend/pull/14#pullrequestreview-4397162737
+    at: 2026-05-31T15:51:19.444Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-31T15:52:48.198Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/14"
+    executor_audit:
+      cost_usd: 0.09490799999999999
+      claude:
+        token_usage:
+          input: 86
+          output: 6310
+          model: claude-sonnet-4-6
+    at: 2026-05-31T15:58:05.040Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-31T15:59:01.923Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "🔴 Cross-tenant isolation test missing (tasks.md T3 subtask unchecked):
+      handler/workspace_test.go newTestRouter does not inject AuthCtx, so all
+      handler tests exercise the hasAuth=false path only. No test verifies that
+      a user with accessible_workspace_ids=[ws-A] gets HTTP 404 when accessing
+      ws-B. Implementation logic is correct; test is absent."
+    review_url: https://github.com/tiendv89/workflow-backend/pull/14#issuecomment-4587240648
+    at: 2026-05-31T16:07:19.344Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-31T16:08:05.085Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/14"
+    executor_audit:
+      cost_usd: 0.24678
+      claude:
+        token_usage:
+          input: 125
+          output: 16427
+          model: claude-sonnet-4-6
+    at: 2026-05-31T16:16:23.986Z
+  - action: done
+    by: pye@swellnetwork.io
+    at: 2026-06-01T00:00:49+0700
+    note: >-
+      Human accepted T3 work. Implementation PR
+      https://github.com/tiendv89/workflow-backend/pull/14 carries the
+      organization_id + RequireAuth + scoped queries changes; remaining
+      cross-tenant isolation test follow-up to be tracked separately if
+      needed.

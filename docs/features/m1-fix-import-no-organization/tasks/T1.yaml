@@ -1,0 +1,117 @@
+id: T1
+title: Wire `organization_id` end-to-end in workspace-github-adapter import path
+repo: workspace-github-adapter
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/m1-fix-import-no-organization-T1
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-01T14:20:44.616Z
+pr:
+  url: https://github.com/tiendv89/workspace-github-adapter/pull/27
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/423
+  status: open
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-01T18:32:46+0700
+    note: Task recreated from approved (revised) technical design.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-01T11:35:36Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-01T11:46:35.449Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-01T11:46:49.383Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m1-fix-import-no-organization/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/239,
+      docs/features/workspace-github-adapter-multi-github-token/handoffs/handof\
+      f.md"
+    rag_query: Wire `organization_id` end-to-end in workspace-github-adapter import
+      path m1-fix-import-no-organization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-01T20:34:39+0700
+    note: Human reset from in_progress back to ready — prior agent claim released.
+      No PR opened yet (pr.url empty); task is re-eligible for claim.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T13:37:00.044Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-01T13:37:05.394Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Wire `organization_id` end-to-end in workspace-github-adapter import
+      path m1-fix-import-no-organization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T13:40:11+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: pentative@gmail.com
+    note: executor_crashed
+    at: 2026-06-01T13:55:04.577Z
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-01T20:58:00+0700
+    note: "Human reset from blocked to ready (override of Unblock target rule). PR
+      #27 remains open but task is re-eligible for fresh claim."
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-01T13:59:28.582Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-01T13:59:33.565Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Wire `organization_id` end-to-end in workspace-github-adapter import
+      path m1-fix-import-no-organization
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-01T14:03:58+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workspace-github-adapter/pull/27"
+    executor_audit:
+      cost_usd: 0.472554
+      claude:
+        token_usage:
+          input: 263
+          output: 31451
+          model: claude-sonnet-4-6
+    at: 2026-06-01T14:13:59.456Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-01T14:14:35.631Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "All subtasks implemented. CI passed (no check-runs). No 🔴/🟡 findings.
+      SQL ON CONFLICT correctly preserves organization_id (Option 2B). All
+      validation branches tested. 💡 Nit only: importSuccessRow.Scan silently
+      returns nil for wrong dest count (test-only)."
+    review_url: https://github.com/tiendv89/workspace-github-adapter/pull/27#pullrequestreview-4401954652
+    at: 2026-06-01T14:20:14.598Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-01T14:20:44.616Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

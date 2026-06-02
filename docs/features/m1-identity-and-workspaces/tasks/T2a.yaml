@@ -1,25 +1,140 @@
 id: T2a
 title: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
 repo: user-service
-status: todo
+status: done
 depends_on:
   - T0
 blocked_reason: null
+blocked_context: null
 branch: feature/m1-identity-and-workspaces-T2a
-
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-05-31T15:23:08+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-31T10:43:42.636Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/user-service/pull/1
+  status: open
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/408
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-05-31T15:23:08+0700
+    note: Task created by tech-lead Phase 2. Also soft-blocked on P1 (GitHub repo
+      for user-service must exist before push).
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-05-31T15:55:06+0700
+    note: Dependency T0 marked done — auto-ready rule applied.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-05-31T09:42:22.910Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-05-31T09:42:32.624Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: user-service repo scaffold (Go + Gin + pgx + Dockerfile + goose)
+      m1-identity-and-workspaces
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-05-31T09:45:36+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/1"
+    executor_audit:
+      cost_usd: 0.319242
+      claude:
+        token_usage:
+          input: 199
+          output: 21243
+          model: claude-sonnet-4-6
+    at: 2026-05-31T09:52:29.918Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T09:52:44.123Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: 🔴 CI lint job concluded failure. 🔴 pressly/goose/v3 and pgx/v5 missing
+      from go.mod (go.mod) — T2a subtask not fully implemented; migration
+      Makefile targets broken.
+    review_url: https://github.com/tiendv89/user-service/pull/1#pullrequestreview-4396680858
+    at: 2026-05-31T09:59:23.882Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-05-31T10:00:29.911Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/1"
+    executor_audit:
+      cost_usd: 0.527919
+      claude:
+        token_usage:
+          input: 228
+          output: 35149
+          model: claude-sonnet-4-6
+    at: 2026-05-31T10:21:04.893Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-05-31T10:21:43.262Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🟡 Dockerfile:3 uses golang:1.22-alpine but go.mod declares go 1.25.7 —
+      Go 1.21+ enforces this as a hard minimum, so docker build (and docker
+      compose up) would fail with 'note: module requires Go >= 1.25.7'. Fix:
+      update builder to golang:1.25-alpine. All other T2a subtasks are
+      implemented; CI lint and test both pass."
+    review_url: https://github.com/tiendv89/user-service/pull/1#pullrequestreview-4396706147
+    at: 2026-05-31T10:28:25.634Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-05-31T10:29:08.066Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/1"
+    executor_audit:
+      cost_usd: 0.061508999999999994
+      claude:
+        token_usage:
+          input: 63
+          output: 4088
+          model: claude-sonnet-4-6
+    at: 2026-05-31T10:32:51.783Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-31T10:34:16.138Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "GitHub REST API returns HTTP 404 for all tiendv89/user-service endpoints
+      with the current GITHUB_TOKEN (user: zbotdev). Cannot post review comment
+      (Step 6a failed non-422) or check CI. Local code review confirms all T2a
+      subtasks implemented correctly and tests pass, but review cannot be
+      posted. Human intervention required to post the GitHub review and merge PR
+      #1."
+    at: 2026-05-31T10:43:42.636Z
+  - action: unblocked
+    by: pye@swellnetwork.io
+    at: 2026-05-31T17:47:57+0700
     note: >-
-      Task created by tech-lead Phase 2. Also soft-blocked on P1 (GitHub repo for
-      user-service must exist before push).
+      Unblocked for review. PR #1 already open; resetting blocked → in_review
+      per unblock target rule (pr.url is set). GitHub token/permission issue
+      preventing reviewer agent from posting review is for the operator to
+      resolve; task work itself is complete pending external review.
+  - action: done
+    by: pye@swellnetwork.io
+    at: 2026-05-31T18:01:20+0700
+    note: >-
+      Human accept. Reviewer cycles exhausted at MAX_REVIEW_CYCLES=3 due to a
+      GITHUB_TOKEN permission issue on tiendv89/user-service (not a code
+      defect); local review on cycle 3 confirmed all T2a subtasks implemented
+      and tests passing. Marking done. PR #1 still open — merge separately.
+blocked_suggestion: null
