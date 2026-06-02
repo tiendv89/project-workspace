@@ -29,3 +29,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-02T04:47:51.902Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-02T04:48:04.460Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/digital-factory-ui-bugfix/handoffs/handoff.md,
+      github.com/tiendv89/project-workspace/pull/365"
+    rag_query: digital-factory-ui — move /connect to /admin/connect + admin layout
+      guard m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
