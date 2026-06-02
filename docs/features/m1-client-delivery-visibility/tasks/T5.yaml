@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — no-membership EmptyState + replace /connect redirects
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m1-client-delivery-visibility-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-02T06:06:43.027Z
+  last_updated_at: 2026-06-02T06:07:50.255Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/93
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/435
   status: open
@@ -65,3 +65,7 @@ log:
       waitForTimeout usage."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/93#pullrequestreview-4406960768
     at: 2026-06-02T06:06:43.027Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T06:07:50.255Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
