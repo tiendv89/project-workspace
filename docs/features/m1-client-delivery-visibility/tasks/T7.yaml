@@ -1,7 +1,7 @@
 id: T7
 title: digital-factory-ui — 30s focus-aware polling + manual Refresh button
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m1-client-delivery-visibility-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-02T07:01:39.402Z
+  last_updated_at: 2026-06-02T07:02:04.009Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/94
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/436
   status: open
@@ -64,3 +64,7 @@ log:
       check-runs (treated as passed). PR squash-merged successfully."
     review_url: https://github.com/tiendv89/digital-factory-ui/pull/94#pullrequestreview-4407301016
     at: 2026-06-02T07:01:39.402Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T07:02:04.009Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
