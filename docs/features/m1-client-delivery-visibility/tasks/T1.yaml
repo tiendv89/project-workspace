@@ -1,18 +1,21 @@
 id: T1
 title: workflow-backend — activate workspace scoping in service layer
 repo: workflow-backend
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m1-client-delivery-visibility-T1
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-06-02T11:19:19+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-02T05:42:45.478Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/22
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/429
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -22,3 +25,93 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-02T11:19:19+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-02T04:41:29.177Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-02T04:41:39.025Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend — activate workspace scoping in service layer
+      m1-client-delivery-visibility
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-02T04:47:06+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/22"
+    executor_audit:
+      cost_usd: 0.521976
+      claude:
+        token_usage:
+          input: 207
+          output: 34757
+          model: claude-sonnet-4-6
+    at: 2026-06-02T04:57:48.875Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-02T04:58:18.594Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: "🔴 Missing integration test subtask (tasks.md T1): two-organization
+      isolation case not implemented in internal/service/workspace_test.go or
+      anywhere in the codebase. Workspace scoping logic is correctly
+      implemented; all unit tests pass."
+    review_url: https://github.com/tiendv89/workflow-backend/pull/22#pullrequestreview-4406671981
+    at: 2026-06-02T05:08:07.656Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-06-02T05:09:01.072Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/22"
+    executor_audit:
+      cost_usd: 0.31442400000000004
+      claude:
+        token_usage:
+          input: 143
+          output: 20933
+          model: claude-sonnet-4-6
+    at: 2026-06-02T05:17:53.048Z
+  - action: rebase_completed
+    by: pentative@gmail.com
+    at: 2026-06-02T05:29:49.645Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-02T05:31:57.579Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: All T1 subtasks implemented. Two-org isolation integration test
+      (TestOrgIsolation_TwoOrgs) added. DB-layer scoping via
+      ScopedWorkspaceIDs(ctx) enforced across all read endpoints
+      (ListWorkspaces, GetWorkspace, GetFeature, ListFeatureTasks,
+      SearchFeatures, SearchTasks, SearchWorkspaceTasks, GetTask,
+      GetWorkspaceTask, ListActivity). AuthCtx absent pass-through preserved. No
+      🔴 blockers, no 🟡 important issues. Minor 🟢 nits only (duplicated
+      test-fake scoping logic; extra blank line).
+    review_url: https://github.com/tiendv89/workflow-backend/pull/22#pullrequestreview-4406846744
+    at: 2026-06-02T05:40:47.487Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-02T05:42:45.478Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-02T05:42:57.600Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Base branch was modified. Review and try the merge
+      again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+conflict_state: resolved
+rebase_log:
+  - at: 2026-06-02T05:20:06.750Z
+    action: rebase_started
+    by: pentative@gmail.com
+    note: Rebase claimed; targeting origin/feature/m1-client-delivery-visibility.
