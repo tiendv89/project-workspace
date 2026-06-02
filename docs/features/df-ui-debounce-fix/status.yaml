@@ -1,5 +1,5 @@
 feature_id: df-ui-debounce-fix
-title: Fix UI: relative timestamps, active status indicators, search debounce, and task title wrapping in digital-factory-ui
+title: Fix UI relative timestamps, active status indicators, search debounce, and task title wrapping in digital-factory-ui
 
 feature_status: ready_for_implementation
 current_stage: tasks
