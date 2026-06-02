@@ -1,9 +1,12 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
 
-feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead authors technical-design.md (tech-lead Phase 1).
+feature_status: in_design
+current_stage: product_spec
+next_action: >-
+  Stage rolled back to product_spec. Product spec remains approved.
+  Decide whether to revise the product spec or re-advance to technical_design
+  and re-author tech design from scratch.
 
 stages:
   product_spec:
@@ -53,9 +56,21 @@ history:
     to_feature_status: in_tdd
     from_current_stage: product_spec
     to_current_stage: technical_design
+  - at: 2026-06-02T10:15:39+0700
+    by: pye@swellnetwork.io
+    action: set_stage
+    stage: product_spec
+    from_feature_status: in_tdd
+    to_feature_status: in_design
+    from_current_stage: technical_design
+    to_current_stage: product_spec
+    note: >-
+      Rolled back to product_spec stage. technical-design.md preserved on disk
+      per workflow artifact-preservation rule; technical_design marked for
+      revalidation. Product spec approval retained.
 
 revalidation:
   product_spec_required: false
-  technical_design_required: false
+  technical_design_required: true
   tasks_required: false
   deployment_checklist_required: false
