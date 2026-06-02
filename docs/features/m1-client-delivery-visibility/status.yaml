@@ -1,7 +1,7 @@
 feature_id: m1-client-delivery-visibility
 title: Client Delivery Visibility (read-only)
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Tasks approved. Wave 1 tasks (T1, T2, T3, T4, T6) are ready —
   owning teams may begin execution. T5 (after T4), T7 (after T3), and T8 (after
   T2) auto-ready as their dependencies reach done.
@@ -139,7 +139,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/437
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/23
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/95
-    status: open
+    status: merged
