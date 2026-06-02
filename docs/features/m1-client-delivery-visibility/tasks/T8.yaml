@@ -1,7 +1,7 @@
 id: T8
 title: digital-factory-ui — wire activity feed to audience=client
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -19,3 +19,7 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-02T11:11:13+0700
     note: Task created by tech-lead Phase 2.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-02T05:06:06.522Z
+    note: Task activated — dependency T2 merged and marked done.
