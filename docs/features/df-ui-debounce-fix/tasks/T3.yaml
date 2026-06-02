@@ -1,65 +1,32 @@
 id: T3
 title: Debounced search input
 repo: digital-factory-ui
-status: done
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/df-ui-debounce-fix-T3
+
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-02T12:34:15.185Z
+  last_updated_by: null
+  last_updated_at: null
+
 pr:
-  url: https://github.com/tiendv89/digital-factory-ui/pull/97
-  status: merged
+  url: null
+  status: not_created
+
 workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/441
-  status: open
+  url: null
+  status: not_created
+
 log:
   - action: created
     by: tech_lead
     at: 2026-06-02T15:48:45+0700
-    note: Task created from approved task breakdown.
+    note: >-
+      Task created from approved task breakdown.
   - action: ready
     by: unknown@local
     at: 2026-06-02T09:14:36Z
-    note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
-    by: pentative@gmail.com
-    at: 2026-06-02T10:20:45.519Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: pentative@gmail.com
-    at: 2026-06-02T10:20:56.526Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: Debounced search input df-ui-debounce-fix
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
-  - action: started
-    by: pentative@gmail.com
-    at: 2026-06-02T10:23:53+0000
-    note: executor work phase begun.
-  - action: run_completed
-    by: pentative@gmail.com
-    note: "Implementation PR: https://github.com/tiendv89/digital-factory-ui/pull/97"
-    executor_audit:
-      cost_usd: 0.29074199999999994
-      claude:
-        token_usage:
-          input: 214
-          output: 19340
-          model: claude-sonnet-4-6
-    at: 2026-06-02T10:34:26.905Z
-  - action: reviewer_started
-    by: noreply@tiendv.dev
-    at: 2026-06-02T12:28:41.523Z
-    note: Reviewer dispatch claimed (cycle 1 of 3).
-  - action: reviewer_complete
-    by: norepy@tiendv.dev
-    note: Reviewer approved.
-    at: 2026-06-02T12:31:58.839Z
-  - action: done
-    by: norepy@tiendv.dev
-    at: 2026-06-02T12:34:15.185Z
-    note: Implementation PR merged — automated close-out by pr-merge loop.
+    note: "Task activated on tasks-stage approval — dependencies met."
