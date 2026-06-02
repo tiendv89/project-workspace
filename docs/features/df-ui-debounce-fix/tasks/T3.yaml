@@ -1,0 +1,32 @@
+id: T3
+title: Debounced search input
+repo: digital-factory-ui
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/df-ui-debounce-fix-T3
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: not_created
+
+workspace_pr:
+  url: null
+  status: not_created
+
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-02T15:48:45+0700
+    note: >-
+      Task created from approved task breakdown.
+  - action: ready
+    by: unknown@local
+    at: 2026-06-02T09:14:36Z
+    note: "Task activated on tasks-stage approval — dependencies met."
