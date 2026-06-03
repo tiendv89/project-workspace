@@ -1,7 +1,7 @@
 id: T5
 title: Regression and integration validation
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on:
   - T2
   - T3
@@ -12,7 +12,7 @@ branch: feature/kanban-board-status-alignment-T5
 execution:
   actor_type: agent
   last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-03T14:29:41.641Z
+  last_updated_at: 2026-06-03T14:32:04.289Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/105
   status: open
@@ -60,3 +60,7 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer requested changes.
     at: 2026-06-03T14:29:41.641Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T14:32:04.289Z
+    note: Fix agent claimed.
