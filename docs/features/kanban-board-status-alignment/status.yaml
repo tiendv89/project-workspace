@@ -165,3 +165,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/kanban-board-status-alignment
 feature_branch_base_sha: dc5a3850aa9dd215283dd432735de5acb8763b70
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/448
