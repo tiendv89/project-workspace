@@ -1,20 +1,22 @@
 id: T5
 title: Regression and integration validation
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T3
   - T4
 blocked_reason: null
+blocked_context: null
 branch: feature/kanban-board-status-alignment-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-03T13:54:34.007Z
 pr:
   url: null
   status: not_created
+workspace_pr: null
 log:
   - action: created
     by: tech_lead
@@ -25,3 +27,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-03T13:51:47.470Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-03T13:54:34.007Z
+    note: Claimed via git-based claim protocol.
