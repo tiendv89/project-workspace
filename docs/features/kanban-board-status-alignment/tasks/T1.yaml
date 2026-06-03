@@ -1,34 +1,83 @@
 id: T1
 title: Define shared frontend status contract
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/kanban-board-status-alignment-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-03T09:32:51.202Z
 pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/102
+  status: merged
+workspace_pr:
   url: null
   status: not_created
-
 log:
   - action: created
     by: tech_lead
     at: 2026-06-03T14:51:04+0700
-    note: Task created from technical design. It remains todo until tasks-stage approval activates eligible work.
+    note: Task created from technical design. It remains todo until tasks-stage
+      approval activates eligible work.
   - action: ready
     by: minhkienn203@gmail.com
-    at: 2026-06-03T08:18:56Z
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-06-03T08:18:56.000Z
+    note: Task activated on tasks-stage approval — dependencies met.
   - action: reset
     by: minhkienn203@gmail.com
-    at: 2026-06-03T08:21:59Z
-    note: Task breakdown revised before implementation. Task returned to todo pending approval of the expanded breakdown.
+    at: 2026-06-03T08:21:59.000Z
+    note: Task breakdown revised before implementation. Task returned to todo
+      pending approval of the expanded breakdown.
   - action: ready
     by: minhkienn203@gmail.com
-    at: 2026-06-03T08:53:42Z
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-06-03T08:53:42.000Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:03:41.849Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:03:50.543Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/digital-factory-ui/pull/61,
+      docs/features/dashboard/product-spec.md,
+      github.com/tiendv89/digital-factory-ui/pull/15"
+    rag_query: Define shared frontend status contract kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:09:12+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/102"
+    at: 2026-06-03T09:18:03.403Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T09:21:43.291Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-03T09:30:13.533Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:32:51.202Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-06-03T17:38:31+0700
+    note: >-
+      Manual reconciliation. The orchestrator failed to open the management-repo
+      workspace PR at claim time (GitHub 422 invalid base — feature branch
+      feature/kanban-board-status-alignment did not exist yet; created ~2m43s
+      later) and never retried, leaving workspace_pr null. Impl PR #102 merged
+      and the task was marked done on its task branch, but the done state was
+      never merged into the feature branch. This recovery PR carries the T1 done
+      state and the T2/T3 auto-ready onto the feature branch.

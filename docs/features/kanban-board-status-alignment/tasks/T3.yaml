@@ -1,7 +1,7 @@
 id: T3
 title: Wire mode-specific status filters to the new contract
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -21,3 +21,7 @@ log:
     by: tech_lead
     at: 2026-06-03T15:18:56+0700
     note: Task created from the revised breakdown. It remains todo until tasks-stage approval activates eligible work.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:32:51.562Z
+    note: Task activated — dependency T1 merged and marked done.
