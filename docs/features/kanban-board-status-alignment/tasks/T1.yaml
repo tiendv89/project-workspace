@@ -14,8 +14,8 @@ pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/102
   status: merged
 workspace_pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/project-workspace/pull/450
+  status: merged
 log:
   - action: created
     by: tech_lead
