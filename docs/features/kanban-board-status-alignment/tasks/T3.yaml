@@ -31,3 +31,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-03T10:58:58.169Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:59:15.603Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/kanban-board-status-alignment/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/447,
+      docs/features/kanban-board-status-alignment/product-spec.md"
+    rag_query: Wire mode-specific status filters to the new contract
+      kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
