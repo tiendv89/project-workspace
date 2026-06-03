@@ -1,0 +1,27 @@
+id: T2
+title: Wire kanban columns to the new status contract
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/kanban-board-status-alignment-T2
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: not_created
+
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-03T15:03:10+0700
+    note: Task added after API filtering requirement. It remains todo until tasks-stage approval activates eligible work.
+  - action: reset
+    by: minhkienn203@gmail.com
+    at: 2026-06-03T08:21:59Z
+    note: Task breakdown revised. T2 now covers frontend kanban-column wiring and returns to todo pending approval of the expanded breakdown.

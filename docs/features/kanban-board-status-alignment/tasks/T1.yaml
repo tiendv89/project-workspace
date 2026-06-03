@@ -1,0 +1,34 @@
+id: T1
+title: Define shared frontend status contract
+repo: digital-factory-ui
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/kanban-board-status-alignment-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: not_created
+
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-03T14:51:04+0700
+    note: Task created from technical design. It remains todo until tasks-stage approval activates eligible work.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-06-03T08:18:56Z
+    note: "Task activated on tasks-stage approval — dependencies met."
+  - action: reset
+    by: minhkienn203@gmail.com
+    at: 2026-06-03T08:21:59Z
+    note: Task breakdown revised before implementation. Task returned to todo pending approval of the expanded breakdown.
+  - action: ready
+    by: minhkienn203@gmail.com
+    at: 2026-06-03T08:53:42Z
+    note: "Task activated on tasks-stage approval — dependencies met."

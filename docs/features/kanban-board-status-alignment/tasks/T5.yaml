@@ -1,0 +1,25 @@
+id: T5
+title: Regression and integration validation
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T2
+  - T3
+  - T4
+blocked_reason: null
+branch: feature/kanban-board-status-alignment-T5
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: not_created
+
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-03T15:18:56+0700
+    note: Task created from the revised breakdown. It remains todo until tasks-stage approval activates eligible work.
