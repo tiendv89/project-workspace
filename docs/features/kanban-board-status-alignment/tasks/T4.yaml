@@ -30,3 +30,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-03T09:07:35.682Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:07:52.261Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/kanban-board-status-alignment/product-spec.md,
+      github.com/tiendv89/digital-factory-ui/pull/38,
+      docs/features/kanban-board-status-alignment/product-spec.md"
+    rag_query: Exclude empty task matches from feature-list API
+      kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
