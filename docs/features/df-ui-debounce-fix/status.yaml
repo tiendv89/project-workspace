@@ -1,86 +1,101 @@
 feature_id: df-ui-debounce-fix
-title: Fix UI relative timestamps, active status indicators, search debounce, and task title wrapping in digital-factory-ui
-
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: Tasks approved. Agents may start implementation (T1–T4).
-
+title: "Fix UI: relative timestamps, active status indicators, search debounce,
+  and task title wrapping in digital-factory-ui"
+feature_status: done
+current_stage: done
+next_action: "Handoff PR #446 open (handoffs/handoff.md →
+  feature/df-ui-debounce-fix); awaiting human review and merge to complete the
+  handoff."
+feature_branch: feature/df-ui-debounce-fix
+feature_branch_base_sha: 45023d4b7ec3ab86f22dde118859a5843f35d7ac
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/446
+impl_feature_prs:
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/101
+    status: merged
 stages:
   product_spec:
     review_status: approved
     reviewed_by: unknown@local
     reviewed_at: 2026-06-02T15:30:46+0700
-    review_comment: >-
-      Approved. Three UX issues scoped: relative timestamps in task sidebar,
-      animated spinner for in_progress + reviewing statuses, and 300ms debounce
-      on search inputs. No backend changes required — all client-side. Spinner
-      applies to in_progress and reviewing only; in_review explicitly excluded.
+    review_comment: "Approved. Three UX issues scoped: relative timestamps in task
+      sidebar, animated spinner for in_progress + reviewing statuses, and 300ms
+      debounce on search inputs. No backend changes required — all client-side.
+      Spinner applies to in_progress and reviewing only; in_review explicitly
+      excluded."
     review_history:
       - at: 2026-06-02T15:30:46+0700
         by: unknown@local
         action: approved
-        note: >-
-          Product spec approved. Three issues: (1) relative timestamps via
+        note: "Product spec approved. Three issues: (1) relative timestamps via
           updated_at vs browser time, (2) CSS spinner for in_progress +
-          reviewing, (3) 300ms search debounce. Feature advances to in_tdd.
+          reviewing, (3) 300ms search debounce. Feature advances to in_tdd."
   technical_design:
     review_status: approved
     reviewed_by: unknown@local
     reviewed_at: 2026-06-02T16:12:28+0700
-    review_comment: >-
-      Approved. Technical design covers four UI fixes: relative timestamps in
-      task sidebar (A2 custom hook), SVG spinner for active statuses (B1),
-      300ms search debounce (C2 hook), and 5-line title wrapping across sidebar
-      + feature/task cards (D2 clamp). No backend or dependency changes.
+    review_comment: "Approved. Technical design covers four UI fixes: relative
+      timestamps in task sidebar (A2 custom hook), SVG spinner for active
+      statuses (B1), 300ms search debounce (C2 hook), and 5-line title wrapping
+      across sidebar + feature/task cards (D2 clamp). No backend or dependency
+      changes."
     review_history:
       - at: 2026-06-02T16:12:28+0700
         by: unknown@local
         action: approved
-        note: >-
-          Technical design approved. Selected options A2/B1/C2/D2. Feature
-          advances to tasks stage for breakdown approval.
+        note: Technical design approved. Selected options A2/B1/C2/D2. Feature advances
+          to tasks stage for breakdown approval.
   tasks:
     review_status: approved
     reviewed_by: unknown@local
     reviewed_at: 2026-06-02T16:14:36+0700
-    review_comment: >-
-      Approved. Four implementation tasks (T1–T4) all in digital-factory-ui
-      with no dependencies. Tasks activated for implementation.
+    review_comment: Approved. Four implementation tasks (T1–T4) all in
+      digital-factory-ui with no dependencies. Tasks activated for
+      implementation.
     review_history:
       - at: 2026-06-02T16:14:36+0700
         by: unknown@local
         action: approved
-        note: >-
-          Tasks approved. Feature advances to ready_for_implementation and
-          T1–T4 move to ready.
+        note: Tasks approved. Feature advances to ready_for_implementation and T1–T4
+          move to ready.
   handoff:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
-    review_comment: null
-    review_history: []
-
+    review_comment: "Handoff prepared. All four tasks (T1–T4) done; implementation
+      merged to digital-factory-ui main via PRs #100 and #101. Handoff PR #446
+      opens the handoff document into feature/df-ui-debounce-fix. Awaiting human
+      approval."
+    review_history:
+      - at: 2026-06-03T13:31:25+0700
+        by: matthew@swellnetwork.io
+        action: awaiting_approval
+        note: "Handoff stage opened. Handoff PR #446 created; feature transitioned to
+          in_handoff. Awaiting human review and merge."
 history:
   - at: 2026-06-02T15:30:46+0700
     by: unknown@local
     action: product_spec_approved
-    note: >-
-      Product spec approved. Feature advances from in_design to in_tdd;
-      current_stage moves from product_spec to technical_design. Tech lead
-      can now produce technical-design.md.
+    note: Product spec approved. Feature advances from in_design to in_tdd;
+      current_stage moves from product_spec to technical_design. Tech lead can
+      now produce technical-design.md.
   - at: 2026-06-02T16:12:28+0700
     by: unknown@local
     action: technical_design_approved
-    note: >-
-      Technical design approved. current_stage moves from technical_design
-      to tasks. Tasks breakdown is ready for human approval.
+    note: Technical design approved. current_stage moves from technical_design to
+      tasks. Tasks breakdown is ready for human approval.
   - at: 2026-06-02T16:14:36+0700
     by: unknown@local
     action: tasks_approved
-    note: >-
-      Tasks approved. Feature advances to ready_for_implementation; T1–T4
+    note: Tasks approved. Feature advances to ready_for_implementation; T1–T4
       activated to ready.
-
+  - at: 2026-06-03T13:31:25+0700
+    by: matthew@swellnetwork.io
+    action: handoff_initiated
+    note: "Feature transitioned to in_handoff; handoff PR #446 opened
+      (handoffs/handoff.md → feature/df-ui-debounce-fix). status.yaml stages and
+      history blocks restored after an orchestrator handoff step (commit
+      d5f802fe) truncated the file to 6 lines — recovered from a90a0536."
 revalidation:
   product_spec_required: false
   technical_design_required: false
