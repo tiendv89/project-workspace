@@ -10,7 +10,10 @@ next_action: >-
 feature_branch: feature/df-ui-debounce-fix
 feature_branch_base_sha: 45023d4b7ec3ab86f22dde118859a5843f35d7ac
 handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/446
-impl_feature_prs: []
+impl_feature_prs:
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/101
+    status: merged
 
 stages:
   product_spec:
