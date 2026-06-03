@@ -1,7 +1,7 @@
 id: T2
 title: Wire kanban columns to the new status contract
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/kanban-board-status-alignment-T2
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-03T11:17:49.500Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-06-03T11:20:32.747Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/104
   status: open
@@ -56,3 +56,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/104"
     at: 2026-06-03T11:17:49.500Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T11:20:32.747Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
