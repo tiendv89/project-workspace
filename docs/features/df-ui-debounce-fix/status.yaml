@@ -2,3 +2,5 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/446
 impl_feature_prs: []
 feature_status: in_handoff
 current_stage: handoff
+feature_branch: feature/df-ui-debounce-fix
+feature_branch_base_sha: 45023d4b7ec3ab86f22dde118859a5843f35d7ac
