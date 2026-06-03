@@ -1,20 +1,24 @@
 id: T5
 title: Regression and integration validation
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T2
   - T3
   - T4
 blocked_reason: null
+blocked_context: null
 branch: feature/kanban-board-status-alignment-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-03T15:10:32.566Z
 pr:
-  url: null
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/105
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/453
+  status: open
 log:
   - action: created
     by: tech_lead
@@ -25,3 +29,72 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-03T13:51:47.470Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-03T13:54:34.007Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T13:54:51.053Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/digital-factory-ui/pull/40,
+      github.com/tiendv89/project-workspace/pull/447,
+      github.com/tiendv89/project-workspace/pull/200"
+    rag_query: Regression and integration validation kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T14:06:51+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/105"
+    at: 2026-06-03T14:17:30.540Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T14:20:11.690Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer requested changes.
+    at: 2026-06-03T14:29:41.641Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T14:32:04.289Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/105"
+    at: 2026-06-03T14:38:29.421Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T14:41:10.613Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer requested changes.
+    at: 2026-06-03T14:50:55.044Z
+  - action: fix_started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T14:53:10.678Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/105"
+    at: 2026-06-03T14:59:30.329Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T15:02:07.955Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-03T15:08:08.039Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-03T15:10:32.566Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
