@@ -1,7 +1,7 @@
 feature_id: kanban-board-status-alignment
 title: Kanban Board Status Alignment
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: T1 and T4 are ready. Agents can pick up ready tasks for implementation.
 stages:
   product_spec:
@@ -84,6 +84,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/454
 history:
   - stage: product_spec
     action: approved
@@ -166,3 +167,11 @@ revalidation:
 feature_branch: feature/kanban-board-status-alignment
 feature_branch_base_sha: dc5a3850aa9dd215283dd432735de5acb8763b70
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/448
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/454
+impl_feature_prs:
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/106
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/27
+    status: open
