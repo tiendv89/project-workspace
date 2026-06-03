@@ -1,7 +1,7 @@
 id: T3
 title: Wire mode-specific status filters to the new contract
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/kanban-board-status-alignment-T3
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-03T11:17:24.732Z
+  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-06-03T11:23:28.667Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/103
   status: open
@@ -51,3 +51,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/103"
     at: 2026-06-03T11:17:24.732Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T11:23:28.667Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
