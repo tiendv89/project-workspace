@@ -1,27 +1,70 @@
 id: T2
 title: Wire kanban columns to the new status contract
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/kanban-board-status-alignment-T2
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-03T11:30:13.270Z
 pr:
-  url: null
-  status: not_created
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/104
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/451
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-03T15:03:10+0700
-    note: Task added after API filtering requirement. It remains todo until tasks-stage approval activates eligible work.
+    note: Task added after API filtering requirement. It remains todo until
+      tasks-stage approval activates eligible work.
   - action: reset
     by: minhkienn203@gmail.com
     at: 2026-06-03T08:21:59Z
-    note: Task breakdown revised. T2 now covers frontend kanban-column wiring and returns to todo pending approval of the expanded breakdown.
+    note: Task breakdown revised. T2 now covers frontend kanban-column wiring and
+      returns to todo pending approval of the expanded breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:32:51.556Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:55:26.876Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:55:41.525Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/kanban-board-status-alignment/technical-design.md,
+      github.com/tiendv89/digital-factory-ui/pull/102,
+      docs/features/kanban-board-status-alignment/product-spec.md"
+    rag_query: Wire kanban columns to the new status contract
+      kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:58:00+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/104"
+    at: 2026-06-03T11:17:49.500Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T11:20:32.747Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-03T11:26:53.938Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-03T11:30:13.270Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

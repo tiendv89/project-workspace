@@ -1,23 +1,65 @@
 id: T3
 title: Wire mode-specific status filters to the new contract
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/kanban-board-status-alignment-T3
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-03T13:51:47.192Z
 pr:
-  url: null
-  status: not_created
-
+  url: https://github.com/tiendv89/digital-factory-ui/pull/103
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/452
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-03T15:18:56+0700
-    note: Task created from the revised breakdown. It remains todo until tasks-stage approval activates eligible work.
+    note: Task created from the revised breakdown. It remains todo until tasks-stage
+      approval activates eligible work.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-06-03T09:32:51.562Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:58:58.169Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-03T10:59:15.603Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/kanban-board-status-alignment/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/447,
+      docs/features/kanban-board-status-alignment/product-spec.md"
+    rag_query: Wire mode-specific status filters to the new contract
+      kanban-board-status-alignment
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-06-03T11:07:00+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/103"
+    at: 2026-06-03T11:17:24.732Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-03T11:23:28.667Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-03T13:49:23.235Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-06-03T13:51:47.192Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

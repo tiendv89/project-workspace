@@ -1,10 +1,8 @@
 feature_id: kanban-board-status-alignment
 title: Kanban Board Status Alignment
-
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: done
+current_stage: done
 next_action: T1 and T4 are ready. Agents can pick up ready tasks for implementation.
-
 stages:
   product_spec:
     review_status: approved
@@ -29,23 +27,28 @@ stages:
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T14:58:16+0700
-        review_comment: Technical design revised to make supplied kanban status lists strict allowlists.
+        review_comment: Technical design revised to make supplied kanban status lists
+          strict allowlists.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T14:59:28+0700
-        review_comment: Technical design revised so kanban columns and filters both follow supplied status allowlists.
+        review_comment: Technical design revised so kanban columns and filters both
+          follow supplied status allowlists.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:03:10+0700
-        review_comment: Technical design revised to include backend feature-list filtering for include=tasks status queries.
+        review_comment: Technical design revised to include backend feature-list
+          filtering for include=tasks status queries.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:10:37+0700
-        review_comment: Technical design and spec wording corrected so frontend filter changes and workflow-backend scope are explicit.
+        review_comment: Technical design and spec wording corrected so frontend filter
+          changes and workflow-backend scope are explicit.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:15:10+0700
-        review_comment: Technical design now explicitly states the chosen options A1, B1, and C1.
+        review_comment: Technical design now explicitly states the chosen options A1,
+          B1, and C1.
       - review_status: approved
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:16:42+0700
@@ -59,15 +62,18 @@ stages:
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:16:42+0700
-        review_comment: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+        review_comment: Task breakdown submitted for approval after technical design
+          approval. Tasks remain todo until tasks-stage approval.
       - review_status: approved
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:18:56+0700
-        review_comment: Tasks approved. Feature advances to ready_for_implementation. T1 and T2 activated.
+        review_comment: Tasks approved. Feature advances to ready_for_implementation. T1
+          and T2 activated.
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:21:59+0700
-        review_comment: Revised task breakdown requires re-review. Tasks return to todo until tasks-stage approval.
+        review_comment: Revised task breakdown requires re-review. Tasks return to todo
+          until tasks-stage approval.
       - review_status: approved
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-03T15:53:42+0700
@@ -78,7 +84,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/454
 history:
   - stage: product_spec
     action: approved
@@ -94,22 +100,26 @@ history:
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T14:58:16+0700
-    note: Supplied Feature Mode and Task Mode kanban status lists clarified as strict allowlists.
+    note: Supplied Feature Mode and Task Mode kanban status lists clarified as
+      strict allowlists.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T14:59:28+0700
-    note: Feature Mode and Task Mode filters clarified to follow the same supplied status allowlists.
+    note: Feature Mode and Task Mode filters clarified to follow the same supplied
+      status allowlists.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:03:10+0700
-    note: Backend feature-list API must exclude features with no included tasks after task-status filtering.
+    note: Backend feature-list API must exclude features with no included tasks
+      after task-status filtering.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:10:37+0700
-    note: Product spec and technical design wording corrected to reflect filter changes and workflow-backend scope.
+    note: Product spec and technical design wording corrected to reflect filter
+      changes and workflow-backend scope.
   - stage: technical_design
     action: revised
     by: minhkienn203@gmail.com
@@ -124,30 +134,44 @@ history:
     action: submitted
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:16:42+0700
-    note: Task breakdown submitted for approval after technical design approval. Tasks remain todo until tasks-stage approval.
+    note: Task breakdown submitted for approval after technical design approval.
+      Tasks remain todo until tasks-stage approval.
   - stage: tasks
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:18:56+0700
-    note: Tasks approved. Feature advances to ready_for_implementation. T1 and T2 activated.
+    note: Tasks approved. Feature advances to ready_for_implementation. T1 and T2
+      activated.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:21:59+0700
-    note: Task breakdown expanded into separate frontend and backend workstreams. Tasks return to review state until the revised breakdown is approved.
+    note: Task breakdown expanded into separate frontend and backend workstreams.
+      Tasks return to review state until the revised breakdown is approved.
   - stage: tasks
     action: revised
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:26:31+0700
-    note: Backend filtering work now explicitly requires frontend integration validation before the feature is considered complete.
+    note: Backend filtering work now explicitly requires frontend integration
+      validation before the feature is considered complete.
   - stage: tasks
     action: approved
     by: minhkienn203@gmail.com
     at: 2026-06-03T15:53:42+0700
     note: Tasks approved. Feature advances to ready_for_implementation.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/kanban-board-status-alignment
+feature_branch_base_sha: dc5a3850aa9dd215283dd432735de5acb8763b70
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/448
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/454
+impl_feature_prs:
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/106
+    status: merged
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/27
+    status: merged
