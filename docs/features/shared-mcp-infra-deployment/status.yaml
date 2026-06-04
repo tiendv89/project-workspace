@@ -1,0 +1,48 @@
+feature_id: shared-mcp-infra-deployment
+title: Shared MCP Services Deployment (RAG + GitNexus)
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft the technical design and submit it for approval.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-04T09:27:10Z
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pye@swellnetwork.io
+        at: 2026-06-04T09:27:10Z
+        comment: null
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    by: pye@swellnetwork.io
+    at: 2026-06-04T09:27:10Z
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
