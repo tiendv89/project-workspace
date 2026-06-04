@@ -1,0 +1,128 @@
+feature_id: task-status-transition-timeline
+title: Task Status Transition Timeline
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Start implementation. T1 is ready to begin.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-06-04T17:48:19+0700
+    review_comment: product_spec approved. Feature advances to technical_design.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T17:48:19+0700
+        review_comment: Product spec completed and submitted for approval.
+      - review_status: approved
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T17:48:19+0700
+        review_comment: product_spec approved. Feature advances to technical_design.
+  technical_design:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-06-04T18:31:01+0700
+    review_comment: technical_design approved. Feature advances to tasks.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T17:56:25+0700
+        review_comment: >-
+          Technical design drafted and submitted for approval with detailed
+          backend implementation and frontend integration plan.
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T18:09:28+0700
+        review_comment: >-
+          Technical design revised to align with the standard tech-lead design
+          structure after reading the three implementation repos.
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T18:19:59+0700
+        review_comment: >-
+          Technical design revised to DB trigger approach — zero adapter
+          changes, clean 2-repo impact.
+      - review_status: approved
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T18:31:01+0700
+        review_comment: technical_design approved. Feature advances to tasks.
+  tasks:
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-06-04T18:38:24+0700
+    review_comment: tasks approved. Feature advances to ready_for_implementation.
+    review_history:
+      - review_status: awaiting_approval
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T18:34:33+0700
+        review_comment: >-
+          Task breakdown submitted for approval — 3 tasks covering
+          workflow-backend, digital-factory-ui, and cross-repo validation.
+      - review_status: approved
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-04T18:38:24+0700
+        review_comment: tasks approved. Feature advances to ready_for_implementation.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T17:48:19+0700
+    note: Product spec completed and submitted for approval.
+  - stage: product_spec
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T17:48:19+0700
+    note: product_spec approved. Feature advances to technical_design.
+  - stage: technical_design
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T17:56:25+0700
+    note: >-
+      Technical design drafted and submitted for approval with detailed
+      backend implementation and frontend integration plan.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T18:09:28+0700
+    note: >-
+      Technical design revised to align with the standard tech-lead design
+      structure after reading the three implementation repos.
+  - stage: technical_design
+    action: revised
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T18:19:59+0700
+    note: >-
+      Technical design revised to DB trigger approach — zero adapter changes,
+      clean 2-repo impact.
+  - stage: technical_design
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T18:31:01+0700
+    note: technical_design approved. Feature advances to tasks.
+  - stage: tasks
+    action: submitted
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T18:34:33+0700
+    note: >-
+      Task breakdown submitted for approval — 3 tasks covering
+      workflow-backend, digital-factory-ui, and cross-repo validation.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-06-04T18:38:24+0700
+    note: tasks approved. Feature advances to ready_for_implementation. T1 activated.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
