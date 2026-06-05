@@ -130,7 +130,7 @@ BEGIN
             INSERT INTO workspace_task_status_timeline
                 (workspace_id, feature_id, task_id, task_name, status, started_at)
             VALUES
-                (NEW.workspace_id, NEW.feature_id, NEW.id, NEW.task_name, NEW.status, now());
+                (NEW.workspace_id, NEW.feature_id, NEW.id, NEW.title, NEW.status, now());
         END IF;
     END IF;
     RETURN NEW;
@@ -141,6 +141,24 @@ CREATE TRIGGER trg_task_status_timeline_change
     AFTER UPDATE OF status ON workspace_tasks
     FOR EACH ROW
     EXECUTE FUNCTION fn_task_status_timeline_change();
+
+CREATE OR REPLACE FUNCTION fn_task_status_timeline_insert()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.status IS NOT NULL AND NEW.status != '' THEN
+        INSERT INTO workspace_task_status_timeline
+            (workspace_id, feature_id, task_id, task_name, status, started_at)
+        VALUES
+            (NEW.workspace_id, NEW.feature_id, NEW.id, NEW.title, NEW.status, now());
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_task_status_timeline_insert
+    AFTER INSERT ON workspace_tasks
+    FOR EACH ROW
+    EXECUTE FUNCTION fn_task_status_timeline_insert();
 ```
 
 Behavior:
@@ -148,7 +166,8 @@ Behavior:
 - Status unchanged → trigger does nothing.
 - Status changed → trigger closes the previous open interval and opens a new active interval.
 - Status changed to empty → trigger closes the previous interval without opening a new one.
-- Upsert (INSERT with no previous row) → first `UPDATE OF status` produces the first timeline row.
+- Task inserted with non-empty status → `AFTER INSERT` trigger opens the first active interval immediately.
+- Task inserted with empty/null status → no interval created; first `UPDATE OF status` produces the first timeline row.
 - Same status entered again later → creates a new row; the unique index allows only one active interval.
 
 ### API exposure
@@ -374,8 +393,23 @@ Apply to both task detail UIs in the codebase:
 ### Compatibility and rollout
 
 - Existing clients ignore the additive `status_timeline` field.
-- Existing tasks have no historical intervals; the first status update after deployment creates the current active interval.
+- New tasks inserted with a non-empty status get their first active interval immediately via the `AFTER INSERT` trigger — no blank sidebar states for newly created tasks.
+- Existing tasks without timeline rows (from before deployment) get their first interval on the next status update after deployment.
 - Past transitions are not reconstructed — the timeline is accurate going forward.
+
+### Reconciliation path constraint
+
+- `workspace_task_status_timeline.task_id` references `workspace_tasks.id` with `ON DELETE CASCADE`. The adapter's `full_reconciliation` path **must** use `INSERT ... ON CONFLICT (workspace_id, feature_id, task_id) DO UPDATE` (upsert in place) and **must never** delete-then-reinsert task rows. A delete+reinsert cycle would cascade-wipe all timeline history for those tasks and the fresh rows would start with no timeline intervals.
+- This constraint must be verified against the existing `workspace-github-adapter` reconciliation logic before T1 implementation begins. If the adapter currently deletes and reinserts, it must be refactored to upsert as a prerequisite or parallel task.
+
+### Retention / partitioning (follow-up)
+
+- The `workspace_task_status_timeline` table grows one row per status transition, per task, forever. Platform-scale multi-tenant use requires a retention strategy.
+- **Decision**: out of scope for this feature. Tracked as follow-up work:
+  - Add RANGE partitioning on `started_at` (monthly).
+  - Define retention policy (e.g. archive rows older than 12 months to cold storage).
+  - Add `(workspace_id, status, started_at)` index for per-workspace analytics queries once needed.
+- Until partitioning is in place, the table's growth rate is bounded by task count × status transition frequency, which is well within PostgreSQL's single-table capacity for the current deployment scale.
 
 ## Dependency analysis
 
@@ -392,6 +426,9 @@ None.
 
 - Transition timestamp: database transaction time (`now()`).
 - Timeline source: `workspace_tasks.status` changes only (trigger-based).
+- INSERT trigger: new tasks with non-empty status get their first interval immediately via `AFTER INSERT` (not blank-until-first-update).
+- Reconciliation path: adapter must use upsert (`ON CONFLICT DO UPDATE`), never delete+reinsert. Delete+reinsert cascade-wipes timeline history.
+- Retention: out of scope — tracked as follow-up (RANGE partitioning on `started_at` + archive policy).
 - `workspace_activity_events` and task logs are not used as timeline source — they remain the data source for the Logs tab in the frontend.
 
 ### Release dependencies
@@ -426,8 +463,12 @@ T3: digital-factory-ui — regression and integration validation
 
 `workflow-backend`:
 
-- Migration creates and drops `workspace_task_status_timeline` and its trigger.
-- `UPDATE workspace_tasks SET status = ...` fires the trigger correctly:
+- Migration creates and drops `workspace_task_status_timeline` and both triggers (`UPDATE OF status` + `INSERT`).
+- `INSERT INTO workspace_tasks (...)` with non-empty status fires the `AFTER INSERT` trigger:
+  - first active interval created immediately.
+  - `started_at` set to `now()`, `ended_at` remains `NULL`.
+- `INSERT INTO workspace_tasks (...)` with empty/null status → no timeline row created.
+- `UPDATE workspace_tasks SET status = ...` fires the `AFTER UPDATE OF status` trigger correctly:
   - status unchanged → no new timeline row.
   - status changed → previous interval closed, new active interval opened.
   - status set to empty → previous interval closed, no new interval.
@@ -447,7 +488,8 @@ T3: digital-factory-ui — regression and integration validation
 
 ### Rollout
 
-- Deploy migration and trigger before API changes.
+- Deploy migration and both triggers (`INSERT` + `UPDATE OF status`) before API changes.
+- New tasks created after deployment get their first timeline row immediately via `AFTER INSERT`.
 - Existing tasks get their first timeline row on the next status update after deployment.
 - Frontend tolerates `started_at = null` in sidebar response during rollout.
 

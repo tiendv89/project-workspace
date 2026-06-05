@@ -27,3 +27,14 @@ log:
     by: minhkienn203@gmail.com
     at: 2026-06-04T11:38:24Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: revised
+    by: tiendv89
+    at: 2026-06-05T10:00:00+0700
+    note: >-
+      Design revised per PR #456 review feedback:
+      (1) Fixed NEW.task_name → NEW.title in trigger INSERT.
+      (2) Confirmed feature_id UUID with FK (matching workspace_tasks after migration 00009); fixed DBML v003.
+      (3) Added AFTER INSERT trigger to open first interval on task creation.
+      (4) Documented reconciliation path constraint (upsert-only, no delete+reinsert).
+      (5) Documented retention/partitioning as explicit follow-up.
+      Subtasks updated in tasks.md. Awaiting tasks-stage re-approval.

@@ -14,13 +14,17 @@ Feature status: `in_design`. Stage: `tasks` (`awaiting_approval`). Machine state
 
 ### Description
 
-Add the `workspace_task_status_timeline` table and a PostgreSQL trigger that fires on `UPDATE OF status` on `workspace_tasks`. The trigger automatically closes the previous open interval and opens a new active interval on every status change.
+Add the `workspace_task_status_timeline` table and two PostgreSQL triggers:
+- `AFTER INSERT ON workspace_tasks` — opens the first active interval when a task is created with a non-empty status.
+- `AFTER UPDATE OF status ON workspace_tasks` — closes the previous open interval and opens a new active interval on every status change.
 
 API exposure uses 2 patterns:
 - **Sidebar** (`features?include=tasks`, `features/:fid/tasks`): LEFT JOIN 1:1 → `started_at` + `ended_at` top-level.
 - **Task detail** (`tasks/:taskId`): batch query → full `status_timeline[]`.
 
-This task covers the full backend: migration, trigger, database reader queries, DTO type, and handler responses. No changes to `workspace-github-adapter`.
+Before implementation, verify the `workspace-github-adapter` reconciliation path uses upsert (not delete+reinsert) — see `Reconciliation path constraint` in technical design.
+
+This task covers the full backend: migration, triggers, database reader queries, DTO type, and handler responses. No changes to `workspace-github-adapter`.
 
 ### Required skills
 
@@ -29,9 +33,11 @@ This task covers the full backend: migration, trigger, database reader queries, 
 
 ### Subtasks
 
-- [ ] Add migration: `CREATE TABLE workspace_task_status_timeline` with unique partial index on active intervals
-- [ ] Add migration: `CREATE TRIGGER trg_task_status_timeline_change` firing on `UPDATE OF status`
-- [ ] Add migration: down scripts for table and trigger
+- [ ] Verify adapter reconciliation path uses upsert (`ON CONFLICT DO UPDATE`), not delete+reinsert
+- [ ] Add migration: `CREATE TABLE workspace_task_status_timeline` with `feature_id UUID` (matching `workspace_tasks.feature_id` post-migration-00009), unique partial index on active intervals
+- [ ] Add migration: `CREATE FUNCTION fn_task_status_timeline_insert` + `CREATE TRIGGER trg_task_status_timeline_insert` firing `AFTER INSERT`
+- [ ] Add migration: `CREATE FUNCTION fn_task_status_timeline_change` + `CREATE TRIGGER trg_task_status_timeline_change` firing `AFTER UPDATE OF status`
+- [ ] Add migration: down scripts for both triggers and table
 - [ ] Add database reader: LEFT JOIN query for `features?include=tasks` (1:1, active interval only)
 - [ ] Add database reader: batch query for `tasks/:taskId` (full `status_timeline[]` ordered by `started_at`)
 - [ ] Add `TaskStatusTimelineEntry` DTO in `internal/domain/dto.go`
@@ -39,7 +45,7 @@ This task covers the full backend: migration, trigger, database reader queries, 
 - [ ] Add `StatusTimeline` field to task struct in task-detail response
 - [ ] Update service layer: LEFT JOIN for feature-list handler, batch query for task-detail handler
 - [ ] Verify status filters and sorting still use `workspace_tasks.status`, not timeline rows
-- [ ] Add trigger behavior tests: status unchanged, status changed, status set to empty
+- [ ] Add trigger behavior tests: INSERT with non-empty status, INSERT with empty/null status, UPDATE status unchanged, UPDATE status changed, UPDATE status to empty
 - [ ] Add API tests: `features?include=tasks` returns `started_at` / `ended_at` top-level, task without timeline → `started_at = null`
 - [ ] Add API tests: `tasks/:taskId` returns `status_timeline[]` ordered, active interval `ended_at = null`
 - [ ] Run `golangci-lint run` and full test suite before PR

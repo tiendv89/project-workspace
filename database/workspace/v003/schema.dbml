@@ -90,7 +90,7 @@ Table workspace_feature_documents {
 Table workspace_tasks {
   id             uuid        [primary key, default: `gen_random_uuid()`]
   workspace_id   uuid        [not null, ref: > workspaces.id]
-  feature_id     text        [not null]
+  feature_id     uuid        [not null, ref: > workspace_features.id, note: 'FK to workspace_features.id (converted from text slug in migration 00009)']
   task_id        text        [not null, note: 'e.g. T1']
   title          text        [not null]
   repo           text        [note: 'Implementation repo id; matches workspace_repos.repo_id']
