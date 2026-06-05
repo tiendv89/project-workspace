@@ -1,9 +1,9 @@
 feature_id: task-status-transition-timeline
 title: Task Status Transition Timeline
 
-feature_status: ready_for_implementation
+feature_status: in_design
 current_stage: tasks
-next_action: Start implementation. T1 is ready to begin.
+next_action: Tasks revised — needs re-approval after API design refinement (LEFT JOIN 1:1 for sidebar).
 
 stages:
   product_spec:
@@ -24,7 +24,10 @@ stages:
     review_status: approved
     reviewed_by: minhkienn203@gmail.com
     reviewed_at: 2026-06-04T18:31:01+0700
-    review_comment: technical_design approved. Feature advances to tasks.
+    review_comment: >-
+      technical_design approved. Feature advances to tasks.
+      Revised 2026-06-05: API exposure refined — sidebar LEFT JOIN 1:1,
+      task detail full status_timeline[].
     review_history:
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
@@ -49,10 +52,15 @@ stages:
         reviewed_at: 2026-06-04T18:31:01+0700
         review_comment: technical_design approved. Feature advances to tasks.
   tasks:
-    review_status: approved
-    reviewed_by: minhkienn203@gmail.com
-    reviewed_at: 2026-06-04T18:38:24+0700
-    review_comment: tasks approved. Feature advances to ready_for_implementation.
+    review_status: awaiting_approval
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: >-
+      Tasks revised — API exposure refined: sidebar uses LEFT JOIN 1:1
+      (started_at/ended_at top-level), task detail uses full status_timeline[].
+      Frontend UX specified: sidebar Time spent in: Xh Xm label with 1000ms counter,
+      task detail Activity Timeline with 2 tabs (Logs & Timeline), status colors,
+      Moved from X to Y after Zh Zm flow. T1/T2/T3 updated. Re-approval required.
     review_history:
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
@@ -63,7 +71,7 @@ stages:
       - review_status: approved
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-04T18:38:24+0700
-        review_comment: tasks approved. Feature advances to ready_for_implementation.
+        review_comment: tasks approved. Feature advances to ready_for_implementation. T1 activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -124,5 +132,5 @@ history:
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: false
+  tasks_required: true
   deployment_checklist_required: false

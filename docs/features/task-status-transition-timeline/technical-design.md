@@ -4,7 +4,7 @@
 
 - Feature ID: `task-status-transition-timeline`
 - Title: `Task Status Transition Timeline`
-- Status: **awaiting_approval** — revised: DB trigger approach, no adapter changes
+- Status: **awaiting_approval** — revised: LEFT JOIN 1:1 for sidebar, full timeline for task detail
 
 ## Current state
 
@@ -16,7 +16,7 @@ Today the system stores only the latest task status.
 - The write path overwrites `workspace_tasks.status` with the newly synced value, without preserving the previous status.
 - Task list and detail APIs return `TaskSummary.status` only.
 - Backend can answer "what is the current status?", but not "when did this status begin?" or "when did the previous status end?".
-- The frontend task sidebar computes a duration badge from task log timestamps, which is approximate and not backed by a persisted status interval model.
+- The frontend task sidebar has no duration display. `lib/time.ts` computes elapsed time from task log entries (`findStatusLogEntry`, `getElapsedSinceStatus`) which is approximate and not backed by a persisted status interval model.
 
 ### Constraints and boundaries
 
@@ -153,120 +153,223 @@ Behavior:
 
 ### API exposure
 
-Add `status_timeline` to task summary and detail responses.
+Two distinct response shapes depending on the endpoint's purpose:
 
-Response shape — all existing fields kept, only `status_timeline` added:
+#### Sidebar — `GET /api/workspaces/:workspaceId/features?include=tasks`
+
+Sidebar only needs the current interval for each task. Uses a **LEFT JOIN 1:1** directly in the query instead of returning the full `status_timeline[]`:
+
+```sql
+SELECT 
+    t.id, t.task_id, t.title, t.status, t.feature_id,
+    t.repo, t.depends_on, t.blocked_reason, t.pr,
+    tl.started_at,
+    tl.ended_at
+FROM workspace_tasks t
+LEFT JOIN workspace_task_status_timeline tl 
+    ON tl.task_id = t.id 
+    AND tl.ended_at IS NULL           -- active interval only
+    AND tl.status = t.status          -- matches task current status
+WHERE t.workspace_id = $1
+    AND t.feature_id = ANY($2);
+```
+
+Partial unique index `(task_id) WHERE ended_at IS NULL` guarantees at most 1 matching row.
+
+Response shape — each task has 2 new top-level fields, no `status_timeline[]`:
+
+```json
+{
+  "features": [{
+    "id": "feature-uuid",
+    "feature_id": "task-status-transition-timeline",
+    "tasks": [{
+      "id": "task-row-uuid",
+      "task_id": "T2",
+      "title": "Render current status interval duration in sidebar",
+      "status": "in_progress",
+      "repo": "digital-factory-ui",
+      "started_at": "2026-06-05T09:00:00Z",
+      "ended_at": null
+    }]
+  }]
+}
+```
+
+- `started_at` = `NULL` when task has no timeline data yet (task created before trigger was installed).
+- `ended_at` is always `NULL` in this response due to JOIN condition `tl.ended_at IS NULL`.
+
+#### Task detail — `GET /api/workspaces/:workspaceId/tasks/:taskId`
+
+Returns the **full history** `status_timeline[]`:
 
 ```json
 {
   "id": "task-row-uuid",
-  "task_id": "task-row-uuid",
-  "task_name": "T2",
-  "feature_id": "feature-row-uuid",
-  "feature_name": "task-status-transition-timeline",
-  "title": "Render current status interval duration in sidebar",
+  "task_id": "T2",
   "status": "in_progress",
-  "repo": "digital-factory-ui",
-  "branch": "feature/task-status-transition-timeline-T2",
-  "is_blocked": false,
-  "pr": {"url": "", "status": "not_created"},
-  "workspace_pr": {"url": "", "status": "not_created"},
-  "updated_at": "2026-06-04T09:00:00Z",
   "status_timeline": [
-    {
-      "task_id": "task-row-uuid",
-      "status": "todo",
-      "started_at": "2026-06-04T08:00:00Z",
-      "ended_at": "2026-06-04T08:20:00Z"
-    },
-    {
-      "task_id": "task-row-uuid",
-      "status": "ready",
-      "started_at": "2026-06-04T08:20:00Z",
-      "ended_at": "2026-06-04T09:00:00Z"
-    },
-    {
-      "task_id": "task-row-uuid",
-      "status": "in_progress",
-      "started_at": "2026-06-04T09:00:00Z",
-      "ended_at": null
-    }
+    { "status": "todo",       "started_at": "...", "ended_at": "..." },
+    { "status": "ready",      "started_at": "...", "ended_at": "..." },
+    { "status": "in_progress","started_at": "...", "ended_at": null }
   ]
 }
 ```
+
+Backend read strategy for task detail:
+
+1. Run the existing task query.
+2. Batch query `workspace_task_status_timeline WHERE task_id = $1 ORDER BY started_at`.
+3. Attach ordered intervals as `status_timeline[]`.
 
 DTO:
 
 ```go
 type TaskStatusTimelineEntry struct {
-    TaskID    string     `json:"task_id"`
     Status    string     `json:"status"`
     StartedAt time.Time  `json:"started_at"`
     EndedAt   *time.Time `json:"ended_at"`
 }
 ```
 
-Backend read strategy:
-
-1. Run the existing task query.
-2. Collect task UUIDs from the result set.
-3. Batch query `workspace_task_status_timeline` for those task UUIDs.
-4. Group rows by task UUID.
-5. Attach ordered intervals to each task response.
-
 Affected endpoints:
 
-- `GET /api/workspaces/:workspaceId/tasks`
-- `GET /api/workspaces/:workspaceId/tasks/:taskId`
-- `GET /api/workspaces/:workspaceId/features/:featureId/tasks`
-- `GET /api/workspaces/:workspaceId/features/:featureId/tasks/:taskId`
-- `GET /api/workspaces/:workspaceId/features?include=tasks`
+| Endpoint | Pattern |
+|---|---|
+| `GET /.../features?include=tasks` | LEFT JOIN 1:1 → `started_at` + `ended_at` top-level |
+| `GET /.../tasks/:taskId` | Batch query → full `status_timeline[]` |
+| `GET /.../features/:featureId/tasks` | Batch query → full `status_timeline[]` (same as task detail) |
 
-API rules: `status_timeline` is always an array; active intervals use `ended_at = null`; duration is computed by the frontend from `started_at` / `ended_at`; task filters and grouping remain based on `workspace_tasks.status`.
+API rules:
+- Sidebar endpoint (`features?include=tasks`): `started_at` / `ended_at` are 2 top-level fields, no `status_timeline[]`.
+- Task detail + feature tasks endpoints: `status_timeline[]` is the full array, ordered by `started_at`.
+- Task filters and grouping remain based on `workspace_tasks.status`.
 
-### Frontend integration
+### Frontend integration — detailed UX spec
 
-`digital-factory-ui` consumes `status_timeline` and renders the current status interval in the task sidebar.
+`digital-factory-ui` consumes timeline data with 2 patterns from backend.
 
-Type additions:
+#### Sidebar — TaskTrackingItem
 
-```ts
-export type TaskStatusTimelineEntry = {
-  task_id: string;
-  status: string;
-  started_at: string;
-  ended_at: string | null;
-};
-```
+Time format uses browser time. Update every **1000ms** via `setInterval`.
 
-Add to `TaskSummary`: `status_timeline?: TaskStatusTimelineEntry[]`.
-
-Sidebar interval selection:
+Duration format: `Time spent in: 3h 30m`. Use `date-fns` `intervalToDuration` (`pnpm add date-fns`):
 
 ```ts
-function findCurrentStatusInterval(task: ParsedTask) {
-  const timeline = task.statusTimeline ?? [];
-  for (let i = timeline.length - 1; i >= 0; i--) {
-    const entry = timeline[i];
-    if (entry.status === task.status && entry.ended_at === null) return entry;
-  }
-  for (let i = timeline.length - 1; i >= 0; i--) {
-    const entry = timeline[i];
-    if (entry.status === task.status) return entry;
-  }
-  return null;
+import { intervalToDuration } from "date-fns";
+
+function formatDuration(ms: number): string {
+  const d = intervalToDuration({ start: 0, end: ms });
+  const parts: string[] = [];
+  if (d.days)    parts.push(`${d.days}d`);
+  if (d.hours)   parts.push(`${d.hours}h`);
+  if (d.minutes) parts.push(`${d.minutes}m`);
+  return parts.join(" ") || "0m";
 }
 ```
 
-Sidebar rendering:
+Display rules:
+- `started_at` has value: show live `now - started_at` as `Time spent in: Xh Xm`, update 1000ms
+- `started_at = null`: show `—`
 
-- Keep grouping by `task.status`.
-- Layout: status duration on the left, last-seen timestamp on the right, same row.
-- Active interval (`ended_at = null`): display live `now - started_at`, update every second.
-- Closed interval: display fixed `ended_at - started_at`.
-- No matching interval: show existing empty state, do not infer from logs.
+Layout: label left, feature name right, same row. Grouping by `task.status` unchanged.
 
-Time handling: all duration calculations must use browser time (`new Date()`, `Date.now()`). Timestamps from the API (`started_at`, `ended_at`) are UTC RFC3339 strings — parse them with `new Date(iso)` which converts to the browser's local time context. Never use server-computed durations or rely on clock sync between browser and server.
+---
+
+#### Task detail — Activities (2 tabs)
+
+Task detail sheet has an **Activities** section with 2 switchable tabs inside:
+
+| Tab | Data source |
+|---|---|
+| **Logs** | Task `activity` field from API response |
+| **Timeline** | `status_timeline[]` from API |
+
+##### Tab: Logs
+
+Each entry: timestamp + action label + actor + note (if present).
+Timestamp: uses existing `TIMESTAMP_FORMATTER` from `lib/time.ts` (browser-native `Intl.DateTimeFormat`). Output: `"Jun 4 14:30"`.
+Empty state: `"No activity logs yet."`
+
+##### Tab: Timeline
+
+Displays `status_timeline[]` as a flow. Timestamps use a new `TIMELINE_FORMATTER`:
+
+```ts
+const TIMELINE_FORMATTER = new Intl.DateTimeFormat("en-US", {
+  year: "numeric", month: "short", day: "numeric",
+  hour: "2-digit", minute: "2-digit", hour12: true,
+});
+// Output: "Jun 4, 2026, 2:30 PM"
+```
+
+First interval:
+```
+Entered todo at Jun 4, 2026, 5:48 PM
+```
+
+Middle intervals (has `ended_at`):
+```
+Moved from todo to ready after 30m.
+Jun 4, 2026, 6:18 PM
+```
+`after Xh Xm` = `formatDuration(ended_at - started_at)` of the previous interval.
+
+Current interval (`ended_at = null`):
+```
+Moved from in_progress to in_review · Active now
+Jun 4, 2026, 8:15 PM
+```
+
+**Status label colors** — reuse existing `STATUS_STYLES` from `src/features/tasks/lib/status.ts`, add `reviewing` entry:
+
+| Status | Tailwind bg | Tailwind text | Tailwind dot |
+|---|---|---|---|
+| `todo` | `bg-muted-bg` | `text-text-secondary` | `bg-text-muted` |
+| `ready` | `bg-ready-bg` | `text-ready` | `bg-ready` |
+| `in_progress` | `bg-warning-bg` | `text-warning` | `bg-warning` |
+| `blocked` | `bg-danger-bg` | `text-danger` | `bg-danger` |
+| `in_review` | `bg-purple-bg` | `text-purple` | `bg-purple` |
+| `reviewing` | `bg-purple-bg` | `text-purple` | `bg-purple` |
+| `done` | `bg-success-bg` | `text-success` | `bg-success` |
+| `cancelled` | `bg-muted-bg` | `text-text-muted` | `bg-text-muted` |
+
+Note: `reviewing` reuses the same purple palette as `in_review`.
+
+Compute helper:
+```ts
+type TimelineDisplayItem = {
+  fromStatus: string | null;
+  toStatus: string;
+  startedAt: string;
+  isActive: boolean;
+  timeInPrevStatusMs: number | null;
+};
+
+function buildTimelineDisplay(timeline: TaskStatusTimelineEntry[]): TimelineDisplayItem[] {
+  return timeline.map((entry, i) => {
+    const prev = i > 0 ? timeline[i - 1] : null;
+    const timeInPrevStatus = prev
+      ? (prev.ended_at
+          ? new Date(prev.ended_at).getTime() - new Date(prev.started_at).getTime()
+          : new Date(entry.started_at).getTime() - new Date(prev.started_at).getTime())
+      : null;
+    return {
+      fromStatus: prev?.status ?? null,
+      toStatus: entry.status,
+      startedAt: entry.started_at,
+      isActive: entry.ended_at === null,
+      timeInPrevStatusMs: timeInPrevStatus,
+    };
+  });
+}
+```
+
+#### Component targets
+
+Apply to both task detail UIs in the codebase:
+- `TaskDetailSheet.tsx` (sidebar sheet) — replace existing `TimelineSection` with Activities tabs
+- `TaskTabView.tsx` (full-page tab view) — replace existing `TaskActivityTimelineSection` with Activities tabs
 
 ### Compatibility and rollout
 
@@ -288,8 +391,8 @@ None.
 ### Blocking decisions
 
 - Transition timestamp: database transaction time (`now()`).
-- Timeline source: `workspace_tasks.status` changes only.
-- `workspace_activity_events` and task logs are out of scope.
+- Timeline source: `workspace_tasks.status` changes only (trigger-based).
+- `workspace_activity_events` and task logs are not used as timeline source — they remain the data source for the Logs tab in the frontend.
 
 ### Release dependencies
 
@@ -299,20 +402,23 @@ None.
 ## Parallelization / blocking analysis
 
 ```text
-T1: workflow-backend — schema, trigger, and API exposure for status_timeline
+T1: workflow-backend — schema, trigger, LEFT JOIN 1:1 for sidebar, full timeline for detail
   └── Can begin now — no blockers
   │
-T2: digital-factory-ui — render current status interval in task sidebar
-  └── BLOCKED on T1 (needs stable status_timeline API shape)
+T2: digital-factory-ui — consume started_at/ended_at in sidebar, status_timeline[] in detail
+  └── BLOCKED on T1 (needs stable API contract: started_at/ended_at top-level + status_timeline[])
   └── Can begin with mocked fixtures once T1 contract is defined
+  │
+T3: digital-factory-ui — regression and integration validation
+  └── BLOCKED on T1, T2 (needs both backend and frontend deployed)
 ```
 
 ## Repository impact
 
 | Repo ID | Impact |
 |---|---|
-| `workflow-backend` | Add `workspace_task_status_timeline` table and status-change trigger; add `status_timeline` DTO field; batch-read timeline rows and attach to task APIs. |
-| `digital-factory-ui` | Add `status_timeline` types and mapping; render current status interval duration in task sidebar. |
+| `workflow-backend` | Add `workspace_task_status_timeline` table and status-change trigger; add `started_at`/`ended_at` to feature-list responses via LEFT JOIN; add `status_timeline[]` to task-detail responses. |
+| `digital-factory-ui` | Add timeline types and mapping; render sidebar duration with `Time spent in: Xh Xm` label; add Activity Timeline section with Logs & Timeline tabs. |
 
 ## Validation and release impact
 
@@ -325,25 +431,28 @@ T2: digital-factory-ui — render current status interval in task sidebar
   - status unchanged → no new timeline row.
   - status changed → previous interval closed, new active interval opened.
   - status set to empty → previous interval closed, no new interval.
-- Task APIs return `status_timeline` ordered by `started_at`.
-- Active intervals return `ended_at = null`; closed intervals return `ended_at >= started_at`.
+- `features?include=tasks` endpoint: verifies LEFT JOIN returns `started_at` / `ended_at` top-level, correct 1:1.
+- `features?include=tasks` endpoint: task without timeline → `started_at = null`, still present in response.
+- `tasks/:taskId` endpoint: `status_timeline[]` ordered by `started_at`, active interval `ended_at = null`.
 - Status filters and sorting still use `workspace_tasks.status`.
 
 `digital-factory-ui`:
 
-- `status_timeline` is mapped into the frontend task model.
-- Sidebar selects the active interval matching `task.status`.
-- Active duration updates every second; closed duration stays fixed.
-- Missing timeline data renders empty state, does not crash, does not infer from logs.
+- Sidebar renders live `now - started_at` from top-level field, updates every 1000ms.
+- Sidebar renders `—` when `started_at = null` (no crash, no log inference).
+- Task detail Activity Timeline has 2 tabs: Logs and Timeline.
+- Logs tab renders log entries with browser locale timestamps.
+- Timeline tab renders flow with colored status labels and correct duration.
+- Grouping by `task.status` is not affected.
 
 ### Rollout
 
 - Deploy migration and trigger before API changes.
 - Existing tasks get their first timeline row on the next status update after deployment.
-- Frontend tolerates empty `status_timeline` during rollout.
+- Frontend tolerates `started_at = null` in sidebar response during rollout.
 
 ### Backward compatibility
 
 - `workspace_tasks.status` is unchanged.
 - Existing filters and board grouping are unchanged.
-- `status_timeline` is additive.
+- New fields (`started_at`, `ended_at`, `status_timeline`) are additive — old clients ignore them.

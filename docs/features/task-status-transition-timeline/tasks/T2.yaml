@@ -1,5 +1,5 @@
 id: T2
-title: Render current status interval duration in sidebar
+title: Render sidebar duration + task detail Activities (Logs & Timeline tabs)
 repo: digital-factory-ui
 status: todo
 depends_on:
