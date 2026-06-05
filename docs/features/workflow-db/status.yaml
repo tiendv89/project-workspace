@@ -46,16 +46,19 @@ history:
     action: stage_approved
     stage: product_spec
     note: product_spec approved; feature advanced to in_tdd / technical_design.
-  - at: 2026-06-05T17:27:18Z
+  - at: 2026-06-05T18:24:57Z
     actor: tiendv.52@gmai.com
     action: scope_changed
     stage: product_spec
     note: >-
-      Post-approval relaxation (human-directed during technical-design review):
-      the TS/git orchestrator is no longer required to be byte-for-byte
-      unchanged. It may take a small additive change (declaring owner='ts' to the
-      broker); its behaviour for legacy features is still unchanged. product_spec
-      wording reconciled accordingly; stage remains approved.
+      Post-approval reframing (human-directed during technical-design review).
+      The "TS unchanged", "frontend needs no change", and "executor/dispatcher
+      unchanged" claims are demoted from hard constraints to preferences: the
+      overriding goal is to introduce the Go/Postgres orchestrator (direct DB
+      writes) and gradually replace the TS orchestrator, and anything (FE, read
+      API, executor, dispatcher, broker, schema, TS orchestrator) may change to
+      serve it. The single-owner-per-feature invariant ("no dual-write") still
+      holds. product_spec wording reconciled accordingly; stage remains approved.
 
 revalidation:
   product_spec_required: false

@@ -12,7 +12,7 @@ The git-based claim protocol uses push-rejection as its concurrency primitive. T
 
 Workflow state — features, tasks, stages, log entries, dependencies — lives as YAML files that must be opened and parsed one by one to answer questions like "what tasks are ready right now?" or "which features are blocked and why?" There is no queryable record, no referential integrity, and no event history that can be sliced or aggregated.
 
-This is the foundation we need to fix before the platform can grow. `workflow-db` stands up a database as the system of record for the live task state of the features it owns, with the runtime writing that state to it instead of git. It runs **alongside** the existing git/YAML path rather than replacing it in one step (see "Coexistence model — parallel orchestrators"): new features are created in the database world, while existing features finish their lifecycle in git. For a database-owned feature the management repo retains only narrative artifacts (product specs, technical designs, tasks.md) and is no longer the source of truth for its live task state.
+This is the foundation we need to fix before the platform can grow. `workflow-db` stands up a database as the system of record for the live task state of the features it owns, with the runtime writing that state to it instead of git. The **primary goal is to introduce the Go/Postgres orchestrator** (writing directly to the database) so it can **gradually take over and ultimately replace** the TS/git orchestrator — this feature is the first step, not a permanent two-orchestrator end-state. It runs **alongside** the existing git/YAML path rather than replacing it in one step (see "Coexistence model — parallel orchestrators"): new features are created in the database world, while existing features finish their lifecycle in git. For a database-owned feature the management repo retains only narrative artifacts (product specs, technical designs, tasks.md) and is no longer the source of truth for its live task state.
 
 ## Goals
 
@@ -86,4 +86,4 @@ Exposing workflow reads and writes to external LLM clients (IDE plugins, copilot
 - No dual-write or contention occurs between the two orchestrators: each mutates state only for the features it owns.
 - A `go`-owned feature's live state lives **only** in the database — it has no git/YAML representation, and the database is its sole source of truth.
 - Cross-feature questions over `go`-owned features (all ready tasks, all blocked tasks) are answerable from the database in a single query, against live state with no static build step.
-- A `go`-owned feature created by the Go orchestrator surfaces through `workspace-data-backend`'s existing read API with no change to the frontend.
+- A `go`-owned feature created by the Go orchestrator surfaces through `workspace-data-backend`'s existing read API with little or no change to the frontend.

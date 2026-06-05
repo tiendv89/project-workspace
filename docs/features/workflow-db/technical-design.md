@@ -41,19 +41,23 @@
 
 ## 2. Problem framing
 
+### Primary goal
+Introduce the **Go/Postgres orchestrator** that writes workflow state **directly to the database**, and run it alongside the TS/git orchestrator so it can **gradually take over and ultimately replace** the TS path. This feature is the *first step* of that replacement — not a permanent two-orchestrator end-state. Every decision below serves that goal first.
+
 ### What must change
-1. Give the **Go/Postgres orchestrator** a way to write live task state to the shared DB and claim tasks atomically — replacing git commits for the features it owns.
+1. Give the Go orchestrator a way to write live task state to the shared DB and claim tasks atomically — replacing git commits for the features it owns.
 2. Add an **`owner`** discriminator so the DB can hold both legacy (YAML-synced) and live (DB-native) features without the two writers colliding.
 3. Stop the YAML→DB sync adapter from **clobbering** live DB-native rows.
 4. **Partition the broker** so the TS orchestrator never drains a Go feature's completion, and vice versa.
 
-### What must remain stable (hard constraints)
-- **The TS/git orchestrator's behavior for legacy features is unchanged.** It *may* be modified where that materially simplifies coexistence — e.g. to declare its `owner` to the broker — but such changes are additive and must not alter how it drives legacy git/YAML features. (This relaxes the approved product spec's stronger "no code modification" wording; the spec is to be reconciled — see "Spec divergence" below.)
-- **The frontend needs no change** — go-owned features must surface through `workflow-backend`'s existing read API.
-- **The executor and dispatcher are owner-agnostic and unchanged** (ABI-neutral; proven by `standalone-executor-hardening`).
-- **No dual-write**: a feature is driven by exactly one orchestrator.
+### Priorities (not hard constraints — everything here is changeable)
+Nothing is off-limits: the FE, read API, executor, dispatcher, broker, schema, and the TS orchestrator may **all** be modified if the Go orchestrator needs it. We optimize for **low disruption to the running legacy path during the transition**, which yields the following *preferences* (reasons to reuse rather than rewrite) — not walls:
+- **Keep the TS path working for legacy features** while it is still in service. The TS orchestrator may take small additive changes (e.g. declaring `owner='ts'` to the broker); we avoid changes that alter how it drives legacy features — but only because it is still running them, not because it is frozen.
+- **Reuse the existing read API and FE if they suffice.** Go-owned rows can surface through `workflow-backend`'s existing endpoints with little or no change — preferred to keep scope down, but the FE/read API may change if the Go path needs it.
+- **Reuse the executor and dispatcher** — they are owner-agnostic (ABI-neutral, from `standalone-executor-hardening`), so we reuse them as-is; they may change if required.
+- **Single-owner-per-feature invariant** (this one *is* firm): every feature is driven by exactly one orchestrator at a time, so there is never a competing write to the same feature. (This is what the spec's "no dual-write" means — the term is shorthand for this invariant, not a separate rule.)
 
-> **Spec divergence (must reconcile).** The approved `product-spec.md` states in several places that the TS orchestrator "runs unchanged — no code modification." Per human direction during design review, that is relaxed: the TS orchestrator *may* take a small additive change (e.g. declaring `owner='ts'` on broker calls). The product spec should be updated to match, with a `scope_changed` entry recorded in `status.yaml` history.
+> **Spec reconciliation.** The approved `product-spec.md` framed "TS unchanged," "FE needs no change," and "executor unchanged" as near-hard constraints. Per human direction during design review these are **preferences, not constraints** — the overriding goal is the Go orchestrator replacing TS via direct DB writes, and anything may change to serve it. The spec wording is reconciled and a `scope_changed` entry recorded in `status.yaml` history; the `product_spec` stage remains approved.
 
 ### Assumptions already fixed
 - Database is **PostgreSQL** (spec open question #1 — decided).
@@ -70,7 +74,7 @@
   - *Cons*: cross-repo schema coupling (migrations live in `workspace-github-adapter`); the adapter must learn to scope its reconciliation.
 - **A2 — Separate `workflow-db` database/schema, synced into the read DB.** 
   - *Pros*: clean ownership.
-  - *Cons*: reintroduces a sync step (the exact thing the spec rejects), FE/read-API would need a second source. **Rejected** — defeats "FE needs no change."
+  - *Cons*: reintroduces a sync step between the two databases and forces the read API to merge two sources. **Rejected** — it adds the very sync layer this feature exists to remove, for no benefit over a shared schema.
 
 ### B. Write path of the Go orchestrator (spec open question #2/#3)
 - **B1 — In-process pgx driver (chosen).** Orchestrator writes Postgres directly.
@@ -138,15 +142,15 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 ### 4.4 Dispatch + reap over the partitioned broker (repos: `workflow`)
 - **Broker (Go)** gains owner-awareness (design D1): `Register` records the owner; callback enqueues into the owner's pending queue; `ListCompleted` reads the caller's queue (absent owner ⇒ legacy queue, for graceful degradation). `Store` interface (`broker/internal/store/store.go:57-88`) and the `/register`, `/callback`, `/list-completed` handlers (`server.go`) change additively. The TS orchestrator takes a small additive change to declare `owner='ts'` on its broker calls (`HttpBrokerAdapter`) so its completions land in — and are drained from — the `ts` queue.
 - **Go orchestrator** registers each handle with `owner='go'` + `HandleMetadata{ feature_id, task_id, … }`, enqueues a `DispatchJob` (`abi/src/types.ts:50-96`) onto the shared `platform:dispatch` stream, and drains its own completion queue, resolving each completion back to a DB row by `metadata.feature_id`/`metadata.task_id` (the DB analogue of `reap-loop.ts:131-175`) — then writes the resulting status transition to Postgres.
-- **Executor + dispatcher unchanged**; `LOG_SINK=none` already keeps the standalone path's logs off the management repo.
+- **Executor + dispatcher reused as-is** (owner-agnostic — no change needed for v1); `LOG_SINK=none` already keeps the standalone path's logs off the management repo.
 
 ### 4.5 Read API (repo: `workflow-backend`)
-- **No functional change required**: the read queries select rows by `workspace_id` regardless of `owner`, so go-owned features/tasks surface through the existing endpoints the moment the orchestrator writes them. This is what delivers "FE needs no change."
+- **No functional change needed for v1** (reused as-is): the read queries select rows by `workspace_id` regardless of `owner`, so go-owned features/tasks surface through the existing endpoints the moment the orchestrator writes them. This is what lets the FE need little or no change — a preference, not a constraint; the read API/FE may evolve if the Go path requires it.
 - Optional, additive: expose `owner` in the feature/task DTO so the UI can badge DB-native features. Not required for v1.
 
 ### Why this design
-- Smallest change that meets every hard constraint: TS unchanged for legacy features (separate broker keyspace + adapter blind to `'go'`; only an additive `owner='ts'` declaration), FE unchanged (same schema, same read API), executor/dispatcher unchanged (shared dispatch stream, owner-agnostic).
-- The `owner` discriminator + scoped reconciliation is the precise mechanism that lets one schema host two writers without dual-write.
+- Serves the primary goal (a Go orchestrator writing directly to the DB) with the **least disruption to the running legacy path**: reuse the same schema + read API + executor/dispatcher, and touch the TS path only additively (`owner='ts'`). This is a deliberate scope choice, not a forced one — any of these may change later as Go takes over more of the workload.
+- The `owner` discriminator + scoped reconciliation is the precise mechanism that lets one schema host two writers while preserving the single-owner-per-feature invariant.
 
 ### Compatibility / operational implications
 - Purely additive migration (nullable column, relaxed constraints) — safe for the running read API and adapter.
