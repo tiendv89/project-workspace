@@ -203,7 +203,12 @@ Table workspace_sync_runs {
 // Clear on full reconciliation: inspector.DeleteAllPendingTasks("task-sync")
 // Monitor via asynqmon UI. REDIS_URL required in environment.
 
-// ── Task status timeline trigger ──────────────────────────
+// ── Task status timeline triggers ────────────────────────
+// Trigger: trg_task_status_timeline_insert
+//   AFTER INSERT ON workspace_tasks
+//   FOR EACH ROW EXECUTE FUNCTION fn_task_status_timeline_insert()
+//   Opens the first active interval when a task is created with a non-empty status.
+//
 // Trigger: trg_task_status_timeline_change
 //   AFTER UPDATE OF status ON workspace_tasks
 //   FOR EACH ROW EXECUTE FUNCTION fn_task_status_timeline_change()
