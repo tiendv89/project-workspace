@@ -1,9 +1,9 @@
 feature_id: task-status-transition-timeline
 title: Task Status Transition Timeline
 
-feature_status: in_design
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tasks revised — needs re-approval after API design refinement (LEFT JOIN 1:1 for sidebar).
+next_action: Tasks approved. T1 is ready for implementation.
 
 stages:
   product_spec:
@@ -52,18 +52,10 @@ stages:
         reviewed_at: 2026-06-04T18:31:01+0700
         review_comment: technical_design approved. Feature advances to tasks.
   tasks:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: >-
-      Design revised per PR #456 feedback:
-      (1) NEW.task_name → NEW.title in trigger INSERT.
-      (2) Confirmed feature_id UUID with FK (matching workspace_tasks after migration 00009); fixed DBML v003 to match.
-      (3) Added AFTER INSERT trigger for new tasks.
-      (4) Documented reconciliation path constraint (upsert-only).
-      (5) Documented retention/partitioning as explicit follow-up.
-      DBML v003, technical-design.md, tasks.md, and T1.yaml updated.
-      Re-approval required.
+    review_status: approved
+    reviewed_by: minhkienn203@gmail.com
+    reviewed_at: 2026-06-05T18:02:34+0700
+    review_comment: tasks approved. Feature advances to ready_for_implementation.
     review_history:
       - review_status: awaiting_approval
         reviewed_by: minhkienn203@gmail.com
@@ -75,6 +67,10 @@ stages:
         reviewed_by: minhkienn203@gmail.com
         reviewed_at: 2026-06-04T18:38:24+0700
         review_comment: tasks approved. Feature advances to ready_for_implementation. T1 activated.
+      - review_status: approved
+        reviewed_by: minhkienn203@gmail.com
+        reviewed_at: 2026-06-05T18:02:34+0700
+        review_comment: tasks approved. Feature advances to ready_for_implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -139,9 +135,14 @@ history:
       Design revised per PR #456 review: fixed NEW.task_name→NEW.title,
       feature_id UUID→TEXT, added AFTER INSERT trigger, documented
       reconciliation constraint and retention follow-up.
+  - stage: tasks
+    action: approved
+    by: minhkienn203@gmail.com
+    at: 2026-06-05T18:02:34+0700
+    note: tasks approved. Feature advances to ready_for_implementation.
 
 revalidation:
   product_spec_required: false
   technical_design_required: false
-  tasks_required: true
+  tasks_required: false
   deployment_checklist_required: false

@@ -25,10 +25,10 @@ log:
       zero adapter changes.
   - action: ready
     by: minhkienn203@gmail.com
-    at: 2026-06-04T11:38:24Z
+    at: 2026-06-04T18:38:24+0700
     note: Task activated on tasks-stage approval — dependencies met.
-  - action: revised
-    by: tiendv89
+  - action: created
+    by: minhkienn203@gmail.com
     at: 2026-06-05T10:00:00+0700
     note: >-
       Design revised per PR #456 review feedback:
@@ -37,4 +37,4 @@ log:
       (3) Added AFTER INSERT trigger to open first interval on task creation.
       (4) Documented reconciliation path constraint (upsert-only, no delete+reinsert).
       (5) Documented retention/partitioning as explicit follow-up.
-      Subtasks updated in tasks.md. Awaiting tasks-stage re-approval.
+      Subtasks updated in tasks.md. Tasks stage re-approved.

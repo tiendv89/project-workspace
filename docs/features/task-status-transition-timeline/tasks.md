@@ -1,6 +1,6 @@
 # Task Breakdown — task-status-transition-timeline
 
-Feature status: `in_design`. Stage: `tasks` (`awaiting_approval`). Machine state lives in `tasks/T<n>.yaml`.
+Feature status: `ready_for_implementation`. Stage: `tasks` (`approved`). Machine state lives in `tasks/T<n>.yaml`.
 
 ## Index
 

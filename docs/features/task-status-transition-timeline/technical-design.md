@@ -4,7 +4,7 @@
 
 - Feature ID: `task-status-transition-timeline`
 - Title: `Task Status Transition Timeline`
-- Status: **awaiting_approval** — revised: LEFT JOIN 1:1 for sidebar, full timeline for task detail
+- Status: **approved** — LEFT JOIN 1:1 for sidebar, full timeline for task detail
 
 ## Current state
 
@@ -70,7 +70,7 @@ Fixed assumptions:
 
 A PostgreSQL trigger fires on every `UPDATE OF status` and writes rows into a timeline table.
 
-**Pros**: zero application-code change in the write path; captures every writer (adapter, scripts, manual fixes); atomic with the triggering transaction; simple to test and deploy.  
+**Pros**: zero application-code change in the write path; captures every writer (adapter, scripts, manual fixes); atomic with the triggering transaction; simple to test and deploy.
 **Cons**: logic lives in the database, not in Go code.
 
 ### Option B — Adapter writes intervals in application code
@@ -176,17 +176,17 @@ Two distinct response shapes depending on the endpoint's purpose:
 
 #### Sidebar — `GET /api/workspaces/:workspaceId/features?include=tasks`
 
-Sidebar only needs the current interval for each task. Uses a **LEFT JOIN 1:1** directly in the query instead of returning the full `status_timeline[]`:
+Sidebar only needs the current interval for each task — no full history. Uses a **LEFT JOIN 1:1** directly in the query; two top-level fields (`started_at`, `ended_at`), no `status_timeline[]`:
 
 ```sql
-SELECT 
+SELECT
     t.id, t.task_id, t.title, t.status, t.feature_id,
     t.repo, t.depends_on, t.blocked_reason, t.pr,
     tl.started_at,
     tl.ended_at
 FROM workspace_tasks t
-LEFT JOIN workspace_task_status_timeline tl 
-    ON tl.task_id = t.id 
+LEFT JOIN workspace_task_status_timeline tl
+    ON tl.task_id = t.id
     AND tl.ended_at IS NULL           -- active interval only
     AND tl.status = t.status          -- matches task current status
 WHERE t.workspace_id = $1
@@ -200,12 +200,13 @@ Response shape — each task has 2 new top-level fields, no `status_timeline[]`:
 ```json
 {
   "features": [{
-    "id": "feature-uuid",
+    "id": "550e8400-e29b-41d4-a716-446655440000",
     "feature_id": "task-status-transition-timeline",
+    "feature_name": "Task Status Transition Timeline",
     "tasks": [{
-      "id": "task-row-uuid",
+      "id": "660e8400-e29b-41d4-a716-446655440001",
       "task_id": "T2",
-      "title": "Render current status interval duration in sidebar",
+      "task_name": "Render sidebar duration",
       "status": "in_progress",
       "repo": "digital-factory-ui",
       "started_at": "2026-06-05T09:00:00Z",
@@ -215,30 +216,39 @@ Response shape — each task has 2 new top-level fields, no `status_timeline[]`:
 }
 ```
 
-- `started_at` = `NULL` when task has no timeline data yet (task created before trigger was installed).
-- `ended_at` is always `NULL` in this response due to JOIN condition `tl.ended_at IS NULL`.
+- `id` fields are UUIDs (database row PKs).
+- `feature_id` and `task_id` are logical text identifiers from YAML.
+- `feature_name` and `task_name` are human-readable display names.
+- `started_at` = `NULL` when task has no timeline data.
+- `ended_at` is always `NULL` in this response (JOIN on `ended_at IS NULL`).
 
 #### Task detail — `GET /api/workspaces/:workspaceId/tasks/:taskId`
 
-Returns the **full history** `status_timeline[]`:
+Returns the full history `status_timeline[]`, ordered by `started_at`:
 
 ```json
 {
-  "id": "task-row-uuid",
+  "id": "660e8400-e29b-41d4-a716-446655440001",
   "task_id": "T2",
+  "task_name": "Render sidebar duration",
   "status": "in_progress",
   "status_timeline": [
-    { "status": "todo",       "started_at": "...", "ended_at": "..." },
-    { "status": "ready",      "started_at": "...", "ended_at": "..." },
-    { "status": "in_progress","started_at": "...", "ended_at": null }
+    { "status": "todo",        "started_at": "2026-06-04T17:48:19Z", "ended_at": "2026-06-04T18:31:01Z" },
+    { "status": "ready",       "started_at": "2026-06-04T18:31:01Z", "ended_at": "2026-06-04T18:34:33Z" },
+    { "status": "in_progress", "started_at": "2026-06-04T18:34:33Z", "ended_at": null }
   ]
 }
 ```
 
+- `id` is the `workspace_tasks` row UUID (matching `workspace_task_status_timeline.task_id` FK).
+- `task_id` is the logical text identifier from YAML.
+- `task_name` is the display name (`workspace_tasks.title`; denormalized into timeline as `task_name`).
+- `status_timeline[].ended_at = null` marks the active interval.
+
 Backend read strategy for task detail:
 
-1. Run the existing task query.
-2. Batch query `workspace_task_status_timeline WHERE task_id = $1 ORDER BY started_at`.
+1. Run the existing task query to get task metadata.
+2. Batch query `workspace_task_status_timeline WHERE task_id = $1 ORDER BY started_at` (where `$1` is the `workspace_tasks.id` UUID).
 3. Attach ordered intervals as `status_timeline[]`.
 
 DTO:
@@ -253,16 +263,16 @@ type TaskStatusTimelineEntry struct {
 
 Affected endpoints:
 
-| Endpoint | Pattern |
-|---|---|
-| `GET /.../features?include=tasks` | LEFT JOIN 1:1 → `started_at` + `ended_at` top-level |
-| `GET /.../tasks/:taskId` | Batch query → full `status_timeline[]` |
-| `GET /.../features/:featureId/tasks` | Batch query → full `status_timeline[]` (same as task detail) |
+| Endpoint | Purpose | Pattern |
+|---|---|---|
+| `GET /.../features?include=tasks` | Sidebar task list — current interval only | LEFT JOIN 1:1 → `started_at` + `ended_at` top-level |
+| `GET /.../tasks/:taskId` | Single task detail — full history | Batch query → full `status_timeline[]` |
+| `GET /.../features/:featureId/tasks` | Feature-scoped task list — full history per task | Batch query → full `status_timeline[]` (same shape as task detail) |
 
 API rules:
-- Sidebar endpoint (`features?include=tasks`): `started_at` / `ended_at` are 2 top-level fields, no `status_timeline[]`.
-- Task detail + feature tasks endpoints: `status_timeline[]` is the full array, ordered by `started_at`.
-- Task filters and grouping remain based on `workspace_tasks.status`.
+- Sidebar endpoint (`features?include=tasks`): `started_at` / `ended_at` are 2 top-level fields, no `status_timeline[]`; only the active interval is returned (JOIN on `ended_at IS NULL`).
+- Task detail + feature tasks endpoints: `status_timeline[]` is the full array, ordered by `started_at`; every interval (active and closed) is included.
+- Task filters and grouping remain based on `workspace_tasks.status`, not timeline rows.
 
 ### Frontend integration — detailed UX spec
 
@@ -386,9 +396,8 @@ function buildTimelineDisplay(timeline: TaskStatusTimelineEntry[]): TimelineDisp
 
 #### Component targets
 
-Apply to both task detail UIs in the codebase:
-- `TaskDetailSheet.tsx` (sidebar sheet) — replace existing `TimelineSection` with Activities tabs
-- `TaskTabView.tsx` (full-page tab view) — replace existing `TaskActivityTimelineSection` with Activities tabs
+Apply to the task detail UI currently mounted in the codebase:
+- `FeatureTaskDrilldown.tsx` — add Activities section with Logs | Timeline tabs inside the existing drilldown view (replaces any existing activity/timeline display).
 
 ### Compatibility and rollout
 

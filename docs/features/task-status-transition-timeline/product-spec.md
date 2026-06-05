@@ -21,13 +21,17 @@ The requested behavior is: when a task changes from one status to another at
 time `T`, the previous status interval ends at `T` and the new status interval
 starts at `T`.
 
-This feature also has a concrete product requirement on both system sides:
+This feature has concrete product requirements on both system sides:
 
-- The backend must extend `GET /workspaces/:workspaceId/tasks` so each task can
-  return status timeline data for every recorded status interval.
-- The frontend task sidebar must consume that timeline, detect the task's
-  current status, and render the matching timeline entry for that current
-  status.
+- The backend must extend `GET /.../features?include=tasks` so each task returns
+  `started_at` / `ended_at` for its current status interval (sidebar pattern),
+  and `GET /.../tasks/:taskId` so each task returns the full `status_timeline[]`
+  for every recorded status interval (detail pattern).
+- The frontend task sidebar must consume the current interval, detect the task's
+  current status, and render the matching timeline entry with live elapsed time.
+- The frontend task detail must surface an **Activities** section with two
+  switchable tabs: **Logs** (activity log entries from API / YAML) and
+  **Timeline** (flow view of all status transitions from `status_timeline[]`).
 
 ## Goals
 
@@ -40,11 +44,12 @@ This feature also has a concrete product requirement on both system sides:
 - Preserve the existing workflow status names and transition rules.
 - Make the status timeline available for later audit, duration reporting, and UI
   display.
-- Extend `GET /workspaces/:workspaceId/tasks` to return the task status timeline
-  in the API response.
-- Integrate the returned timeline into the frontend task sidebar.
-- In the task sidebar, identify the task's current status and render the
-  timeline entry that corresponds to that current status.
+- Expose current status interval (`started_at` / `ended_at`) and full
+  `status_timeline[]` through existing task API endpoints.
+- Integrate the current interval into the frontend task sidebar as a live
+  `Time spent in: Xh Xm` label updated at 1000ms.
+- In the task detail, surface an Activities section with Logs and Timeline
+  tabs — Timeline renders status transitions as a flow from `status_timeline[]`.
 - If the current status timeline entry has no `ended_at`, calculate the live
   duration as `now - started_at`.
 
@@ -55,9 +60,12 @@ This feature also has a concrete product requirement on both system sides:
 - No analytics dashboard, SLA calculation, or reporting UI in v1.
 - No guarantee of perfect backfill for historical transitions that were never
   recorded explicitly before this feature.
-- No separate timeline endpoint in v1; the required timeline data is delivered
-  through `GET /workspaces/:workspaceId/tasks`.
-- No timeline rendering outside the task sidebar in v1.
+- No separate timeline endpoint in v1; timeline data is delivered through
+  existing endpoints (`features?include=tasks` for sidebar, `tasks/:taskId`
+  for detail).
+- Timeline is surfaced in the task sidebar (live interval) and task detail
+  Activities tab (full history); no timeline rendering on the feature board
+  or dashboard in v1.
 
 ## Success criteria
 
@@ -69,11 +77,15 @@ This feature also has a concrete product requirement on both system sides:
   instead of overwriting the earlier one.
 - The workflow can still read the current task status without ambiguity while
   also exposing the full status timeline.
-- `GET /workspaces/:workspaceId/tasks` returns status timeline data for each
-  task.
+- `GET /.../features?include=tasks` returns `started_at` / `ended_at` for the
+  current status interval of each task.
+- `GET /.../tasks/:taskId` returns the full `status_timeline[]` ordered by
+  `started_at`.
 - The frontend task sidebar renders the timeline entry for the task's current
   status, not a stale or mismatched status.
 - When the current status timeline entry has `ended_at = null`, the sidebar
   shows elapsed time computed from `now - started_at`.
 - When the current status timeline entry has both `started_at` and `ended_at`,
   the sidebar shows the closed interval for that status instead of a live timer.
+- The task detail Activities section renders the full status transition flow
+  from `status_timeline[]` with correct status labels and colors.
