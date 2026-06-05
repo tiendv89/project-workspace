@@ -46,6 +46,16 @@ history:
     action: stage_approved
     stage: product_spec
     note: product_spec approved; feature advanced to in_tdd / technical_design.
+  - at: 2026-06-05T17:27:18Z
+    actor: tiendv.52@gmai.com
+    action: scope_changed
+    stage: product_spec
+    note: >-
+      Post-approval relaxation (human-directed during technical-design review):
+      the TS/git orchestrator is no longer required to be byte-for-byte
+      unchanged. It may take a small additive change (declaring owner='ts' to the
+      broker); its behaviour for legacy features is still unchanged. product_spec
+      wording reconciled accordingly; stage remains approved.
 
 revalidation:
   product_spec_required: false

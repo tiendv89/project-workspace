@@ -47,11 +47,13 @@
 3. Stop the YAML→DB sync adapter from **clobbering** live DB-native rows.
 4. **Partition the broker** so the TS orchestrator never drains a Go feature's completion, and vice versa.
 
-### What must remain stable (hard constraints, from the approved spec)
-- **The TS/git orchestrator runs unchanged — no code modification.**
+### What must remain stable (hard constraints)
+- **The TS/git orchestrator's behavior for legacy features is unchanged.** It *may* be modified where that materially simplifies coexistence — e.g. to declare its `owner` to the broker — but such changes are additive and must not alter how it drives legacy git/YAML features. (This relaxes the approved product spec's stronger "no code modification" wording; the spec is to be reconciled — see "Spec divergence" below.)
 - **The frontend needs no change** — go-owned features must surface through `workflow-backend`'s existing read API.
 - **The executor and dispatcher are owner-agnostic and unchanged** (ABI-neutral; proven by `standalone-executor-hardening`).
 - **No dual-write**: a feature is driven by exactly one orchestrator.
+
+> **Spec divergence (must reconcile).** The approved `product-spec.md` states in several places that the TS orchestrator "runs unchanged — no code modification." Per human direction during design review, that is relaxed: the TS orchestrator *may* take a small additive change (e.g. declaring `owner='ts'` on broker calls). The product spec should be updated to match, with a `scope_changed` entry recorded in `status.yaml` history.
 
 ### Assumptions already fixed
 - Database is **PostgreSQL** (spec open question #1 — decided).
@@ -86,11 +88,11 @@
 - **Optional defense-in-depth**: a `BEFORE UPDATE` trigger validating `old.status → new.status` against the allowed-transition table, making the DB a *central* FSM enforcement point (matches the product thesis "rules stay as code"). Recommended but **stageable** — not required for the atomic claim itself.
 
 ### D. Broker partitioning (spec open question #7)
-- **D1 — Owner-namespaced completion queues (chosen).** Registration records `owner`; on callback the broker enqueues the completion into `broker:pending` (legacy, default) or `broker:pending:<owner>`; `list-completed` reads the caller's queue. The TS orchestrator calls with no owner ⇒ legacy queue ⇒ **unchanged**.
-  - *Pros*: hard isolation (TS literally cannot see go completions — different keyspace); no lock-and-skip semantics on a shared sorted set; TS byte-for-byte unchanged.
-  - *Cons*: small additive broker change (register/callback/list-completed become owner-aware); shared registry (`broker:reg:{handle}`) stays shared for nonce validation, which is fine.
-- **D2 — `owner` filter param on a shared `ListCompleted`.** Broker iterates the one pending set and returns only matching items; default (no owner) returns legacy-only to keep TS unchanged.
-  - *Cons*: filtering interacts awkwardly with peek-and-lock (you must avoid locking items you then skip). *Secondary — viable but messier.*
+- **D1 — Owner-namespaced completion queues, declared symmetrically (chosen).** Registration records `owner`; on callback the broker enqueues into `broker:pending:<owner>`; `list-completed` reads the caller's queue. Both orchestrators declare their owner — the Go orchestrator `'go'`, the TS orchestrator `'ts'` (a small additive change, now permitted). To stay safe-by-default, an absent owner still maps to the legacy `broker:pending` queue, so a not-yet-updated TS build degrades gracefully rather than draining go completions.
+  - *Pros*: hard isolation (different keyspace per owner — no lock-and-skip semantics on a shared sorted set); symmetric and explicit; the shared registry (`broker:reg:{handle}`) stays shared for nonce validation, which is fine.
+  - *Cons*: small additive change in the broker and in the TS orchestrator's broker calls.
+- **D2 — `owner` filter param on a single shared `ListCompleted`.** Broker keeps one pending set and returns only items matching the caller's owner.
+  - *Cons*: filtering interacts awkwardly with peek-and-lock (must avoid locking items it then skips). *Secondary — viable but messier than per-owner queues.*
 - **Dispatch stream stays shared.** The executor is owner-agnostic, so the Go orchestrator enqueues `DispatchJob`s onto the **same** `platform:dispatch` stream and reuses the existing dispatcher unchanged; only the **completion** path is partitioned. No dispatcher change.
 
 ### E. Scope of the Go orchestrator in v1
@@ -134,7 +136,7 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 - **Dependency unblock / auto-ready**: on marking a task `done`, the orchestrator advances dependents whose `depends_on` are all `done` to `ready` in the same transaction.
 
 ### 4.4 Dispatch + reap over the partitioned broker (repos: `workflow`)
-- **Broker (Go)** gains owner-awareness (design D1): `Register` records the owner; callback enqueues into the owner's pending queue; `ListCompleted` reads the caller's queue (default = legacy). `Store` interface (`broker/internal/store/store.go:57-88`) and the `/register`, `/callback`, `/list-completed` handlers (`server.go`) change additively. The TS orchestrator and its `HttpBrokerAdapter` are untouched (they never pass an owner).
+- **Broker (Go)** gains owner-awareness (design D1): `Register` records the owner; callback enqueues into the owner's pending queue; `ListCompleted` reads the caller's queue (absent owner ⇒ legacy queue, for graceful degradation). `Store` interface (`broker/internal/store/store.go:57-88`) and the `/register`, `/callback`, `/list-completed` handlers (`server.go`) change additively. The TS orchestrator takes a small additive change to declare `owner='ts'` on its broker calls (`HttpBrokerAdapter`) so its completions land in — and are drained from — the `ts` queue.
 - **Go orchestrator** registers each handle with `owner='go'` + `HandleMetadata{ feature_id, task_id, … }`, enqueues a `DispatchJob` (`abi/src/types.ts:50-96`) onto the shared `platform:dispatch` stream, and drains its own completion queue, resolving each completion back to a DB row by `metadata.feature_id`/`metadata.task_id` (the DB analogue of `reap-loop.ts:131-175`) — then writes the resulting status transition to Postgres.
 - **Executor + dispatcher unchanged**; `LOG_SINK=none` already keeps the standalone path's logs off the management repo.
 
@@ -143,7 +145,7 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 - Optional, additive: expose `owner` in the feature/task DTO so the UI can badge DB-native features. Not required for v1.
 
 ### Why this design
-- Smallest change that meets every hard constraint: TS unchanged (separate broker keyspace + adapter blind to `'go'`), FE unchanged (same schema, same read API), executor/dispatcher unchanged (shared dispatch stream, owner-agnostic).
+- Smallest change that meets every hard constraint: TS unchanged for legacy features (separate broker keyspace + adapter blind to `'go'`; only an additive `owner='ts'` declaration), FE unchanged (same schema, same read API), executor/dispatcher unchanged (shared dispatch stream, owner-agnostic).
 - The `owner` discriminator + scoped reconciliation is the precise mechanism that lets one schema host two writers without dual-write.
 
 ### Compatibility / operational implications
@@ -186,7 +188,8 @@ T1: Schema migration — add nullable `owner`, relax source_path, indexes       
   └── Can begin now — no blockers
   │
 T3: Broker owner-partitioning — namespaced completion queues, owner-aware       [workflow]
-    register/callback/list-completed; legacy default keeps TS unchanged
+    register/callback/list-completed; TS orchestrator declares owner='ts'
+    (small additive change); absent-owner ⇒ legacy queue for safe default
   └── Can begin now — no blockers (independent of schema)
   │
   ├── T2: Scope YAML→DB sync to `owner IS NULL` (never upsert/delete 'go' rows)  [workspace-github-adapter]
@@ -226,11 +229,11 @@ Parallelism:
 | Repo (`workspace.yaml` id) | Change | Tasks |
 |---|---|---|
 | `workspace-github-adapter` | `owner` migration + relaxed `source_path`; scope sync upserts/deletes to `owner IS NULL` | T1, T2 |
-| `workflow` (`agent-workflow`) | Broker owner-partitioning; new Go orchestrator (write path, atomic claim, dispatch+reap loop); coexistence integration test | T3, T4, T5, T7 |
+| `workflow` (`agent-workflow`) | Broker owner-partitioning **+ TS orchestrator declares `owner='ts'`** (small additive change); new Go orchestrator (write path, atomic claim, dispatch+reap loop); coexistence integration test | T3, T4, T5, T7 |
 | `workflow-backend` | Verify go-owned rows surface via existing read API; optional `owner` DTO field | T6 |
 | `management-repo` | Feature docs / status only (this design, task files) | n/a (docs) |
 
-No task writes to more than one repo (one-repo rule satisfied). The TS orchestrator, dispatcher, and executors are **not** modified.
+No task writes to more than one repo (one-repo rule satisfied). The **dispatcher and executors are not modified**; the TS orchestrator takes only the small additive `owner='ts'` broker-call change (T3) and is otherwise unchanged for legacy features.
 
 ---
 
@@ -239,7 +242,7 @@ No task writes to more than one repo (one-repo rule satisfied). The TS orchestra
 **Testing expectations**
 - T1: migration up/down tested against a scratch DB; existing adapter + read-API suites stay green.
 - T2: adapter tests proving a sync cycle **does not** create, update, or delete `owner='go'` rows while still reconciling legacy rows normally.
-- T3: broker tests — a `go`-owner callback lands only in the go queue; a no-owner `list-completed` returns only legacy completions (TS-unchanged guarantee); registry/nonce validation still shared.
+- T3: broker tests — a `go`-owner callback lands only in the `go` queue and a `ts`-owner callback only in the `ts` queue; each `list-completed` returns only its owner's completions; absent-owner degrades to the legacy queue; registry/nonce validation still shared. Plus a TS-orchestrator test that it declares `owner='ts'` and still drives legacy features unchanged.
 - T4: claim concurrency test — N racing claimers, exactly one wins `ready→in_progress` (the `0-rows` loser path); FSM guard rejects illegal transitions.
 - T5: completion routed back to the correct DB row and status written; blocked path writes `blocked_reason`.
 - T7: the load-bearing coexistence test — go feature and legacy feature driven concurrently; **assert the TS orchestrator never drains a go completion** and the sync never deletes go rows.
@@ -265,7 +268,7 @@ No task writes to more than one repo (one-repo rule satisfied). The TS orchestra
 - **#2 API surface** → in-process pgx; no HTTP write API in v1 (§3-B, §4.3).
 - **#3 Agent write path** → Go orchestrator writes directly to Postgres; executor never touches the DB (§4.3).
 - **#4 Claim mechanism** → conditional guarded `UPDATE` on `status` (§3-C, §4.3); optional FSM trigger deferred.
-- **#7 Broker partitioning** → owner-namespaced completion queues; shared dispatch stream; TS unchanged (§3-D, §4.4).
+- **#7 Broker partitioning** → owner-namespaced completion queues declared symmetrically; shared dispatch stream; TS takes a small additive `owner='ts'` change (§3-D, §4.4).
 - **#8 Shared DB & schema ownership** → one shared Postgres + one schema; write authority partitioned by `owner`; migrations owned by `workspace-github-adapter` (§4).
 
 ---
