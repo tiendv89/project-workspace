@@ -1,24 +1,118 @@
 id: T5
 title: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch reconciler"
-
 repo: workflow
-status: todo
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
-
-branch: null
-
+blocked_context: null
+branch: feature/standalone-executor-hardening-T5
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-31T00:05:23+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T19:48:16.388Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/242
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/391
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-05-31T00:05:23+0700
     note: Task created during tech-lead Phase 2 task breakdown.
+  - action: ready
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:41:29.345Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:44:30.280Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:44:44.559Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/138,
+      github.com/tiendv89/agent-workflow/pull/72,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
+      reconciler standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:48:41+0000
+    note: executor work phase begun.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-31T01:01:23+0700
+    note: Manual recovery reset to ready after executor restart. Task was stuck in
+      in_progress with no implementation PR (pr.url null); resetting to ready so
+      it can be re-claimed.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T18:03:34.633Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T18:03:41.600Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/138,
+      github.com/tiendv89/agent-workflow/pull/72,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
+      reconciler standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-05-31T01:45:25+0700
+    note: Manual recovery reset to ready after killing a hung executor. The claimed
+      run (18:03:34Z) stalled — claude process parked in futex_wait with a
+      zombie child, no file writes after 18:04Z, no result.json, pr.url still
+      null. Resetting in_progress → ready so the task can be re-claimed.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:08:29.529Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:08:35.772Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/standalone-executor-hardening/technical-design.md,
+      docs/features/standalone-executor-hardening/technical-design.md,
+      github.com/tiendv89/agent-workflow/pull/138"
+    rag_query: "Orchestrator: QueueDispatchAdapter, drop socket/creds, dispatch
+      reconciler standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:12:46+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/242"
+    executor_audit:
+      cost_usd: 0.876477
+      claude:
+        token_usage:
+          input: 334
+          output: 58365
+          model: claude-sonnet-4-6
+    at: 2026-05-30T19:38:00.756Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-30T19:40:05.049Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: "All T5 subtasks implemented. CI passed (4/4 checks success). No 🔴/🟡
+      findings. Two 🟢 nits: dead `fields` array in queue-dispatch.ts; redundant
+      broker.register in reconciler (idempotent, acknowledged in comments)."
+    review_url: https://github.com/tiendv89/agent-workflow/pull/242#pullrequestreview-4395857452
+    at: 2026-05-30T19:46:21.311Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T19:48:16.388Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

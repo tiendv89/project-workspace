@@ -1,22 +1,21 @@
 id: T2
 title: "Broker: GET /registry-size (completion-only; no dispatch state)"
-
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-
-branch: null
-
+blocked_context: null
+branch: feature/standalone-executor-hardening-T2
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-05-31T00:05:23+0700
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-05-30T18:13:06.698Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/239
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/389
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -26,3 +25,48 @@ log:
     by: tiendv.52@gmai.com
     at: 2026-05-30T17:09:10Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:21:15.823Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:21:32.993Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/68,
+      docs/features/runtime-portable-architecture/technical-design.md,
+      docs/features/runtime-portable-architecture/technical-design.md"
+    rag_query: "Broker: GET /registry-size (completion-only; no dispatch state)
+      standalone-executor-hardening"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: 2026-05-30T17:25:14+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/239"
+    executor_audit:
+      cost_usd: 0.33695400000000003
+      claude:
+        token_usage:
+          input: 203
+          output: 22423
+          model: claude-sonnet-4-6
+    at: 2026-05-30T17:39:43.386Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-05-30T17:58:24.311Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: CI passed (4 checks). Implementation is narrowly scoped to GET
+      /registry-size, adds RegistrySize to the Store interface implemented by
+      both MemoryStore and RedisStore, uses correct key pattern broker:reg:*
+      matching regKey(handle). No dispatch state or endpoints added. Tests cover
+      empty, N-registered, and post-ack cases for both backends. Squash-merged.
+    at: 2026-05-30T18:04:13.314Z
+  - action: done
+    by: norepy@tiendv.dev
+    at: 2026-05-30T18:13:06.698Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
