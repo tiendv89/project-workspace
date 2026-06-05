@@ -73,6 +73,14 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
+  # Go/Postgres orchestrator (feature: workflow-db) — the DB-writing successor to
+  # the TS orchestrator in `workflow`. GitHub repo to be created by the human.
+  - id: workflow-orchestrator
+    github: git@github.com:tiendv89/workflow-orchestrator.git
+    local_path: env:WORKFLOW_ORCHESTRATOR_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
   - id: digital-factory-ui
     github: git@github.com:tiendv89/digital-factory-ui.git
     local_path: env:DIGITAL_FACTORY_UI_LOCAL_PATH
