@@ -1,5 +1,5 @@
 feature_id: workflow-db
-title: Workflow State — Git/YAML to Relational Database
+title: Workflow State Database — Agent Write Path and Relational Storage
 
 feature_status: in_design
 current_stage: product_spec
