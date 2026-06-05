@@ -122,8 +122,8 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 - The reconciliation deletes (`DeleteWorkspaceFeaturesNotIn` / task equivalents, `adapter.go:562-617`) must be **scoped to `owner IS NULL`** so DB-native features/tasks are never deleted for being absent from YAML.
 - Net effect: the adapter's behavior for legacy features is identical to today; it is simply blind to `'go'` rows.
 
-### 4.3 Go orchestrator write path + atomic claim (repo: `workflow`)
-- New Go service under `agent-workflow/runtime/` (e.g. `runtime/orchestrator-go/`), with its own pgx access layer to the shared schema (sqlc against the same migrations, or a small vendored query package).
+### 4.3 Go orchestrator write path + atomic claim (repo: `workflow-orchestrator` — new)
+- New Go service in its **own dedicated repo** (`workflow-orchestrator`, pending creation + registration), with its own pgx access layer to the shared schema (sqlc against the same migrations owned by `workspace-github-adapter`, or a small shared query package). It speaks the broker/dispatch protocol over Redis/HTTP and re-declares the ABI types in Go (the ABI is TypeScript).
 - **Create**: a go-owned feature is `INSERT`ed into `workspace_features` with `owner='go'` (and its tasks into `workspace_tasks`), `source_path = NULL`.
 - **Atomic claim** (`ready → in_progress`):
   ```sql
@@ -167,13 +167,13 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 - The Go orchestrator dispatch+reap loop depends on **both** the write path/claim (schema) **and** the partitioned broker.
 
 **External / cross-repo**
-- Migrations are owned by `workspace-github-adapter` but consumed by `workflow` (Go orchestrator) and `workflow-backend` (read API). The migration must be applied to the shared DB before the Go orchestrator runs. **This is a cross-repo release-ordering dependency**, not a code dependency.
+- Migrations are owned by `workspace-github-adapter` but consumed by `workflow-orchestrator` (Go orchestrator) and `workflow-backend` (read API). The migration must be applied to the shared DB before the Go orchestrator runs. **This is a cross-repo release-ordering dependency**, not a code dependency. (Schema-in-one-repo, consumed-in-three is itself a coupling worth revisiting — see open decisions.)
 
 **Vendor/tooling**
 - Postgres (decided), pgx/v5 (existing), goose (existing migration tool), sqlc (existing). Redis (existing broker). No new vendor choices.
 
 **Blocking decisions still open for review (do not silently resolve)**
-- **Go orchestrator location** — recommended `workflow` (`agent-workflow/runtime/`) for ABI/broker cohesion; alternatives are `workflow-backend` (DB-code reuse, but conflates the read service) or `workspace-github-adapter` (owns schema/writes, but conflates the sync adapter). **Decision needed at design approval.**
+- **Go orchestrator location — recommendation: a NEW dedicated repo** (proposed id `workflow-orchestrator`, name TBD by human). Rationale: the Go orchestrator is the successor that will *replace* the TS orchestrator, so it should not live inside `agent-workflow` (which holds the TS orchestrator being retired). The ABI is TypeScript (no Go type reuse from co-location) and the broker/dispatch are reached over Redis/HTTP (language-agnostic), so co-location buys nothing; a clean repo gives independent module/CI/release and a clean retirement path for the TS runtime. Alternatives (rejected): `workflow` (couples successor to the retiring system), `workflow-backend` (conflates the read service), `workspace-github-adapter` (conflates the sync adapter). **Prerequisite: the repo must be created on GitHub and registered in `workspace.yaml` (`repos[].id`) before Phase 2 can assign tasks to it.**
 - **Status-transition validation trigger** — include as DB-central enforcement now, or stage it. Recommended: stage after the atomic claim is proven.
 - **Multi-tenancy** — schema has no org/tenant column; `HandleMetadata.TenantID` is unused. v1 stays `workspace_id`-scoped; org scoping is a forward extension (flagged, not designed here).
 
@@ -186,7 +186,7 @@ The YAML→DB sync must treat the DB as authoritative for `owner = 'go'` rows:
 > Anticipated breakdown for planning only — task YAMLs are **not** created in Phase 1. Finalized in Phase 2 (tasks stage). Each task touches exactly one repo.
 
 ```
-External decision: Go-orchestrator repo location (recommend `workflow`) ── resolve at design approval; gates T4/T5/T7
+External prerequisite: create + register the new `workflow-orchestrator` repo in workspace.yaml ── gates T4/T5/T7 (their tasks cannot be authored until the repo id exists)
 
 T1: Schema migration — add nullable `owner`, relax source_path, indexes        [workspace-github-adapter]
   └── Can begin now — no blockers
@@ -199,11 +199,11 @@ T3: Broker owner-partitioning — namespaced completion queues, owner-aware     
   ├── T2: Scope YAML→DB sync to `owner IS NULL` (never upsert/delete 'go' rows)  [workspace-github-adapter]
   │     └── BLOCKED on T1 (owner column must exist to scope reconciliation)
   │
-  └── T4: Go orchestrator write path — pgx layer, create go feature/tasks,       [workflow]
+  └── T4: Go orchestrator write path — pgx layer, create go feature/tasks,       [workflow-orchestrator (new)]
           atomic guarded-UPDATE claim, status + activity writes, auto-ready
         └── BLOCKED on T1 (schema: owner column + nullable source_path)
         │
-        T5: Go orchestrator dispatch + reap loop — register(owner='go'),          [workflow]
+        T5: Go orchestrator dispatch + reap loop — register(owner='go'),          [workflow-orchestrator (new)]
             enqueue DispatchJob on shared stream, drain go completion queue,
             resolve completion → DB transition
           └── BLOCKED on T4 (write path + claim must exist)
@@ -214,14 +214,14 @@ T3: Broker owner-partitioning — namespaced completion queues, owner-aware     
           └── BLOCKED on T1 (owner column) for the optional DTO field
           └── BLOCKED on T4 (needs go-owned rows written to verify against)
 
-T7: End-to-end coexistence integration test — drive a go feature to `done` in    [workflow]
+T7: End-to-end coexistence integration test — drive a go feature to `done` in    [workflow-orchestrator (new)]
     parallel with a legacy feature; assert TS never drains a go completion;
     assert both surface via the read API; assert sync never deletes go rows
   └── BLOCKED on T2 (sync scoping), T5 (full go loop), T6 (read-API verification)
 
 Parallelism:
 - T1 and T3 run in parallel immediately.
-- T2 and T4 run in parallel once T1 lands (different concerns, same repo for T2; T4 in `workflow`).
+- T2 and T4 run in parallel once T1 lands (T2 in `workspace-github-adapter`; T4 in the new `workflow-orchestrator` repo).
 - T5 and T6 run in parallel once their blockers clear (T5 after T3+T4; T6 after T1+T4).
 - T7 is the final integration gate.
 ```
@@ -233,9 +233,10 @@ Parallelism:
 | Repo (`workspace.yaml` id) | Change | Tasks |
 |---|---|---|
 | `workspace-github-adapter` | `owner` migration + relaxed `source_path`; scope sync upserts/deletes to `owner IS NULL` | T1, T2 |
-| `workflow` (`agent-workflow`) | Broker owner-partitioning **+ TS orchestrator declares `owner='ts'`** (small additive change); new Go orchestrator (write path, atomic claim, dispatch+reap loop); coexistence integration test | T3, T4, T5, T7 |
+| `workflow` (`agent-workflow`) | Broker owner-partitioning **+ TS orchestrator declares `owner='ts'`** (small additive change) | T3 |
+| `workflow-orchestrator` (**new repo — must be created + registered first**) | New Go orchestrator: write path, atomic claim, dispatch+reap loop; coexistence integration test | T4, T5, T7 |
 | `workflow-backend` | Verify go-owned rows surface via existing read API; optional `owner` DTO field | T6 |
-| `management-repo` | Feature docs / status only (this design, task files) | n/a (docs) |
+| `management-repo` | Feature docs / status only (this design, task files); register the new repo in `workspace.yaml` | n/a (docs/config) |
 
 No task writes to more than one repo (one-repo rule satisfied). The **dispatcher and executors are not modified**; the TS orchestrator takes only the small additive `owner='ts'` broker-call change (T3) and is otherwise unchanged for legacy features.
 
