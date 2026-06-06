@@ -1,0 +1,61 @@
+feature_id: m3-agent-chat
+title: Agent Chat — Conversational Interface for Feature Authoring
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft the technical design for review.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-06T14:45:04+0700
+    review_comment: >-
+      Approved. Chat panel always-on on the right side of the feature view,
+      slash-command skill picker modelled on Claude Code, agent drafts artifacts
+      through workflow skills without bypassing gates, human approves via
+      existing flow. No Hermes dependency — Claude API through workflow-backend.
+    review_history:
+      - review_status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: 2026-06-06T14:45:04+0700
+        review_comment: >-
+          Approved. Chat panel always-on on the right side of the feature view,
+          slash-command skill picker modelled on Claude Code, agent drafts
+          artifacts through workflow skills without bypassing gates, human
+          approves via existing flow. No Hermes dependency — Claude API through
+          workflow-backend.
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-06-06T14:45:04+0700
+    by: pye@swellnetwork.io
+    action: approve_stage
+    stage: product_spec
+    from_feature_status: in_design
+    to_feature_status: in_tdd
+    from_current_stage: product_spec
+    to_current_stage: technical_design
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
