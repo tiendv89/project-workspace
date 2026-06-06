@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: artifact_saved handler + document refresh"
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T3
   - T5
@@ -11,10 +11,10 @@ branch: feature/m3-agent-chat-T6
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-06T11:20:31.846Z
+  last_updated_at: 2026-06-06T11:22:36.779Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/110
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/465
   status: open
@@ -56,3 +56,7 @@ log:
     by: pentative@gmail.com
     note: Reviewer approved.
     at: 2026-06-06T11:20:31.846Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-06T11:22:36.779Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
