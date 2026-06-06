@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: artifact_saved handler + document refresh"
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T3
   - T5
@@ -10,12 +10,14 @@ blocked_context: null
 branch: feature/m3-agent-chat-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-06T11:22:36.779Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/110
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/465
+  status: open
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -25,3 +27,36 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-06T11:02:07.021Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-06T11:04:23.424Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-06T11:04:33.185Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: artifact_saved handler + document refresh
+      m3-agent-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-06T11:07:36+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/110"
+    at: 2026-06-06T11:14:36.064Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-06T11:16:36.446Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-06T11:20:31.846Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-06T11:22:36.779Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
