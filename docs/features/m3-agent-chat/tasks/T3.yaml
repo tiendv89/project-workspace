@@ -1,23 +1,19 @@
 id: T3
 title: "digital-factory-ui: right-panel layout + chat UI + SSE client"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T3
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-06T09:30:15.123Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -27,3 +23,7 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-06T09:17:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-06T09:30:15.123Z
+    note: Claimed via git-based claim protocol.
