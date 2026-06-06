@@ -362,7 +362,7 @@ already wired in `FeatureTabView` — so the saved document appears without a pa
 
 | Dependency | Type | Status | Blocker? |
 |---|---|---|---|
-| `hermes-agent` GitHub repo | Existing fork | Exists at `/Users/pye/code/voyager/hermes-agent` | **Yes — must be added to `workspace.yaml`** before T1 |
+| `hermes-agent` GitHub repo | Existing fork | ✅ Registered in `workspace.yaml` (`id: hermes-agent`, `base_branch: dev`) | Resolved |
 | `anthropic` Python SDK | PyPI optional dep | Already in hermes-agent `pyproject.toml` extras | T1 — ensure `anthropic` extra is installed |
 | `fastapi`, `uvicorn`, `asyncpg` | PyPI | `fastapi`+`uvicorn` already direct deps; `asyncpg` must be added | T1 — add `asyncpg` to `pyproject.toml` |
 | `ANTHROPIC_API_KEY` | Env var | Not yet in hermes-agent deployment env | **Yes — must be provisioned before T1 testable** |
@@ -375,7 +375,7 @@ already wired in `FeatureTabView` — so the saved document appears without a pa
 | `NEXT_PUBLIC_WORKFLOW_API_URL` | Env var | Already in digital-factory-ui | No — reused as-is |
 
 **Unresolved at design time:**
-- `hermes-agent` not yet in `workspace.yaml` — **D1, human action required before T1**.
+- ✅ `hermes-agent` added to `workspace.yaml` (`base_branch: dev`) — D1 resolved.
 - `GITHUB_TOKEN` `contents:write` scope must be confirmed for GitHub Contents API PUT
   (different from git push).
 
@@ -384,24 +384,24 @@ already wired in `FeatureTabView` — so the saved document appears without a pa
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Add hermes-agent repo to workspace.yaml (repos[]) — human action
-  └── Required before T1 can be claimed.
+✅ D1 resolved — hermes-agent registered in workspace.yaml (base_branch: dev)
 
 T1: hermes-agent — workflow_gateway/ + workflow_plugin/ (read tools)
-  └── BLOCKED on D1 (repo must be registered)
-      Once D1 done: add workflow_gateway/ (swell-hermes pattern),
+  └── Can begin now — no blockers
+      Add workflow_gateway/ (swell-hermes pattern),
       workflow_plugin/ with read tools, hermes_home/config.yaml,
       asyncpg dep, Postgres migration.
+      Branch off: dev
 
 T1b: workflow-backend — ChatProxyHandler + 2 proxy routes
-  └── BLOCKED on D1 (HERMES_AGENT_URL known after hermes-agent is registered)
+  └── Can begin now — no blockers
       new internal/handler/chat_proxy.go; promote gin-contrib/sse
 
 T2: digital-factory-ui — right-panel layout + chat UI + fetch-event-source client
   └── Can begin now — no blockers
       (mock SSE locally; wire to workflow-backend /chat once T1b merges)
 
-  T1, T1b, and T2 all unblock from D1; T2 can start without D1.
+  T1, T1b, and T2 all run in parallel (Wave 1)
 
   T3: digital-factory-ui — SlashCommandPicker
     └── BLOCKED on T2 (PromptInput must be in place)
@@ -427,7 +427,7 @@ T2: digital-factory-ui — right-panel layout + chat UI + fetch-event-source cli
 | `hermes-agent` *(existing fork)* | Add `workflow_gateway/` module + `workflow_plugin/` + `asyncpg` dep + Postgres migrations | Turns the fork into a deployable multi-tenant gateway compatible with our platform |
 | `workflow-backend` | New `internal/handler/chat_proxy.go`; 2 new routes; `HERMES_AGENT_URL` config; promote `gin-contrib/sse` | SSE proxy — forwards chat traffic; keeps `HERMES_AGENT_URL` server-side |
 | `digital-factory-ui` | New `src/features/agent-chat/`; new `src/services/workflow-backend/chat.ts`; modify `FeatureSessionPage`; add `@microsoft/fetch-event-source` | Right-panel layout, chat UI, SSE client |
-| `management-repo` | Add `hermes-agent` entry to `workspace.yaml → repos[]` | Register the forked repo in workspace |
+| `management-repo` | ✅ `hermes-agent` already added to `workspace.yaml → repos[]` (`base_branch: dev`) | Done |
 
 ---
 
