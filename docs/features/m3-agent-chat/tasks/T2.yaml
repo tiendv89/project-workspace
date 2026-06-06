@@ -1,0 +1,29 @@
+id: T2
+title: "workflow-backend: ChatProxyHandler SSE proxy"
+repo: workflow-backend
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-chat-T2
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: pye@swellnetwork.io
+    at: 2026-06-06T16:12:26+0700
+    note: Task created from approved task breakdown.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-06T09:17:13Z
+    note: Task activated on tasks-stage approval — dependencies met.
