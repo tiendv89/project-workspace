@@ -1,39 +1,43 @@
 id: T5
-title: "hermes-agent: write tools + artifact_saved event"
+title: 'hermes-agent: write tools + artifact_saved event'
 repo: hermes-agent
 status: in_progress
 depends_on:
-  - T1
+- T1
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-06T10:26:37.208Z
+  last_updated_at: 2026-06-06T10:29:33+0000
 pr:
-  url: ""
+  url: ''
   status: not_created
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/464
   status: open
 log:
-  - action: created
-    by: pye@swellnetwork.io
-    at: 2026-06-06T16:12:26+0700
-    note: Task created from approved task breakdown.
-  - action: ready
-    by: pentative@gmail.com
-    at: 2026-06-06T10:22:26.474Z
-    note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: pentative@gmail.com
-    at: 2026-06-06T10:26:37.208Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: pentative@gmail.com
-    at: 2026-06-06T10:26:46.775Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "hermes-agent: write tools + artifact_saved event m3-agent-chat"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: pye@swellnetwork.io
+  at: 2026-06-06T16:12:26+0700
+  note: Task created from approved task breakdown.
+- action: ready
+  by: pentative@gmail.com
+  at: 2026-06-06 10:22:26.474000+00:00
+  note: Task activated — dependency T1 merged and marked done.
+- action: claimed
+  by: pentative@gmail.com
+  at: 2026-06-06 10:26:37.208000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: pentative@gmail.com
+  at: 2026-06-06 10:26:46.775000+00:00
+  rag_context_injected: false
+  rag_summary: query_returned_no_chunks
+  rag_query: 'hermes-agent: write tools + artifact_saved event m3-agent-chat'
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: pentative@gmail.com
+  at: 2026-06-06T10:29:33+0000
+  note: executor work phase begun.
