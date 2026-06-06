@@ -1,18 +1,18 @@
 id: T1
 title: "hermes-agent: workflow_gateway + workflow_plugin read tools"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T1
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-06T10:21:46.240Z
-  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-06T10:22:26.460Z
+  last_updated_by: pentative@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/1
-  status: open
+  status: merged
 workspace_pr:
   status: open
   url: https://github.com/tiendv89/project-workspace/pull/460
@@ -71,3 +71,7 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer approved.
     at: 2026-06-06T10:21:46.240Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-06T10:22:26.460Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
