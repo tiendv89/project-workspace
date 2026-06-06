@@ -1,7 +1,7 @@
 id: T5
 title: "hermes-agent: write tools + artifact_saved event"
 repo: hermes-agent
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m3-agent-chat-T5
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-06T10:46:25.323Z
+  last_updated_at: 2026-06-06T10:52:17.331Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/2
   status: open
