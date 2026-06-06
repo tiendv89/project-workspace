@@ -2,8 +2,8 @@ feature_id: m3-agent-chat
 title: Agent Chat — Conversational Interface for Feature Authoring
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Draft the technical design for review.
+current_stage: tasks
+next_action: Produce task breakdown (tasks.md + tasks/T<n>.yaml) for review.
 
 stages:
   product_spec:
@@ -26,11 +26,23 @@ stages:
           approves via existing flow. No Hermes dependency — Claude API through
           workflow-backend.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pye@swellnetwork.io
+    reviewed_at: 2026-06-06T16:09:56+0700
+    review_comment: >-
+      Approved. hermes-agent fork + workflow_gateway (swell-hermes pattern) +
+      workflow_plugin (4 tools). workflow-backend adds transparent SSE proxy.
+      D1 resolved — hermes-agent registered in workspace.yaml (base_branch: dev).
+      T1, T1b, T2 unblocked and ready to run in parallel.
+    review_history:
+      - review_status: approved
+        reviewed_by: pye@swellnetwork.io
+        reviewed_at: 2026-06-06T16:09:56+0700
+        review_comment: >-
+          Approved. hermes-agent fork + workflow_gateway (swell-hermes pattern) +
+          workflow_plugin (4 tools). workflow-backend adds transparent SSE proxy.
+          D1 resolved — hermes-agent registered in workspace.yaml (base_branch: dev).
+          T1, T1b, T2 unblocked and ready to run in parallel.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -53,6 +65,14 @@ history:
     to_feature_status: in_tdd
     from_current_stage: product_spec
     to_current_stage: technical_design
+  - at: 2026-06-06T16:09:56+0700
+    by: pye@swellnetwork.io
+    action: approve_stage
+    stage: technical_design
+    from_feature_status: in_tdd
+    to_feature_status: in_tdd
+    from_current_stage: technical_design
+    to_current_stage: tasks
 
 revalidation:
   product_spec_required: false
