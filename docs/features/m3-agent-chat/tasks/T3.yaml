@@ -40,3 +40,7 @@ log:
     rag_query: "digital-factory-ui: right-panel layout + chat UI + SSE client
       m3-agent-chat"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: norepy@tiendv.dev
+    at: "2026-06-06T09:33:47+0000"
+    note: executor work phase begun.
