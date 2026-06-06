@@ -1,29 +1,83 @@
 id: T1
 title: "hermes-agent: workflow_gateway + workflow_plugin read tools"
 repo: hermes-agent
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_at: 2026-06-06T10:22:26.460Z
+  last_updated_by: pentative@gmail.com
 pr:
-  url: ""
-  status: not_created
-
-workspace_pr: null
-
+  url: https://github.com/tiendv89/hermes-agent/pull/1
+  status: merged
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/460
 log:
   - action: created
-    by: pye@swellnetwork.io
     at: 2026-06-06T16:12:26+0700
+    by: pye@swellnetwork.io
     note: Task created from approved task breakdown.
   - action: ready
+    at: 2026-06-06 09:17:13+00:00
     by: pye@swellnetwork.io
-    at: 2026-06-06T09:17:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    at: 2026-06-06 09:27:09.974000+00:00
+    by: norepy@tiendv.dev
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    at: 2026-06-06 09:27:23.190000+00:00
+    by: norepy@tiendv.dev
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+    rag_context_injected: true
+    rag_query: "hermes-agent: workflow_gateway + workflow_plugin read tools m3-agent-chat"
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/handoffs/handoff.md,
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      docs/features/adding-hermes-executor/handoffs/handoff.md"
+  - action: started
+    at: 2026-06-06T09:31:08+0000
+    by: norepy@tiendv.dev
+    note: executor work phase begun.
+  - action: run_completed
+    by: norepy@tiendv.dev
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/1"
+    at: 2026-06-06T09:50:22.415Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-06T09:52:47.523Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer requested changes.
+    at: 2026-06-06T10:01:02.157Z
+  - action: fix_started
+    by: pentative@gmail.com
+    at: 2026-06-06T10:02:13.776Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: pentative@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/1"
+    at: 2026-06-06T10:12:29.284Z
+  - action: reviewer_started
+    by: noreply@tiendv.dev
+    at: 2026-06-06T10:13:36.807Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer approved.
+    at: 2026-06-06T10:21:46.240Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-06T10:22:26.460Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-06T10:22:38.429Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Base branch was modified. Review and try the merge
+      again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
