@@ -10,237 +10,290 @@
 
 ### digital-factory-ui
 - Next.js 16.2 (App Router), React 19, TailwindCSS 4, HeroUI v3.
-- `FeatureSessionPage` renders a vertical stack: `WorkspaceSessionShell` (header) →
-  `FeatureTabView` (tabs: Product Spec / Technical Design / Tasks / Logs).
-- `WorkspaceSessionShell` layout: `flex h-screen flex-col`. The children area is
-  `flex min-h-0 flex-1 flex-col overflow-hidden` — a full-height column with no
-  horizontal split.
-- API calls use a thin `fetch`-based `request<T>()` wrapper in
-  `src/services/workflow-backend/client.ts`.
-- **No SSE/EventSource client code exists anywhere in the codebase.**
-- **No chat UI components exist.** voyager (`/Users/pye/code/voyager/voyager-interface`)
-  has production-ready chat primitives (`Conversation`, `MessageThread`, `Message`,
-  `PromptInput`, `Loader`) that target the same HeroUI + TailwindCSS stack.
+- `FeatureSessionPage` renders `WorkspaceSessionShell` (header) → `FeatureTabView`
+  (tabs: Product Spec / Technical Design / Tasks / Logs).
+- `WorkspaceSessionShell` children area: `flex min-h-0 flex-1 flex-col overflow-hidden`
+  — a full-height column with no horizontal split.
+- API calls: thin `fetch`-based `request<T>()` in `src/services/workflow-backend/client.ts`.
+- **No SSE/streaming client code exists.** voyager uses `@microsoft/fetch-event-source`;
+  that library is not in the current dep tree.
+- **No chat UI components.** voyager (`voyager-interface`) has production-ready primitives
+  (`Conversation`, `MessageThread`, `Message`, `MessageContent`, `PromptInput`, `Loader`)
+  on the same HeroUI + TailwindCSS stack — directly portable.
 
 ### workflow-backend
-- Go 1.25, Gin HTTP framework.
-- Single handler file (`internal/handler/workspace.go`) wired through a `Service`
-  interface. All routes are read-only GETs + a POST `/sync`.
-- `gin-contrib/sse v1.1.1` is already in `go.sum` as an indirect dep via Gin — no new
-  import needed for SSE primitives.
-- **No Anthropic/Claude SDK in `go.mod`.** Must be added.
-- **No streaming endpoints.** Every handler calls `response.RespondOK(c, result)` for
-  a synchronous JSON response.
-- `internal/adapter/rpc.go` calls `workspace-github-adapter` for import/sync. The
-  adapter's GitHub client (`workspace-github-adapter/internal/github/client.go`) is
-  read-only (GET only). Writes are not exposed via the adapter RPC layer.
+- Go 1.25, Gin. All routes are synchronous JSON. No Claude/Anthropic code.
+- The adapter layer (`internal/adapter/rpc.go`) calls `workspace-github-adapter` for
+  import/sync. No write operations exposed via that RPC layer.
+- `gin-contrib/sse` is an indirect dep but is never used.
+- **No changes needed to workflow-backend for this feature.**
 
-### workspace-github-adapter
-- Has a GitHub REST API client but only implements GET operations (reads YAML/Markdown
-  from a repo tree).
-- No file-write (PUT `contents`) operation exists.
+### voyager_agent (reference implementation — M2 Hermes pattern)
+- Python FastAPI service, port 8080.
+- **Transport:** HTTP POST → Server-Sent Events (SSE), `text/event-stream`.
+- **Session model:** server-assigned UUID (`sess_{hex}`), PostgreSQL-backed
+  (`conversations` + `messages` tables), per-user concurrency limit (max 5 active streams).
+- **API surface (v5):**
+  - `POST /api/v5/create_session` — create and register a session.
+  - `POST /api/v5/stream_chat` — stream agent response for one turn.
+  - `GET  /api/v5/sessions_by_user` — list user sessions.
+  - `GET  /api/v5/full_session` — fetch full conversation history.
+- **SSE event envelope** (`format_sse()` → `data: {json}\n\n`, done: `data: [DONE]`):
+  - `message_output_partial` — streaming text delta.
+  - `tool_call_item` — tool execution started.
+  - `function_call_output` — tool result.
+  - `usage` — token counts.
+  - `error` — stream-level error.
+  - `ignored` — rejected (session busy).
+- **Tools:** local Python functions + optional MCP servers via `MCPServerStreamableHttp`.
+- **Model:** OpenAI GPT-5.1 in voyager; Hermes for this platform uses
+  Claude (`claude-sonnet-4-6`) via the Anthropic Python SDK, normalised to the same
+  SSE event format.
+- **Auth:** Bearer token in `Authorization` header + session-ownership check.
+- **Frontend client:** `@microsoft/fetch-event-source` with Zustand store.
 
-### Constraints
-- One existing write path to the management repo: the orchestrator (CLI) commits YAML
-  and Markdown via git. There is no HTTP-based write path today.
-- `GITHUB_TOKEN` is available in the backend environment (used by the orchestrator);
-  it can be reused for the chat write tools.
-- The product spec requires the write path to go through the workflow skill layer —
-  meaning the backend agent must write files into the management repo using the same
-  artifact paths the orchestrator uses (`docs/features/<id>/product-spec.md` etc.),
-  not a shadow location.
+### workspace.yaml — current state
+No `hermes-agent` repo entry exists. One must be added before T1 can be executed.
 
 ---
 
 ## 2. Problem Framing
 
 ### What needs to change
-1. The layout of the feature view must be split horizontally: existing content on the
-   left, a new always-visible chat panel on the right.
-2. A chat API endpoint must exist on workflow-backend that accepts a conversation turn,
-   calls Claude with workspace context and tool definitions, and streams the response
-   back over SSE.
-3. The backend must be able to execute tool calls:
-   - **Read tools** — pull live workspace and feature context to ground the agent.
-   - **Write tools** — write `product-spec.md` / `technical-design.md` to the
-     management repo via the GitHub Contents API.
-4. The frontend must consume the SSE stream and render messages + a slash-command skill
-   picker in the prompt input.
+1. A **Hermes agent service** (Python FastAPI, `voyager_agent` pattern) must be built and
+   deployed. It exposes the same `/api/v5/create_session` + `/api/v5/stream_chat` contract
+   but with workflow-specific tools instead of trading tools.
+2. The layout of the feature view must be split horizontally: existing content on the left,
+   a new always-visible chat panel on the right.
+3. The frontend must manage Hermes sessions (create + stream), render messages, and handle
+   the slash-command picker.
+4. When the agent writes an artifact (`write_product_spec`, `write_technical_design`), the
+   frontend must refresh the corresponding document panel.
 
 ### What must remain stable
-- The existing `FeatureTabView` content and all four existing document/task/log panels.
-- The workflow lifecycle gates — agent writes draft files; human approves via
-  `/approve-feature` unchanged.
-- All existing backend routes — the chat endpoint is purely additive.
-- The `gin-contrib/sse` usage pattern Gin already knows; no new transport library.
+- The existing `FeatureTabView` panels and all four document/task/log views.
+- workflow-backend routes — this feature adds no changes there.
+- The workflow lifecycle gates — agent drafts; human approves via `/approve-feature`.
+- The voyager SSE event envelope — the hermes-agent emits the same event types so the
+  frontend client is reusable across both products.
 
 ### Fixed assumptions
-- Claude Sonnet 4.6 (`claude-sonnet-4-6`) is the agent model for v1, matching
-  `workspace.yaml → model_policy.implementation.default`.
-- The write tool uses the GitHub REST API (`PUT /repos/{owner}/{repo}/contents/{path}`)
-  with `GITHUB_TOKEN` from the backend environment.
-- Chat history is in-memory (browser session only). No server-side persistence in this
-  slice.
+- Hermes uses `claude-sonnet-4-6` (matches `workspace.yaml → model_policy.implementation.default`).
+- Session persistence uses the same PostgreSQL instance as workflow-backend (separate schema
+  or separate DB — operator's choice), not a new datastore.
+- `ANTHROPIC_API_KEY` and `GITHUB_TOKEN` are available in the hermes-agent env.
+- `workspace_id` and `feature_id` are passed with every `stream_chat` request so the agent
+  can scope context and tool execution to the correct feature.
 
 ---
 
 ## 3. Options Considered
 
-### Option A — Next.js API route + Vercel AI SDK (`useChat`)
-The frontend calls a Next.js API route (`/app/api/chat/route.ts`) that uses
-`@ai-sdk/anthropic` and streams via the AI SDK protocol.
+### Option A — Claude API directly in workflow-backend (Go)
+Add `anthropic-sdk-go` to workflow-backend, new SSE endpoint there.
 
-- **Pros:** Excellent streaming DX with `useChat` hook; minimal backend change.
-- **Cons:** `ANTHROPIC_API_KEY` lives in Next.js env (still server-side, but not in
-  the Go backend); write tools would need a secondary HTTP call back to workflow-backend
-  to execute — two-hop architecture. Inconsistent with "all API calls go through
-  workflow-backend" pattern.
-- **Dependency impact:** New npm dep, no Go change. Write tools require new HTTP
-  endpoints in Go anyway.
+- **Pros:** No new service; single deploy unit.
+- **Cons:** Incompatible with M2 Hermes deployment — when Hermes ships, the frontend
+  would need to be re-wired from workflow-backend to Hermes. The session model, tool
+  registry, and memory/learning loop all belong in the agent layer, not the data API.
+  Forces Go to carry Python-idiomatic agent code.
+- **Rejected.** Produces throwaway work that M2 replaces.
 
-### Option B — workflow-backend SSE endpoint + Anthropic Go SDK (chosen)
-The frontend POSTs to workflow-backend, which calls Claude with tools and streams SSE
-events back. Tool execution (reads + GitHub writes) happens in Go.
+### Option B — Hermes agent service (Python FastAPI, voyager pattern) — chosen
+Build `hermes-agent` as a standalone Python FastAPI service following `voyager_agent` v5.
+The frontend connects directly to Hermes; workflow-backend stays a pure data API.
 
-- **Pros:** `ANTHROPIC_API_KEY` stays in Go env; write tools have direct access to
-  GitHub token and workspace context; consistent single-backend API pattern; `gin-contrib/sse`
-  is already in the dep tree.
-- **Cons:** Must add Anthropic Go SDK to `go.mod`; slightly more Go code to write.
-- **Dependency impact:** One new Go dep (`github.com/anthropics/anthropic-sdk-go`).
+- **Pros:** M2-compatible from day one — the same service grows into full Hermes as M2
+  matures. Same SSE contract as voyager means frontend code is already proven. Tool
+  registry is in Python where agent-native libraries (`anthropic`, MCP) are best supported.
+- **Cons:** New service to deploy; requires adding `hermes-agent` to `workspace.yaml`.
+- **Chosen.**
 
-### Option C — Direct Claude API calls from frontend (browser)
-Browser calls Claude API directly.
+### Option C — Next.js API route proxy + Vercel AI SDK
+Next.js API route calls Claude, streams via Vercel AI SDK protocol.
 
-- **Cons:** API key exposed to client. Rejected immediately.
-
-**Decision: Option B.** The single-backend pattern is consistent, keys stay in Go,
-and tool execution is straightforward without a second hop.
+- **Cons:** ANTHROPIC_API_KEY in Next.js env; write tools require a second HTTP hop back
+  to some backend; incompatible with Hermes session model. Rejected.
 
 ---
 
 ## 4. Chosen Design
 
-### Layout change (digital-factory-ui)
+### Hermes agent service
 
-`FeatureSessionPage` wraps `FeatureTabView` inside `WorkspaceSessionShell`. The
-`WorkspaceSessionShell` children area is a flex column. To add the right panel, the
-`FeatureSessionPage` component is modified to render a horizontal flex container:
+A new Python FastAPI service (`hermes-agent` repo) modelled directly on `voyager_agent/`.
+Structure mirrors voyager but with workflow-domain tools and Claude as the LLM.
 
 ```
-WorkspaceSessionShell
-└── <div className="flex min-h-0 flex-1 overflow-hidden">    ← NEW horizontal split
-    ├── <div className="flex-1 min-w-0 overflow-hidden">     ← existing content
-    │   └── FeatureTabView
-    └── <div className="w-80 shrink-0 border-l ...">         ← NEW chat panel
-        └── AgentChatPanel
+hermes-agent/
+├── agent.py                      ← FastAPI app entry point (lifespan, routers)
+├── src/
+│   ├── app/
+│   │   └── agent_v5/
+│   │       ├── api/
+│   │       │   └── router.py     ← /create_session, /stream_chat endpoints
+│   │       ├── orchestration/
+│   │       │   ├── session_manager.py   ← session CRUD + streaming coordination
+│   │       │   ├── executor.py          ← format_sse(), stream loop
+│   │       │   └── agent.py             ← build_agent() factory, Claude model
+│   │       ├── tools/
+│   │       │   └── registry.py          ← workflow tool definitions
+│   │       └── models/
+│   │           ├── api_models.py
+│   │           └── session.py
+│   └── configs/
+│       └── settings.yaml
+├── requirements.txt
+└── Dockerfile
 ```
 
-The panel width is fixed at `w-80` (320px) for v1 — no resize handle.
+**API contract** (identical to voyager_agent v5):
 
-### Chat panel UI (digital-factory-ui)
+```
+POST /api/v5/create_session
+  Body:  { "user_id": "<string>" }
+  Returns: { "session_id": "sess_<hex>" }
 
-Port the following voyager components into `digital-factory-ui/src/features/agent-chat/`:
-- `Conversation` + `ConversationContent` — scrollable container, scroll-to-bottom button.
-- `Message` + `MessageContent` — user bubble (right-aligned, bg bubble) vs assistant
-  prose (left-aligned, transparent).
-- `MessageThread` — iterates messages, renders `MarkdownContent` for text parts,
-  a `Loader` spinner while streaming.
-- `PromptInput` + `PromptInputTextarea` + `PromptInputSubmit` — auto-resizing textarea,
-  Send/Stop button, `Enter` to submit.
-- `SlashCommandPicker` — **new component** (not in voyager): appears as a popover above
-  the input when the textarea value starts with `/`; filters a static command registry
-  as the user types; arrow-key + Enter or click to insert the command. Dismissed on
-  Escape or when the leading `/` is removed.
-
-Command registry (static, in frontend):
-```ts
-const COMMANDS = [
-  { name: "/write-product-spec",    hint: "Draft or update the product spec" },
-  { name: "/write-technical-design",hint: "Draft or update the technical design" },
-  { name: "/get-feature-state",     hint: "Show current feature lifecycle state" },
-  { name: "/get-workspace-context", hint: "Show repos, roles, model policy" },
-];
+POST /api/v5/stream_chat
+  Body:  { "session_id": "...", "message": "...", "workspace_id": "...", "feature_id": "..." }
+  Auth:  Authorization: Bearer <token>
+  Returns: text/event-stream, JSON events, done: "data: [DONE]"
 ```
 
-### SSE streaming client (digital-factory-ui)
+**SSE event types emitted** (same envelope as voyager):
 
-A `streamChatTurn(params, onEvent, onDone, onError)` function in
-`src/services/workflow-backend/chat.ts` that:
-1. POSTs to `POST /api/workspaces/:workspaceId/features/:featureId/chat` with
-   `fetch` + `{ body: ..., headers: { Accept: 'text/event-stream' } }`.
-2. Reads the response body as a `ReadableStream`, decodes SSE lines.
-3. Dispatches typed events to the caller:
-   - `delta` — partial assistant text token.
-   - `tool_start` / `tool_result` — tool call lifecycle.
-   - `artifact_saved` — a write tool completed; carries `{ artifact: "product_spec" | "technical_design" }`.
-   - `error` — stream-level error.
-   - `done` — stream complete.
+| Event type | Payload | When |
+|---|---|---|
+| `message_output_partial` | `{ "content": "<text>" }` | Each streaming text token |
+| `tool_call_item` | `{ "call_id": "...", "name": "<tool>", "status": "running" }` | Tool invocation starts |
+| `function_call_output` | `{ "call_id": "...", "name": "<tool>", "output": {...} }` | Tool result |
+| `artifact_saved` | `{ "artifact": "product_spec" \| "technical_design" }` | Write tool succeeded |
+| `usage` | `{ "input": N, "output": N, "cached": N }` | End of turn |
+| `error` | `{ "message": "..." }` | Stream-level error |
+| `ignored` | `{ "reason": "session_busy" }` | Concurrent stream blocked |
 
-No external SSE library — the browser `ReadableStream` + `TextDecoder` is sufficient.
+**Model integration:**
+The `executor.py` uses `anthropic.AsyncAnthropic().messages.stream()` with
+`model="claude-sonnet-4-6"`, a system prompt, the conversation history, and tool
+definitions. Text deltas are normalised to `message_output_partial` events; tool use
+blocks to `tool_call_item` / `function_call_output` — same envelope voyager emits from
+the OpenAI Agents SDK. The frontend does not need to know which LLM is underneath.
 
-### Backend endpoint (workflow-backend)
+**Session persistence:**
+`SessionManager` stores sessions in PostgreSQL with the same `conversations` +
+`messages` table shape as voyager. `workspace_id` + `feature_id` are stored in the
+session record so tools can scope themselves without the client repeating them.
 
-New route: `POST /api/workspaces/:workspaceId/features/:featureId/chat`
-
-Request body:
-```json
-{
-  "messages": [
-    { "role": "user", "content": "Help me write the product spec for dark mode" }
-  ]
-}
-```
-
-Response: `Content-Type: text/event-stream`
-
-SSE event format (newline-delimited JSON data fields):
-```
-data: {"type":"delta","text":"Sure, let me draft that for you."}
-data: {"type":"tool_start","name":"get_feature_state"}
-data: {"type":"tool_result","name":"get_feature_state","result":"..."}
-data: {"type":"artifact_saved","artifact":"product_spec"}
-data: {"type":"done"}
-```
-
-Handler implementation:
-1. Extract `workspaceId`, `featureId` from path; parse `messages` from body.
-2. Build system prompt with workspace + feature context (call existing
-   `svc.GetFeature()` to get live state, format as context string).
-3. Call `anthropic.NewClient()` with `ANTHROPIC_API_KEY` from env.
-4. Invoke `client.Messages.Stream()` with model, system prompt, messages, and tool defs.
-5. Write SSE events as they arrive: `delta` for text chunks, `tool_start` when a tool
-   is called, `tool_result` after execution, `done` on completion.
-6. On context cancellation (client disconnect), stop the stream.
-
-A new `ChatHandler` struct (separate from `WorkspaceHandler`) is registered on the
-same router group. It depends on a `ChatService` interface:
-
-```go
-type ChatService interface {
-    GetFeatureContext(ctx context.Context, workspaceID, featureID string) (*ChatContext, error)
-    WriteArtifact(ctx context.Context, workspaceID, featureID, artifactType, content string) error
-}
-```
-
-`ChatContext` carries the workspace name, available repos, feature status, and the
-content of any already-saved artifacts (product-spec.md, technical-design.md).
-
-### Tool definitions (backend)
-
-Four tools, all executed server-side:
+**Workflow tool registry** (4 tools, v1):
 
 | Tool | Action | Implementation |
 |---|---|---|
-| `get_workspace_context` | Return workspace metadata | Call `svc.GetWorkspace()` → serialize repos, model_policy, roles |
-| `get_feature_state` | Return feature status + existing artifact content | Call `svc.GetFeature()` + fetch raw Markdown from GitHub Contents API |
-| `write_product_spec` | Write draft to management repo | GitHub Contents API `PUT /repos/{owner}/{repo}/contents/docs/features/{id}/product-spec.md` |
-| `write_technical_design` | Write draft to management repo | Same path, `technical-design.md` |
+| `get_workspace_context` | Return workspace metadata | HTTP GET to workflow-backend `/api/workspaces/:id` |
+| `get_feature_state` | Return feature status + existing artifact content | HTTP GET to workflow-backend `/api/workspaces/:id/features/:id` + raw Markdown from GitHub Contents API |
+| `write_product_spec` | Write draft to management repo | GitHub Contents API `PUT /repos/{owner}/{repo}/contents/docs/features/{id}/product-spec.md` using `GITHUB_TOKEN` |
+| `write_technical_design` | Write draft to management repo | Same, `technical-design.md` |
 
-For the write tools, the backend resolves the management repo's `owner/repo` from the
-workspace record (already stored by the adapter) and uses `GITHUB_TOKEN` from env.
+After a successful write, the tool execution loop emits `artifact_saved` before the
+turn-end `usage` event. The frontend uses this to trigger a document panel refresh.
 
-The write tool sends an `artifact_saved` SSE event after a successful write. The
-frontend handles this by re-fetching the feature detail to refresh the document panel.
+**System prompt** (injected per-turn, not stored):
+- Workspace name, available repos from `get_workspace_context`.
+- Current feature lifecycle stage and existing artifact excerpts.
+- Instruction: "You draft artifacts through tools; you never advance lifecycle state directly;
+  the human approves via the existing approval flow."
+
+---
+
+### Layout change (digital-factory-ui)
+
+Modify `FeatureSessionPage` to wrap its children in a horizontal flex container.
+`WorkspaceSessionShell` already wraps with `flex min-h-0 flex-1 flex-col overflow-hidden`;
+the horizontal split lives one level below that, inside `FeatureSessionPage`:
+
+```tsx
+<WorkspaceSessionShell workspace={activeWorkspace}>
+  <div className="flex min-h-0 flex-1 overflow-hidden">
+    <div className="flex-1 min-w-0 overflow-hidden">
+      <FeatureTabView workspaceId={workspaceId} featureId={featureId} />
+    </div>
+    <div className="w-80 shrink-0 border-l border-border flex flex-col">
+      <AgentChatPanel
+        workspaceId={workspaceId}
+        featureId={featureId}
+        onArtifactSaved={handleArtifactSaved}
+      />
+    </div>
+  </div>
+</WorkspaceSessionShell>
+```
+
+Panel width: `w-80` (320 px) fixed for v1.
+
+---
+
+### Chat panel UI components (digital-factory-ui)
+
+New module: `src/features/agent-chat/`
+
+Port directly from `voyager-interface/src/components/intelligence/agent/agent-elements/`:
+- `conversation.tsx` → `Conversation`, `ConversationContent`, `ConversationScrollButton`
+- `message.tsx` → `Message`, `MessageContent`
+- `message-thread.tsx` → `MessageThread` (simplified — no chart/UI-block parts)
+- `loader.tsx` → `Loader`
+- `prompt-input.tsx` → `PromptInput`, `PromptInputTextarea`, `PromptInputToolbar`,
+  `PromptInputSubmit`
+
+New component (not in voyager):
+- `slash-command-picker.tsx` — popover above the input when textarea value starts with `/`;
+  filters a static `COMMANDS` registry in real time; arrow-key + Enter or click inserts
+  the command name into the input; Escape or deleting the `/` dismisses.
+
+```ts
+const COMMANDS = [
+  { name: "/write-product-spec",     hint: "Draft or update the product spec" },
+  { name: "/write-technical-design", hint: "Draft or update the technical design" },
+  { name: "/get-feature-state",      hint: "Show current feature lifecycle state" },
+  { name: "/get-workspace-context",  hint: "Show repos, roles, model policy" },
+];
+```
+
+`AgentChatPanel` orchestrates session lifecycle (create on mount, persist `session_id`
+in component state) and feeds messages + status into `MessageThread`.
+
+---
+
+### Hermes API client (digital-factory-ui)
+
+New file: `src/services/hermes-agent/client.ts`
+
+Two functions:
+1. `createSession(userId: string): Promise<{ session_id: string }>` — `POST /api/v5/create_session`.
+2. `streamChatTurn(params, onEvent, onDone, onError)` — wraps `fetchEventSource` from
+   `@microsoft/fetch-event-source`; dispatches typed events to the caller.
+
+```ts
+// Event union the caller receives
+type HermesEvent =
+  | { type: "delta"; text: string }
+  | { type: "tool_start"; name: string }
+  | { type: "tool_result"; name: string; output: unknown }
+  | { type: "artifact_saved"; artifact: "product_spec" | "technical_design" }
+  | { type: "error"; message: string }
+  | { type: "done" };
+```
+
+`NEXT_PUBLIC_HERMES_AGENT_URL` env var controls the base URL (mirrors voyager's
+`NEXT_PUBLIC_AGENT_SERVICE_API`).
+
+---
+
+### Document refresh on artifact_saved (digital-factory-ui)
+
+`FeatureSessionPage` passes an `onArtifactSaved` callback to `AgentChatPanel`. When the
+callback fires (with `artifact: "product_spec" | "technical_design"`), the page calls
+`reload()` on the `useFeatureDetail` hook — already available from `FeatureTabView`'s
+existing data-fetch pattern — so the saved document appears in the tab without a
+page reload.
 
 ---
 
@@ -248,49 +301,53 @@ frontend handles this by re-fetching the feature detail to refresh the document 
 
 | Dependency | Type | Status | Blocker? |
 |---|---|---|---|
-| `github.com/anthropics/anthropic-sdk-go` | External Go dep | Not in `go.mod` | Yes — must be added in T1 |
-| `ANTHROPIC_API_KEY` | Env var | Not in `.env.template` | Yes — must be added before T1 is testable |
-| `GITHUB_TOKEN` | Env var | Already used by orchestrator | No — exists; needs confirming it's in workflow-backend env |
-| Management repo `owner/repo` | Workspace record in DB | Already stored by adapter | No — available via `svc.GetWorkspace()` |
-| `gin-contrib/sse` | Go dep | Already indirect dep | No — direct import just needs promotion to `require` |
-| Voyager chat components | Source reference | Available locally | No — porting task, no external dep |
-| HeroUI v3 | npm dep | Already in digital-factory-ui | No |
-| Browser `ReadableStream` | Web API | Standard, no dep | No |
+| `hermes-agent` GitHub repo | New repo | Does not exist | Yes — must be created and added to `workspace.yaml` before T1 |
+| `anthropic` Python SDK | PyPI dep | Not in hermes-agent (new repo) | T1 — add to `requirements.txt` |
+| `fastapi`, `uvicorn`, `asyncpg` | PyPI deps | Standard; same as voyager | T1 — add to `requirements.txt` |
+| `ANTHROPIC_API_KEY` | Env var | Not yet in hermes-agent env | Yes — must be provisioned before T1 is testable end-to-end |
+| `GITHUB_TOKEN` with `contents:write` | Env var | Exists in orchestrator env | Needs confirming scope covers management repo write via Contents API |
+| Workflow-backend URL | Service dep | Running locally + deployed | T1 tools — `get_workspace_context` and `get_feature_state` call it via HTTP |
+| `@microsoft/fetch-event-source` | npm dep | Not in digital-factory-ui | T2 — `npm install` |
+| PostgreSQL | DB | Shared instance | T1 — new schema/tables (`hermes_sessions`, `hermes_messages`); no migration to existing tables |
+| `NEXT_PUBLIC_HERMES_AGENT_URL` | Env var | Does not exist | T2 — add to `.env.local` + deployment config |
 
 **Unresolved at design time:**
-- Confirm `ANTHROPIC_API_KEY` is available in the workflow-backend deployment environment
-  before T1 can be tested end-to-end. The task can be completed locally; deployment
-  validation requires the key.
-- Confirm `GITHUB_TOKEN` in workflow-backend env has `contents:write` scope on the
-  management repo. The orchestrator uses it for git pushes, not GitHub API writes —
-  the token scope may need verifying.
+- `hermes-agent` repo does not exist in `workspace.yaml`. This must be resolved before
+  any task in this feature can be claimed. **D1 below.**
+- `GITHUB_TOKEN` `contents:write` scope: the orchestrator uses the token for git push,
+  not for the GitHub Contents REST API. These are different auth surfaces. Verify the
+  token has `contents:write` via the GitHub API before T4.
 
 ---
 
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: workflow-backend — SSE chat endpoint + Anthropic SDK + read tools
-  └── Can begin now — no blockers
-      (add anthropic-sdk-go dep, implement handler + read tools; write tools deferred to T4)
+D1: Create hermes-agent GitHub repo + add to workspace.yaml
+  └── Must be done by the human before any agent claims T1.
+      (Register under repos[] id: hermes-agent, base_branch: main)
 
-T2: digital-factory-ui — Right-panel layout + chat UI components + SSE client
-  └── Can begin now — no blockers
-      (port voyager components; mock SSE stream for local dev until T1 merges)
+T1: hermes-agent — FastAPI skeleton + create_session + stream_chat + read tools
+  └── BLOCKED on D1 (repo must exist to push to)
+      Once D1 is done: Can begin immediately
 
-  T1 and T2 run in parallel (Wave 1)
+T2: digital-factory-ui — Right-panel layout + chat UI + fetch-event-source client
+  └── Can begin now — no blockers
+      (Mock the SSE stream locally; wire to real Hermes URL once T1 merges)
+
+  T1 and T2 run in parallel after D1
 
   T3: digital-factory-ui — Slash-command picker
-    └── BLOCKED on T2 (needs PromptInput component in place to extend with picker popover)
+    └── BLOCKED on T2 (PromptInput must be in place to extend with picker popover)
 
-  T4: workflow-backend — Write tools (write_product_spec, write_technical_design)
-    └── BLOCKED on T1 (must extend the T1 handler's tool-execution loop)
+  T4: hermes-agent — Write tools (write_product_spec, write_technical_design) + artifact_saved event
+    └── BLOCKED on T1 (extends T1's tool registry and stream loop)
 
   T3 and T4 run in parallel (Wave 2)
 
-  T5: digital-factory-ui — artifact_saved event handling + document panel auto-refresh
-    └── BLOCKED on T2 (streaming client must be in place)
-    └── BLOCKED on T4 (artifact_saved SSE event defined and emitted by backend)
+  T5: digital-factory-ui — artifact_saved handler + FeatureTabView document refresh
+    └── BLOCKED on T2 (streamChatTurn client must be wired)
+    └── BLOCKED on T4 (artifact_saved event defined and emitted by hermes-agent)
 
   T5 is Wave 3 — both T2 and T4 must be merged first
 ```
@@ -301,34 +358,40 @@ T2: digital-factory-ui — Right-panel layout + chat UI components + SSE client
 
 | Repo | Changes | Why |
 |---|---|---|
-| `digital-factory-ui` | New `src/features/agent-chat/` module; modify `FeatureSessionPage` for horizontal split; new `src/services/workflow-backend/chat.ts` SSE client | UI components, layout, streaming client |
-| `workflow-backend` | New `internal/handler/chat.go`; new `internal/service/chat.go`; add `anthropic-sdk-go` to `go.mod`; new route registered in `cmd/api/api.go` | Backend chat endpoint + tool execution |
-| `workspace-github-adapter` | None | Writes bypass the adapter and call GitHub API directly from workflow-backend |
-| `management-repo` | None (runtime artifact files are written by the write tools during use) | N/A |
+| `hermes-agent` *(new)* | New Python FastAPI service — full agent skeleton, session management, SSE streaming, 4 tools | This is the Hermes agent (M2-compatible) |
+| `digital-factory-ui` | New `src/features/agent-chat/`; new `src/services/hermes-agent/client.ts`; modify `FeatureSessionPage` for horizontal split; add `@microsoft/fetch-event-source` | UI components, layout, streaming client |
+| `workflow-backend` | **None** | No chat code goes here; existing read endpoints serve as tool targets |
+| `management-repo` | Add `hermes-agent` to `workspace.yaml → repos[]` | Register the new repo in the workspace |
 
 ---
 
 ## 8. Validation and Release Impact
 
 ### Testing
-- **T1/T4 (workflow-backend):** Integration test for `POST /chat` endpoint — mock
-  Anthropic client, verify SSE event sequence for a read tool call and a write tool call.
-  Verify `GITHUB_TOKEN` scope check returns a clear error if write fails.
-- **T2/T3/T5 (digital-factory-ui):** Component tests for `SlashCommandPicker`
-  (filter logic, keyboard nav); integration test for `streamChatTurn` against a mock
-  SSE server.
+- **T1/T4 (hermes-agent):** Unit tests for each tool function (mock workflow-backend HTTP
+  responses and GitHub API). Integration test for `POST /stream_chat` end-to-end with a
+  real Anthropic API call (lower-priority, can be skipped in CI with `ANTHROPIC_API_KEY`
+  absent check).
+- **T2/T3/T5 (digital-factory-ui):** Component tests for `SlashCommandPicker` (filter
+  logic, keyboard nav). Integration test for `streamChatTurn` against a mock SSE server.
+  Visual regression check that the horizontal split renders correctly at 1280 px+ width.
 
 ### Migration / Config
-- `ANTHROPIC_API_KEY` must be added to workflow-backend env (deployment + `.env.template`).
-- No DB migration required.
-- No changes to existing API routes — purely additive.
+- New env vars: `ANTHROPIC_API_KEY` (hermes-agent), `GITHUB_TOKEN` (hermes-agent),
+  `NEXT_PUBLIC_HERMES_AGENT_URL` (digital-factory-ui). Add to `.env.template` in both repos.
+- New PostgreSQL tables (`hermes_sessions`, `hermes_messages`) in the hermes-agent DB.
+  Goose or Alembic migration at service startup.
+- No changes to workflow-backend DB schema.
 
 ### Rollout
-- The chat panel is rendered inside `FeatureSessionPage` only; it does not appear on
-  the board or task views. Rollout is scoped to the feature detail page.
-- The backend endpoint is unauthenticated at the route level for v1 (same as other
-  existing routes, which rely on session middleware). No new auth surface.
+- The chat panel appears only in `FeatureSessionPage` (feature detail view). Board and task
+  views are unaffected.
+- The hermes-agent service is deployed independently; if it is unreachable, `AgentChatPanel`
+  shows an error state — the rest of the UI is unaffected.
+- No breaking changes to existing API surface.
 
 ### Backward Compatibility
-- No breaking changes. All existing API routes are unchanged. The layout change
-  (horizontal split) affects only the feature detail page and is purely additive HTML.
+- All existing workflow-backend routes unchanged.
+- M2 Hermes evolution (persistent memory, learning loop, `background_review`) is additive
+  on top of T1's skeleton — the session model, SSE contract, and frontend client do not
+  need to change when those capabilities are added.
