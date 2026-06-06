@@ -3,7 +3,11 @@ title: Workflow State Database — Agent Write Path and Relational Storage
 
 feature_status: in_tdd
 current_stage: technical_design
-next_action: "Tech lead: produce technical-design.md (tech-lead Phase 1) from the approved product spec — resolve open questions #2 (write API surface), #4 (claim mechanism), #7 (broker owner-partitioning), #8 (shared DB & schema ownership)."
+next_action: >-
+  Human: review and approve/reject technical-design.md (drafted). v1 is re-scoped
+  to a human-merge slice — the reviewer cycle, drift daemon, and handoff trigger
+  are deferred to feature go-orchestrator-parity, and the write API + MCP to
+  workflow-db-mcp. On approval, proceed to Phase 2 task breakdown (T1–T18).
 
 stages:
   product_spec:
