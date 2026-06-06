@@ -12,203 +12,257 @@
 - Next.js 16.2 (App Router), React 19, TailwindCSS 4, HeroUI v3.
 - `FeatureSessionPage` renders `WorkspaceSessionShell` (header) → `FeatureTabView`
   (tabs: Product Spec / Technical Design / Tasks / Logs).
-- `WorkspaceSessionShell` children area: `flex min-h-0 flex-1 flex-col overflow-hidden`
-  — a full-height column with no horizontal split.
-- API calls: thin `fetch`-based `request<T>()` in `src/services/workflow-backend/client.ts`.
-- **No SSE/streaming client code exists.** voyager uses `@microsoft/fetch-event-source`;
-  that library is not in the current dep tree.
-- **No chat UI components.** voyager (`voyager-interface`) has production-ready primitives
-  (`Conversation`, `MessageThread`, `Message`, `MessageContent`, `PromptInput`, `Loader`)
-  on the same HeroUI + TailwindCSS stack — directly portable.
+- `WorkspaceSessionShell` children area: `flex min-h-0 flex-1 flex-col overflow-hidden` —
+  full-height column, no horizontal split.
+- API calls: thin `fetch`-based `request<T>()` in `src/services/workflow-backend/client.ts`;
+  all calls target `NEXT_PUBLIC_WORKFLOW_API_URL`. **No SSE or streaming client exists.**
+- `@microsoft/fetch-event-source` is not in the dep tree. Voyager uses it — directly
+  portable.
+- **No chat UI components.** Voyager's `voyager-interface` has production-ready primitives
+  (`Conversation`, `MessageThread`, `Message`, `PromptInput`, `Loader`) on the same
+  HeroUI + TailwindCSS stack.
 
 ### workflow-backend
-- Go 1.25, Gin. All routes are synchronous JSON. No Claude/Anthropic code.
-- The adapter layer (`internal/adapter/rpc.go`) calls `workspace-github-adapter` for
-  import/sync. No write operations exposed via that RPC layer.
-- `gin-contrib/sse` is an indirect dep but is never used.
-- **No changes needed to workflow-backend for this feature.**
+- Go 1.25, Gin, PostgreSQL (pgx v5). All routes return synchronous JSON.
+- `gin-contrib/sse v1.1.1` is an indirect dep (via Gin) — never used directly today.
+- **workflow-backend's mission includes forwarding the agent stream to the frontend.**
+  New proxy endpoints will be added (Section 4). `HERMES_AGENT_URL` lives here —
+  never in the browser environment.
+- No write operations to the management repo exist today; no Claude/Anthropic code exists.
 
-### voyager_agent (reference implementation — M2 Hermes pattern)
-- Python FastAPI service, port 8080.
-- **Transport:** HTTP POST → Server-Sent Events (SSE), `text/event-stream`.
-- **Session model:** server-assigned UUID (`sess_{hex}`), PostgreSQL-backed
-  (`conversations` + `messages` tables), per-user concurrency limit (max 5 active streams).
-- **API surface (v5):**
-  - `POST /api/v5/create_session` — create and register a session.
-  - `POST /api/v5/stream_chat` — stream agent response for one turn.
-  - `GET  /api/v5/sessions_by_user` — list user sessions.
-  - `GET  /api/v5/full_session` — fetch full conversation history.
-- **SSE event envelope** (`format_sse()` → `data: {json}\n\n`, done: `data: [DONE]`):
-  - `message_output_partial` — streaming text delta.
-  - `tool_call_item` — tool execution started.
-  - `function_call_output` — tool result.
-  - `usage` — token counts.
-  - `error` — stream-level error.
-  - `ignored` — rejected (session busy).
-- **Tools:** local Python functions + optional MCP servers via `MCPServerStreamableHttp`.
-- **Model:** OpenAI GPT-5.1 in voyager; Hermes for this platform uses
-  Claude (`claude-sonnet-4-6`) via the Anthropic Python SDK, normalised to the same
-  SSE event format.
-- **Auth:** Bearer token in `Authorization` header + session-ownership check.
-- **Frontend client:** `@microsoft/fetch-event-source` with Zustand store.
+### swell-hermes (reference implementation — direct template for hermes-agent)
+`/Users/pye/code/voyager/swell-hermes` is the exact pattern to follow for the new
+`hermes-agent` service. Its architecture:
 
-### workspace.yaml — current state
-No `hermes-agent` repo entry exists. One must be added before T1 can be executed.
+```
+Frontend ──SSE──▶ gateway (FastAPI)          ← auth, billing, sessions, approval, streaming
+                       │ imports as library
+                       ▼
+                  hermes (vendored submodule) ← LLM loop, tool dispatch, plugin discovery
+                       │ scans plugins/
+                       ▼
+                  voyager_plugin              ← domain tools (place_order, positions, …)
+```
+
+Key swell-hermes findings:
+- **Gateway** (`gateway/app.py`): FastAPI factory that embeds Hermes as an in-process
+  library. Modules: `api/` (routes), `auth/` (JWT), `billing/` (credit gate + burn),
+  `sessions/` (asyncpg Postgres), `approval/` (human-in-loop registry),
+  `streaming/` (SSE translation layer).
+- **Hermes core** (`vendor/hermes-agent/` git submodule): `AIAgent` class in
+  `run_agent.py`. Invoked as `agent.run_conversation(user_message, conversation_history,
+  ...)`. Supports pre/post hooks, plugin tool registration, concurrent tool dispatch,
+  context compression, optional memory (disabled for us).
+- **Plugin system** (`hermes_cli/plugins.py`): scans 4 locations at startup; each plugin
+  has a `plugin.yaml` manifest and a `register(ctx)` entry point. `ctx.register_tool()`
+  adds tools; `ctx.register_hook()` adds lifecycle callbacks.
+- **SSE shape** (`gateway/streaming/`): translates Hermes internal events to the exact
+  same SSE envelope that `voyager_agent` emits (`message_output_partial`,
+  `tool_call_item`, `function_call_output`, `usage`, `error`, `ignored`, `[DONE]`).
+  The frontend SSE client must not change between voyager and this platform.
+- **DB schema** (`migrations/`): `voyager_sessions_v4` + `voyager_messages_v4` tables,
+  same as `voyager_agent`. Session storage is owned by the gateway, not by Hermes.
+- **Config** (`hermes_home/config.yaml`): minimal YAML deep-merged over Hermes defaults;
+  enables the domain plugin.
+- **Phase 0 is complete** in swell-hermes: foundation boots, plugin discovery works,
+  3 tools register. Our `hermes-agent` starts from this same Phase 0 baseline.
 
 ---
 
 ## 2. Problem Framing
 
 ### What needs to change
-1. A **Hermes agent service** (Python FastAPI, `voyager_agent` pattern) must be built and
-   deployed. It exposes the same `/api/v5/create_session` + `/api/v5/stream_chat` contract
-   but with workflow-specific tools instead of trading tools.
-2. The layout of the feature view must be split horizontally: existing content on the left,
-   a new always-visible chat panel on the right.
-3. The frontend must manage Hermes sessions (create + stream), render messages, and handle
-   the slash-command picker.
-4. When the agent writes an artifact (`write_product_spec`, `write_technical_design`), the
-   frontend must refresh the corresponding document panel.
+1. A **hermes-agent service** (`hermes-agent` repo, modelled on swell-hermes) must be
+   created. It replaces `voyager_plugin` with `workflow_plugin` — tools for reading
+   workspace/feature context and writing artifacts.
+2. **workflow-backend** gains transparent SSE proxy endpoints that forward the frontend's
+   chat traffic to hermes-agent. `HERMES_AGENT_URL` is a workflow-backend env var.
+3. The **feature view layout** gains a fixed right-side chat panel (horizontal split in
+   `FeatureSessionPage`).
+4. The **frontend** manages sessions via workflow-backend proxy routes and consumes the
+   forwarded SSE stream using `@microsoft/fetch-event-source`.
+5. An `artifact_saved` SSE event triggers document panel refresh in the frontend.
 
 ### What must remain stable
-- The existing `FeatureTabView` panels and all four document/task/log views.
-- workflow-backend routes — this feature adds no changes there.
+- All existing `FeatureTabView` panels and workflow-backend routes — purely additive.
 - The workflow lifecycle gates — agent drafts; human approves via `/approve-feature`.
-- The voyager SSE event envelope — the hermes-agent emits the same event types so the
-  frontend client is reusable across both products.
+- The voyager SSE event envelope — hermes-agent uses the identical shape so the
+  `use-chat` pattern from voyager-interface ports unchanged.
 
 ### Fixed assumptions
-- Hermes uses `claude-sonnet-4-6` (matches `workspace.yaml → model_policy.implementation.default`).
-- Session persistence uses the same PostgreSQL instance as workflow-backend (separate schema
-  or separate DB — operator's choice), not a new datastore.
-- `ANTHROPIC_API_KEY` and `GITHUB_TOKEN` are available in the hermes-agent env.
-- `workspace_id` and `feature_id` are passed with every `stream_chat` request so the agent
-  can scope context and tool execution to the correct feature.
+- Hermes uses `claude-sonnet-4-6` (per `workspace.yaml → model_policy.implementation.default`).
+- `ANTHROPIC_API_KEY` and `GITHUB_TOKEN` live in hermes-agent's environment.
+- The frontend never reaches hermes-agent directly; all traffic routes through
+  workflow-backend proxy endpoints using the existing `NEXT_PUBLIC_WORKFLOW_API_URL`.
+- `workspace_id` and `feature_id` are forwarded from the frontend → workflow-backend →
+  hermes-agent in the `stream_chat` request body so tools can scope correctly.
 
 ---
 
 ## 3. Options Considered
 
 ### Option A — Claude API directly in workflow-backend (Go)
-Add `anthropic-sdk-go` to workflow-backend, new SSE endpoint there.
+Add `anthropic-sdk-go` to workflow-backend.
 
-- **Pros:** No new service; single deploy unit.
-- **Cons:** Incompatible with M2 Hermes deployment — when Hermes ships, the frontend
-  would need to be re-wired from workflow-backend to Hermes. The session model, tool
-  registry, and memory/learning loop all belong in the agent layer, not the data API.
-  Forces Go to carry Python-idiomatic agent code.
-- **Rejected.** Produces throwaway work that M2 replaces.
+- **Rejected.** Incompatible with M2 — when Hermes is promoted to full resident
+  teammate, the frontend would need re-wiring. Agent session model, plugin system,
+  and memory/learning loop belong in the Python agent layer, not a Go data API.
 
-### Option B — Hermes agent service (Python FastAPI, voyager pattern) — chosen
-Build `hermes-agent` as a standalone Python FastAPI service following `voyager_agent` v5.
-The frontend connects directly to Hermes; workflow-backend stays a pure data API.
+### Option B — hermes-agent (swell-hermes pattern) + workflow-backend SSE proxy — chosen
+hermes-agent is a standalone Python FastAPI service (gateway → Hermes library →
+workflow_plugin). workflow-backend adds a thin proxy. Frontend uses existing
+`NEXT_PUBLIC_WORKFLOW_API_URL`.
 
-- **Pros:** M2-compatible from day one — the same service grows into full Hermes as M2
-  matures. Same SSE contract as voyager means frontend code is already proven. Tool
-  registry is in Python where agent-native libraries (`anthropic`, MCP) are best supported.
-- **Cons:** New service to deploy; requires adding `hermes-agent` to `workspace.yaml`.
-- **Chosen.**
+- **Chosen.** M2-compatible from day one. swell-hermes is a nearly complete template —
+  we replace `voyager_plugin` with `workflow_plugin` and swap trading tools for
+  workspace tools. Frontend client pattern (fetch-event-source) is already proven in
+  voyager-interface.
 
-### Option C — Next.js API route proxy + Vercel AI SDK
-Next.js API route calls Claude, streams via Vercel AI SDK protocol.
-
-- **Cons:** ANTHROPIC_API_KEY in Next.js env; write tools require a second HTTP hop back
-  to some backend; incompatible with Hermes session model. Rejected.
+### Option C — Next.js API route + Vercel AI SDK
+- **Rejected.** API key in Next.js env; incompatible with Hermes session model; no
+  plugin system.
 
 ---
 
 ## 4. Chosen Design
 
-### Hermes agent service
+### 4.1 hermes-agent service (new repo)
 
-A new Python FastAPI service (`hermes-agent` repo) modelled directly on `voyager_agent/`.
-Structure mirrors voyager but with workflow-domain tools and Claude as the LLM.
+Clone the swell-hermes structure, replacing `voyager_plugin` with `workflow_plugin`:
 
 ```
 hermes-agent/
-├── agent.py                      ← FastAPI app entry point (lifespan, routers)
-├── src/
-│   ├── app/
-│   │   └── agent_v5/
-│   │       ├── api/
-│   │       │   └── router.py     ← /create_session, /stream_chat endpoints
-│   │       ├── orchestration/
-│   │       │   ├── session_manager.py   ← session CRUD + streaming coordination
-│   │       │   ├── executor.py          ← format_sse(), stream loop
-│   │       │   └── agent.py             ← build_agent() factory, Claude model
-│   │       ├── tools/
-│   │       │   └── registry.py          ← workflow tool definitions
-│   │       └── models/
-│   │           ├── api_models.py
-│   │           └── session.py
-│   └── configs/
-│       └── settings.yaml
-├── requirements.txt
+├── gateway/                       ← copy from swell-hermes/gateway/ (all modules)
+│   ├── app.py                     ← FastAPI factory (API prefix: /api/v5)
+│   ├── api/router.py              ← /create_session, /stream_chat
+│   ├── auth/                      ← JWT verify (simplified: no Privy/credits for v1)
+│   ├── sessions/                  ← asyncpg Postgres session + message store
+│   ├── streaming/                 ← SSE event translation (Hermes → SSE envelope)
+│   └── approval/                  ← human-in-loop registry (stub for v1)
+├── workflow_plugin/               ← our domain tools (replaces voyager_plugin/)
+│   ├── __init__.py                ← register(ctx) entry point
+│   ├── tools.py                   ← tool schemas + handlers
+│   ├── client.py                  ← WorkflowClient (HTTP wrapper for workflow-backend)
+│   └── plugin.yaml                ← manifest: name: workflow, provides_tools: [...]
+├── vendor/hermes-agent/           ← git submodule (same as swell-hermes)
+├── hermes_home/config.yaml        ← enables workflow plugin; model: claude-sonnet-4-6
+├── migrations/                    ← copy from swell-hermes/migrations/ (schema unchanged)
+├── pyproject.toml                 ← fastapi, uvicorn, httpx, asyncpg
 └── Dockerfile
 ```
 
-**API contract** (identical to voyager_agent v5):
+**API contract** (identical to swell-hermes / voyager_agent v5):
 
 ```
 POST /api/v5/create_session
-  Body:  { "user_id": "<string>" }
+  Body:    { "user_id": "<string>" }
   Returns: { "session_id": "sess_<hex>" }
 
 POST /api/v5/stream_chat
-  Body:  { "session_id": "...", "message": "...", "workspace_id": "...", "feature_id": "..." }
-  Auth:  Authorization: Bearer <token>
-  Returns: text/event-stream, JSON events, done: "data: [DONE]"
+  Headers: Authorization: Bearer <token>
+  Body:    { "session_id": "...", "message": "...",
+             "workspace_id": "...", "feature_id": "..." }
+  Returns: text/event-stream
 ```
 
-**SSE event types emitted** (same envelope as voyager):
+**SSE event types** (identical envelope to swell-hermes `gateway/streaming/`):
 
-| Event type | Payload | When |
+| Event | Payload | When |
 |---|---|---|
 | `message_output_partial` | `{ "content": "<text>" }` | Each streaming text token |
-| `tool_call_item` | `{ "call_id": "...", "name": "<tool>", "status": "running" }` | Tool invocation starts |
+| `tool_call_item` | `{ "call_id": "...", "name": "<tool>", "status": "running" }` | Tool starts |
 | `function_call_output` | `{ "call_id": "...", "name": "<tool>", "output": {...} }` | Tool result |
-| `artifact_saved` | `{ "artifact": "product_spec" \| "technical_design" }` | Write tool succeeded |
+| `artifact_saved` | `{ "artifact": "product_spec" \| "technical_design" }` | Write tool done |
 | `usage` | `{ "input": N, "output": N, "cached": N }` | End of turn |
-| `error` | `{ "message": "..." }` | Stream-level error |
+| `error` | `{ "message": "..." }` | Stream error |
 | `ignored` | `{ "reason": "session_busy" }` | Concurrent stream blocked |
 
-**Model integration:**
-The `executor.py` uses `anthropic.AsyncAnthropic().messages.stream()` with
-`model="claude-sonnet-4-6"`, a system prompt, the conversation history, and tool
-definitions. Text deltas are normalised to `message_output_partial` events; tool use
-blocks to `tool_call_item` / `function_call_output` — same envelope voyager emits from
-the OpenAI Agents SDK. The frontend does not need to know which LLM is underneath.
+`artifact_saved` is a new event type added to the streaming layer on top of swell-hermes.
 
-**Session persistence:**
-`SessionManager` stores sessions in PostgreSQL with the same `conversations` +
-`messages` table shape as voyager. `workspace_id` + `feature_id` are stored in the
-session record so tools can scope themselves without the client repeating them.
+**workflow_plugin — tool registry:**
 
-**Workflow tool registry** (4 tools, v1):
+```python
+# workflow_plugin/plugin.yaml
+name: workflow
+version: 0.1.0
+provides_tools:
+  - workflow_get_workspace_context
+  - workflow_get_feature_state
+  - workflow_write_product_spec
+  - workflow_write_technical_design
 
-| Tool | Action | Implementation |
+# workflow_plugin/__init__.py
+def register(ctx):
+    for name, schema, handler in _TOOLS:
+        ctx.register_tool(name=name, toolset="workflow",
+                          schema=schema, handler=handler,
+                          check_fn=check_workflow_available)
+    ctx.register_hook("pre_llm_call", _inject_feature_context)
+```
+
+| Tool | Handler | Implementation |
 |---|---|---|
-| `get_workspace_context` | Return workspace metadata | HTTP GET to workflow-backend `/api/workspaces/:id` |
-| `get_feature_state` | Return feature status + existing artifact content | HTTP GET to workflow-backend `/api/workspaces/:id/features/:id` + raw Markdown from GitHub Contents API |
-| `write_product_spec` | Write draft to management repo | GitHub Contents API `PUT /repos/{owner}/{repo}/contents/docs/features/{id}/product-spec.md` using `GITHUB_TOKEN` |
-| `write_technical_design` | Write draft to management repo | Same, `technical-design.md` |
+| `workflow_get_workspace_context` | `handle_get_workspace_context` | `GET {WORKFLOW_BACKEND_URL}/api/workspaces/{workspace_id}` |
+| `workflow_get_feature_state` | `handle_get_feature_state` | GET feature detail + GitHub Contents API for raw artifact Markdown |
+| `workflow_write_product_spec` | `handle_write_product_spec` | GitHub Contents API `PUT /repos/{owner}/{repo}/contents/docs/features/{id}/product-spec.md` |
+| `workflow_write_technical_design` | `handle_write_technical_design` | Same path, `technical-design.md` |
 
-After a successful write, the tool execution loop emits `artifact_saved` before the
-turn-end `usage` event. The frontend uses this to trigger a document panel refresh.
+`_inject_feature_context` pre_llm_call hook injects workspace name, available repos,
+and feature lifecycle state into the system prompt at the start of each turn (same
+pattern as voyager's position/skill-catalog injection).
 
-**System prompt** (injected per-turn, not stored):
-- Workspace name, available repos from `get_workspace_context`.
-- Current feature lifecycle stage and existing artifact excerpts.
-- Instruction: "You draft artifacts through tools; you never advance lifecycle state directly;
-  the human approves via the existing approval flow."
+**hermes_home/config.yaml:**
+```yaml
+plugins:
+  enabled:
+    - workflow
+agent:
+  model: claude-sonnet-4-6
+  provider: anthropic
+```
 
 ---
 
-### Layout change (digital-factory-ui)
+### 4.2 workflow-backend SSE proxy
 
-Modify `FeatureSessionPage` to wrap its children in a horizontal flex container.
-`WorkspaceSessionShell` already wraps with `flex min-h-0 flex-1 flex-col overflow-hidden`;
-the horizontal split lives one level below that, inside `FeatureSessionPage`:
+workflow-backend adds a `ChatProxyHandler` that forwards traffic transparently between
+the frontend and hermes-agent. No event parsing, no buffering, no transformation —
+byte-pipe only. `HERMES_AGENT_URL` is an env var (e.g. `http://hermes-agent:8000`).
+
+**Two new routes** added to `WorkspaceHandler.RegisterRoutes()`:
+
+```
+POST /api/workspaces/:workspaceId/features/:featureId/chat/session
+  → proxies to: POST {HERMES_AGENT_URL}/api/v5/create_session
+  → forwards Authorization header from frontend request
+
+POST /api/workspaces/:workspaceId/features/:featureId/chat
+  → proxies to: POST {HERMES_AGENT_URL}/api/v5/stream_chat
+  → injects workspace_id + feature_id into forwarded body
+  → pipes response bytes back with Content-Type: text/event-stream
+  → uses gin's c.Stream() + http.Flusher pattern
+  → promotes gin-contrib/sse from indirect to direct require
+```
+
+The proxy implementation in Go (`internal/handler/chat_proxy.go`):
+```go
+// ChatProxy handler: forward body to hermes, pipe SSE bytes back.
+// No event parsing — transparent byte-pipe.
+func (h *ChatProxyHandler) StreamChat(c *gin.Context) {
+    // 1. Read body, inject workspace_id + feature_id
+    // 2. POST to HERMES_AGENT_URL/api/v5/stream_chat, forward Authorization
+    // 3. c.Stream() → io.Copy(c.Writer, hermesResp.Body) with c.Writer.Flush()
+}
+```
+
+A new `ChatProxyHandler` struct (separate from `WorkspaceHandler`) keeps the proxy
+concern isolated. It takes `hermesBaseURL string` injected at startup.
+
+---
+
+### 4.3 Layout change (digital-factory-ui)
+
+Modify `FeatureSessionPage` — horizontal split inside `WorkspaceSessionShell`:
 
 ```tsx
 <WorkspaceSessionShell workspace={activeWorkspace}>
@@ -231,22 +285,19 @@ Panel width: `w-80` (320 px) fixed for v1.
 
 ---
 
-### Chat panel UI components (digital-factory-ui)
+### 4.4 Chat panel UI (digital-factory-ui)
 
 New module: `src/features/agent-chat/`
 
-Port directly from `voyager-interface/src/components/intelligence/agent/agent-elements/`:
-- `conversation.tsx` → `Conversation`, `ConversationContent`, `ConversationScrollButton`
-- `message.tsx` → `Message`, `MessageContent`
-- `message-thread.tsx` → `MessageThread` (simplified — no chart/UI-block parts)
-- `loader.tsx` → `Loader`
-- `prompt-input.tsx` → `PromptInput`, `PromptInputTextarea`, `PromptInputToolbar`,
-  `PromptInputSubmit`
+Port from `voyager-interface/src/components/intelligence/agent/agent-elements/`:
+- `Conversation` + `ConversationContent` — scrollable container, scroll-to-bottom button
+- `Message` + `MessageContent` — user bubble vs assistant prose
+- `MessageThread` — renders messages, `Loader` while streaming
+- `PromptInput` / `PromptInputTextarea` / `PromptInputToolbar` / `PromptInputSubmit`
 
-New component (not in voyager):
-- `slash-command-picker.tsx` — popover above the input when textarea value starts with `/`;
-  filters a static `COMMANDS` registry in real time; arrow-key + Enter or click inserts
-  the command name into the input; Escape or deleting the `/` dismisses.
+New component (not in voyager): `SlashCommandPicker` — popover above the input when
+the textarea value starts with `/`; filters a static registry in real time; arrow-key +
+Enter or click inserts the command; Escape dismisses.
 
 ```ts
 const COMMANDS = [
@@ -257,22 +308,28 @@ const COMMANDS = [
 ];
 ```
 
-`AgentChatPanel` orchestrates session lifecycle (create on mount, persist `session_id`
-in component state) and feeds messages + status into `MessageThread`.
+`AgentChatPanel` manages session lifecycle: calls `/chat/session` on mount, persists
+`session_id` in component state, feeds messages + stream status into `MessageThread`.
 
 ---
 
-### Hermes API client (digital-factory-ui)
+### 4.5 Hermes API client (digital-factory-ui)
 
-New file: `src/services/hermes-agent/client.ts`
-
-Two functions:
-1. `createSession(userId: string): Promise<{ session_id: string }>` — `POST /api/v5/create_session`.
-2. `streamChatTurn(params, onEvent, onDone, onError)` — wraps `fetchEventSource` from
-   `@microsoft/fetch-event-source`; dispatches typed events to the caller.
+New file: `src/services/workflow-backend/chat.ts` — uses the existing
+`NEXT_PUBLIC_WORKFLOW_API_URL` base. No new env var needed in the frontend.
 
 ```ts
-// Event union the caller receives
+// Create a hermes session scoped to a feature
+createChatSession(workspaceId, featureId, userId): Promise<{ session_id: string }>
+// → POST /api/workspaces/:wid/features/:fid/chat/session
+
+// Stream one chat turn
+streamChatTurn(params, onEvent, onDone, onError): AbortController
+// → fetchEventSource POST /api/workspaces/:wid/features/:fid/chat
+```
+
+Event union:
+```ts
 type HermesEvent =
   | { type: "delta"; text: string }
   | { type: "tool_start"; name: string }
@@ -282,18 +339,13 @@ type HermesEvent =
   | { type: "done" };
 ```
 
-`NEXT_PUBLIC_HERMES_AGENT_URL` env var controls the base URL (mirrors voyager's
-`NEXT_PUBLIC_AGENT_SERVICE_API`).
-
 ---
 
-### Document refresh on artifact_saved (digital-factory-ui)
+### 4.6 Document refresh on artifact_saved
 
-`FeatureSessionPage` passes an `onArtifactSaved` callback to `AgentChatPanel`. When the
-callback fires (with `artifact: "product_spec" | "technical_design"`), the page calls
-`reload()` on the `useFeatureDetail` hook — already available from `FeatureTabView`'s
-existing data-fetch pattern — so the saved document appears in the tab without a
-page reload.
+`FeatureSessionPage.handleArtifactSaved()` calls `reload()` on `useFeatureDetail` —
+already wired in `FeatureTabView`. The saved document appears in the tab with no page
+reload.
 
 ---
 
@@ -301,55 +353,64 @@ page reload.
 
 | Dependency | Type | Status | Blocker? |
 |---|---|---|---|
-| `hermes-agent` GitHub repo | New repo | Does not exist | Yes — must be created and added to `workspace.yaml` before T1 |
-| `anthropic` Python SDK | PyPI dep | Not in hermes-agent (new repo) | T1 — add to `requirements.txt` |
-| `fastapi`, `uvicorn`, `asyncpg` | PyPI deps | Standard; same as voyager | T1 — add to `requirements.txt` |
-| `ANTHROPIC_API_KEY` | Env var | Not yet in hermes-agent env | Yes — must be provisioned before T1 is testable end-to-end |
-| `GITHUB_TOKEN` with `contents:write` | Env var | Exists in orchestrator env | Needs confirming scope covers management repo write via Contents API |
-| Workflow-backend URL | Service dep | Running locally + deployed | T1 tools — `get_workspace_context` and `get_feature_state` call it via HTTP |
+| `hermes-agent` GitHub repo | New repo | Does not exist | **Yes** — must be created and added to `workspace.yaml` before T1 |
+| `vendor/hermes-agent` submodule | git submodule | Exists in swell-hermes | T1 — point submodule at same commit as swell-hermes |
+| `anthropic` Python SDK | PyPI | In swell-hermes `vendor/` venv | T1 — `hermes_home/config.yaml` sets provider: anthropic |
+| `ANTHROPIC_API_KEY` | Env var | Not yet in hermes-agent env | **Yes** — must be provisioned before T1 testable end-to-end |
+| `GITHUB_TOKEN` (contents:write) | Env var | Exists in orchestrator | Verify `contents:write` scope covers GitHub Contents API PUT — different from git push |
+| `WORKFLOW_BACKEND_URL` | Env var | New in hermes-agent | T1 — needed by `workflow_plugin` tools |
+| `HERMES_AGENT_URL` | Env var | New in workflow-backend | T1b — internal URL for the proxy handler |
+| `gin-contrib/sse` | Go dep | Indirect in go.mod | T1b — promote to direct `require` for proxy flusher |
 | `@microsoft/fetch-event-source` | npm dep | Not in digital-factory-ui | T2 — `npm install` |
-| PostgreSQL | DB | Shared instance | T1 — new schema/tables (`hermes_sessions`, `hermes_messages`); no migration to existing tables |
-| `NEXT_PUBLIC_HERMES_AGENT_URL` | Env var | Does not exist | T2 — add to `.env.local` + deployment config |
+| PostgreSQL schema | DB migration | Copied from swell-hermes | T1 — run at hermes-agent startup |
+| `NEXT_PUBLIC_WORKFLOW_API_URL` | Env var | Already in digital-factory-ui | No — reused as-is for /chat routes |
 
 **Unresolved at design time:**
-- `hermes-agent` repo does not exist in `workspace.yaml`. This must be resolved before
-  any task in this feature can be claimed. **D1 below.**
-- `GITHUB_TOKEN` `contents:write` scope: the orchestrator uses the token for git push,
-  not for the GitHub Contents REST API. These are different auth surfaces. Verify the
-  token has `contents:write` via the GitHub API before T4.
+- `hermes-agent` repo does not exist (**D1 — must be resolved by the human first**).
+- `GITHUB_TOKEN` scope: verify `contents:write` via the GitHub API before T4.
 
 ---
 
 ## 6. Parallelization / Blocking Analysis
 
 ```
-D1: Create hermes-agent GitHub repo + add to workspace.yaml
-  └── Must be done by the human before any agent claims T1.
-      (Register under repos[] id: hermes-agent, base_branch: main)
+D1: Create hermes-agent GitHub repo + add to workspace.yaml (repos[])
+  └── Human action. Must complete before any agent claims T1 or T1b.
 
-T1: hermes-agent — FastAPI skeleton + create_session + stream_chat + read tools
-  └── BLOCKED on D1 (repo must exist to push to)
-      Once D1 is done: Can begin immediately
+T1: hermes-agent — scaffold from swell-hermes + workflow_plugin read tools
+  └── BLOCKED on D1 (repo must exist)
+      • Copy gateway/ from swell-hermes; replace voyager_plugin/ with workflow_plugin/
+      • Implement get_workspace_context + get_feature_state tools
+      • Wire hermes_home/config.yaml: model claude-sonnet-4-6, plugin: workflow
+      • Copy migrations/ from swell-hermes
+      • Dockerfile + pyproject.toml
 
-T2: digital-factory-ui — Right-panel layout + chat UI + fetch-event-source client
+T1b: workflow-backend — ChatProxyHandler + two proxy routes
+  └── BLOCKED on D1 (HERMES_AGENT_URL must be known)
+      • New internal/handler/chat_proxy.go
+      • Register routes in cmd/api/api.go
+      • Promote gin-contrib/sse to direct dep
+
+T2: digital-factory-ui — right-panel layout + chat UI components + SSE client
   └── Can begin now — no blockers
-      (Mock the SSE stream locally; wire to real Hermes URL once T1 merges)
+      (mock fetchEventSource locally; wire to workflow-backend /chat once T1b merges)
 
-  T1 and T2 run in parallel after D1
+  T1 and T1b are co-dependent (develop in same feature branch, T1b configures
+  HERMES_AGENT_URL pointing at T1 service). T2 runs in parallel with both.
 
-  T3: digital-factory-ui — Slash-command picker
-    └── BLOCKED on T2 (PromptInput must be in place to extend with picker popover)
+  T3: digital-factory-ui — SlashCommandPicker
+    └── BLOCKED on T2 (PromptInput must be in place to extend)
 
-  T4: hermes-agent — Write tools (write_product_spec, write_technical_design) + artifact_saved event
-    └── BLOCKED on T1 (extends T1's tool registry and stream loop)
+  T4: hermes-agent — write tools (write_product_spec, write_technical_design) + artifact_saved event
+    └── BLOCKED on T1 (extends T1's workflow_plugin tool registry)
 
   T3 and T4 run in parallel (Wave 2)
 
-  T5: digital-factory-ui — artifact_saved handler + FeatureTabView document refresh
+  T5: digital-factory-ui — artifact_saved handler + document panel auto-refresh
     └── BLOCKED on T2 (streamChatTurn client must be wired)
-    └── BLOCKED on T4 (artifact_saved event defined and emitted by hermes-agent)
+    └── BLOCKED on T4 (artifact_saved event emitted by hermes-agent)
 
-  T5 is Wave 3 — both T2 and T4 must be merged first
+  T5 is Wave 3 — both T2 and T4 must merge first
 ```
 
 ---
@@ -358,40 +419,50 @@ T2: digital-factory-ui — Right-panel layout + chat UI + fetch-event-source cli
 
 | Repo | Changes | Why |
 |---|---|---|
-| `hermes-agent` *(new)* | New Python FastAPI service — full agent skeleton, session management, SSE streaming, 4 tools | This is the Hermes agent (M2-compatible) |
-| `digital-factory-ui` | New `src/features/agent-chat/`; new `src/services/hermes-agent/client.ts`; modify `FeatureSessionPage` for horizontal split; add `@microsoft/fetch-event-source` | UI components, layout, streaming client |
-| `workflow-backend` | **None** | No chat code goes here; existing read endpoints serve as tool targets |
-| `management-repo` | Add `hermes-agent` to `workspace.yaml → repos[]` | Register the new repo in the workspace |
+| `hermes-agent` *(new)* | Full new service: gateway (FastAPI), workflow_plugin, Hermes submodule, migrations | M2-compatible agent; reads workspace context; writes artifacts via GitHub API |
+| `workflow-backend` | New `internal/handler/chat_proxy.go`; 2 new routes; `HERMES_AGENT_URL` config; promote `gin-contrib/sse` | SSE proxy — forwards frontend chat traffic to hermes-agent; keeps `HERMES_AGENT_URL` server-side |
+| `digital-factory-ui` | New `src/features/agent-chat/`; new `src/services/workflow-backend/chat.ts`; modify `FeatureSessionPage`; add `@microsoft/fetch-event-source` | Right-panel layout, chat UI, SSE client |
+| `management-repo` | Add `hermes-agent` entry to `workspace.yaml → repos[]` | Register new repo in workspace |
 
 ---
 
 ## 8. Validation and Release Impact
 
 ### Testing
-- **T1/T4 (hermes-agent):** Unit tests for each tool function (mock workflow-backend HTTP
-  responses and GitHub API). Integration test for `POST /stream_chat` end-to-end with a
-  real Anthropic API call (lower-priority, can be skipped in CI with `ANTHROPIC_API_KEY`
-  absent check).
-- **T2/T3/T5 (digital-factory-ui):** Component tests for `SlashCommandPicker` (filter
+- **hermes-agent (T1/T4):** Unit tests per tool (mock workflow-backend + GitHub API HTTP).
+  Smoke test (`scripts/phase0_smoke.py` pattern from swell-hermes) verifying plugin
+  discovery and all 4 tools register at startup.
+- **workflow-backend (T1b):** Integration test for `/chat` proxy endpoint — stand up
+  a mock hermes-agent returning a fixed SSE stream; assert bytes are forwarded
+  unchanged; assert `artifact_saved` event passes through.
+- **digital-factory-ui (T2/T3/T5):** Component tests for `SlashCommandPicker` (filter
   logic, keyboard nav). Integration test for `streamChatTurn` against a mock SSE server.
-  Visual regression check that the horizontal split renders correctly at 1280 px+ width.
 
 ### Migration / Config
-- New env vars: `ANTHROPIC_API_KEY` (hermes-agent), `GITHUB_TOKEN` (hermes-agent),
-  `NEXT_PUBLIC_HERMES_AGENT_URL` (digital-factory-ui). Add to `.env.template` in both repos.
-- New PostgreSQL tables (`hermes_sessions`, `hermes_messages`) in the hermes-agent DB.
-  Goose or Alembic migration at service startup.
-- No changes to workflow-backend DB schema.
+- New env vars: `ANTHROPIC_API_KEY`, `GITHUB_TOKEN`, `WORKFLOW_BACKEND_URL` in
+  hermes-agent; `HERMES_AGENT_URL` in workflow-backend. Add to `.env.example` / `.env.template`.
+- New Postgres tables in hermes-agent DB (`voyager_sessions_v4`, `voyager_messages_v4`
+  — copied verbatim from swell-hermes migrations). No changes to workflow-backend DB.
+- `@microsoft/fetch-event-source` added to digital-factory-ui package.json.
 
 ### Rollout
-- The chat panel appears only in `FeatureSessionPage` (feature detail view). Board and task
-  views are unaffected.
-- The hermes-agent service is deployed independently; if it is unreachable, `AgentChatPanel`
-  shows an error state — the rest of the UI is unaffected.
-- No breaking changes to existing API surface.
+- hermes-agent is a new service deployed independently. If unreachable, `AgentChatPanel`
+  shows an error state; the rest of the feature view is unaffected.
+- workflow-backend proxy routes are additive — zero impact on existing endpoints.
+- Chat panel appears only in `FeatureSessionPage`. Board and task views unchanged.
 
-### Backward Compatibility
-- All existing workflow-backend routes unchanged.
-- M2 Hermes evolution (persistent memory, learning loop, `background_review`) is additive
-  on top of T1's skeleton — the session model, SSE contract, and frontend client do not
-  need to change when those capabilities are added.
+### M2 growth path
+The hermes-agent skeleton created here (gateway + Hermes submodule + workflow_plugin)
+is the same artifact M2 grows into:
+- Persistent memory and `background_review` are additive on top of the Hermes
+  submodule — no API contract change.
+- The `pre_llm_call` hook in `workflow_plugin` is where workspace-scoped learning
+  (injecting accumulated context) will plug in.
+- The resident-VM deployment model (one agent per workspace) maps directly to the
+  session model: `workspace_id`-scoped sessions, one hermes-agent instance per workspace.
+- The frontend client and SSE event shape do not change across M2 evolution.
+
+## Reference
+- swell-hermes pattern: `/Users/pye/code/voyager/swell-hermes/`
+- voyager-interface chat components: `/Users/pye/code/voyager/voyager-interface/src/components/intelligence/agent/agent-elements/`
+- Roadmap M2/M3: `docs/roadmap-milestone.md`
