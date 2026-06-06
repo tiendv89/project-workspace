@@ -1,29 +1,25 @@
 feature_id: m3-agent-chat
 title: Agent Chat — Conversational Interface for Feature Authoring
-
 feature_status: ready_for_implementation
 current_stage: handoff
-next_action: >-
-  Wave 1 tasks ready — T1 (hermes-agent), T2 (workflow-backend), T3
+next_action: Wave 1 tasks ready — T1 (hermes-agent), T2 (workflow-backend), T3
   (digital-factory-ui) can be claimed immediately in parallel.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-06T14:45:04+0700
-    review_comment: >-
-      Approved. Chat panel always-on on the right side of the feature view,
-      slash-command skill picker modelled on Claude Code, agent drafts artifacts
-      through workflow skills without bypassing gates, human approves via
-      existing flow. No Hermes dependency — Claude API through workflow-backend.
+    review_comment: Approved. Chat panel always-on on the right side of the feature
+      view, slash-command skill picker modelled on Claude Code, agent drafts
+      artifacts through workflow skills without bypassing gates, human approves
+      via existing flow. No Hermes dependency — Claude API through
+      workflow-backend.
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-06T14:45:04+0700
-        review_comment: >-
-          Approved. Chat panel always-on on the right side of the feature view,
-          slash-command skill picker modelled on Claude Code, agent drafts
+        review_comment: Approved. Chat panel always-on on the right side of the feature
+          view, slash-command skill picker modelled on Claude Code, agent drafts
           artifacts through workflow skills without bypassing gates, human
           approves via existing flow. No Hermes dependency — Claude API through
           workflow-backend.
@@ -31,36 +27,33 @@ stages:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-06T16:09:56+0700
-    review_comment: >-
-      Approved. hermes-agent fork + workflow_gateway (swell-hermes pattern) +
-      workflow_plugin (4 tools). workflow-backend adds transparent SSE proxy.
-      D1 resolved — hermes-agent registered in workspace.yaml (base_branch: dev).
-      T1, T1b, T2 unblocked and ready to run in parallel.
+    review_comment: "Approved. hermes-agent fork + workflow_gateway (swell-hermes
+      pattern) + workflow_plugin (4 tools). workflow-backend adds transparent
+      SSE proxy. D1 resolved — hermes-agent registered in workspace.yaml
+      (base_branch: dev). T1, T1b, T2 unblocked and ready to run in parallel."
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-06T16:09:56+0700
-        review_comment: >-
-          Approved. hermes-agent fork + workflow_gateway (swell-hermes pattern) +
-          workflow_plugin (4 tools). workflow-backend adds transparent SSE proxy.
-          D1 resolved — hermes-agent registered in workspace.yaml (base_branch: dev).
-          T1, T1b, T2 unblocked and ready to run in parallel.
+        review_comment: "Approved. hermes-agent fork + workflow_gateway (swell-hermes
+          pattern) + workflow_plugin (4 tools). workflow-backend adds
+          transparent SSE proxy. D1 resolved — hermes-agent registered in
+          workspace.yaml (base_branch: dev). T1, T1b, T2 unblocked and ready to
+          run in parallel."
   tasks:
     review_status: approved
     reviewed_by: pye@swellnetwork.io
     reviewed_at: 2026-06-06T16:17:13+0700
-    review_comment: >-
-      Approved. 6 tasks across hermes-agent (T1, T5), workflow-backend (T2), and
-      digital-factory-ui (T3, T4, T6). Wave 1 (T1, T2, T3) activated immediately.
-      T4 after T3, T5 after T1, T6 after T3+T5.
+    review_comment: Approved. 6 tasks across hermes-agent (T1, T5), workflow-backend
+      (T2), and digital-factory-ui (T3, T4, T6). Wave 1 (T1, T2, T3) activated
+      immediately. T4 after T3, T5 after T1, T6 after T3+T5.
     review_history:
       - review_status: approved
         reviewed_by: pye@swellnetwork.io
         reviewed_at: 2026-06-06T16:17:13+0700
-        review_comment: >-
-          Approved. 6 tasks across hermes-agent (T1, T5), workflow-backend (T2), and
-          digital-factory-ui (T3, T4, T6). Wave 1 (T1, T2, T3) activated immediately.
-          T4 after T3, T5 after T1, T6 after T3+T5.
+        review_comment: Approved. 6 tasks across hermes-agent (T1, T5), workflow-backend
+          (T2), and digital-factory-ui (T3, T4, T6). Wave 1 (T1, T2, T3)
+          activated immediately. T4 after T3, T5 after T1, T6 after T3+T5.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -68,7 +61,6 @@ stages:
     review_comment: null
     review_history: []
     pr_url: https://github.com/tiendv89/project-workspace/pull/458
-
 history:
   - at: 2026-06-06T14:45:04+0700
     by: pye@swellnetwork.io
@@ -94,13 +86,13 @@ history:
     to_feature_status: ready_for_implementation
     from_current_stage: tasks
     to_current_stage: handoff
-    note: >-
-      Wave 1 tasks (T1, T2, T3) activated to ready by the auto-ready rule
+    note: Wave 1 tasks (T1, T2, T3) activated to ready by the auto-ready rule
       applied during this approval. T4, T5, T6 remain todo until their
       respective dependencies reach done.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m3-agent-chat
+feature_branch_base_sha: 22b66824590b941bde1cd600f91c5e8fab626433
