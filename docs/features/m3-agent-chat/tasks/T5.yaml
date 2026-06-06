@@ -1,7 +1,7 @@
 id: T5
 title: "hermes-agent: write tools + artifact_saved event"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m3-agent-chat-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-06T10:26:37.208Z
 pr:
   url: ""
   status: not_created
@@ -24,3 +24,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-06T10:22:26.474Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-06T10:26:37.208Z
+    note: Claimed via git-based claim protocol.
