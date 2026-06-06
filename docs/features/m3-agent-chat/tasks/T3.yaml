@@ -1,18 +1,18 @@
 id: T3
 title: "digital-factory-ui: right-panel layout + chat UI + SSE client"
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T3
 execution:
   actor_type: agent
-  last_updated_by: norepy@tiendv.dev
-  last_updated_at: 2026-06-06T09:55:43.644Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-06T09:57:29.893Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/108
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/462
   status: open
@@ -57,3 +57,7 @@ log:
     by: norepy@tiendv.dev
     note: Reviewer approved.
     at: 2026-06-06T09:55:43.644Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-06T09:57:29.893Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
