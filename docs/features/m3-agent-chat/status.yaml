@@ -67,6 +67,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/458
 
 history:
   - at: 2026-06-06T14:45:04+0700
