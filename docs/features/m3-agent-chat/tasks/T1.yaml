@@ -1,15 +1,15 @@
 id: T1
 title: "hermes-agent: workflow_gateway + workflow_plugin read tools"
 repo: hermes-agent
-status: reviewing
+status: change_requested
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T1
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-06T09:52:47.523Z
-  last_updated_by: noreply@tiendv.dev
+  last_updated_at: 2026-06-06T10:01:02.157Z
+  last_updated_by: norepy@tiendv.dev
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/1
   status: open
@@ -51,3 +51,7 @@ log:
     by: noreply@tiendv.dev
     at: 2026-06-06T09:52:47.523Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: norepy@tiendv.dev
+    note: Reviewer requested changes.
+    at: 2026-06-06T10:01:02.157Z
