@@ -29,3 +29,14 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-06T09:30:15.123Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-06T09:30:26.589Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/458,
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/m3-agent-chat/technical-design.md"
+    rag_query: "digital-factory-ui: right-panel layout + chat UI + SSE client
+      m3-agent-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
