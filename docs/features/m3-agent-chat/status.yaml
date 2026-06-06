@@ -1,6 +1,6 @@
 feature_id: m3-agent-chat
 title: Agent Chat — Conversational Interface for Feature Authoring
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Wave 1 tasks ready — T1 (hermes-agent), T2 (workflow-backend), T3
   (digital-factory-ui) can be claimed immediately in parallel.
@@ -60,7 +60,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-    pr_url: https://github.com/tiendv89/project-workspace/pull/458
+    pr_url: https://github.com/tiendv89/project-workspace/pull/466
 history:
   - at: 2026-06-06T14:45:04+0700
     by: pye@swellnetwork.io
@@ -97,3 +97,14 @@ revalidation:
 feature_branch: feature/m3-agent-chat
 feature_branch_base_sha: 22b66824590b941bde1cd600f91c5e8fab626433
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/459
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/466
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/3
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/29
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/111
+    status: open
