@@ -1,23 +1,19 @@
 id: T1
 title: "hermes-agent: workflow_gateway + workflow_plugin read tools"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: norepy@tiendv.dev
+  last_updated_at: 2026-06-06T09:27:09.974Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: pye@swellnetwork.io
@@ -27,3 +23,7 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-06T09:17:13Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: norepy@tiendv.dev
+    at: 2026-06-06T09:27:09.974Z
+    note: Claimed via git-based claim protocol.
