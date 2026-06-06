@@ -29,3 +29,13 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-06T09:27:09.974Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: norepy@tiendv.dev
+    at: 2026-06-06T09:27:23.190Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/hermes-skill-adaptation/handoffs/handoff.md,
+      docs/features/hermes-skill-adaptation/technical-design.md,
+      docs/features/adding-hermes-executor/handoffs/handoff.md"
+    rag_query: "hermes-agent: workflow_gateway + workflow_plugin read tools m3-agent-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
