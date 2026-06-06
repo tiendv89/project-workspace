@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: artifact_saved handler + document refresh"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T5
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/m3-agent-chat-T6
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-06T11:04:23.424Z
 pr:
   url: ""
   status: not_created
@@ -25,3 +25,7 @@ log:
     by: norepy@tiendv.dev
     at: 2026-06-06T11:02:07.021Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-06T11:04:23.424Z
+    note: Claimed via git-based claim protocol.
