@@ -1,22 +1,27 @@
 id: T4
-title: "TS orchestrator owner guards"
+title: TS orchestrator owner guards
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T4
+blocked_context: null
+branch: feature/workflow-db-T4
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-07T17:30:29.003Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      No blockers — eligible for Wave 1 execution. Subtask 4a (owner field
-      extraction) unblocks T16.
+    note: Task created during workflow-db Phase 2 task breakdown. No blockers —
+      eligible for Wave 1 execution. Subtask 4a (owner field extraction)
+      unblocks T16.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-07T17:30:29.003Z
+    note: Claimed via git-based claim protocol.
