@@ -2,12 +2,12 @@ feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
 
 feature_status: in_tdd
-current_stage: technical_design
+current_stage: tasks
 next_action: >-
-  Human: review and approve/reject technical-design.md (drafted). v1 is re-scoped
-  to a human-merge slice — the reviewer cycle, drift daemon, and handoff trigger
-  are deferred to feature go-orchestrator-parity, and the write API + MCP to
-  workflow-db-mcp. On approval, proceed to Phase 2 task breakdown (T1–T18).
+  Tech lead: run Phase 2 task breakdown to produce T1–T18 YAML files under
+  docs/features/workflow-db/tasks/. On human approval of the tasks stage,
+  feature advances to ready_for_implementation and Wave 1 tasks (T1, T3, T4,
+  T17b) become immediately eligible.
 
 stages:
   product_spec:
@@ -26,11 +26,20 @@ stages:
         reviewed_at: 2026-06-05T17:27:18Z
         comment: Product spec approved.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-06-07T16:39:32Z
+    review_comment: >-
+      Approved. v1 scoped to human-merge slice (Go orchestrator write path,
+      atomic claim, PR-merge poll). Reviewer cycle, drift daemon, handoff
+      trigger deferred to go-orchestrator-parity; MCP deferred to
+      workflow-db-mcp. v003 schema snapshot published at design time.
+      Proceed to Phase 2 task breakdown (T1–T18).
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-06-07T16:39:32Z
+        comment: Technical design approved.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -63,6 +72,13 @@ history:
       API, executor, dispatcher, broker, schema, TS orchestrator) may change to
       serve it. The single-owner-per-feature invariant ("no dual-write") still
       holds. product_spec wording reconciled accordingly; stage remains approved.
+  - at: 2026-06-07T16:39:32Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: technical_design
+    note: >-
+      technical_design approved; feature advanced to in_tdd / tasks.
+      Phase 2 task breakdown (T1–T18) to follow.
 
 revalidation:
   product_spec_required: false
