@@ -21,8 +21,8 @@
   - All services point at the **same Postgres** (`DATABASE_URL`).
 - **The relevant tables already model our domain** (migrations in `workflow-backend/migrations`):
   - `workspaces` — now includes `organization_id UUID NOT NULL` (migrations `00013`/`00014`) — **org-level multi-tenancy already exists** at the workspace level.
-  - `workspace_features` — `feature_id`, `feature_name`, `title`, `feature_status`, `current_stage`, `next_action`, `stages JSONB`, `source_path NOT NULL`, `source_hash`. Unique `(workspace_id, feature_name)`.
-  - `workspace_tasks` — `task_id`, `task_name`, `feature_id`, `title`, `status`, `blocked_reason`, `branch`, `repo`, `depends_on JSONB`, `execution JSONB`, `pr JSONB`, `workspace_pr JSONB`, `source_path NOT NULL`, `source_hash`. Unique `(workspace_id, feature_id, task_id)`.
+  - `workspace_features` — surrogate `id` + `feature_id` (both **UUID**), `feature_name` (the slug, e.g. `executor-self-briefing`), `title`, `feature_status`, `current_stage`, `next_action`, `stages JSONB`, `source_path NOT NULL`, `source_hash`. Unique `(workspace_id, feature_name)` **and** `(workspace_id, feature_id)`.
+  - `workspace_tasks` — **UUID** `feature_id` (FK → `workspace_features.id`) + `feature_name` slug; **UUID** `task_id` + `task_name` (e.g. `T1`); `title`, `status`, `blocked_reason`, `branch`, `repo`, `depends_on JSONB`, `execution JSONB`, `pr JSONB`, `workspace_pr JSONB`, `source_path NOT NULL`, `source_hash`. Unique `(workspace_id, feature_id, task_name)` **and** `(workspace_id, task_id)`.
   - `workspace_activity_events` — normalized log/history with `sequence` dedup.
   - `workspace_sync_runs` — sync audit trail.
 - **The broker already carries identity.** `HandleMetadata{ Kind, Subkind, TaskID, FeatureID, TenantID, StartedAt }` (`agent-workflow/runtime/broker/internal/store/store.go:17-24`) rides on every completion. The dispatch stream (`platform:dispatch`) and completion broker (`broker:pending` sorted set, `broker:reg:{handle}`) are one Redis from `standalone-executor-hardening`. The executor is standalone/owner-agnostic and writes only `result.json`.
@@ -33,6 +33,7 @@
 - There is **no `owner` column** and **no claim/locking mechanism** in the schema; `status` is a free-text mirror, not an enforced FSM.
 - `broker.ListCompleted(max, lockMs)` has **no filter** (`broker/internal/server/server.go:117-147`) — any orchestrator drains any completion.
 - **Org scoping exists at the workspace level** (`workspaces.organization_id NOT NULL`); rows are scoped by `workspace_id`, and each workspace belongs to an organization. Any new writer must set `organization_id`/`workspace_id` correctly. (`HandleMetadata.TenantID` exists on the broker but is not yet wired to `organization_id`.)
+- **Identity model** (migrations `00009`–`00011`): `feature_id`/`task_id` are **surrogate UUIDs** (FK keys); the human slugs (`executor-self-briefing`, `T1`) live in `feature_name`/`task_name`. A DB-native writer keys its writes by the UUIDs it assigns, and resolves broker completions — whose `HandleMetadata` carries the **slug** — via `feature_name`/`task_name` (or by tracking the assigned UUID at dispatch time). The full reconciled schema is `database/workspace/v003/schema.dbml`.
 
 ### Relevant system boundaries (repos, from `workspace.yaml`)
 - `workflow` → `agent-workflow` (TS orchestrator, Go broker, dispatcher, executors, ABI).
@@ -136,11 +137,12 @@ deferred (E2 → go-orchestrator-parity):
 **One shared Postgres, one shared schema, write authority partitioned by `owner`.** This is the answer to spec open question #8.
 
 ### 4.1 Schema change (repo: `workflow-backend` — the schema/migrations home)
-Additive goose migration added to `workflow-backend/migrations/` (next sequence, e.g. `00015_*_owner`):
-- Add `owner TEXT NULL` to `workspace_features` (semantics: `NULL` = legacy git/YAML, driven by the TS orchestrator + adapter sync; `'go'` = DB-native, driven by the Go orchestrator). Tasks inherit owner via their `feature_id`; optionally denormalize `owner` onto `workspace_tasks` for query convenience.
-- Relax `source_path`/`source_hash` to `NULL`-able (DB-native rows have no YAML origin).
-- Index `workspace_features (workspace_id, owner)` and (if denormalized) `workspace_tasks (workspace_id, owner, status)` to make the Go orchestrator's eligibility scan cheap.
-- **Migrations are owned by `workflow-backend`** (a single, clear schema home — this resolves the earlier "where does the schema live" coupling). The sync adapter (`workspace-github-adapter`) and the Go orchestrator (`workflow-orchestrator`) are schema *consumers*; the read API lives in `workflow-backend` too.
+Additive goose migration added to `workflow-backend/migrations/` (next sequence, `00015_*_owner`):
+- Add `owner TEXT` (nullable) to `workspace_features` (semantics: `NULL`/absent = legacy git/YAML, driven by the TS orchestrator + adapter sync; `'go'` = DB-native, driven by the Go orchestrator). **Denormalize `owner` onto `workspace_tasks`** as well — resolves the previously-open denormalization question (see §5) so the eligibility scan needs no join.
+- Relax `source_path` to `NULL`-able on `workspace_features` and `workspace_tasks` (DB-native rows have no YAML origin). `source_hash` is already nullable.
+- Index `workspace_features (workspace_id, owner)` and `workspace_tasks (workspace_id, owner, status)` to make the Go orchestrator's eligibility scan cheap.
+- **Migrations are owned by `workflow-backend`** — verified against the synced repos: `migrations/00001–00014` + `migrations.go`. The sync adapter (`workspace-github-adapter`) holds only `database/queries/` (sqlc) and is a *consumer*; the Go orchestrator (`workflow-orchestrator`) is a consumer too; the read API lives in `workflow-backend`.
+- **Companion schema-version snapshot (management repo): `database/workspace/v003/{changelog.md, schema.dbml}`.** The workspace tracks schema changes as versioned dbml snapshots (v002 = `m1-identity-and-workspaces`); the `owner` change is **v003**. The migration is not complete without it — `changelog.md` records the altered tables + migration sequence + driving feature, and `schema.dbml` is the post-migration full snapshot. The top-level `database/workspace/schema.dbml` is promoted to v003 **at design time** (matching the v002 precedent — `m1-identity-and-workspaces` published its snapshot in the Phase-1 design commit, before its migration shipped); T1's goose migration must then match the already-published v003 snapshot.
 
 ### 4.2 Sync adapter scoping (repo: `workspace-github-adapter`)
 The YAML→DB sync (`internal/adapter/db/adapter.go`) must treat the DB as authoritative for `owner = 'go'` rows:
@@ -150,14 +152,14 @@ The YAML→DB sync (`internal/adapter/db/adapter.go`) must treat the DB as autho
 
 ### 4.3 Go orchestrator write path + atomic claim (repo: `workflow-orchestrator` — new)
 - New Go service in its **own dedicated repo** (`workflow-orchestrator`, now created + registered), with its own pgx access layer to the shared schema (sqlc against the migrations owned by `workflow-backend`, or a small shared query package). It speaks the broker/dispatch protocol over Redis/HTTP and re-declares the ABI types in Go (the ABI is TypeScript).
-- **Create**: a go-owned feature is `INSERT`ed into `workspace_features` with `owner='go'`, `source_path = NULL`, and the correct `workspace_id` + `organization_id` (org scoping is mandatory — `workspaces.organization_id` is `NOT NULL`); its tasks go into `workspace_tasks`.
-- **Atomic claim** (`ready → in_progress`):
+- **Create**: a go-owned feature is `INSERT`ed into `workspace_features` with `owner='go'`, `source_path = NULL`, `feature_name = <slug>` (the surrogate `feature_id` UUID auto-generates), and the correct `workspace_id` + `organization_id` (org scoping is mandatory — `workspaces.organization_id` is `NOT NULL`). Its tasks go into `workspace_tasks` with `owner='go'`, `feature_id` = the feature's UUID, `feature_name`/`task_name` = the slugs (e.g. `T1`), and an auto-generated `task_id` UUID.
+- **Atomic claim** (`ready → in_progress`) — keyed on the surrogate UUID (`(workspace_id, task_id)` is unique):
   ```sql
   UPDATE workspace_tasks
      SET status = 'in_progress',
          execution = $exec,         -- last_updated_by / last_updated_at
          updated_at = now()
-   WHERE workspace_id = $ws AND feature_id = $feat AND task_id = $task
+   WHERE workspace_id = $ws AND task_id = $task_uuid
      AND status = 'ready'
   RETURNING id;
   ```
@@ -167,7 +169,7 @@ The YAML→DB sync (`internal/adapter/db/adapter.go`) must treat the DB as autho
 
 ### 4.4 Dispatch + reap over the partitioned broker (repos: `workflow`)
 - **Broker (Go)** gains owner-awareness (design D1): `Register` records the owner; callback enqueues into the owner's pending queue; `ListCompleted` reads the caller's queue (absent owner ⇒ legacy queue, for graceful degradation). `Store` interface (`broker/internal/store/store.go:57-88`) and the `/register`, `/callback`, `/list-completed` handlers (`server.go`) change additively. The TS orchestrator takes a small additive change to declare `owner='ts'` on its broker calls (`HttpBrokerAdapter`) so its completions land in — and are drained from — the `ts` queue.
-- **Go orchestrator** registers each handle with `owner='go'` + `HandleMetadata{ feature_id, task_id, … }`, enqueues a `DispatchJob` (`abi/src/types.ts:50-96`) onto the shared `platform:dispatch` stream, and drains its own completion queue, resolving each completion back to a DB row by `metadata.feature_id`/`metadata.task_id` (the DB analogue of `reap-loop.ts:131-175`) — then writes the resulting status transition to Postgres. **Executor completion lands the task in `in_review`** (the executor has opened the impl PR); it does not by itself reach `done`.
+- **Go orchestrator** registers each handle with `owner='go'` + `HandleMetadata{ feature_id, task_id, … }`, enqueues a `DispatchJob` (`abi/src/types.ts:50-96`) onto the shared `platform:dispatch` stream, and drains its own completion queue, resolving each completion back to a DB row (the DB analogue of `reap-loop.ts:131-175`) — `HandleMetadata.feature_id`/`task_id` carry the **slugs**, matched against `feature_name`/`task_name` (or the UUID tracked at dispatch) — then writes the resulting status transition to Postgres. **Executor completion lands the task in `in_review`** (the executor has opened the impl PR); it does not by itself reach `done`.
 - **PR-merge poll (`in_review → done`)** — a periodic GitHub poll over go-owned tasks in `in_review` (the DB analogue of `pr/handle-merged.ts` + `pr/check-in-review.ts`): when the impl PR reports `merged: true`, the orchestrator writes the guarded `in_review → done` transition and runs dependency auto-ready in the same transaction. **This is how a v1 (human-merge) feature reaches a terminal state** — there is no reviewer dispatch in v1. Without this poll the reap loop would dead-end at `in_review`, so it is firmly **in v1 scope, not deferred**.
 - **Executor + dispatcher reused as-is** (owner-agnostic — no change needed for v1); `LOG_SINK=none` already keeps the standalone path's logs off the management repo.
 
@@ -238,7 +240,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 - **Org scoping (`organization_id`)** — already exists (`workspaces.organization_id NOT NULL`). The Go orchestrator must populate it on every write. Wiring `HandleMetadata.TenantID` → `organization_id` end-to-end, and any per-org isolation beyond workspace scoping, is forward work (flagged, not designed here).
 - **Feature materialization mechanism (Gap A)** — *how* an approved go feature's task definitions are inserted into the DB (a materializer CLI, an orchestrator `create` command, or a test seed for v1). Not resolved here; Phase 2 decides (§4.7). The v1 e2e test may seed directly, so this does not block the Go orchestrator tasks.
 
-**Unresolved → stated explicitly**: the exact `owner` denormalization onto `workspace_tasks` (vs join-to-feature) is left to implementation; both are viable and do not change the contract.
+**Resolved (v003)**: `owner` is **denormalized onto `workspace_tasks`** (not join-to-feature), so the Go orchestrator's eligibility scan (`owner='go' AND status='ready'`) hits one index with no join. The writer keeps `tasks.owner` consistent with its feature's `owner`. Recorded in `database/workspace/v003`.
 
 ---
 
@@ -249,7 +251,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 > **Instruction to Phase 2 (tasks stage).** Every task below must receive a precise change description in `tasks.md`: the exact files/functions/queries to change, the guarded-`UPDATE`/`INSERT` statement or query where relevant, and explicit acceptance criteria. Do not restate the title — describe *what changes and how it is verified*.
 
 **Workstream S — shared schema & infrastructure**
-- **T1** — Schema migration: nullable `owner`, relax `source_path`/`source_hash`, indexes `(workspace_id, owner[, status])`  `[workflow-backend]` — *no blockers*
+- **T1** — Schema migration (goose `00015_*_owner`): add nullable `owner` to `workspace_features` + denormalized on `workspace_tasks`, relax `source_path` to nullable, add indexes `(workspace_id, owner)` and `(workspace_id, owner, status)` — implementing the `database/workspace/v003` snapshot  `[workflow-backend]` — *no blockers*  (the `v003` dbml/changelog itself is a management-repo doc, already authored at design time)
 - **T2** — Sync adapter: scope upserts/deletes to `owner IS NULL` (never create/update/delete `'go'` rows); regen owner-aware sqlc queries  `[workspace-github-adapter]` — *blocked on T1 (cross-repo)*
 - **T3** — Broker owner-partitioning: namespaced completion queues + TS orchestrator declares `owner='ts'`; absent-owner ⇒ legacy queue  `[workflow]` — *no blockers*
 
@@ -301,7 +303,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 | `workflow` (`agent-workflow`) | Broker owner-partitioning **+ TS declares `owner='ts'`** (T3); **TS feature-loop `owner` guards** — `lifecycle-manager`, `review-cycle`, `notification-watcher` (T4) | T3, T4 |
 | `workflow-orchestrator` (new repo — created + registered) | New Go orchestrator, broken per critical path: DB layer, creation/materializer, eligibility, atomic claim, transitions+log, auto-ready, dispatch, reap, PR-merge poll, loop wiring; coexistence integration test | T5–T14, T18 |
 | `workflow` skills (canonical source; repo id confirmed in Phase 2) | Owner-aware authoring skills — `init-feature` (ask go/ts), `tech-lead` (no git task YAMLs for go) — **design only here, implemented in Phase 2 (§4.7)** | T16, T17 |
-| `management-repo` | Feature docs / status only (this design). The `workflow-orchestrator` repo is **already registered** in `workspace.yaml`. | n/a (docs/config) |
+| `management-repo` | Feature docs / status, **and the schema-version snapshot `database/workspace/v003/{changelog.md, schema.dbml}`** (companion to T1's migration). The `workflow-orchestrator` repo is **already registered** in `workspace.yaml`. | n/a (docs/config) |
 
 One-repo rule satisfied (each task touches a single repo). The **dispatcher and executors are not modified** (owner-agnostic). The TS orchestrator takes only **additive** changes: `owner='ts'` on broker calls (T3) and `owner !== "go"` skip-guards on three feature-level loops (T4) — it is otherwise unchanged for legacy features.
 
@@ -323,6 +325,7 @@ One-repo rule satisfied (each task touches a single repo). The **dispatcher and 
 
 **Migration / config impact**
 - One additive migration applied to the shared Postgres before the Go orchestrator starts. `DATABASE_URL` for the Go orchestrator points at the same DB as the adapter/read-API.
+- The `owner` change is recorded as schema **v003** (`database/workspace/v003/{changelog.md, schema.dbml}`); the top-level `database/workspace/schema.dbml` is promoted from v002 to v003 **at design time** (matching the v002 precedent), and T1's migration must match it.
 - Broker gains an optional `owner` on register/list-completed; default preserves current behavior.
 
 **Rollout concerns**
