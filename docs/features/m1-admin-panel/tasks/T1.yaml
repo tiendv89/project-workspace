@@ -1,7 +1,7 @@
 id: T1
 title: "user-service: Admin membership API"
 repo: user-service
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/m1-admin-panel-T1
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-07T10:33:11.382Z
+  last_updated_at: 2026-06-07T10:35:50.077Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/5
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/469
   status: open
@@ -68,3 +68,7 @@ log:
     by: pentative@gmail.com
     note: Reviewer approved.
     at: 2026-06-07T10:33:11.382Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-07T10:35:50.077Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
