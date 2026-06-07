@@ -33,3 +33,7 @@ log:
     rag_summary: "tool_call_failed: fetch failed"
     rag_query: Broker owner-partitioning + TS declares owner='ts' workflow-db
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-07T17:31:10+0000
+    note: executor work phase begun.
