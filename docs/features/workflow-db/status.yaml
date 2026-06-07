@@ -1,13 +1,12 @@
 feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
 next_action: >-
-  Tech lead: run Phase 2 task breakdown to produce T1–T18 YAML files under
-  docs/features/workflow-db/tasks/. On human approval of the tasks stage,
-  feature advances to ready_for_implementation and Wave 1 tasks (T1, T3, T4,
-  T17b) become immediately eligible.
+  Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status: ready).
+  Feature advances to in_implementation on first task claim. Wave 2 tasks
+  (T2, T5, T16) unlock as their Wave 1 deps complete.
 
 stages:
   product_spec:
@@ -41,11 +40,18 @@ stages:
         reviewed_at: 2026-06-07T16:39:32Z
         comment: Technical design approved.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: tiendv.52@gmai.com
+    reviewed_at: 2026-06-07T17:04:37Z
+    review_comment: >-
+      Approved. 19 tasks across 5 workstreams (S/A/G/R/K), 6 execution waves.
+      Wave 1 (T1, T3, T4, T17b) seeded ready. Dependency graph matches
+      technical-design §6. One-repo rule verified. Proceed to implementation.
+    review_history:
+      - review_status: approved
+        reviewed_by: tiendv.52@gmai.com
+        reviewed_at: 2026-06-07T17:04:37Z
+        comment: Tasks stage approved — 19 tasks, Wave 1 ready for execution.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -79,6 +85,13 @@ history:
     note: >-
       technical_design approved; feature advanced to in_tdd / tasks.
       Phase 2 task breakdown (T1–T18) to follow.
+  - at: 2026-06-07T17:04:37Z
+    actor: tiendv.52@gmai.com
+    action: stage_approved
+    stage: tasks
+    note: >-
+      tasks approved; feature advanced to ready_for_implementation.
+      19 tasks seeded; Wave 1 (T1, T3, T4, T17b) ready for execution.
 
 revalidation:
   product_spec_required: false
