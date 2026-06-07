@@ -1,9 +1,9 @@
 feature_id: m1-admin-panel
 title: M1 Admin Panel
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Produce task breakdown (tasks.md + tasks/T<n>.yaml) for review.
+next_action: T1 is ready for implementation. Run start-implementation on T1.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         reviewed_at: "2026-06-07T16:32:20+0700"
         review_comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-07T16:37:17+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-07T16:37:17+0700"
+        review_comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -48,6 +52,10 @@ history:
     by: pentative@gmail.com
     at: "2026-06-07T16:32:20+0700"
     note: Technical design approved. Ready for task breakdown.
+  - event: tasks_approved
+    by: pentative@gmail.com
+    at: "2026-06-07T16:37:17+0700"
+    note: Tasks approved. Feature advanced to ready_for_implementation. T1 activated.
 
 revalidation:
   product_spec_required: false
