@@ -26,3 +26,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-07T17:27:06.097Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-07T17:27:14.581Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Broker owner-partitioning + TS declares owner='ts' workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
