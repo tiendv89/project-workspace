@@ -55,18 +55,31 @@ CREATE INDEX IF NOT EXISTS workspace_tasks_owner_status_idx
     ON workspace_tasks (workspace_id, owner, status);
 
 -- +goose Down
+-- Rollback contract (destructive): owner='go' rows are DB-native and carry
+-- source_path = NULL by design, so they cannot survive re-imposing NOT NULL.
+-- Purge them (tasks before features, to respect the FK order) before restoring
+-- the legacy-only schema. A rollback therefore DISCARDS all DB-native (go)
+-- workflow state — which by definition has no git/YAML representation to restore
+-- from. Do not roll back with live go features in flight.
 DROP INDEX IF EXISTS workspace_tasks_owner_status_idx;
+DELETE FROM workspace_tasks WHERE owner = 'go';
 ALTER TABLE workspace_tasks ALTER COLUMN source_path SET NOT NULL;
 ALTER TABLE workspace_tasks DROP COLUMN IF EXISTS owner;
 
 DROP INDEX IF EXISTS workspace_features_owner_idx;
+DELETE FROM workspace_features WHERE owner = 'go';
 ALTER TABLE workspace_features ALTER COLUMN source_path SET NOT NULL;
 ALTER TABLE workspace_features DROP COLUMN IF EXISTS owner;
 ```
 
 Confirm the next filename sequence by listing `workflow-backend/migrations/` — use whatever `00015_*` name follows the convention already in use.
 
-**Verification**: the post-migration schema must match `database/workspace/v003/schema.dbml` for all altered tables (`workspace_features`, `workspace_tasks`). Run `goose up` and `goose down` against a scratch Postgres; confirm existing `workflow-backend` test suite passes.
+> **The Up is purely additive and safe; the Down is destructive.** The down
+> migration purges `owner='go'` rows because they have no git/YAML source to be
+> restored from and cannot satisfy the re-imposed `source_path NOT NULL`. This is
+> the deliberate rollback contract, not an oversight — see the SQL comment above.
+
+**Verification**: the post-migration schema must match `database/workspace/v003/schema.dbml` for all altered tables (`workspace_features`, `workspace_tasks`). Run `goose up` and `goose down` against a scratch Postgres **seeded with at least one `owner='go'` row** — the down must succeed (purging the go row) and leave the legacy schema intact. Confirm the existing `workflow-backend` test suite passes.
 
 ### Required skills
 - `postgres-best-practices`
