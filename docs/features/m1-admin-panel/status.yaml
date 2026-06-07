@@ -1,0 +1,48 @@
+feature_id: m1-admin-panel
+title: M1 Admin Panel
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft the technical design for review.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-07T16:15:39+0700"
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-07T16:15:39+0700"
+        review_comment: null
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - event: product_spec_approved
+    by: pentative@gmail.com
+    at: "2026-06-07T16:15:39+0700"
+    note: Product spec approved. Feature advanced to in_tdd.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
