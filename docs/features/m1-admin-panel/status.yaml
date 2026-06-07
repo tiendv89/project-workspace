@@ -2,8 +2,8 @@ feature_id: m1-admin-panel
 title: M1 Admin Panel
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Draft the technical design for review.
+current_stage: tasks
+next_action: Produce task breakdown (tasks.md + tasks/T<n>.yaml) for review.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         reviewed_at: "2026-06-07T16:15:39+0700"
         review_comment: null
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-07T16:32:20+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-07T16:32:20+0700"
+        review_comment: null
   tasks:
     review_status: draft
     reviewed_by: null
@@ -40,6 +44,10 @@ history:
     by: pentative@gmail.com
     at: "2026-06-07T16:15:39+0700"
     note: Product spec approved. Feature advanced to in_tdd.
+  - event: technical_design_approved
+    by: pentative@gmail.com
+    at: "2026-06-07T16:32:20+0700"
+    note: Technical design approved. Ready for task breakdown.
 
 revalidation:
   product_spec_required: false
