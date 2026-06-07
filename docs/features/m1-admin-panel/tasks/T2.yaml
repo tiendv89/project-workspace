@@ -1,7 +1,7 @@
 id: T2
 title: "digital-factory-ui: Admin members page"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m1-admin-panel-T2
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-07T10:49:23.897Z
-  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-07T10:52:00.698Z
+  last_updated_by: noreply@anthropic.com
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/112
   status: open
@@ -46,3 +46,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/112"
     at: 2026-06-07T10:49:23.897Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-07T10:52:00.698Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
