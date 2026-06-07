@@ -1,0 +1,22 @@
+id: T5
+title: "DB access layer (pgx/sqlc setup)"
+repo: workflow-orchestrator
+status: todo
+depends_on: [T1]
+blocked_reason: null
+branch: workflow-db/T5
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: 2026-06-07T16:44:52Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: tiendv.52@gmai.com
+    at: 2026-06-07T16:44:52Z
+    note: >-
+      Task created during workflow-db Phase 2 task breakdown.
+      Blocked on T1 (schema must be frozen before sqlc queries are generated
+      against it). Root dependency for all Go orchestrator tasks T6–T14.

@@ -1,0 +1,53 @@
+feature_id: workflow-db-mcp
+title: Workflow DB Write API & MCP — agent-facing create/update for DB-owned features
+
+feature_status: in_design
+current_stage: product_spec
+next_action: >-
+  Deferred placeholder — parked pending workflow-db. Holds the "write API / MCP"
+  scope deferred out of workflow-db (§3-B, open-question #2, §4.7 Gap A): the
+  credential-clean, agent/human-facing path to create/update DB-owned features
+  and perform manual lifecycle interventions. Do not start technical design
+  until workflow-db's in-process write path is settled and this spec is approved.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-06-06T15:38:52+0700
+    actor: matthew@swellnetwork.io
+    action: created
+    stage: product_spec
+    note: >-
+      Feature created as a deferred placeholder to own the agent/human-facing
+      write/update API + MCP server for DB-owned features (the write-API/MCP
+      scope deferred out of workflow-db). Depends on workflow-db.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

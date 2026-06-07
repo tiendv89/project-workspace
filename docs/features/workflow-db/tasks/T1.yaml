@@ -1,0 +1,21 @@
+id: T1
+title: "Schema migration (00015_*_owner)"
+repo: workflow-backend
+status: ready
+depends_on: []
+blocked_reason: null
+branch: workflow-db/T1
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmai.com
+  last_updated_at: 2026-06-07T16:44:52Z
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: tiendv.52@gmai.com
+    at: 2026-06-07T16:44:52Z
+    note: >-
+      Task created during workflow-db Phase 2 task breakdown.
+      No blockers — eligible for Wave 1 execution.
