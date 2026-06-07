@@ -1,24 +1,22 @@
 feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
-
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: >-
-  Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status: ready).
-  Feature advances to in_implementation on first task claim. Wave 2 tasks
-  (T2, T5, T16) unlock as their Wave 1 deps complete.
-
+next_action: "Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status:
+  ready). Feature advances to in_implementation on first task claim. Wave 2
+  tasks (T2, T5, T16) unlock as their Wave 1 deps complete."
 stages:
   product_spec:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
     reviewed_at: 2026-06-05T17:27:18Z
-    review_comment: "Approved — parallel-orchestrator coexistence model on a nullable
-      `owner` field (Go/Postgres = non-null, legacy TS/git = null; TS unchanged);
-      net-new-in-Go, no import/cutover; broker partitioned by owner as the one
-      shared surface; MCP descoped to a downstream feature; workspace-data-backend
-      is the read side (FE read API + YAML→DB adapter), so workflow-db ships no read
-      API; PostgreSQL locked. Open items #2/#4/#7/#8 deferred to technical design."
+    review_comment: "Approved — parallel-orchestrator coexistence model on a
+      nullable `owner` field (Go/Postgres = non-null, legacy TS/git = null; TS
+      unchanged); net-new-in-Go, no import/cutover; broker partitioned by owner
+      as the one shared surface; MCP descoped to a downstream feature;
+      workspace-data-backend is the read side (FE read API + YAML→DB adapter),
+      so workflow-db ships no read API; PostgreSQL locked. Open items
+      #2/#4/#7/#8 deferred to technical design."
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
@@ -28,12 +26,11 @@ stages:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
     reviewed_at: 2026-06-07T16:39:32Z
-    review_comment: >-
-      Approved. v1 scoped to human-merge slice (Go orchestrator write path,
-      atomic claim, PR-merge poll). Reviewer cycle, drift daemon, handoff
+    review_comment: Approved. v1 scoped to human-merge slice (Go orchestrator write
+      path, atomic claim, PR-merge poll). Reviewer cycle, drift daemon, handoff
       trigger deferred to go-orchestrator-parity; MCP deferred to
-      workflow-db-mcp. v003 schema snapshot published at design time.
-      Proceed to Phase 2 task breakdown (T1–T18).
+      workflow-db-mcp. v003 schema snapshot published at design time. Proceed to
+      Phase 2 task breakdown (T1–T18).
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
@@ -43,9 +40,8 @@ stages:
     review_status: approved
     reviewed_by: tiendv.52@gmai.com
     reviewed_at: 2026-06-07T17:04:37Z
-    review_comment: >-
-      Approved. 19 tasks across 5 workstreams (S/A/G/R/K), 6 execution waves.
-      Wave 1 (T1, T3, T4, T17b) seeded ready. Dependency graph matches
+    review_comment: Approved. 19 tasks across 5 workstreams (S/A/G/R/K), 6 execution
+      waves. Wave 1 (T1, T3, T4, T17b) seeded ready. Dependency graph matches
       technical-design §6. One-repo rule verified. Proceed to implementation.
     review_history:
       - review_status: approved
@@ -58,7 +54,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-06-05T17:27:18Z
     actor: tiendv.52@gmai.com
@@ -69,32 +64,31 @@ history:
     actor: tiendv.52@gmai.com
     action: scope_changed
     stage: product_spec
-    note: >-
-      Post-approval reframing (human-directed during technical-design review).
+    note: 'Post-approval reframing (human-directed during technical-design review).
       The "TS unchanged", "frontend needs no change", and "executor/dispatcher
       unchanged" claims are demoted from hard constraints to preferences: the
       overriding goal is to introduce the Go/Postgres orchestrator (direct DB
       writes) and gradually replace the TS orchestrator, and anything (FE, read
       API, executor, dispatcher, broker, schema, TS orchestrator) may change to
       serve it. The single-owner-per-feature invariant ("no dual-write") still
-      holds. product_spec wording reconciled accordingly; stage remains approved.
+      holds. product_spec wording reconciled accordingly; stage remains
+      approved.'
   - at: 2026-06-07T16:39:32Z
     actor: tiendv.52@gmai.com
     action: stage_approved
     stage: technical_design
-    note: >-
-      technical_design approved; feature advanced to in_tdd / tasks.
-      Phase 2 task breakdown (T1–T18) to follow.
+    note: technical_design approved; feature advanced to in_tdd / tasks. Phase 2
+      task breakdown (T1–T18) to follow.
   - at: 2026-06-07T17:04:37Z
     actor: tiendv.52@gmai.com
     action: stage_approved
     stage: tasks
-    note: >-
-      tasks approved; feature advanced to ready_for_implementation.
-      19 tasks seeded; Wave 1 (T1, T3, T4, T17b) ready for execution.
-
+    note: tasks approved; feature advanced to ready_for_implementation. 19 tasks
+      seeded; Wave 1 (T1, T3, T4, T17b) ready for execution.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/workflow-db
+feature_branch_base_sha: bc7c11dc389de1fb03e4496a41735a53eb675ddb
