@@ -60,3 +60,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m1-admin-panel
 feature_branch_base_sha: 154db6cf20c7b355221a8c21eaeeca409eb77dc0
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/468
