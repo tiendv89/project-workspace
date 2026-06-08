@@ -1,7 +1,7 @@
 id: T15
 title: "Read API: verify go-owned rows + optional owner DTO"
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on:
   - T1
   - T6
@@ -11,7 +11,7 @@ branch: feature/workflow-db-T15
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T06:01:54.462Z
+  last_updated_at: 2026-06-08T06:03:51.560Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/31
   status: open
@@ -60,3 +60,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/31"
     at: 2026-06-08T06:01:54.462Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T06:03:51.560Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
