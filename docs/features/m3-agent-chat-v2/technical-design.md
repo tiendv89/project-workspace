@@ -2,7 +2,7 @@
 
 ## Feature
 - Feature ID: `m3-agent-chat-v2`
-- Title: `<feature-title>`
+- Title: `Agent Chat v2 — Session History, Enriched Context, and IDE-style Layout`
 
 ## Current State
 Describe the existing system.
