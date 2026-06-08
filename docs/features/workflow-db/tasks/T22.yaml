@@ -45,3 +45,8 @@ log:
     rag_query: Replace E2E mock broker with the real broker and run real migrations
       workflow-db
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:56:42+0000
+    note: executor work phase begun.
