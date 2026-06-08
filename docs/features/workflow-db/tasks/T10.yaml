@@ -1,7 +1,7 @@
 id: T10
 title: Dependency auto-ready
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T9
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:51:53.097Z
+  last_updated_at: 2026-06-08T05:54:09.632Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/7
   status: open
@@ -48,3 +48,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/workflow-orchestrator/pull/7"
     at: 2026-06-08T05:51:53.097Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:54:09.632Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
