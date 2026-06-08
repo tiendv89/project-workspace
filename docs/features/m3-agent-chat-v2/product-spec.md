@@ -172,8 +172,11 @@ extended to include the new context tools.
   from v1. `workflow_get_feature_state` continues to provide feature stage, review status,
   and artifact content (product-spec.md, technical-design.md); it is not replaced by the
   new tools below.
-- `workflow_get_tasks` — query workflow-backend DB for all tasks in the current feature,
-  returning id, title, status, blocked_reason, pr.url, depends_on, execution.actor_type.
+- `workflow_get_tasks` — query the Postgres database directly (asyncpg, same connection
+  pool used by the gateway session store) for all tasks in the current feature, returning
+  id, title, status, blocked_reason, pr.url, depends_on, execution.actor_type. The agent
+  does not call workflow-backend for this — a direct DB query avoids a circular dependency
+  between hermes-agent and workflow-backend.
 - `workflow_query_gitnexus` — forward a natural-language or structured query to the
   GitNexus MCP (`mcp__gitnexus__query`) and return results. Omitted from tool list if
   `GITNEXUS_MCP_URL` is absent.
@@ -198,8 +201,8 @@ extended to include the new context tools.
 - `GET /api/workspaces/:workspaceId/features/:featureId/chat/sessions` — list sessions
   for a feature (id, title, created_at, last_message_at, last_message_excerpt).
 - `GET /api/workspaces/:workspaceId/tasks?featureId=:featureId` — list tasks from DB
-  for the left panel and for `workflow_get_tasks` tool (already sourced from DB in the
-  task management system; this is a read endpoint).
+  for the left panel UI. This endpoint is for the frontend only; the agent tool
+  `workflow_get_tasks` queries the database directly and does not use this route.
 
 ### Out of scope (tracked separately)
 - Task breakdown authoring via chat (follow-on).
