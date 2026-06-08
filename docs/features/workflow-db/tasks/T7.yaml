@@ -1,7 +1,7 @@
 id: T7
 title: Eligibility scan
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T5
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/workflow-db-T7
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T04:09:28.457Z
+  last_updated_by: noreply@anthropic.com
+  last_updated_at: 2026-06-08T04:10:32.589Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/3
   status: open
@@ -47,3 +47,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/workflow-orchestrator/pull/3"
     at: 2026-06-08T04:09:28.457Z
+  - action: reviewer_started
+    by: noreply@anthropic.com
+    at: 2026-06-08T04:10:32.589Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
