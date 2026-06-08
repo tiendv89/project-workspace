@@ -1,29 +1,71 @@
 id: T16
-title: "init-feature owner-aware (claude skill)"
+title: init-feature owner-aware (claude skill)
 repo: workflow
-status: ready
-depends_on: [T4]
+status: done
+depends_on:
+  - T4
 blocked_reason: null
-branch: workflow-db/T16
+blocked_context: null
+branch: feature/workflow-db-T16
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-08T09:42:37+0700
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-08T04:13:22.848Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/261
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/477
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T4 — specifically T4a (owner field extraction and marker
-      convention must be documented before the skill can reference it).
+    at: 2026-06-07 16:44:52+00:00
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T4 —
+      specifically T4a (owner field extraction and marker convention must be
+      documented before the skill can reference it).
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-06-08T09:42:37+0700
-    note: >-
-      Auto-ready rule. Sole dependency T4 marked done (impl PR
+    note: Auto-ready rule. Sole dependency T4 marked done (impl PR
       agent-workflow#259 merged). All depends_on entries satisfied — task is now
       eligible for execution.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 02:47:35.605000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 02:47:44.118000+00:00
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: init-feature owner-aware (claude skill) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T02:49:49+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T10:18:27+0700
+    note: Human recovery. The executor opened implementation PR agent-workflow#261
+      but crashed before writing run_completed / pr.url, leaving the task stuck
+      in_progress with pr.url null. Recording the PR retroactively.
+  - action: work_phase_complete
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T10:18:27+0700
+    note: Moved in_progress -> in_review so the orchestrator dispatches a reviewer
+      for PR agent-workflow#261. Implementation work is complete on branch
+      feature/workflow-db-T16.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:28:59.643Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T03:35:32.654Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-08T04:13:22.848Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
