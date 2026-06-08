@@ -1,7 +1,7 @@
 id: T5
 title: DB access layer (pgx/sqlc setup)
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T03:35:44.387Z
+  last_updated_at: 2026-06-08T03:38:10.548Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/1
   status: open
@@ -48,3 +48,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/workflow-orchestrator/pull/1"
     at: 2026-06-08T03:35:44.387Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:38:10.548Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
