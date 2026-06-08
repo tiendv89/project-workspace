@@ -1,7 +1,7 @@
 id: T15
 title: "Read API: verify go-owned rows + optional owner DTO"
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on:
   - T1
   - T6
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workflow-db-T15
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-08T13:46:22+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T07:28:10.816Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/31
   status: open
@@ -67,12 +67,15 @@ log:
   - action: review_blocked
     by: matthew@swellnetwork.io
     at: 2026-06-08T13:46:22+0700
-    note: >-
-      Human recovery. The cycle-2 reviewer (reviewer_started
+    note: "Human recovery. The cycle-2 reviewer (reviewer_started
       2026-06-08T06:03:51Z) crashed before posting a verdict, leaving the task
       stuck at reviewing. No APPROVE/REQUEST_CHANGES was posted; PR
       workflow-backend#31 is unchanged. Resetting reviewing -> in_review so a
       fresh reviewer is dispatched on the next poll. Note: this deviates from
       the documented reviewing -> review_incomplete recovery (the orchestrator's
       retry counter) — recorded as an explicit human decision. Both PRs remain
-      open (unmerged).
+      open (unmerged)."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:28:10.816Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
