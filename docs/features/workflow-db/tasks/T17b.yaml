@@ -15,7 +15,7 @@ pr:
   status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/476
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -78,3 +78,12 @@ log:
     note: 'Workspace PR merge failed — will require manual recovery. Details:
       {"message":"Base branch was modified. Review and try the merge
       again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T10:31:46+0700
+    note: >-
+      Manual recovery of the failed workspace PR merge. The 405 "Base branch was
+      modified" was transient; PR project-workspace#476 re-checked as
+      mergeable/clean and squash-merged into feature/workflow-db. workspace_pr.status
+      set to merged. Auto-ready check: no task depends_on T17b and no other todo
+      task has all deps done, so nothing was readied.
