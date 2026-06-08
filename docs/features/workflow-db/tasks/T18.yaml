@@ -1,7 +1,7 @@
 id: T18
 title: E2E coexistence test
 repo: workflow-orchestrator
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T4
@@ -13,7 +13,7 @@ branch: feature/workflow-db-T18
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T10:13:30.804Z
+  last_updated_at: 2026-06-08T10:27:48.423Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/11
   status: open
