@@ -5,12 +5,15 @@ status: blocked
 depends_on:
   - T5
 blocked_reason: push_access_denied
+blocked_suggestion: Add 0xpye as a write collaborator on
+  tiendv89/workflow-orchestrator, then push feature/workflow-db-T9 from
+  /workspace/impl and open the PR targeting feature/workflow-db.
 blocked_context: null
 branch: feature/workflow-db-T9
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-08T04:07:42.617Z
+  last_updated_at: 2026-06-08T04:07:49.198Z
 pr:
   url: null
   status: null
@@ -42,6 +45,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-08T03:59:25+0000
     note: executor work phase begun.
-blocked_suggestion: Add 0xpye as a write collaborator on
-  tiendv89/workflow-orchestrator, then push feature/workflow-db-T9 from
-  /workspace/impl and open the PR targeting feature/workflow-db.
+  - action: blocked
+    by: pentative@gmail.com
+    note: push_access_denied
+    at: 2026-06-08T04:07:49.198Z
