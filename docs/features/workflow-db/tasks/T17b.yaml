@@ -1,7 +1,7 @@
 id: T17b
 title: start-implementation owner-gate (claude + hermes)
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/workflow-db-T17b
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T03:10:24+0000
+  last_updated_at: 2026-06-08T03:12:27.272Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/258
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/476
   status: open
