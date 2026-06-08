@@ -1,0 +1,34 @@
+id: T19
+title: Align Go broker client to the real broker/dispatcher ABI
+repo: workflow-orchestrator
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/workflow-db-T19
+execution:
+  actor_type: agent
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-09T01:13:35+0700
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: >-
+      Created during the workflow-db post-implementation review (see
+      docs/features/workflow-db/post-implementation-review.md). Remediates the
+      two 🔴 findings on T11 (dispatch) and T12 (reap): the Go broker client was
+      built to a guessed protocol and does not match the real
+      broker/dispatcher/ABI in agent-workflow/runtime/{broker,dispatcher,abi}.
+      Kept as one task because the snake_case HandleMetadata struct is shared by
+      both the register (dispatch) and decode (reap) paths.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: No dependencies (fixes already-merged T11/T12 code) — seeded ready.

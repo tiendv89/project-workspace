@@ -1,10 +1,13 @@
 feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
-feature_status: in_handoff
-current_stage: handoff
-next_action: "Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status:
-  ready). Feature advances to in_implementation on first task claim. Wave 2
-  tasks (T2, T5, T16) unlock as their Wave 1 deps complete."
+feature_status: in_implementation
+current_stage: tasks
+next_action: >-
+  Teams: execute Wave 7 remediation tasks (T19, T20, T21 — status ready; T22
+  blocked on T19). These fix the review findings from
+  post-implementation-review.md. Handoff PR #501 and the 4 impl feature-branch
+  PRs are held OPEN until Wave 7 lands; do not merge them. Re-trigger handoff
+  once T19–T22 are done.
 stages:
   product_spec:
     review_status: approved
@@ -86,6 +89,21 @@ history:
     stage: tasks
     note: tasks approved; feature advanced to ready_for_implementation. 19 tasks
       seeded; Wave 1 (T1, T3, T4, T17b) ready for execution.
+  - at: 2026-06-09T01:13:35+0700
+    actor: matthew@swellnetwork.io
+    action: stage_changed
+    stage: handoff
+    note: >-
+      Post-implementation review re-opened the feature: in_handoff →
+      in_implementation, current_stage handoff → tasks. A local review of all 19
+      merged PRs (docs/features/workflow-db/post-implementation-review.md) found
+      two 🔴 broker-ABI defects in the Go orchestrator's dispatch/reap path
+      (T11/T12) — the core v1 path does not work against the real broker — plus
+      🟡 findings on T6/T14/T18. Four Wave 7 remediation tasks added: T19 (ABI
+      alignment, ready), T20 (actor_type + DRY, ready), T21 (runtime hardening,
+      ready), T22 (real-broker e2e, blocked on T19). Handoff PR #501 and the 4
+      impl feature-branch PRs are held OPEN until Wave 7 lands. Handoff stage
+      review_status remains draft; handoff will re-trigger after remediation.
 revalidation:
   product_spec_required: false
   technical_design_required: false
