@@ -9,7 +9,7 @@ branch: feature/workflow-db-T21
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T18:20:40.404Z
+  last_updated_at: 2026-06-08T18:25:21+0000
 pr:
   url: null
   status: null
@@ -43,3 +43,7 @@ log:
     rag_query: Orchestrator runtime hardening (builder image, poll backoff,
       non-fatal healthz) workflow-db
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:25:21+0000
+    note: executor work phase begun.
