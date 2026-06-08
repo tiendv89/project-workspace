@@ -32,3 +32,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T03:49:19.917Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:49:28.237Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Feature/task creation + materializer/seed workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
