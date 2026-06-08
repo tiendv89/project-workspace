@@ -1,7 +1,7 @@
 id: T2
 title: "Sync adapter: scope to owner IS NULL"
 repo: workspace-github-adapter
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/workflow-db-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T04:31:01.067Z
+  last_updated_at: 2026-06-08T05:21:52.368Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/29
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/478
   status: open
@@ -72,3 +72,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-08T04:31:01.067Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:21:52.368Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
