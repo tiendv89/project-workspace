@@ -1,7 +1,7 @@
 id: T17b
 title: start-implementation owner-gate (claude + hermes)
 repo: workflow
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/workflow-db-T17b
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T03:12:33.562Z
+  last_updated_at: 2026-06-08T03:14:50.896Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/258
   status: open
@@ -60,3 +60,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/258"
     at: 2026-06-08T03:12:33.562Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:14:50.896Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
