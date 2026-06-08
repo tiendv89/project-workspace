@@ -1,8 +1,10 @@
 id: T13
-title: "PR-merge poll"
+title: PR-merge poll
 repo: workflow-orchestrator
-status: todo
-depends_on: [T9, T6]
+status: ready
+depends_on:
+  - T9
+  - T6
 blocked_reason: null
 branch: workflow-db/T13
 execution:
@@ -16,7 +18,10 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T9 (SetDone transition) and T6 (go tasks must exist in the
-      DB with pr.url set before the poll has rows to inspect).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T9
+      (SetDone transition) and T6 (go tasks must exist in the DB with pr.url set
+      before the poll has rows to inspect).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:34:28.523Z
+    note: Task activated — dependency T9 merged and marked done.
