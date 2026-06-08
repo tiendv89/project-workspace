@@ -8,7 +8,7 @@
 
 ## 1. Current State
 
-### hermes-agent (`base_branch: dev`)
+### hermes-agent (`base_branch: main`)
 
 **`workflow_gateway/`** — FastAPI gateway wrapping `AIAgent`. Two live routes:
 - `POST /api/v5/create_session` — creates a row in `sessions` table, returns `session_id`.
