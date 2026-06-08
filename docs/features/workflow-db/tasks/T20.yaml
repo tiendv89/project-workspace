@@ -1,7 +1,7 @@
 id: T20
 title: Persist actor_type and de-dup MaterializeFeature via shared DBTX
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/workflow-db-T20
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T18:32:27.012Z
+  last_updated_at: 2026-06-08T18:34:06.610Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/13
   status: open
@@ -51,3 +51,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/workflow-orchestrator/pull/13"
     at: 2026-06-08T18:32:27.012Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:34:06.610Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
