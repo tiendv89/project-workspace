@@ -168,6 +168,10 @@ extended to include the new context tools.
   workflow-backend (new list endpoint).
 
 **Agent context tools (hermes-agent workflow_plugin)**
+- `workflow_get_workspace_context` and `workflow_get_feature_state` — retained unchanged
+  from v1. `workflow_get_feature_state` continues to provide feature stage, review status,
+  and artifact content (product-spec.md, technical-design.md); it is not replaced by the
+  new tools below.
 - `workflow_get_tasks` — query workflow-backend DB for all tasks in the current feature,
   returning id, title, status, blocked_reason, pr.url, depends_on, execution.actor_type.
 - `workflow_query_gitnexus` — forward a natural-language or structured query to the
