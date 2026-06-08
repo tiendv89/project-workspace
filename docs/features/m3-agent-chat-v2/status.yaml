@@ -1,6 +1,6 @@
 feature_id: m3-agent-chat-v2
 title: Agent Chat v2 — Session History, Enriched Context, and IDE-style Layout
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Wave 1 tasks ready — T1, T2, T3, T4 can be claimed in parallel. T5
   stays todo until T2 + T4 are done.
@@ -66,6 +66,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/498
 history:
   - at: 2026-06-08T05:07:20+0000
     by: pentative@gmail.com
@@ -101,3 +102,14 @@ revalidation:
 feature_branch: feature/m3-agent-chat-v2
 feature_branch_base_sha: 4940544ef11cf5236cf803f2f5c04605edd82dbe
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/491
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/498
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/6
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/33
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/116
+    status: open
