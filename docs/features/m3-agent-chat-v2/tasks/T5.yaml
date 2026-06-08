@@ -41,3 +41,7 @@ log:
     rag_query: "digital-factory-ui: session history + AgentChatPanel refactor
       m3-agent-chat-v2"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:19:02+0000
+    note: executor work phase begun.
