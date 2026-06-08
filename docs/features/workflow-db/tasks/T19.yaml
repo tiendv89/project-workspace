@@ -1,7 +1,7 @@
 id: T19
 title: Align Go broker client to the real broker/dispatcher ABI
 repo: workflow-orchestrator
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/workflow-db-T19
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T18:39:43.030Z
+  last_updated_at: 2026-06-08T18:41:08.489Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/14
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/502
   status: open
@@ -59,3 +59,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-08T18:39:43.030Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:41:08.489Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
