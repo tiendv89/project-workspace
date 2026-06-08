@@ -37,3 +37,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T18:42:49.224Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:42:57.601Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Replace E2E mock broker with the real broker and run real migrations
+      workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
