@@ -1,18 +1,20 @@
 id: T10
 title: Dependency auto-ready
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on:
   - T9
 blocked_reason: null
-branch: workflow-db/T10
+blocked_context: null
+branch: feature/workflow-db-T10
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T05:36:47.343Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -24,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T05:34:28.507Z
     note: Task activated — dependency T9 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:36:47.343Z
+    note: Claimed via git-based claim protocol.
