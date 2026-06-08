@@ -1,34 +1,65 @@
 id: T19
 title: Align Go broker client to the real broker/dispatcher ABI
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T19
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-09T01:13:35+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T18:41:08.489Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/14
+  status: merged
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/502
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-06-09T01:13:35+0700
-    note: >-
-      Created during the workflow-db post-implementation review (see
+    note: "Created during the workflow-db post-implementation review (see
       docs/features/workflow-db/post-implementation-review.md). Remediates the
       two 🔴 findings on T11 (dispatch) and T12 (reap): the Go broker client was
       built to a guessed protocol and does not match the real
       broker/dispatcher/ABI in agent-workflow/runtime/{broker,dispatcher,abi}.
       Kept as one task because the snake_case HandleMetadata struct is shared by
-      both the register (dispatch) and decode (reap) paths.
+      both the register (dispatch) and decode (reap) paths."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-06-09T01:13:35+0700
     note: No dependencies (fixes already-merged T11/T12 code) — seeded ready.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:17:00.610Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:17:09.661Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Align Go broker client to the real broker/dispatcher ABI workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:23:44+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/14"
+    at: 2026-06-08T18:34:25.260Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:35:49.688Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T18:39:43.030Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:41:08.489Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

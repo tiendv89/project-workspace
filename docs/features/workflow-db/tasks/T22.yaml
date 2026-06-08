@@ -1,7 +1,7 @@
 id: T22
 title: Replace E2E mock broker with the real broker and run real migrations
 repo: workflow-orchestrator
-status: todo
+status: ready
 depends_on:
   - T19
 blocked_reason: null
@@ -21,11 +21,15 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-06-09T01:13:35+0700
-    note: >-
-      Created during the workflow-db post-implementation review (see
+    note: "Created during the workflow-db post-implementation review (see
       docs/features/workflow-db/post-implementation-review.md). Remediates the
-      🟡 finding on T18: the coexistence test asserts all six invariants but runs
-      A2/A3 against a test-local mock broker (and a seeded TS row), which is why
-      the T11/T12 protocol defects slipped through. Also swaps the schema.sql
-      snapshot for the real goose migrations. Depends on T19 — there is no point
-      testing against the real broker until the Go client conforms to the ABI.
+      🟡 finding on T18: the coexistence test asserts all six invariants but
+      runs A2/A3 against a test-local mock broker (and a seeded TS row), which
+      is why the T11/T12 protocol defects slipped through. Also swaps the
+      schema.sql snapshot for the real goose migrations. Depends on T19 — there
+      is no point testing against the real broker until the Go client conforms
+      to the ABI."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:41:08.742Z
+    note: Task activated — dependency T19 merged and marked done.
