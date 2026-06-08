@@ -1,17 +1,27 @@
 feature_id: m3-agent-chat-v2
 title: Agent Chat v2 — Session History, Enriched Context, and IDE-style Layout
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft technical design and submit for approval.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-08T05:07:20+0000
+    review_comment: >-
+      Approved. Session history list + active chat mode, workflow_get_tasks via
+      direct DB query, GitNexus + RAG MCP tools, three-panel IDE-style layout.
+      Sessions endpoint is genuinely new work; tasks left panel uses existing routes.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-08T05:07:20+0000
+        review_comment: >-
+          Approved. Session history list + active chat mode, workflow_get_tasks via
+          direct DB query, GitNexus + RAG MCP tools, three-panel IDE-style layout.
+          Sessions endpoint is genuinely new work; tasks left panel uses existing routes.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +41,15 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-06-08T05:07:20+0000
+    by: pentative@gmail.com
+    action: approve_stage
+    stage: product_spec
+    from_feature_status: in_design
+    to_feature_status: in_tdd
+    from_current_stage: product_spec
+    to_current_stage: technical_design
 
 revalidation:
   product_spec_required: false
