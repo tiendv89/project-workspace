@@ -5,12 +5,18 @@ status: blocked
 depends_on:
   - T5
 blocked_reason: push_rejected
+blocked_suggestion: "The agent identity (0xpye / SSH key in agent_id_rsa) only
+  has pull access to tiendv89/workflow-orchestrator. Grant push access for this
+  key or provide a GITHUB_TOKEN with push scope. The commit is ready locally on
+  feature/workflow-db-T7: adds TestFindEligibleTasks_UsesOwnerStatusIndex
+  (EXPLAIN index coverage test) and workspace_tasks_owner_status_idx +
+  workspace_features_owner_idx to schema.sql."
 blocked_context: null
 branch: feature/workflow-db-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-08T04:28:07.179Z
+  last_updated_at: 2026-06-08T04:28:13.956Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/3
   status: open
@@ -59,9 +65,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-08T04:19:09.386Z
     note: Fix agent claimed.
-blocked_suggestion: "The agent identity (0xpye / SSH key in agent_id_rsa) only
-  has pull access to tiendv89/workflow-orchestrator. Grant push access for this
-  key or provide a GITHUB_TOKEN with push scope. The commit is ready locally on
-  feature/workflow-db-T7: adds TestFindEligibleTasks_UsesOwnerStatusIndex
-  (EXPLAIN index coverage test) and workspace_tasks_owner_status_idx +
-  workspace_features_owner_idx to schema.sql."
+  - action: blocked
+    by: pentative@gmail.com
+    note: push_rejected
+    at: 2026-06-08T04:28:13.956Z
