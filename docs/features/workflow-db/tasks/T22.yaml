@@ -1,7 +1,7 @@
 id: T22
 title: Replace E2E mock broker with the real broker and run real migrations
 repo: workflow-orchestrator
-status: in_progress
+status: in_review
 depends_on:
   - T19
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T22
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T19:41:28.326Z
+  last_updated_at: 2026-06-08T19:56:02.108Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/16
   status: open
