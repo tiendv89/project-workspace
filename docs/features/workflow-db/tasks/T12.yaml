@@ -1,42 +1,46 @@
-id: T12
-title: Reap
-repo: workflow-orchestrator
-status: in_progress
-depends_on:
-  - T11
-  - T9
-blocked_reason: null
 blocked_context: null
+blocked_reason: null
 branch: feature/workflow-db-T12
+depends_on:
+- T11
+- T9
 execution:
   actor_type: agent
+  last_updated_at: 2026-06-08T07:54:41+0000
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T07:48:09.684Z
-pr:
-  url: null
-  status: null
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/497
-  status: open
+id: T12
 log:
-  - action: created
-    by: tiendv.52@gmai.com
-    at: 2026-06-07T16:44:52Z
-    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T11
-      (dispatch must be in place to produce completions to reap) and T9
-      (SetInReview/SetBlocked transitions needed to process them).
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T07:46:25.855Z
-    note: Task activated — dependency T11 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T07:48:09.684Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T07:48:19.311Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: Reap workflow-db
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  at: 2026-06-07 16:44:52+00:00
+  by: tiendv.52@gmai.com
+  note: Task created during workflow-db Phase 2 task breakdown. Blocked on T11 (dispatch
+    must be in place to produce completions to reap) and T9 (SetInReview/SetBlocked
+    transitions needed to process them).
+- action: ready
+  at: 2026-06-08 07:46:25.855000+00:00
+  by: tiendv.52@gmail.com
+  note: Task activated — dependency T11 merged and marked done.
+- action: claimed
+  at: 2026-06-08 07:48:09.684000+00:00
+  by: tiendv.52@gmail.com
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  at: 2026-06-08 07:48:19.311000+00:00
+  by: tiendv.52@gmail.com
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+  rag_context_injected: false
+  rag_query: Reap workflow-db
+  rag_summary: query_returned_no_chunks
+- action: started
+  at: 2026-06-08T07:54:41+0000
+  by: tiendv.52@gmail.com
+  note: executor work phase begun.
+pr:
+  status: null
+  url: null
+repo: workflow-orchestrator
+status: in_progress
+title: Reap
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/497
