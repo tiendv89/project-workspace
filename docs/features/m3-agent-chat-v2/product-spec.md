@@ -164,8 +164,8 @@ extended to include the new context tools.
   state (new vs. continue).
 - Session title auto-generated on creation from the first user message (truncated to
   60 chars).
-- Sessions loaded from the existing `voyager_sessions_v4` Postgres table via
-  workflow-backend (new list endpoint).
+- Sessions loaded from the `sessions` table in the hermes-agent Postgres database via
+  workflow-backend (new list endpoint). See `database/hermes-agent/schema.dbml`.
 
 **Agent context tools (hermes-agent workflow_plugin)**
 - `workflow_get_workspace_context` and `workflow_get_feature_state` — retained unchanged
@@ -229,8 +229,8 @@ extended to include the new context tools.
 ## Reference
 - v1 spec: `docs/features/m3-agent-chat/product-spec.md`
 - v1 technical design: `docs/features/m3-agent-chat/technical-design.md`
-- Session store schema: `voyager_sessions_v4`, `voyager_messages_v4` (swell-hermes pattern,
-  live in hermes-agent Postgres).
+- Session store schema: `sessions`, `messages` — see `database/hermes-agent/schema.dbml`.
+  Migration: `hermes-agent/workflow_gateway/migrations/001_initial_schema.sql`.
 - GitNexus MCP tool: `mcp__gitnexus__query` — see `CLAUDE.md` GitNexus lookup priority rule.
 - RAG MCP tool: `mcp__rag-server__rag_query` — see `CLAUDE.md` RAG-first read rule.
 - Layout reference: VS Code three-panel shell (file explorer | editor | terminal/chat),
