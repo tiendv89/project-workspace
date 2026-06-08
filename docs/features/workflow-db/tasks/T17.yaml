@@ -1,27 +1,62 @@
 id: T17
 title: tech-lead owner-aware (claude skill)
 repo: workflow
-status: ready
+status: done
 depends_on:
   - T4
   - T6
 blocked_reason: null
-branch: workflow-db/T17
+blocked_context: null
+branch: feature/workflow-db-T17
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T05:46:22.157Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/262
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/487
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: 2026-06-07T16:44:52Z
+    at: 2026-06-07 16:44:52+00:00
     note: Task created during workflow-db Phase 2 task breakdown. Blocked on T4
       (marker convention — T4a) and T6 (materializer/seed contract must be final
       before the skill can emit a compatible fixture).
   - action: ready
     by: tiendv.52@gmail.com
-    at: 2026-06-08T04:30:33.212Z
+    at: 2026-06-08 04:30:33.212000+00:00
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 04:37:43.751000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 04:37:52.338000+00:00
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: tech-lead owner-aware (claude skill) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:41:27+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/262"
+    at: 2026-06-08T05:22:37.438Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:29:39.138Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T05:34:56.856Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:46:22.157Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
