@@ -1,8 +1,15 @@
 id: T14
-title: "Orchestration loop"
+title: Orchestration loop
 repo: workflow-orchestrator
-status: todo
-depends_on: [T7, T8, T9, T10, T11, T12, T13]
+status: ready
+depends_on:
+  - T7
+  - T8
+  - T9
+  - T10
+  - T11
+  - T12
+  - T13
 blocked_reason: null
 branch: workflow-db/T14
 execution:
@@ -16,7 +23,10 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on all individual Go orchestrator components (T7–T13) — wires
-      them into a runnable loop. Wave 5 gate before T18.
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on all
+      individual Go orchestrator components (T7–T13) — wires them into a
+      runnable loop. Wave 5 gate before T18.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T08:47:01.063Z
+    note: Task activated — dependency T13 merged and marked done.
