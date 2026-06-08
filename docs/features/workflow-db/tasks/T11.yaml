@@ -1,7 +1,7 @@
 id: T11
 title: Dispatch
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T5
   - T3
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workflow-db-T11
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-08T13:44:31+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T07:23:39.029Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/5
   status: open
@@ -82,10 +82,13 @@ log:
   - action: run_completed
     by: matthew@swellnetwork.io
     at: 2026-06-08T13:44:31+0700
-    note: >-
-      Human recovery. The fix agent (fix_started 2026-06-08T06:22:51Z) crashed
+    note: "Human recovery. The fix agent (fix_started 2026-06-08T06:22:51Z) crashed
       before logging completion, leaving a dead in_progress claim. Human
-      verified the fix commit DID land on PR workflow-orchestrator#5 ("fix:
-      remove per-call Redis client leak in Dispatcher") addressing the
+      verified the fix commit DID land on PR workflow-orchestrator#5 (\"fix:
+      remove per-call Redis client leak in Dispatcher\") addressing the
       reviewer's REQUEST_CHANGES. Resetting in_progress -> in_review so the
-      reviewer can re-evaluate the pushed fix. PR #5 remains open (unmerged).
+      reviewer can re-evaluate the pushed fix. PR #5 remains open (unmerged)."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:23:39.029Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
