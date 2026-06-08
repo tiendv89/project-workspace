@@ -69,8 +69,14 @@ No session-listing route exists. The handler pattern is a transparent byte-pipe 
 ### Fixed assumptions
 
 - `WORKFLOW_DATABASE_URL` points at the workspace Postgres instance (already used by `workflow_plugin/db.py`). `workspace_tasks` is queryable from it — no new DB connection needed for `workflow_get_tasks`.
-- `GITNEXUS_MCP_URL` and `RAG_MCP_URL` are optional env vars. If absent the corresponding tools are not registered; `check_fn` returning `False` suppresses the tool silently.
-- GitNexus and RAG services expose MCP HTTP transport. The tools call them via JSON-RPC POST (`method: tools/call`) — same wire format Claude Code uses, no third-party MCP client library needed.
+- `GITNEXUS_MCP_URL` and `RAG_MCP_URL` are optional env vars pointing at each service's
+  `/sse` endpoint. If absent, the tool's `check_fn` returns `False` and `get_definitions`
+  omits it from the tool list (verified mechanism — see §3 Option C).
+- GitNexus and RAG are reached over the **MCP SSE transport** via the `mcp` Python
+  `ClientSession` (open `/sse` → `initialize` → `call_tool`), **not** a stateless
+  JSON-RPC POST. git-nexus is SSE-only; rag-service also offers a `/query` REST route but
+  the uniform MCP path is chosen (§3 Option C). The handlers are async, bridged to the
+  sync tool-dispatch path by the registry's `_run_async`.
 - hermes-agent gateway DB is asyncpg (SQLAlchemy async). The new `list_sessions` store function follows the existing async pattern.
 - digital-factory-ui uses TailwindCSS v4 + HeroUI v3 — collapse animation via `transition-[width]` utility.
 
@@ -104,14 +110,52 @@ Same `WORKFLOW_DATABASE_URL` already used by `workflow_plugin/db.py`. Add a `get
 - **Pro:** no new env var, no inter-service coupling, same synchronous psycopg pattern already in place.
 - **Chosen.**
 
-### GitNexus / RAG tools — Option A: spawn MCP subprocess
-Instantiate a subprocess MCP client per tool call.
+> **Transport correction (verified against the actual services).** Both target services
+> expose the **stateful MCP SSE transport** — `GET /sse` to open the event stream plus
+> `POST /messages/` to send — *not* a plain JSON-RPC `POST /`. Confirmed by reading:
+> - `git-nexus/services/gitnexus_server/server.py` — routes are `/health`, `/sse` (GET),
+>   `Mount("/messages/")`. **SSE-only.** It is a generic passthrough that proxies
+>   `list_tools` / `call_tool(name, arguments)` to an underlying `npx gitnexus mcp` stdio
+>   subprocess. There is **no** plain REST query endpoint.
+> - `rag-service/services/rag_server/server.py` — exposes the MCP tool `rag_query` over
+>   `/sse` **and** a plain `POST /query` REST endpoint (`{query, workspace_id, top_k,
+>   source_types}` → `{results:[...]}`).
+>
+> A naive `requests.post(json={"jsonrpc":...})` against an SSE-transport server does not
+> work — it requires the MCP handshake (open SSE → `initialize` → `initialized` →
+> `tools/call`). The options below reflect this reality.
 
-- **Rejected:** heavy, stateful, not suitable for a synchronous tool handler.
+### GitNexus / RAG tools — Option A: plain `requests.post` JSON-RPC — rejected (factually wrong)
+The original draft assumed a stateless JSON-RPC POST endpoint. **Rejected** — git-nexus is
+SSE-only and rejects non-handshake POSTs; rag-service's MCP tool is likewise SSE-only (its
+only stateless surface is the bespoke `/query` REST route, which git-nexus does not mirror).
 
-### GitNexus / RAG tools — Option B: HTTP POST to MCP server (JSON-RPC) — chosen
-`requests.post(url, json={"jsonrpc":"2.0","method":"tools/call","params":{...},"id":1})`. Standard MCP HTTP transport. No library dependency; tool omitted if URL absent.
+### GitNexus / RAG tools — Option B: mixed (rag via `/query` REST, gitnexus via MCP SSE) — rejected
+Use rag-service's plain `POST /query` and an MCP SSE client only for git-nexus.
 
+- **Pro:** avoids the MCP client for the rag path.
+- **Con:** two different transports for two near-identical "query an index" tools —
+  inconsistent handler shape, two error models, harder to test. The rag REST route also
+  returns a different envelope (`{results}`) than the MCP tool result, so the agent sees
+  two shapes. **Rejected** for inconsistency.
+
+### GitNexus / RAG tools — Option C: uniform MCP SSE client for both — chosen
+Use the `mcp` Python package's `ClientSession` over `sse_client(GITNEXUS_MCP_URL)` /
+`sse_client(RAG_MCP_URL)`. Register both handlers as **async** (`is_async=True`); the
+registry bridges sync→async automatically via `model_tools._run_async` (verified — it is
+"the single source of truth for sync->async bridging in tool handlers" and explicitly
+handles being called from the gateway's worker thread). Each tool is gated by a
+`check_fn` that returns `False` when its URL env var is unset, so `get_definitions`
+omits it from the tool list entirely (verified in `tools/registry.py:get_definitions` —
+tools whose `check_fn()` is False are filtered out, matching the spec's "silently
+omitted").
+
+- **Pro:** one transport, one handler shape, matches the product spec's "MCP" language,
+  correctly handles git-nexus being SSE-only, stays entirely within hermes-agent (one
+  repo per task preserved — no git-nexus REST endpoint to add).
+- **Con:** adds `mcp==1.26.0` to the gateway runtime (today it is in hermes-agent's
+  optional extras only, not the `workflow-gateway` extra). Low-risk: pinned version
+  already vendored; in-repo precedent exists (`tools/mcp_tool.py`).
 - **Chosen.**
 
 ### Three-panel layout — Option A: CSS Grid
@@ -259,29 +303,126 @@ def get_feature_tasks(workspace_id: str, feature_id: str) -> list[dict]:
     return [dict(r) for r in rows]
 ```
 
-**New file: `workflow_plugin/tools/gitnexus.py`**
+**MCP SSE client helper — `workflow_plugin/mcp_client.py`**
 
-HTTP POST to `{GITNEXUS_MCP_URL}/` (MCP JSON-RPC, `method: tools/call`, `params.name: query`). Schema accepts `query: string`. Returns raw MCP response content. Omitted when `GITNEXUS_MCP_URL` is unset (check_fn).
+Shared async helper both MCP tools use. Connects over SSE, runs the handshake, calls one
+tool, returns its result content. Self-contained so the tool handlers stay thin:
 
-**New file: `workflow_plugin/tools/rag.py`**
+```python
+from mcp import ClientSession
+from mcp.client.sse import sse_client
 
-Same pattern: HTTP POST to `{RAG_MCP_URL}/` with `method: tools/call`, `params.name: rag_query`. Schema accepts `query: string`, `top_k: integer (default 5)`. Omitted when `RAG_MCP_URL` is unset.
+async def call_mcp_tool(base_url: str, tool: str, arguments: dict) -> list[dict]:
+    # base_url is the service's SSE endpoint, e.g. http://gitnexus:8002/sse
+    async with sse_client(base_url) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            result = await session.call_tool(tool, arguments)
+            # result.content is a list of TextContent/EmbeddedResource; callers
+            # extract .text or structured payloads as needed.
+            return [_content_to_dict(c) for c in result.content]
+```
 
-**Updated `workflow_plugin/__init__.py`** — extend `_TOOLS`:
+**New file: `workflow_plugin/tools/gitnexus.py`** — async handler, `is_async=True`.
+
+git-nexus is a generic MCP passthrough; T3 should call `session.list_tools()` once to
+confirm the exact tool names + schemas exposed by `npx gitnexus mcp` (per the CLAUDE.md
+GitNexus rule these are `query`, `context`, `impact`, `detect_changes`, `list_repos`,
+`group_query`). v2 exposes a single passthrough with a `tool` selector defaulting to
+`query`:
+
+```python
+import os
+from ..mcp_client import call_mcp_tool
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "query": {"type": "string", "description": "Natural-language or structured query."},
+        "tool":  {"type": "string", "default": "query",
+                  "description": "GitNexus tool: query | context | impact | ..."},
+    },
+    "required": ["query"],
+    "additionalProperties": False,
+}
+
+def check_available(**_) -> bool:
+    return bool(os.environ.get("GITNEXUS_MCP_URL", "").strip())
+
+async def handle(query: str, tool: str = "query", **_) -> dict:
+    url = os.environ["GITNEXUS_MCP_URL"]
+    try:
+        return {"ok": True, "results": await call_mcp_tool(url, tool, {"query": query})}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+```
+
+**New file: `workflow_plugin/tools/rag.py`** — async handler, `is_async=True`.
+
+Calls rag-service's `rag_query` MCP tool. **`workspace_id` is required** — rag-service
+rejects queries without it (verified in `_rag_query`). The agent already passes
+`workspace_id` to the other workflow tools, so it is a required schema field here too:
+
+```python
+import os
+from ..mcp_client import call_mcp_tool
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "query":        {"type": "string"},
+        "workspace_id": {"type": "string"},
+        "top_k":        {"type": "integer", "default": 5},
+    },
+    "required": ["query", "workspace_id"],
+    "additionalProperties": False,
+}
+
+def check_available(**_) -> bool:
+    return bool(os.environ.get("RAG_MCP_URL", "").strip())
+
+async def handle(query: str, workspace_id: str, top_k: int = 5, **_) -> dict:
+    url = os.environ["RAG_MCP_URL"]
+    try:
+        results = await call_mcp_tool(url, "rag_query",
+                                      {"query": query, "workspace_id": workspace_id, "top_k": top_k})
+        return {"ok": True, "results": results}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+```
+
+**Updated `workflow_plugin/__init__.py`** — the current loop unpacks **3-tuples**
+(`for name, schema, handler in _TOOLS`) and applies `check_fn=check_workflow_available`
+to every tool. That breaks the moment a tool needs a *different* `check_fn` or
+`is_async=True`. Restructure `_TOOLS` to dict entries carrying optional `check_fn` /
+`is_async`:
 
 ```python
 from .tools import workspace, feature, artifacts, tasks as tasks_tool, gitnexus, rag
 
 _TOOLS = (
-    ("workflow_get_workspace_context",  workspace.SCHEMA,             workspace.handle),
-    ("workflow_get_feature_state",      feature.SCHEMA,               feature.handle),
-    ("workflow_write_product_spec",     artifacts.WRITE_SPEC_SCHEMA,  artifacts.handle_write_product_spec),
-    ("workflow_write_technical_design", artifacts.WRITE_TD_SCHEMA,    artifacts.handle_write_technical_design),
-    ("workflow_get_tasks",              tasks_tool.SCHEMA,             tasks_tool.handle),
-    ("workflow_query_gitnexus",         gitnexus.SCHEMA,              gitnexus.handle,   gitnexus.check_available),
-    ("workflow_query_rag",              rag.SCHEMA,                   rag.handle,        rag.check_available),
+    {"name": "workflow_get_workspace_context",  "schema": workspace.SCHEMA,            "handler": workspace.handle,                    "check_fn": check_workflow_available},
+    {"name": "workflow_get_feature_state",      "schema": feature.SCHEMA,              "handler": feature.handle,                      "check_fn": check_workflow_available},
+    {"name": "workflow_write_product_spec",     "schema": artifacts.WRITE_SPEC_SCHEMA, "handler": artifacts.handle_write_product_spec, "check_fn": check_workflow_available},
+    {"name": "workflow_write_technical_design", "schema": artifacts.WRITE_TD_SCHEMA,   "handler": artifacts.handle_write_technical_design, "check_fn": check_workflow_available},
+    {"name": "workflow_get_tasks",              "schema": tasks_tool.SCHEMA,           "handler": tasks_tool.handle,                   "check_fn": check_workflow_available},
+    {"name": "workflow_query_gitnexus",         "schema": gitnexus.SCHEMA,             "handler": gitnexus.handle, "check_fn": gitnexus.check_available, "is_async": True},
+    {"name": "workflow_query_rag",              "schema": rag.SCHEMA,                  "handler": rag.handle,      "check_fn": rag.check_available,      "is_async": True},
 )
+
+def register(ctx):
+    for t in _TOOLS:
+        ctx.register_tool(
+            name=t["name"], toolset="workflow", schema=t["schema"], handler=t["handler"],
+            check_fn=t.get("check_fn"), is_async=t.get("is_async", False),
+        )
+    ctx.register_hook("pre_llm_call", inject_context)
 ```
+
+**Dependency:** add `mcp==1.26.0` to the `workflow-gateway` extra in hermes-agent
+`pyproject.toml` (line ~130). It is currently only in the `dev` / `mcp` / `computer-use`
+extras, none of which the gateway Dockerfile installs (`uv pip install -e
+".[workflow-gateway]"`).
 
 **Updated `workflow_plugin/hooks.py`** — `inject_context` adds a task summary block:
 
@@ -444,9 +585,12 @@ The existing `streamChatTurn` and `onArtifactSaved` logic is unchanged — it is
 | `workspace_tasks` table in workspace DB | Existing schema | ✅ `database/workspace/schema.dbml` v003 — `workspace_tasks` present | No |
 | asyncpg / SQLAlchemy async in hermes-agent gateway | Existing | ✅ Used for session store | No |
 | `WORKFLOW_DATABASE_URL` env var in hermes-agent | Existing | ✅ Already required by `workflow_plugin/db.py` | No |
-| `GITNEXUS_MCP_URL` env var in hermes-agent | New optional | Not yet set in hermes-agent env | No — tool silently absent if unset |
-| `RAG_MCP_URL` env var in hermes-agent | New optional | Not yet set in hermes-agent env | No — tool silently absent if unset |
-| `requests` Python lib in hermes-agent | New dep for MCP HTTP calls | Check if already in `pyproject.toml` | T3 — add if missing |
+| `GITNEXUS_MCP_URL` env var in hermes-agent | New optional | Not yet set anywhere (verified — name not present in any repo). Points at git-nexus **`/sse`** endpoint, e.g. `http://gitnexus:8002/sse` | No — `check_fn` omits the tool from the list when unset |
+| `RAG_MCP_URL` env var in hermes-agent | New optional | Not yet set anywhere. Points at rag-service **`/sse`** endpoint | No — `check_fn` omits the tool when unset |
+| git-nexus transport | External service | ✅ Verified **SSE-only** (`/health`, `/sse`, `/messages/`) — no plain REST query route. Generic `list_tools`/`call_tool` passthrough to `npx gitnexus mcp` | Drives the MCP-client choice (Option C) |
+| rag-service transport | External service | ✅ Verified MCP `rag_query` over `/sse` **and** a plain `POST /query` REST route. `rag_query` **requires `workspace_id`** (rejects empty) | No — tool passes `workspace_id` |
+| `mcp==1.26.0` in the **`workflow-gateway`** extra | New runtime dep | ⚠️ `mcp` is pinned in hermes-agent's `dev`/`mcp`/`computer-use` extras only — **not** in `workflow-gateway`, which is what the gateway Dockerfile installs | T3 — add `mcp==1.26.0` to the `workflow-gateway` extra |
+| `model_tools._run_async` sync→async bridge | Existing | ✅ Verified — registry auto-bridges `is_async=True` handlers; helper explicitly handles the gateway worker-thread case | No |
 | `searchFeatureTasks` in `digital-factory-ui/client.ts` | Existing | ✅ `GET /features/:fid/tasks` exists | No — T4 uses it as-is |
 | workflow-backend `ListSessions` proxy → hermes-agent `GET /api/v5/sessions` | New endpoint (T1) | Not yet built | T2 can be written against known contract; needs T1 deployed for e2e |
 | `listChatSessions` in `chat.ts` → workflow-backend `GET /chat/sessions` | New endpoint (T2) | Not yet built | T5 is BLOCKED on T2 being deployed |
@@ -486,7 +630,7 @@ T4: digital-factory-ui — three-panel layout + FeatureStatusPanel + CollapseTog
 | Repo | Changes | Why |
 |---|---|---|
 | `hermes-agent` | T1: `workflow_gateway/api/router.py`, `workflow_gateway/db/store.py` — new `list_sessions`, `_last_assistant_excerpt`, auto-title logic, `GET /api/v5/sessions` route | Session history endpoint |
-| `hermes-agent` | T3: `workflow_plugin/tools/tasks.py`, `workflow_plugin/tools/gitnexus.py`, `workflow_plugin/tools/rag.py`, updates to `workflow_plugin/__init__.py`, `workflow_plugin/db.py`, `workflow_plugin/hooks.py` | New agent context tools + enriched hook |
+| `hermes-agent` | T3: new `workflow_plugin/tools/tasks.py`, `workflow_plugin/tools/gitnexus.py`, `workflow_plugin/tools/rag.py`, `workflow_plugin/mcp_client.py`; updates to `workflow_plugin/__init__.py` (dict `_TOOLS` + `register`), `workflow_plugin/db.py` (`get_feature_tasks`), `workflow_plugin/hooks.py`; `pyproject.toml` (`mcp==1.26.0` into `workflow-gateway` extra) | New agent context tools + enriched hook + MCP SSE client |
 | `workflow-backend` | T2: `internal/handler/chat_proxy.go` — add `ListSessions`, register `GET` route | Session list proxy |
 | `digital-factory-ui` | T4: new `src/features/feature-status/FeatureStatusPanel.tsx`, `CollapseToggle`, `useLocalStorage`; modify `FeatureSessionPage.tsx` | Three-panel layout |
 | `digital-factory-ui` | T5: new `src/features/agent-chat/SessionHistoryList.tsx`; modify `AgentChatPanel.tsx`, `src/services/workflow-backend/chat.ts` | Session history UI |
@@ -509,8 +653,16 @@ T4: digital-factory-ui — three-panel layout + FeatureStatusPanel + CollapseTog
 
 **T3 (workflow_plugin tools)**
 - Unit: `workflow_get_tasks` — mock psycopg, assert query uses correct parametrisation.
-- Unit: `workflow_query_gitnexus` / `workflow_query_rag` — mock `requests.post`, assert JSON-RPC body; assert tool absent when env var unset.
-- Unit: `inject_context` hook — seed tasks with one `blocked` entry, assert hook output includes `blocked_tasks:` block.
+- Unit: `workflow_query_gitnexus` / `workflow_query_rag` — mock `call_mcp_tool` (or
+  `mcp.ClientSession`), assert the right tool name + arguments are passed (`rag_query`
+  with `workspace_id`; gitnexus `query` / selected `tool`).
+- Unit: `check_available` gating — with `GITNEXUS_MCP_URL` / `RAG_MCP_URL` unset, assert
+  `registry.get_definitions({...})` omits the tool from the returned list (not just that
+  it errors at call time).
+- Unit: `register()` — assert all 7 tools register with the correct `check_fn` and that
+  the two MCP tools register with `is_async=True`.
+- Unit: `inject_context` hook — seed tasks with one `blocked` entry, assert hook output
+  includes `blocked_tasks:` block.
 
 **T4 (layout)**
 - Component: `FeatureStatusPanel` renders feature badge + task rows.
@@ -527,7 +679,16 @@ T4: digital-factory-ui — three-panel layout + FeatureStatusPanel + CollapseTog
 ### Migration / Config
 
 - No DB schema changes — `sessions` and `messages` tables unchanged. The new `list_sessions` query uses existing columns.
-- New optional env vars: `GITNEXUS_MCP_URL`, `RAG_MCP_URL` in hermes-agent. Add to `.env.example`.
+- New optional env vars in hermes-agent: `GITNEXUS_MCP_URL` and `RAG_MCP_URL`, each
+  pointing at the respective service's **`/sse`** endpoint. Add to
+  `workflow_gateway/.env.example`.
+  - Naming note: CLAUDE.md's rag-context rule references `MCP_RAG_URL` for the *Claude
+    Code executor's* `.mcp.json` (a different consumer that surfaces `mcp__rag-server__*`
+    tools to the executor). This feature's `RAG_MCP_URL` is hermes-agent's own
+    server-to-server URL and is intentionally distinct. Both can coexist; T3 should not
+    conflate them.
+- New runtime dep: add `mcp==1.26.0` to the **`workflow-gateway`** extra in hermes-agent
+  `pyproject.toml` (already vendored at that pin in other extras).
 - No workflow-backend DB changes.
 - No digital-factory-ui env var changes.
 
