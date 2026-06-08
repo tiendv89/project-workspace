@@ -1,8 +1,9 @@
 id: T10
-title: "Dependency auto-ready"
+title: Dependency auto-ready
 repo: workflow-orchestrator
-status: todo
-depends_on: [T9]
+status: ready
+depends_on:
+  - T9
 blocked_reason: null
 branch: workflow-db/T10
 execution:
@@ -16,7 +17,10 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T9 (SetDone transition must exist before auto-ready can
-      be wired into it transactionally).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T9
+      (SetDone transition must exist before auto-ready can be wired into it
+      transactionally).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:34:28.507Z
+    note: Task activated — dependency T9 merged and marked done.

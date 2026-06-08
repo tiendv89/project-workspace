@@ -1,25 +1,88 @@
 id: T9
 title: Status transitions + activity log
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on:
   - T5
 blocked_reason: null
-branch: workflow-db/T9
+blocked_suggestion: null
+blocked_context: null
+branch: feature/workflow-db-T9
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T05:34:28.104Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/6
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/484
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
-    at: 2026-06-07T16:44:52Z
+    at: 2026-06-07 16:44:52+00:00
     note: Task created during workflow-db Phase 2 task breakdown. Blocked on T5 (DB
       access layer). Central primitive — unblocks T10, T12, T13 once done.
   - action: ready
     by: tiendv.52@gmail.com
-    at: 2026-06-08T03:46:41.154Z
+    at: 2026-06-08 03:46:41.154000+00:00
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-06-08 03:55:38.940000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: pentative@gmail.com
+    at: 2026-06-08 03:55:48.755000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Status transitions + activity log workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-06-08T03:59:25+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: pentative@gmail.com
+    note: push_access_denied
+    at: 2026-06-08 04:07:49.198000+00:00
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T11:32:20+0700
+    note: Human unblock. The push_access_denied block (agent identity lacked write
+      access to workflow-orchestrator) has been resolved. No implementation PR
+      was produced (pr.url null), so resetting blocked -> ready for re-claim per
+      the unblock-target rule. Cleared blocked_reason/blocked_suggestion.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 04:35:27.295000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08 04:35:30.996000+00:00
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Status transitions + activity log workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:39:28+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/6"
+    at: 2026-06-08T05:22:50.647Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:24:56.778Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T05:32:22.225Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:34:28.104Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
