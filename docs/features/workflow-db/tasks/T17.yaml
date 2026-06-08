@@ -1,8 +1,10 @@
 id: T17
-title: "tech-lead owner-aware (claude skill)"
+title: tech-lead owner-aware (claude skill)
 repo: workflow
-status: todo
-depends_on: [T4, T6]
+status: ready
+depends_on:
+  - T4
+  - T6
 blocked_reason: null
 branch: workflow-db/T17
 execution:
@@ -16,7 +18,10 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T4 (marker convention — T4a) and T6 (materializer/seed
-      contract must be final before the skill can emit a compatible fixture).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T4
+      (marker convention — T4a) and T6 (materializer/seed contract must be final
+      before the skill can emit a compatible fixture).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:30:33.212Z
+    note: Task activated — dependency T6 merged and marked done.
