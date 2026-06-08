@@ -1,7 +1,7 @@
 id: T10
 title: Dependency auto-ready
 repo: workflow-orchestrator
-status: reviewing
+status: in_review
 depends_on:
   - T9
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/workflow-db-T10
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:54:09.632Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T13:48:20+0700
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/7
   status: open
@@ -52,3 +52,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T05:54:09.632Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:48:20+0700
+    note: >-
+      Human recovery. The cycle-1 reviewer (reviewer_started
+      2026-06-08T05:54:09Z) stopped before posting a verdict, leaving the task
+      stuck at reviewing. No APPROVE/REQUEST_CHANGES was posted; PR
+      workflow-orchestrator#7 is unchanged. Resetting reviewing -> in_review so
+      a fresh reviewer is dispatched on the next poll. Note: deviates from the
+      documented reviewing -> review_incomplete recovery — recorded as an
+      explicit human decision. Both PRs remain open (unmerged).
