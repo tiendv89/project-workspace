@@ -29,3 +29,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T06:36:42.253Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T06:36:50.922Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "hermes-agent: workflow_plugin context tools (tasks/gitnexus/rag)
+      m3-agent-chat-v2"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
