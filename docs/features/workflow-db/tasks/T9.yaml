@@ -1,7 +1,7 @@
 id: T9
 title: Status transitions + activity log
 repo: workflow-orchestrator
-status: review_passed
+status: done
 depends_on:
   - T5
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/workflow-db-T9
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:32:22.225Z
+  last_updated_at: 2026-06-08T05:34:28.104Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/6
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/484
   status: open
@@ -82,3 +82,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-08T05:32:22.225Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:34:28.104Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
