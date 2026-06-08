@@ -1,19 +1,21 @@
 id: T17
 title: tech-lead owner-aware (claude skill)
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T4
   - T6
 blocked_reason: null
-branch: workflow-db/T17
+blocked_context: null
+branch: feature/workflow-db-T17
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T04:37:43.751Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -25,3 +27,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T04:30:33.212Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:37:43.751Z
+    note: Claimed via git-based claim protocol.
