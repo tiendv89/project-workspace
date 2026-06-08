@@ -1,7 +1,7 @@
 id: T9
 title: Status transitions + activity log
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on:
   - T5
 blocked_reason: null
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workflow-db-T9
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-08T11:32:20+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T04:35:27.295Z
 pr:
   url: null
   status: null
@@ -50,8 +50,11 @@ log:
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-06-08T11:32:20+0700
-    note: >-
-      Human unblock. The push_access_denied block (agent identity lacked write
+    note: Human unblock. The push_access_denied block (agent identity lacked write
       access to workflow-orchestrator) has been resolved. No implementation PR
       was produced (pr.url null), so resetting blocked -> ready for re-claim per
       the unblock-target rule. Cleared blocked_reason/blocked_suggestion.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:35:27.295Z
+    note: Claimed via git-based claim protocol.
