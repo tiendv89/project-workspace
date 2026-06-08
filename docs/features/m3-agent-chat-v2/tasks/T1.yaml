@@ -1,7 +1,7 @@
 id: T1
 title: "hermes-agent: session list endpoint + auto-title"
 repo: hermes-agent
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 branch: ""
@@ -22,3 +22,7 @@ log:
     by: tech_lead
     at: 2026-06-08T13:12:44+0700
     note: Task created from approved technical design (§4.1).
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-08T06:19:15Z
+    note: Task activated on tasks-stage approval — dependencies met.
