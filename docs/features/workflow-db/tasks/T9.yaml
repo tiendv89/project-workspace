@@ -1,19 +1,17 @@
 id: T9
 title: Status transitions + activity log
 repo: workflow-orchestrator
-status: blocked
+status: ready
 depends_on:
   - T5
-blocked_reason: push_access_denied
-blocked_suggestion: Add 0xpye as a write collaborator on
-  tiendv89/workflow-orchestrator, then push feature/workflow-db-T9 from
-  /workspace/impl and open the PR targeting feature/workflow-db.
+blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/workflow-db-T9
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-08T04:07:49.198Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T11:32:20+0700
 pr:
   url: null
   status: null
@@ -49,3 +47,11 @@ log:
     by: pentative@gmail.com
     note: push_access_denied
     at: 2026-06-08T04:07:49.198Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T11:32:20+0700
+    note: >-
+      Human unblock. The push_access_denied block (agent identity lacked write
+      access to workflow-orchestrator) has been resolved. No implementation PR
+      was produced (pr.url null), so resetting blocked -> ready for re-claim per
+      the unblock-target rule. Cleared blocked_reason/blocked_suggestion.
