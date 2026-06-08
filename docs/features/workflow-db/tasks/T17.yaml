@@ -1,7 +1,7 @@
 id: T17
 title: tech-lead owner-aware (claude skill)
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T4
   - T6
@@ -11,10 +11,10 @@ branch: feature/workflow-db-T17
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:34:56.856Z
+  last_updated_at: 2026-06-08T05:46:22.157Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/262
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/487
   status: open
@@ -56,3 +56,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-08T05:34:56.856Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:46:22.157Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
