@@ -1,0 +1,77 @@
+// hermes-agent v001 — initial schema
+// (same as current top-level schema.dbml — no subsequent migrations yet)
+// Source: hermes-agent/workflow_gateway/migrations/001_initial_schema.sql
+
+Table schema_migrations {
+  filename   text              [primary key]
+  applied_at double_precision  [not null]
+}
+
+Table sessions {
+  id                  text             [primary key]
+  source              text             [not null]
+  user_id             text
+  workspace_id        text             [not null, default: '']
+  feature_id          text             [not null, default: '']
+  model               text
+  model_config        text
+  system_prompt       text
+  parent_session_id   text             [ref: > sessions.id]
+  started_at          double_precision [not null]
+  ended_at            double_precision
+  end_reason          text
+  last_active_at      double_precision [not null]
+  is_active           boolean          [not null, default: true]
+  message_count       integer          [not null, default: 0]
+  tool_call_count     integer          [not null, default: 0]
+  input_tokens        integer          [not null, default: 0]
+  output_tokens       integer          [not null, default: 0]
+  cache_read_tokens   integer          [not null, default: 0]
+  cache_write_tokens  integer          [not null, default: 0]
+  reasoning_tokens    integer          [not null, default: 0]
+  api_call_count      integer          [not null, default: 0]
+  estimated_cost_usd  double_precision
+  actual_cost_usd     double_precision
+  cost_status         text
+  cost_source         text
+  pricing_version     text
+  billing_provider    text
+  billing_base_url    text
+  billing_mode        text
+  cwd                 text
+  title               text
+  archived            boolean          [not null, default: false]
+  metadata            jsonb            [not null, default: '{}']
+
+  indexes {
+    source
+    started_at
+    user_id
+  }
+}
+
+Table messages {
+  id                     bigserial        [primary key]
+  session_id             text             [not null, ref: > sessions.id]
+  role                   text             [not null]
+  content                text
+  tool_call_id           text
+  tool_calls             text
+  tool_name              text
+  finish_reason          text
+  reasoning              text
+  reasoning_content      text
+  reasoning_details      text
+  codex_reasoning_items  text
+  codex_message_items    text
+  token_count            integer
+  platform_message_id    text
+  observed               boolean          [not null, default: false]
+  active                 boolean          [not null, default: true]
+  created_at             double_precision [not null]
+
+  indexes {
+    (session_id, created_at)
+    (session_id, active, created_at)
+  }
+}

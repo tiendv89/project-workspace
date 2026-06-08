@@ -1,0 +1,101 @@
+feature_id: m3-agent-chat-v2
+title: Agent Chat v2 — Session History, Enriched Context, and IDE-style Layout
+
+feature_status: ready_for_implementation
+current_stage: handoff
+next_action: Wave 1 tasks ready — T1, T2, T3, T4 can be claimed in parallel. T5 stays todo until T2 + T4 are done.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-08T05:07:20+0000
+    review_comment: >-
+      Approved. Session history list + active chat mode, workflow_get_tasks via
+      direct DB query, GitNexus + RAG MCP tools, three-panel IDE-style layout.
+      Sessions endpoint is genuinely new work; tasks left panel uses existing routes.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-08T05:07:20+0000
+        review_comment: >-
+          Approved. Session history list + active chat mode, workflow_get_tasks via
+          direct DB query, GitNexus + RAG MCP tools, three-panel IDE-style layout.
+          Sessions endpoint is genuinely new work; tasks left panel uses existing routes.
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-08T06:07:19+0000
+    review_comment: >-
+      Approved. Session list endpoint (hermes-agent GET /api/v5/sessions + workflow-backend
+      proxy), workflow_get_tasks via direct psycopg, GitNexus + RAG over uniform MCP SSE
+      client (mcp.ClientSession, is_async, _run_async bridge; mcp added to workflow-gateway
+      extra), three-panel flex layout. Tool discoverability confirmed (enabled_toolsets=None
+      → all toolsets incl. plugin) with tool-level descriptions + hook guidance added.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-08T06:07:19+0000
+        review_comment: >-
+          Approved. Session list endpoint (hermes-agent GET /api/v5/sessions + workflow-backend
+          proxy), workflow_get_tasks via direct psycopg, GitNexus + RAG over uniform MCP SSE
+          client (mcp.ClientSession, is_async, _run_async bridge; mcp added to workflow-gateway
+          extra), three-panel flex layout. Tool discoverability confirmed (enabled_toolsets=None
+          → all toolsets incl. plugin) with tool-level descriptions + hook guidance added.
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-08T13:19:15+0700
+    review_comment: >-
+      Approved. 5 tasks: T1 (hermes-agent session list), T2 (workflow-backend proxy),
+      T3 (hermes-agent workflow_plugin context tools), T4 (digital-factory-ui three-panel
+      layout) — all Wave 1, activated to ready. T5 (session-history UI) stays todo until
+      T2 + T4 are done.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-08T13:19:15+0700
+        review_comment: >-
+          Approved. 5 tasks: T1 (hermes-agent session list), T2 (workflow-backend proxy),
+          T3 (hermes-agent workflow_plugin context tools), T4 (digital-factory-ui three-panel
+          layout) — all Wave 1, activated to ready. T5 (session-history UI) stays todo until
+          T2 + T4 are done.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-06-08T05:07:20+0000
+    by: pentative@gmail.com
+    action: approve_stage
+    stage: product_spec
+    from_feature_status: in_design
+    to_feature_status: in_tdd
+    from_current_stage: product_spec
+    to_current_stage: technical_design
+  - at: 2026-06-08T06:07:19+0000
+    by: pentative@gmail.com
+    action: approve_stage
+    stage: technical_design
+    from_feature_status: in_tdd
+    to_feature_status: in_tdd
+    from_current_stage: technical_design
+    to_current_stage: tasks
+  - at: 2026-06-08T13:19:15+0700
+    by: pentative@gmail.com
+    action: approve_stage
+    stage: tasks
+    from_feature_status: in_tdd
+    to_feature_status: ready_for_implementation
+    from_current_stage: tasks
+    to_current_stage: handoff
+    note: Wave 1 tasks (T1, T2, T3, T4) activated to ready by the auto-ready rule. T5 remains todo until T2 + T4 reach done.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

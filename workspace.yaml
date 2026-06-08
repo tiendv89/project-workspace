@@ -120,5 +120,5 @@ repos:
   - id: hermes-agent
     github: git@github.com:tiendv89/hermes-agent.git
     local_path: env:HERMES_AGENT_LOCAL_PATH
-    base_branch: dev
+    base_branch: main
     owner_role: tech_lead
