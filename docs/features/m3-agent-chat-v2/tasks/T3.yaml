@@ -1,22 +1,19 @@
 id: T3
 title: "hermes-agent: workflow_plugin context tools (tasks/gitnexus/rag)"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: ""
-
+blocked_context: null
+branch: feature/m3-agent-chat-v2-T3
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T06:36:42.253Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: tech_lead
@@ -26,3 +23,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-08T06:19:15Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T06:36:42.253Z
+    note: Claimed via git-based claim protocol.
