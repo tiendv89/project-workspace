@@ -1,7 +1,7 @@
 id: T7
 title: Eligibility scan
 repo: workflow-orchestrator
-status: in_progress
+status: done
 depends_on:
   - T5
 blocked_reason: null
@@ -10,14 +10,14 @@ blocked_context: null
 branch: feature/workflow-db-T7
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T06:24:47.459Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T13:39:11+0700
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/3
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/482
-  status: open
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -111,3 +111,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T06:24:47.459Z
     note: Fix agent claimed.
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:39:11+0700
+    note: >-
+      Human override. Implementation PR workflow-orchestrator#3 was merged at
+      2026-06-08T06:28:08Z. Task was left at in_progress (fix agent claimed
+      06:24:47Z, no completion logged) but the underlying code has landed.
+      Human accepts the merged code and force-resolves the task to done.
+      Note: in_progress -> done deviates from the documented state machine
+      (no such transition exists); recorded intentionally as a human decision.
+      No tasks depend on T7, so no auto-ready propagation is required.
+      Merging workspace PR project-workspace#482 (feature/workflow-db-T7 ->
+      feature/workflow-db) alongside this done entry per branch-merge rule.
