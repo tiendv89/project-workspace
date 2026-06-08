@@ -1,18 +1,18 @@
 id: T4
 title: TS orchestrator owner guards
 repo: workflow
-status: reviewing
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T4
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-07T17:51:01.227Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T09:42:37+0700
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/259
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/475
   status: open
@@ -46,3 +46,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-07T17:51:01.227Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T09:42:37+0700
+    note: >-
+      Human override. Implementation PR agent-workflow#259 was merged on GitHub
+      but the reviewer executor crashed mid-cycle without writing a verdict, so
+      the task never advanced past `reviewing`. Manually accepting the work as
+      done; pr.status set to merged. Workspace PR project-workspace#475 merged
+      into feature/workflow-db alongside this entry. Auto-ready: T16 (depends_on
+      [T4]) advanced todo -> ready.
