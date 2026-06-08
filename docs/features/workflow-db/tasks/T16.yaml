@@ -1,7 +1,7 @@
 id: T16
 title: init-feature owner-aware (claude skill)
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/workflow-db-T16
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T03:35:32.654Z
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-08T04:13:22.848Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/261
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/477
   status: open
@@ -65,3 +65,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-08T03:35:32.654Z
+  - action: done
+    by: pentative@gmail.com
+    at: 2026-06-08T04:13:22.848Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
