@@ -1,19 +1,23 @@
 id: T15
 title: "Read API: verify go-owned rows + optional owner DTO"
 repo: workflow-backend
-status: ready
+status: done
 depends_on:
   - T1
   - T6
 blocked_reason: null
-branch: workflow-db/T15
+blocked_context: null
+branch: feature/workflow-db-T15
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T07:35:40.414Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/31
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/486
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
@@ -25,3 +29,61 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T04:30:33.210Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:33:08.087Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:33:15.811Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: "Read API: verify go-owned rows + optional owner DTO workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/31"
+    at: 2026-06-08T05:22:24.108Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:27:28.189Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-08T05:39:33.534Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:43:36.374Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/31"
+    at: 2026-06-08T06:01:54.462Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T06:03:51.560Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: review_blocked
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:46:22+0700
+    note: "Human recovery. The cycle-2 reviewer (reviewer_started
+      2026-06-08T06:03:51Z) crashed before posting a verdict, leaving the task
+      stuck at reviewing. No APPROVE/REQUEST_CHANGES was posted; PR
+      workflow-backend#31 is unchanged. Resetting reviewing -> in_review so a
+      fresh reviewer is dispatched on the next poll. Note: this deviates from
+      the documented reviewing -> review_incomplete recovery (the orchestrator's
+      retry counter) — recorded as an explicit human decision. Both PRs remain
+      open (unmerged)."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:28:10.816Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T07:34:11.673Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:35:40.414Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
