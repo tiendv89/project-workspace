@@ -1,16 +1,16 @@
 id: T7
 title: Eligibility scan
 repo: workflow-orchestrator
-status: in_progress
+status: blocked
 depends_on:
   - T5
-blocked_reason: null
+blocked_reason: push_rejected
 blocked_context: null
 branch: feature/workflow-db-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-08T04:19:09.386Z
+  last_updated_at: 2026-06-08T04:28:07.179Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/3
   status: open
@@ -59,3 +59,9 @@ log:
     by: pentative@gmail.com
     at: 2026-06-08T04:19:09.386Z
     note: Fix agent claimed.
+blocked_suggestion: "The agent identity (0xpye / SSH key in agent_id_rsa) only
+  has pull access to tiendv89/workflow-orchestrator. Grant push access for this
+  key or provide a GITHUB_TOKEN with push scope. The commit is ready locally on
+  feature/workflow-db-T7: adds TestFindEligibleTasks_UsesOwnerStatusIndex
+  (EXPLAIN index coverage test) and workspace_tasks_owner_status_idx +
+  workspace_features_owner_idx to schema.sql."
