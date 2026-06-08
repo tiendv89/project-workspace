@@ -261,11 +261,32 @@ rg.GET("/workspaces/:workspaceId/features/:featureId/chat/sessions", h.ListSessi
 
 ### 4.3 hermes-agent: workflow_plugin context tools (T3)
 
+> **Discoverability (how the agent comes to call these).** The gateway builds `AIAgent`
+> with `enabled_toolsets=None` (verified — `workflow_gateway/api/router.py` passes no
+> toolset args). In that case `model_tools._compute_tool_definitions` takes its "default:
+> start with everything" branch, which iterates `get_all_toolsets()` and — per the code
+> comment — resolves **plugin-registered toolsets through the same path**. So the
+> `workflow` toolset is sent to the model on every turn, with `registry.get_definitions`
+> filtering by each tool's `check_fn`. This is the same mechanism the v1 tools already
+> ride. **No toolset config change is needed** for the agent to *see* the new tools.
+>
+> *Seeing* a tool is necessary but not sufficient — the model decides *when* to call it
+> from (a) the tool name, (b) its **tool-level `description`**, and (c) system-prompt
+> guidance. v1's schemas carry only property-level descriptions and rely on
+> self-explanatory names. The new query tools are less obvious, so each new tool below
+> includes a top-level `description`, and the `pre_llm_call` hook (§ end of 4.3) is
+> updated to advertise the new capabilities.
+
 **New file: `workflow_plugin/tools/tasks.py`**
 
 ```python
 SCHEMA = {
     "type": "object",
+    "description": (
+        "Return the live status of every task in the current feature, sourced from the "
+        "database (status, blocked_reason, PR url, depends_on, actor). Call this to answer "
+        "questions like 'which tasks are blocked / in progress / done' or 'what's left'."
+    ),
     "properties": {
         "workspace_id": {"type": "string"},
         "feature_id": {"type": "string"},
@@ -337,6 +358,11 @@ from ..mcp_client import call_mcp_tool
 
 SCHEMA = {
     "type": "object",
+    "description": (
+        "Query the code-structure index (GitNexus) for symbol definitions, call graphs, "
+        "and impact/blast-radius. Call this before answering 'where is X defined', 'what "
+        "calls X', or 'what breaks if I change X' — prefer it over guessing about code."
+    ),
     "properties": {
         "query": {"type": "string", "description": "Natural-language or structured query."},
         "tool":  {"type": "string", "default": "query",
@@ -369,6 +395,11 @@ from ..mcp_client import call_mcp_tool
 
 SCHEMA = {
     "type": "object",
+    "description": (
+        "Semantic search over indexed workspace documents — past specs, technical designs, "
+        "task logs, skills, PR descriptions. Call this to recall prior decisions or find "
+        "'has anything similar been done before' across feature history."
+    ),
     "properties": {
         "query":        {"type": "string"},
         "workspace_id": {"type": "string"},
@@ -442,6 +473,25 @@ if feature_id and check_workflow_available():
         parts.append(summary)
         if blocked:
             parts.append("blocked_tasks:\n" + "\n".join(blocked))
+```
+
+The hook's existing instruction line is also extended to advertise the new lookup tools
+so the agent actively reaches for them (the task summary above is a *preview*; the tools
+give *detail* and *freshness*). The instruction lists only the tools currently in the
+turn's definitions — built from the same `check_fn` results — so the agent is never told
+about a tool that was filtered out:
+
+```python
+caps = ["workflow_get_tasks (live task status)"]
+if os.environ.get("GITNEXUS_MCP_URL"):
+    caps.append("workflow_query_gitnexus (code structure / call graph / impact)")
+if os.environ.get("RAG_MCP_URL"):
+    caps.append("workflow_query_rag (semantic recall over past specs/designs/logs)")
+parts.append(
+    "Before answering questions about task status, code structure, or prior decisions, "
+    "use the workflow tools rather than guessing: " + "; ".join(caps) + ". "
+    "Draft artifacts through the write tools; never advance lifecycle state directly."
+)
 ```
 
 ---
