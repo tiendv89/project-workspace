@@ -31,3 +31,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T03:55:12.005Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:55:20.085Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Atomic claim workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
