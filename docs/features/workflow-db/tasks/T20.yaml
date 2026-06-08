@@ -1,15 +1,15 @@
 id: T20
 title: Persist actor_type and de-dup MaterializeFeature via shared DBTX
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T20
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-09T01:13:35+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T18:18:53.157Z
 pr:
   url: null
   status: null
@@ -20,14 +20,17 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-06-09T01:13:35+0700
-    note: >-
-      Created during the workflow-db post-implementation review (see
+    note: "Created during the workflow-db post-implementation review (see
       docs/features/workflow-db/post-implementation-review.md). Remediates the
-      🟡 finding on T6: GoTaskSpec.ActorType is parsed but never persisted to the
-      task execution JSONB (violates the execution.actor_type rule), and
+      🟡 finding on T6: GoTaskSpec.ActorType is parsed but never persisted to
+      the task execution JSONB (violates the execution.actor_type rule), and
       MaterializeFeature duplicates CreateFeature/CreateTask inline because they
-      take *pgxpool.Pool rather than a tx — the copies have already drifted.
+      take *pgxpool.Pool rather than a tx — the copies have already drifted."
   - action: ready
     by: matthew@swellnetwork.io
     at: 2026-06-09T01:13:35+0700
     note: No dependencies (fixes already-merged T6 code) — seeded ready.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:18:53.157Z
+    note: Claimed via git-based claim protocol.
