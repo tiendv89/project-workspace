@@ -1,0 +1,90 @@
+// hermes-agent workflow_gateway v001
+// Postgres schema owned by the hermes-agent workflow_gateway service.
+// Visualise at: https://dbdiagram.io (paste this file)
+//
+// Source: hermes-agent/workflow_gateway/migrations/001_initial_schema.sql
+//
+// One service writes this database:
+//   workflow_gateway  — FastAPI service wrapping the Hermes AIAgent;
+//                       owns session lifecycle, message persistence, and cost tracking.
+//
+// The workflow-backend reads sessions (via proxy routes) but does not write to this DB.
+
+// ─────────────────────────────────────────────
+// SESSIONS
+// ─────────────────────────────────────────────
+
+Table sessions {
+  id                  text              [primary key, note: 'sess_<hex>']
+  source              text              [not null, note: 'Platform / entry point that created the session (e.g. workflow_gateway)']
+  user_id             text              [note: 'Owning user; null for anonymous sessions']
+  workspace_id        text              [not null, default: "''", note: 'Workspace scoping — forwarded from browser via workflow-backend']
+  feature_id          text              [not null, default: "''", note: 'Feature scoping — forwarded from browser via workflow-backend']
+  model               text              [note: 'LLM model used for this session']
+  model_config        text              [note: 'Serialised model config JSON']
+  system_prompt       text              [note: 'System prompt snapshot at session start']
+  parent_session_id   text              [ref: > sessions.id, note: 'For branched / forked sessions']
+  started_at          double precision  [not null, note: 'Unix epoch float']
+  ended_at            double precision  [note: 'Unix epoch float; null while active']
+  end_reason          text              [note: 'e.g. user_ended | timeout | error']
+  last_active_at      double precision  [not null, note: 'Unix epoch float; updated on each message']
+  is_active           boolean           [not null, default: true]
+  message_count       integer           [not null, default: 0]
+  tool_call_count     integer           [not null, default: 0]
+  input_tokens        integer           [not null, default: 0]
+  output_tokens       integer           [not null, default: 0]
+  cache_read_tokens   integer           [not null, default: 0]
+  cache_write_tokens  integer           [not null, default: 0]
+  reasoning_tokens    integer           [not null, default: 0]
+  api_call_count      integer           [not null, default: 0]
+  estimated_cost_usd  double precision
+  actual_cost_usd     double precision
+  cost_status         text
+  cost_source         text
+  pricing_version     text
+  billing_provider    text
+  billing_base_url    text
+  billing_mode        text
+  cwd                 text              [note: 'Working directory at session start']
+  title               text              [note: 'Auto-generated from first message']
+  archived            boolean           [not null, default: false]
+  metadata            jsonb             [not null, default: `'{}'`]
+
+  indexes {
+    source
+    started_at [note: 'DESC — most-recent-first listing']
+    user_id
+    (workspace_id, feature_id)        [note: 'Primary query path for chat history UI']
+    (workspace_id, feature_id, user_id) [name: 'idx_sessions_workspace_feature_user']
+  }
+}
+
+// ─────────────────────────────────────────────
+// MESSAGES
+// ─────────────────────────────────────────────
+
+Table messages {
+  id                    bigserial         [primary key]
+  session_id            text              [not null, ref: > sessions.id, note: 'ON DELETE CASCADE']
+  role                  text              [not null, note: 'user | assistant | tool']
+  content               text              [note: 'Message text; null for pure tool-call messages']
+  tool_call_id          text              [note: 'ID of the tool call this message is a result for']
+  tool_calls            text              [note: 'Serialised tool call list (JSON)']
+  tool_name             text              [note: 'Name of the tool invoked']
+  finish_reason         text              [note: 'stop | tool_use | max_tokens | etc.']
+  reasoning             text              [note: 'Extended thinking block (opaque)']
+  reasoning_content     text
+  reasoning_details     text
+  codex_reasoning_items text
+  codex_message_items   text
+  token_count           integer
+  platform_message_id   text              [note: 'External message ID from originating platform']
+  observed              boolean           [not null, default: false]
+  active                boolean           [not null, default: true, note: 'false = soft-deleted / compressed out']
+  created_at            double precision  [not null, note: 'Unix epoch float']
+
+  indexes {
+    (session_id, created_at)          [note: 'Full transcript load']
+    (session_id, active, created_at)  [note: 'Active-only transcript load']
+  }
+}

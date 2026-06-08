@@ -1,0 +1,48 @@
+feature_id: m3-agent-chat-history
+title: Agent Chat History
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Draft the technical design.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-08T03:50:07Z"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-06-08T03:50:07Z"
+        comment: null
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    status: approved
+    by: pentative@gmail.com
+    at: "2026-06-08T03:50:07Z"
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
