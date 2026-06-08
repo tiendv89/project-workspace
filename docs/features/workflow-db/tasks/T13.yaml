@@ -1,7 +1,7 @@
 id: T13
 title: PR-merge poll
 repo: workflow-orchestrator
-status: reviewing
+status: change_requested
 depends_on:
   - T9
   - T6
@@ -11,7 +11,7 @@ branch: feature/workflow-db-T13
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T07:33:59.484Z
+  last_updated_at: 2026-06-08T07:42:57.600Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/8
   status: open
@@ -71,6 +71,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T07:33:59.484Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-08T07:42:57.600Z
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-08T07:21:18.538Z
