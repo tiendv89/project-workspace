@@ -1,17 +1,15 @@
 id: T11
 title: Dispatch
 repo: workflow-orchestrator
-status: blocked
+status: in_review
 depends_on:
   - T5
   - T3
-blocked_reason: reviewer_escalated
-blocked_context: null
 branch: feature/workflow-db-T11
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T07:26:31.937Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T14:38:39+0700
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/5
   status: open
@@ -46,16 +44,11 @@ log:
     note: executor work phase begun.
   - action: run_completed
     by: tiendv.52@gmail.com
-    note: "Implementation PR:
-      https://github.com/tiendv89/workflow-orchestrator/pull/5"
+    note: "Implementation PR: https://github.com/tiendv89/workflow-orchestrator/pull/5"
     at: 2026-06-08T04:22:26.930Z
-  - action: reviewer_started
-    by: noreply@anthropic.com
-    at: 2026-06-08T04:24:59.093Z
-    note: Reviewer dispatch claimed (cycle 1 of 3).
   - action: reviewer_complete
     by: pentative@gmail.com
-    note: Reviewer requested changes.
+    note: Reviewer requested changes (cycle 1).
     at: 2026-06-08T04:30:55.390Z
   - action: fix_started
     by: tiendv.52@gmail.com
@@ -63,18 +56,12 @@ log:
     note: Fix agent claimed.
   - action: run_completed
     by: tiendv.52@gmail.com
-    note: "Implementation PR:
-      https://github.com/tiendv89/workflow-orchestrator/pull/5"
+    note: "Implementation PR: https://github.com/tiendv89/workflow-orchestrator/pull/5"
     at: 2026-06-08T05:29:54.719Z
-  - action: reviewer_started
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T05:51:27.973Z
-    note: Reviewer dispatch claimed (cycle 2 of 3).
   - action: change_requested
     by: matthew@swellnetwork.io
     at: 2026-06-08T13:20:32+0700
-    note: Human reviewer requested changes on PR
-      https://github.com/tiendv89/workflow-orchestrator/pull/5.
+    note: Human reviewer requested changes on PR https://github.com/tiendv89/workflow-orchestrator/pull/5.
   - action: fix_started
     by: tiendv.52@gmail.com
     at: 2026-06-08T06:22:51.830Z
@@ -82,18 +69,18 @@ log:
   - action: run_completed
     by: matthew@swellnetwork.io
     at: 2026-06-08T13:44:31+0700
-    note: "Human recovery. The fix agent (fix_started 2026-06-08T06:22:51Z) crashed
+    note: >-
+      Human recovery. The fix agent (fix_started 2026-06-08T06:22:51Z) crashed
       before logging completion, leaving a dead in_progress claim. Human
-      verified the fix commit DID land on PR workflow-orchestrator#5 (\"fix:
-      remove per-call Redis client leak in Dispatcher\") addressing the
+      verified the fix commit DID land on PR workflow-orchestrator#5 ("fix:
+      remove per-call Redis client leak in Dispatcher") addressing the
       reviewer's REQUEST_CHANGES. Resetting in_progress -> in_review so the
-      reviewer can re-evaluate the pushed fix. PR #5 remains open (unmerged)."
-  - action: reviewer_started
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T07:23:39.029Z
-    note: Reviewer dispatch claimed (cycle 3 of 3).
+      reviewer can re-evaluate the pushed fix. PR #5 remains open (unmerged).
   - action: reviewer_complete
     by: tiendv.52@gmail.com
-    note: Reviewer escalated — human review required.
+    note: Reviewer escalated after cycle 3 — reviewer confidence exhausted.
     at: 2026-06-08T07:26:31.937Z
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T14:38:39+0700
+    note: Human reset review cycle count to 0 (removed reviewer_started entries) and restored in_review for fresh reviewer dispatch.
