@@ -1,7 +1,7 @@
 feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: "Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status:
   ready). Feature advances to in_implementation on first task claim. Wave 2
   tasks (T2, T5, T16) unlock as their Wave 1 deps complete."
@@ -54,6 +54,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/501
 history:
   - at: 2026-06-05T17:27:18Z
     actor: tiendv.52@gmai.com
@@ -93,3 +94,17 @@ revalidation:
 feature_branch: feature/workflow-db
 feature_branch_base_sha: bc7c11dc389de1fb03e4496a41735a53eb675ddb
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/472
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/501
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/34
+    status: open
+  - repo: workflow-orchestrator
+    url: https://github.com/tiendv89/workflow-orchestrator/pull/12
+    status: open
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/263
+    status: open
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/30
+    status: open
