@@ -1,7 +1,7 @@
 id: T13
 title: PR-merge poll
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T9
   - T6
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workflow-db-T13
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-08T15:38:46+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T08:40:51.869Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/8
   status: open
@@ -52,8 +52,7 @@ log:
   - action: review_blocked
     by: matthew@swellnetwork.io
     at: 2026-06-08T15:38:46+0700
-    note: >-
-      Human review-cycle reset. The review counter is derived by counting
+    note: 'Human review-cycle reset. The review counter is derived by counting
       reviewer_started log entries; repeated reviewer stalls had inflated it to
       "cycle 3 of 3" (one stalled dispatch from escalating to blocked). Per
       explicit human decision, the prior review-cycle log entries have been
@@ -68,8 +67,12 @@ log:
       PR workflow-orchestrator#8 retains ALL code (initial implementation plus
       the cycle-2 fix); only the management-repo cycle history is reset. Status
       reset reviewing -> in_review so a fresh reviewer re-evaluates the current
-      PR state as cycle 1. Branch rebase state (conflict_state, rebase_log)
-      is retained below.
+      PR state as cycle 1. Branch rebase state (conflict_state, rebase_log) is
+      retained below.'
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T08:40:51.869Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-08T07:21:18.538Z
