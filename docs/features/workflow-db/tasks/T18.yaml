@@ -1,8 +1,12 @@
 id: T18
-title: "E2E coexistence test"
+title: E2E coexistence test
 repo: workflow-orchestrator
-status: todo
-depends_on: [T2, T4, T14, T15]
+status: ready
+depends_on:
+  - T2
+  - T4
+  - T14
+  - T15
 blocked_reason: null
 branch: workflow-db/T18
 execution:
@@ -16,8 +20,11 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Final integration gate — blocked on T2 (adapter scoping complete),
-      T4 (TS owner guards in place), T14 (full Go orchestrator loop), and
-      T15 (read API surfacing verified). Wave 6.
+    note: Task created during workflow-db Phase 2 task breakdown. Final integration
+      gate — blocked on T2 (adapter scoping complete), T4 (TS owner guards in
+      place), T14 (full Go orchestrator loop), and T15 (read API surfacing
+      verified). Wave 6.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T09:27:14.755Z
+    note: Task activated — dependency T14 merged and marked done.
