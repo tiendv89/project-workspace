@@ -1,7 +1,7 @@
 id: T13
 title: PR-merge poll
 repo: workflow-orchestrator
-status: reviewing
+status: in_review
 depends_on:
   - T9
   - T6
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/workflow-db-T13
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T06:01:38.265Z
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-06-08T13:48:52+0700
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/8
   status: open
@@ -53,3 +53,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T06:01:38.265Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:48:52+0700
+    note: >-
+      Human recovery. The cycle-1 reviewer (reviewer_started
+      2026-06-08T06:01:38Z) stopped before posting a verdict, leaving the task
+      stuck at reviewing. No APPROVE/REQUEST_CHANGES was posted; PR
+      workflow-orchestrator#8 is unchanged. Resetting reviewing -> in_review so
+      a fresh reviewer is dispatched on the next poll. Note: deviates from the
+      documented reviewing -> review_incomplete recovery — recorded as an
+      explicit human decision. Both PRs remain open (unmerged).
