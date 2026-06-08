@@ -200,9 +200,8 @@ extended to include the new context tools.
 **New workflow-backend endpoints**
 - `GET /api/workspaces/:workspaceId/features/:featureId/chat/sessions` — list sessions
   for a feature (id, title, created_at, last_message_at, last_message_excerpt).
-- `GET /api/workspaces/:workspaceId/tasks?featureId=:featureId` — list tasks from DB
-  for the left panel UI. This endpoint is for the frontend only; the agent tool
-  `workflow_get_tasks` queries the database directly and does not use this route.
+- Task data for the left panel uses the existing workflow-backend task endpoints — no
+  new endpoint needed.
 
 ### Out of scope (tracked separately)
 - Task breakdown authoring via chat (follow-on).
