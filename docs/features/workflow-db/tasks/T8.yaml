@@ -1,8 +1,9 @@
 id: T8
-title: "Atomic claim"
+title: Atomic claim
 repo: workflow-orchestrator
-status: todo
-depends_on: [T5]
+status: ready
+depends_on:
+  - T5
 blocked_reason: null
 branch: workflow-db/T8
 execution:
@@ -16,7 +17,9 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T5 (DB access layer). Can be developed in parallel with
-      T6/T7/T9 once T5 lands.
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T5 (DB
+      access layer). Can be developed in parallel with T6/T7/T9 once T5 lands.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:46:41.149Z
+    note: Task activated — dependency T5 merged and marked done.
