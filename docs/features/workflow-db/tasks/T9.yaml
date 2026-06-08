@@ -1,7 +1,7 @@
 id: T9
 title: Status transitions + activity log
 repo: workflow-orchestrator
-status: reviewing
+status: review_passed
 depends_on:
   - T5
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/workflow-db-T9
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:24:56.778Z
+  last_updated_at: 2026-06-08T05:32:22.225Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/6
   status: open
@@ -78,3 +78,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T05:24:56.778Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T05:32:22.225Z
