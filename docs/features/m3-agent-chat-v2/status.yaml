@@ -2,8 +2,8 @@ feature_id: m3-agent-chat-v2
 title: Agent Chat v2 — Session History, Enriched Context, and IDE-style Layout
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Draft technical design and submit for approval.
+current_stage: tasks
+next_action: Produce task breakdown (tech-lead Phase 2) and submit for approval.
 
 stages:
   product_spec:
@@ -23,11 +23,25 @@ stages:
           direct DB query, GitNexus + RAG MCP tools, three-panel IDE-style layout.
           Sessions endpoint is genuinely new work; tasks left panel uses existing routes.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-08T06:07:19+0000
+    review_comment: >-
+      Approved. Session list endpoint (hermes-agent GET /api/v5/sessions + workflow-backend
+      proxy), workflow_get_tasks via direct psycopg, GitNexus + RAG over uniform MCP SSE
+      client (mcp.ClientSession, is_async, _run_async bridge; mcp added to workflow-gateway
+      extra), three-panel flex layout. Tool discoverability confirmed (enabled_toolsets=None
+      → all toolsets incl. plugin) with tool-level descriptions + hook guidance added.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-08T06:07:19+0000
+        review_comment: >-
+          Approved. Session list endpoint (hermes-agent GET /api/v5/sessions + workflow-backend
+          proxy), workflow_get_tasks via direct psycopg, GitNexus + RAG over uniform MCP SSE
+          client (mcp.ClientSession, is_async, _run_async bridge; mcp added to workflow-gateway
+          extra), three-panel flex layout. Tool discoverability confirmed (enabled_toolsets=None
+          → all toolsets incl. plugin) with tool-level descriptions + hook guidance added.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -50,6 +64,14 @@ history:
     to_feature_status: in_tdd
     from_current_stage: product_spec
     to_current_stage: technical_design
+  - at: 2026-06-08T06:07:19+0000
+    by: pentative@gmail.com
+    action: approve_stage
+    stage: technical_design
+    from_feature_status: in_tdd
+    to_feature_status: in_tdd
+    from_current_stage: technical_design
+    to_current_stage: tasks
 
 revalidation:
   product_spec_required: false
