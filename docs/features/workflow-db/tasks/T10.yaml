@@ -3,14 +3,14 @@ title: Dependency auto-ready
 repo: workflow-orchestrator
 status: in_progress
 depends_on:
-  - T9
+- T9
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T05:36:47.343Z
+  last_updated_at: 2026-06-08T05:41:59+0000
 pr:
   url: null
   status: null
@@ -18,24 +18,27 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/488
   status: open
 log:
-  - action: created
-    by: tiendv.52@gmai.com
-    at: 2026-06-07T16:44:52Z
-    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T9
-      (SetDone transition must exist before auto-ready can be wired into it
-      transactionally).
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T05:34:28.507Z
-    note: Task activated — dependency T9 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T05:36:47.343Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-06-08T05:36:56.479Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: Dependency auto-ready workflow-db
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: tiendv.52@gmai.com
+  at: 2026-06-07 16:44:52+00:00
+  note: Task created during workflow-db Phase 2 task breakdown. Blocked on T9 (SetDone
+    transition must exist before auto-ready can be wired into it transactionally).
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-06-08 05:34:28.507000+00:00
+  note: Task activated — dependency T9 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-06-08 05:36:47.343000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-06-08 05:36:56.479000+00:00
+  rag_context_injected: false
+  rag_summary: query_returned_no_chunks
+  rag_query: Dependency auto-ready workflow-db
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-06-08T05:41:59+0000
+  note: executor work phase begun.
