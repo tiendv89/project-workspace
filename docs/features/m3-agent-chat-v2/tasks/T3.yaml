@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: workflow_plugin context tools (tasks/gitnexus/rag)"
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-agent-chat-v2-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-08T06:49:34.436Z
+  last_updated_at: 2026-06-08T07:00:30.315Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/5
   status: open
@@ -45,3 +45,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/5"
     at: 2026-06-08T06:49:34.436Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:00:30.315Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
