@@ -1,8 +1,9 @@
 id: T2
 title: "Sync adapter: scope to owner IS NULL"
 repo: workspace-github-adapter
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 branch: workflow-db/T2
 execution:
@@ -16,6 +17,9 @@ log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T1 (schema must be deployed before adapter scoping).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T1
+      (schema must be deployed before adapter scoping).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:17:29.326Z
+    note: Task activated — dependency T1 merged and marked done.
