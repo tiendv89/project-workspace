@@ -1,7 +1,7 @@
 id: T14
 title: Create-org + create-workspace flows
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T2
   - T15
@@ -43,3 +43,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T15:51:45+0000
     note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-10T00:30:08+0700
+    note: Human override — reset in_progress → ready for fresh agent run (no PR opened).
