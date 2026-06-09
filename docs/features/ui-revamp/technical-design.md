@@ -343,6 +343,39 @@ name/slug/color/plan.
   Guard against self-lockout: a role-change/remove that would drop the last `admin` of an
   org must be rejected (`409`/`422`).
 
+**Authorization matrix (roles: `platform_admin`, `admin`, `member` — no `owner`):**
+
+_Org scope_
+
+| Capability | member | admin | platform_admin |
+|---|:--:|:--:|:--:|
+| Create org (`POST /api/orgs`) | ✅ (any authenticated user → becomes `admin`) | ✅ | ✅ |
+| View org general / members / workspaces | ✅ | ✅ | ✅ (any org) |
+| Edit org general (name/slug) | ❌ | ✅ | ✅ |
+| Invite org member | ❌ | ✅ | ✅ |
+| Change member role (`member ↔ admin` only) | ❌ | ✅ | ✅ |
+| Remove member | ❌ | ✅ | ✅ |
+| Transfer ownership | ❌ | ✅ | ✅ |
+| Delete org | ❌ | ✅ | ✅ |
+
+_Workspace scope_
+
+| Capability | member | admin | platform_admin |
+|---|:--:|:--:|:--:|
+| View workspace members | ✅ | ✅ | ✅ |
+| Create workspace (import / blank) | ❌ | ✅ | ✅ |
+| Invite / remove workspace member | ❌ | ✅ | ✅ |
+| Workspace rename / delete / transfer | placeholder (D2) | placeholder (D2) | placeholder (D2) |
+
+_Cross-cutting rules_
+- `platform_admin` acts on **any** org (cross-org superuser); `admin` only within orgs
+  where it holds `admin`; `member` is read-only everywhere.
+- `platform_admin` is **not assignable via the API** — granted from the configured
+  admin-email list (`ensurePlatformAdmin`/seed). Role-change accepts only `member`/`admin`.
+- **Last-admin guard:** any change leaving an org with zero `admin`s is rejected.
+- `agent` (shown in Figma member lists) is **not** a `memberships.role`; agents act via
+  the runtime, not these routes. Agent permissions are out of scope for this auth model.
+
 **Frontend (`digital-factory-ui`):**
 - Org/Workspace settings modals (`WorkspaceModals` design): General, Members
   (list/invite/role-change/remove), Workspaces (list), Danger zone (transfer/delete org).
