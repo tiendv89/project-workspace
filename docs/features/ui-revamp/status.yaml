@@ -78,3 +78,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/ui-revamp
 feature_branch_base_sha: b00e5d779728f05c28678b4a6c37d8a5edadb37c
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/507
