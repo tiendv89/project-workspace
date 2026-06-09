@@ -619,14 +619,26 @@ Migrations are the single source of truth for the database schema and must live 
 
 A task in any service repo (workflow-orchestrator, workflow-backend, etc.) that requires a DB schema change must:
 
-1. **Document the required DDL** — include a `### Required migrations` subsection in the task spec listing every column, index, constraint, or table change needed, with exact types and constraints.
+1. **Commit migration artifact files** to the service repo under `db/testdata/` — one goose-formatted `.sql` file per logical migration, with `-- +goose Up` and `-- +goose Down` markers. These files are the canonical source of truth for the downstream migration task. They must not be hardcoded in `tasks.md`.
 2. **Spawn a downstream pure-migration task** — a sibling task targeting the `workflow-backend` repo must be created at the same time as the originating task. This task:
    - Has `depends_on: [<originating task id>]` and nothing else.
    - Is seeded as `todo` and becomes `ready` automatically when the originating task is marked `done` (auto-ready rule).
+   - Reads its migration SQL from the artifact files in `db/testdata/` (recorded in the task YAML's `migration_artifact` field) — not from hardcoded DDL in tasks.md.
    - Contains **only** goose migration SQL — no application code changes.
-   - Is safe to execute concurrently with other tasks because it writes only to the `workflow-backend/migrations/` directory.
-3. **Use the next available migration number** in workflow-backend's sequence. Check existing files before assigning a number.
+   - Deletes the artifact files from the service repo after porting them to workflow-backend.
+3. **Record artifact paths in the task YAML** — set `migration_artifact.files` in the downstream task's YAML to the paths of the artifact files (relative to the service repo root). This makes the handoff explicit and machine-readable.
+4. **Use the next available migration number** in workflow-backend's sequence. Check existing files before assigning a number.
+
+### Test schema snapshots
+
+Service repos that need a seeded schema for tests must maintain an explicit `db/testdata/schema.sql` snapshot that:
+- Represents the final schema state (combined effect of all migrations).
+- Uses only idempotent DDL (`CREATE TABLE IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, inline `UNIQUE` constraints).
+- Has no goose markers — it is executed as a single SQL batch by `TestMain`.
+- Is updated whenever a new migration is ported to workflow-backend.
+
+`TestMain` must apply `db/testdata/schema.sql` directly instead of iterating a migrations directory. There is no `db/migrations/` in service repos.
 
 ### Why
 
-Keeping migrations in workflow-backend ensures there is one canonical migration history. Services that read the schema (workflow-orchestrator, etc.) are consumers — they must not apply, own, or duplicate migration files. Test suites that need a seeded schema must either use testcontainers against workflow-backend's migrations or maintain an explicit test-only snapshot that is clearly labelled and kept in sync.
+Keeping migrations in workflow-backend ensures there is one canonical migration history. Service repos are consumers — they must not apply, own, or duplicate migration files. Artifact files in `db/testdata/` serve as the explicit handoff contract: the originating task commits the exact SQL; the migration task ports it verbatim. This prevents DDL drift between what the service implements and what ends up in workflow-backend.
