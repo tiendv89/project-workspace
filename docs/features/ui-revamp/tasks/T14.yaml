@@ -1,7 +1,7 @@
 id: T14
 title: Create-org + create-workspace flows
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T15
@@ -12,7 +12,7 @@ branch: feature/ui-revamp-T14
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T15:51:45+0000
+  last_updated_at: 2026-06-09T17:32:03.511Z
 pr:
   url: null
   status: null
@@ -46,4 +46,9 @@ log:
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-06-10T00:30:08+0700
-    note: Human override — reset in_progress → ready for fresh agent run (no PR opened).
+    note: Human override — reset in_progress → ready for fresh agent run (no PR
+      opened).
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T17:32:03.511Z
+    note: Claimed via git-based claim protocol.
