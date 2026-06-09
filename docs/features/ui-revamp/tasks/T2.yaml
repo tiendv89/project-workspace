@@ -1,10 +1,10 @@
 id: T2
 title: App shell — NavRail + Topbar + switcher + route group
 repo: digital-factory-ui
-status: blocked
+status: in_review
 depends_on:
   - T1
-blocked_reason: reviewer_escalated
+blocked_reason: null
 blocked_context: null
 branch: feature/ui-revamp-T2
 execution:
@@ -54,4 +54,10 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer escalated — human review required.
     at: 2026-06-09T06:19:34.843Z
-blocked_suggestion: Human review required — reviewer confidence exhausted or hard CI failure
+  - action: started
+    by: pye@swellnetwork.io
+    at: 2026-06-09T13:23:40+0700
+    note: >-
+      Human resolved reviewer escalation block. Reset blocked → in_review per
+      the unblock-target rule (pr.url is already set, PR #119 open).
+blocked_suggestion: null
