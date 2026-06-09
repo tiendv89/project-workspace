@@ -1,14 +1,14 @@
 id: T16
 title: Blank workspace create (POST /api/workspaces)
 repo: workflow-backend
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/ui-revamp-T16
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-09T11:28:23.923Z
+  last_updated_at: 2026-06-09T11:29:45.673Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/36
@@ -52,3 +52,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-09T11:28:23.923Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T11:29:45.673Z
+    note: Fix agent claimed.
