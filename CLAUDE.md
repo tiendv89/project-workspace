@@ -609,5 +609,24 @@ orchestrator; they are not present in hand-authored status files until the orche
 <!-- END SHARED WORKFLOW RULES -->
 
 ## Project-specific additional rules
-- Add project-specific rules here
 - Do not rewrite the shared workflow rules above unless intentionally changing the company model
+
+## Migration ownership rule
+
+Migrations are the single source of truth for the database schema and must live only in **workflow-backend**. No other service repo may own or apply migrations to the shared workspace database.
+
+### For any task that requires a schema change
+
+A task in any service repo (workflow-orchestrator, workflow-backend, etc.) that requires a DB schema change must:
+
+1. **Document the required DDL** — include a `### Required migrations` subsection in the task spec listing every column, index, constraint, or table change needed, with exact types and constraints.
+2. **Spawn a downstream pure-migration task** — a sibling task targeting the `workflow-backend` repo must be created at the same time as the originating task. This task:
+   - Has `depends_on: [<originating task id>]` and nothing else.
+   - Is seeded as `todo` and becomes `ready` automatically when the originating task is marked `done` (auto-ready rule).
+   - Contains **only** goose migration SQL — no application code changes.
+   - Is safe to execute concurrently with other tasks because it writes only to the `workflow-backend/migrations/` directory.
+3. **Use the next available migration number** in workflow-backend's sequence. Check existing files before assigning a number.
+
+### Why
+
+Keeping migrations in workflow-backend ensures there is one canonical migration history. Services that read the schema (workflow-orchestrator, etc.) are consumers — they must not apply, own, or duplicate migration files. Test suites that need a seeded schema must either use testcontainers against workflow-backend's migrations or maintain an explicit test-only snapshot that is clearly labelled and kept in sync.

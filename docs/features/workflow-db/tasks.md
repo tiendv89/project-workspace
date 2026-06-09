@@ -949,3 +949,73 @@ The authoritative contract lives in `agent-workflow`:
 - The e2e suite runs against the real migration chain.
 - The suite fails (not silently passes) when its dependencies are unavailable.
 - The full go feature lifecycle reaches `done` via a human-merged PR end-to-end through the real broker.
+
+---
+
+## T23 — Move owner + FK migrations to workflow-backend (pure migration)
+
+### Description
+
+**Pure migration task spawned from T22.** T22 introduced owner discriminator columns and an FK correction directly in `workflow-orchestrator/db/migrations/`. Per the migration ownership rule (see `CLAUDE.md`), migrations must live only in **workflow-backend** — workflow-orchestrator is a consumer of the schema, not an owner of it.
+
+This task:
+1. Adds the two migrations below as proper goose files in `workflow-backend/migrations/`.
+2. Removes `db/migrations/00015_owner.sql` and `db/migrations/00016_fix_feature_id_fk.sql` from `workflow-orchestrator` (keeping `00001_base_schema.sql` as a test-only snapshot for now, clearly labelled).
+3. Updates `workflow-orchestrator`'s `TestMain` in both `internal/orchestrator/` and `test/e2e/` to apply only `00001_base_schema.sql` (the base snapshot) — the owner and FK changes will come from workflow-backend's migration runner in production.
+
+### Required migrations
+
+Add to workflow-backend in sequence after the current highest-numbered migration:
+
+**Migration A — owner discriminator** (equivalent to `00015_owner.sql`)
+
+```sql
+ALTER TABLE workspace_features
+    ADD COLUMN IF NOT EXISTS owner text,
+    ALTER COLUMN source_path DROP NOT NULL,
+    ALTER COLUMN source_path DROP DEFAULT;
+
+ALTER TABLE workspace_tasks
+    ADD COLUMN IF NOT EXISTS owner text,
+    ALTER COLUMN source_path DROP NOT NULL,
+    ALTER COLUMN source_path DROP DEFAULT;
+
+CREATE INDEX IF NOT EXISTS workspace_features_workspace_owner
+    ON workspace_features (workspace_id, owner);
+
+CREATE INDEX IF NOT EXISTS workspace_tasks_workspace_owner_status
+    ON workspace_tasks (workspace_id, owner, status);
+```
+
+**Migration B — FK target fix** (equivalent to `00016_fix_feature_id_fk.sql`)
+
+```sql
+ALTER TABLE workspace_tasks
+    DROP CONSTRAINT IF EXISTS workspace_tasks_feature_id_fkey;
+
+ALTER TABLE workspace_features
+    DROP CONSTRAINT IF EXISTS workspace_features_feature_id_key;
+ALTER TABLE workspace_features
+    ADD CONSTRAINT workspace_features_feature_id_key UNIQUE (feature_id);
+
+ALTER TABLE workspace_tasks
+    ADD CONSTRAINT workspace_tasks_feature_id_fkey
+    FOREIGN KEY (feature_id) REFERENCES workspace_features(feature_id);
+```
+
+### Required skills
+- `postgres-best-practices`
+
+### Subtasks
+- [ ] Check workflow-backend's current highest migration number and assign the next two
+- [ ] Add Migration A as a goose file in workflow-backend
+- [ ] Add Migration B as a goose file in workflow-backend
+- [ ] Remove `00015_owner.sql` and `00016_fix_feature_id_fk.sql` from workflow-orchestrator
+- [ ] Label `00001_base_schema.sql` in workflow-orchestrator as test-only
+- [ ] Update both `TestMain` files to apply only the base snapshot
+- [ ] CI passes end-to-end
+
+### Acceptance criteria
+- workflow-backend contains both migrations as properly sequenced goose files.
+- `workflow-orchestrator/db/migrations/` contains only a clearly-labelled base test snapshot.
+- workflow-orchestrator's CI passes with the reduced migration set.
