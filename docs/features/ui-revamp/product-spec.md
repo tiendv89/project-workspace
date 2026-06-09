@@ -33,15 +33,25 @@ This spec scopes the revamp into **two tiers**:
 The design is a contract. All UI work in this feature must match it.
 
 ### Figma
-- **Design Brief for IDE** — https://www.figma.com/design/KM1nnUk4kJttQlPnIvsHW9/Design-Brief-for-IDE
-  - Covers all screens listed in the scope tables below: app shell (NavRail + Topbar),
-    Board (kanban + list), Feature IDE (explorer + chat/thread + docs viewer + activity
-    dock), Task Review (diff + review thread), Inbox, Agents/Team, Settings, Login,
-    Command Palette, and the Org/Workspace setup + settings modals.
+- **Dashboard-Workflow-UI** (authoritative, per-frame) — https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
+  - Per-screen frame `node-id`s (the design contract; mirrored with full deep links in
+    `technical-design.md` → `## Figma`):
+    - Sign in — `122-2`
+    - Features tab Kanban — `122-70` · Features tab List — `122-529`
+    - Feature IDE — `122-1160` · channel chat open — `122-1527` · session chat open — `123-9317`
+    - Feature code review — `122-2029`
+    - Notifications/Inbox — `122-971` · Team — `122-2344` · Search command — `122-8762` · Settings — `122-2543`
+    - Org settings: General `122-3735` · Members `122-4310` · Workspaces `122-4916` · Delete `122-5495`
+    - Workspace: Create `122-7652` · General `122-6046` · Members `122-6576` · Danger zone `122-7136`
+- **Design Brief for IDE** (original prototype/code export, superseded for implementation) — https://www.figma.com/design/KM1nnUk4kJttQlPnIvsHW9/Design-Brief-for-IDE
 
-> The technical design (Phase 1) must carry this Figma URL forward into a `## Figma`
-> section, and every frontend UI task must reference the relevant frame(s) per the
+> The technical design carries these Figma frames forward into its `## Figma` section,
+> and every frontend UI task must reference the relevant frame `node-id`(s) per the
 > workspace Figma propagation rules.
+>
+> _Added after product-spec approval (links provided by the product owner). Additive —
+> no scope change; the design contract now points at the authoritative file. Approval
+> state unchanged._
 
 ### Source material
 - New design (drafted React/Figma export): `~/Downloads/design-brief/src/app`

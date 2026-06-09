@@ -12,27 +12,48 @@
 ## Figma
 
 Per the product spec's design contract (Figma propagation rule), the design source of
-truth is:
+truth is the **Dashboard-Workflow-UI** Figma file. Each in-scope screen maps to a
+specific frame node below.
 
-- **Design Brief for IDE** — https://www.figma.com/design/KM1nnUk4kJttQlPnIvsHW9/Design-Brief-for-IDE
+- **Dashboard-Workflow-UI** — https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 
-Frame → screen/component mapping (every UI surface in scope maps to a frame in this file):
+> The earlier `Design-Brief-for-IDE` file (`KM1nnUk4…`) was the prototype/code-export
+> used for the product spec; `Dashboard-Workflow-UI` (above) is the authoritative,
+> per-frame design and supersedes it for implementation.
 
-| Figma area | Screens / components | Tech-design section |
-|---|---|---|
-| App shell | NavRail, Topbar, breadcrumb, org/workspace switcher, command-palette entry | §4 Shell & routing |
-| Board | Kanban (status columns) + List view, filters, New Feature modal | §4 Board |
-| Feature IDE | Explorer (artifacts/tasks/channels/sessions), Chat/Thread panel, Docs/Spec viewer (tabs), Activity dock | §4 Feature IDE |
-| Task Review | Diff viewer (multi-repo), Review thread | §4 Task Review (placeholder) |
-| Inbox | Gate/question/block/fyi list, filter tabs | §4 Inbox (placeholder) |
-| Agents / Team | Member cards, workload | §4 Agents (partial) |
-| Settings | Account, Notifications, Security, Agent defaults | §4 Settings |
-| Login | OAuth sign-in | §4 Login |
-| Command Palette | Search + grouped commands | §4 Command palette |
-| Org/Workspace modals | Setup, Create, Org/Workspace settings (General/Members/Workspaces/Billing/Danger) | §4 Settings administration (#14) |
+Frame → screen mapping (every surface in scope; `node-id` links are the per-task design
+contract):
+
+| Screen | Figma frame (`node-id`) | Tier | Tech-design section |
+|---|---|---|---|
+| Sign in / Login | [`122-2`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-2&m=dev) | real | §4 Login |
+| Features tab — Kanban view | [`122-70`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-70&m=dev) | real | §4 Board |
+| Features tab — List view | [`122-529`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-529&m=dev) | real | §4 Board |
+| Feature IDE | [`122-1160`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-1160&m=dev) | real | §4 Feature IDE |
+| Feature IDE — agent **channel** chat open | [`122-1527`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-1527&m=dev) | **placeholder** (channels) | §4 Feature IDE |
+| Feature IDE — agent **session** chat open | [`123-9317`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=123-9317&m=dev) | real (sessions) | §4 Feature IDE |
+| Feature code review | [`122-2029`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-2029&m=dev) | **placeholder** (diff/thread) | §4 Task Review |
+| Notifications / Inbox | [`122-971`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-971&m=dev) | **placeholder** | §4 Inbox |
+| Team | [`122-2344`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-2344&m=dev) | partial (roster real, workload placeholder) | §4 Agents |
+| Search command (⌘K) | [`122-8762`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-8762&m=dev) | nav real, actions placeholder | §4 Command palette |
+| Settings | [`122-2543`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-2543&m=dev) | Account real; Security/Agent-defaults placeholder | §4 Settings |
+| **Org settings — General** | [`122-3735`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-3735&m=dev) | real (#14, `user-service`) | §4 #14 |
+| **Org settings — Members** | [`122-4310`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-4310&m=dev) | real (#14) | §4 #14 |
+| **Org settings — Workspaces** | [`122-4916`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-4916&m=dev) | real (#14) | §4 #14 |
+| **Org settings — Delete (Danger zone)** | [`122-5495`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-5495&m=dev) | real (#14) | §4 #14 |
+| Workspace — Create | [`122-7652`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-7652&m=dev) | see note¹ | §4 #14 |
+| Workspace settings — General | [`122-6046`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-6046&m=dev) | **placeholder** (D2 — entity in workflow-backend) | §4 #14 |
+| Workspace settings — Members | [`122-6576`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-6576&m=dev) | real (#11 + role-change via #14) | §4 #14 |
+| Workspace settings — Danger zone | [`122-7136`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-7136&m=dev) | **placeholder** (D2) | §4 #14 |
+
+¹ **Workspace Create** — workspace creation today is `POST /api/workspaces/import` on
+`workflow-backend`. The Create UI ships, wired to the existing import path; net-new
+fields in the Figma (plan, color) that have no backend are placeholder.
 
 Every frontend task in the Phase-2 breakdown that implements one of these surfaces must
-carry a `### Figma` subsection naming the relevant frame(s) (frontend Figma rule).
+carry a `### Figma` subsection naming the relevant frame `node-id`(s) (frontend Figma
+rule). When `FIGMA_PERSONAL_ACCESS_TOKEN` is set, the implementing agent must read the
+frame via the Figma MCP before writing UI (Figma MCP usage rule).
 
 ---
 
