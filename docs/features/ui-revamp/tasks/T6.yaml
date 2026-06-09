@@ -1,7 +1,7 @@
 id: T6
 title: Settings (Account real; Security/Agent-defaults placeholder)
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/ui-revamp-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T07:10:28.200Z
+  last_updated_at: 2026-06-09T07:12:13.713Z
 pr:
   url: null
   status: null
@@ -45,3 +45,7 @@ log:
     by: tiendv.52@gmail.com
     note: Max-turns block reset to ready (attempt 1 of 3).
     at: 2026-06-09T07:10:28.200Z
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T07:12:13.713Z
+    note: Claimed via git-based claim protocol.
