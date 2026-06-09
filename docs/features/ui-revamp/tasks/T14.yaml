@@ -1,20 +1,22 @@
 id: T14
 title: Create-org + create-workspace flows
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T15
   - T16
 blocked_reason: null
+blocked_context: null
 branch: feature/ui-revamp-T14
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-09T12:03:56+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T15:46:50.874Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pentative@gmail.com
@@ -24,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T15:42:43.328Z
     note: Task activated — dependency T15 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T15:46:50.874Z
+    note: Claimed via git-based claim protocol.
