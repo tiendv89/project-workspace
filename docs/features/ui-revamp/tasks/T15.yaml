@@ -1,10 +1,10 @@
-id: TB1
+id: T15
 title: Org-admin endpoints + RequireOrgAdminAuth + org create
 repo: user-service
 status: ready
 depends_on: []
 blocked_reason: null
-branch: feature/ui-revamp-TB1
+branch: feature/ui-revamp-T15
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com

@@ -2,7 +2,7 @@ id: T14
 title: Create-org + create-workspace flows
 repo: digital-factory-ui
 status: todo
-depends_on: [T2, TB1, TB2]
+depends_on: [T2, T15, T16]
 blocked_reason: null
 branch: feature/ui-revamp-T14
 execution:

@@ -2,7 +2,7 @@ feature_id: ui-revamp
 title: UI Revamp
 feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tasks approved. Wave 1 (T1, TB1, TB2) activated to ready and
+next_action: Tasks approved. Wave 1 (T1, T15, T16) activated to ready and
   eligible for execution via start-implementation. Wave 2+ unlock as
   dependencies complete.
 stages:
@@ -38,8 +38,8 @@ stages:
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-09T05:10:03Z
     review_comment: "Task breakdown approved. 16 tasks, one repo each (14
-      digital-factory-ui, 1 user-service, 1 workflow-backend). Wave 1 (T1, TB1,
-      TB2) has no blockers and is activated to ready. Every frontend task
+      digital-factory-ui, 1 user-service, 1 workflow-backend). Wave 1 (T1, T15,
+      T16) has no blockers and is activated to ready. Every frontend task
       carries a ### Figma subsection per the propagation rule."
     review_history:
       - review_status: approved
@@ -70,7 +70,7 @@ history:
     action: stage_approved
     stage: tasks
     note: Tasks approved; feature advanced to ready_for_implementation. Wave 1 tasks
-      T1, TB1, TB2 activated to ready (empty depends_on).
+      T1, T15, T16 activated to ready (empty depends_on).
 revalidation:
   product_spec_required: false
   technical_design_required: false

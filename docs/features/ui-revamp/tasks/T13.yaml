@@ -2,7 +2,7 @@ id: T13
 title: Workspace settings UI (member mgmt real; entity placeholder)
 repo: digital-factory-ui
 status: todo
-depends_on: [T2, TB1]
+depends_on: [T2, T15]
 blocked_reason: null
 branch: feature/ui-revamp-T13
 execution:

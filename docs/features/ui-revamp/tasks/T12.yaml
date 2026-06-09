@@ -2,7 +2,7 @@ id: T12
 title: Org settings UI (wired to org-admin endpoints)
 repo: digital-factory-ui
 status: todo
-depends_on: [T2, TB1]
+depends_on: [T2, T15]
 blocked_reason: null
 branch: feature/ui-revamp-T12
 execution:
