@@ -1,7 +1,7 @@
 id: T23
 title: Move owner + FK migrations to workflow-backend (pure migration)
 repo: workflow-backend
-status: reviewing
+status: review_passed
 depends_on:
   - T22
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T23
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T09:39:11.226Z
+  last_updated_at: 2026-06-09T09:45:39.929Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/35
   status: open
@@ -62,3 +62,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T09:39:11.226Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T09:45:39.929Z
