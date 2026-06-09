@@ -1,8 +1,9 @@
 id: T5
 title: Task Review (real PR meta; diff/thread placeholder)
 repo: digital-factory-ui
-status: todo
-depends_on: [T2]
+status: ready
+depends_on:
+  - T2
 blocked_reason: null
 branch: feature/ui-revamp-T5
 execution:
@@ -17,3 +18,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-09T12:03:56+0700
     note: Task created during ui-revamp Phase-2 breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:33:50.677Z
+    note: Task activated — dependency T2 merged and marked done.
