@@ -12,7 +12,7 @@ branch: feature/ui-revamp-T14
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T17:44:41.940Z
+  last_updated_at: 2026-06-09T17:45:36.386Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/130
   status: open
@@ -68,3 +68,9 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/130"
     at: 2026-06-09T17:44:41.940Z
+conflict_state: resolving
+rebase_log:
+  - at: 2026-06-09T17:45:36.386Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/ui-revamp.
