@@ -1,7 +1,7 @@
 id: T23
 title: Move owner + FK migrations to workflow-backend (pure migration)
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on:
   - T22
 blocked_reason: null
@@ -9,15 +9,8 @@ blocked_context: null
 branch: feature/workflow-db-T23
 execution:
   actor_type: agent
-migration_artifact:
-  source: workflow-orchestrator
-  files:
-    - db/testdata/migration-a-owner.sql
-    - db/testdata/migration-b-fk-fix.sql
-  note: Read the goose SQL from these files in the workflow-orchestrator repo
-    (feature/workflow-db-T22 branch / merged state). Do not use hardcoded DDL.
-    Delete both files from workflow-orchestrator after porting to
-    workflow-backend.
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T06:19:10.752Z
 pr:
   url: null
   status: null
@@ -38,3 +31,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:17:28.510Z
     note: Task activated — dependency T22 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:19:10.752Z
+    note: Claimed via git-based claim protocol.
