@@ -205,10 +205,11 @@ across **three** possible repos, with very different cost:
     repos; honest about the workspace-entity gap.
   - Cons: workspace rename/delete not yet real (it isn't today either).
 
-**Chosen: D2.** It satisfies the intent of the decision ("full org settings") with the
-data model that actually exists, and contains scope to two repos. Workspace-entity
-settings are flagged as a fast-follow `workflow-backend` feature. *If the human prefers
-D1 at design approval, add `workflow-backend` tasks — both repos are already registered.*
+**Chosen: D2 — CONFIRMED by product owner.** It satisfies the intent of the decision
+("full org settings") with the data model that actually exists, and contains scope to two
+repos (`digital-factory-ui` + `user-service`). Workspace-entity settings (rename / slug /
+color / delete) ship as **placeholder** and are deferred to a fast-follow
+`workflow-backend` feature.
 
 > **Role model note:** roles live on the **org** membership (`memberships.role`);
 > `workspace_memberships` has no role column. So "change a member's role" is an
@@ -288,11 +289,14 @@ D1 at design approval, add `workflow-backend` tasks — both repos are already r
   - `DELETE /api/admin/org/:orgId/members/:userId`
   - `GET /api/admin/org/:orgId/workspaces`
   - `POST /api/admin/org/:orgId/transfer` · `DELETE /api/admin/org/:orgId`
-- New **`RequireOrgAdminAuth`** guard: authorize against `memberships.role` for the
-  **path** org (not "some org" as the current workspace guard does). Define the policy:
-  e.g. `admin`/`platform_admin` may manage members & settings; only an `owner`/the
-  platform may transfer or delete. This authorization model is a **blocking design
-  decision** to confirm at approval.
+- New **`RequireOrgAdminAuth`** guard — **policy CONFIRMED (D-AUTH)**: authorize against
+  `memberships.role` for the **path** org (not "some org" as the current workspace guard
+  does). A caller with `admin` **or** `platform_admin` on that org may perform **all** org
+  admin actions — edit general, invite, role-change, remove members, transfer ownership,
+  delete org; `member` is read-only. No new role and **no migration** (the existing role
+  values `platform_admin` / `admin` / `member` are reused; there is no `owner` role).
+  Guard against self-lockout: a role-change/remove that would drop the last `admin` of an
+  org must be rejected (`409`/`422`).
 
 **Frontend (`digital-factory-ui`):**
 - Org/Workspace settings modals (`WorkspaceModals` design): General, Members
@@ -317,21 +321,23 @@ D1 at design approval, add `workflow-backend` tasks — both repos are already r
 - `workflow-backend` workspace-entity settings — **out of scope (D2)**; only needed if
   the human elects D1.
 
-**Blocking decisions (must resolve at design approval):**
-1. **D2 vs D1** — is workspace-entity rename/delete in scope (adds `workflow-backend`)?
-   Default: D2 (placeholder).
-2. **Org-admin authorization policy** — who may role-change / transfer / delete at org
-   scope. No existing org-scoped guard to inherit.
+**Blocking decisions — RESOLVED at design review:**
+1. **D-SCOPE (D2 vs D1) → D2.** Workspace-entity rename/delete is **out of scope**
+   (placeholder); no `workflow-backend` work in this feature.
+2. **D-AUTH (org-admin authorization) → admin + platform_admin.** Both roles may perform
+   all org admin actions; `member` read-only. No new role, no migration. (See §4 #14.)
+
+**Remaining watch item (not blocking):**
 3. **`workflow-db` API stability** — `workflow-db` is `ready_for_implementation`; confirm
    no breaking shape change to the workflow-backend REST responses the frontend consumes
-   mid-revamp. Not a hard blocker (same REST contract), but to be watched.
+   mid-revamp. Same REST contract, so not a hard blocker — to be watched.
 
-**Configuration / tooling:** no new env vars expected for the frontend. `user-service`
-changes require a DB migration only if a column is added (none anticipated — role-change
-mutates existing `memberships.role`; org slug/name columns already exist).
+**Configuration / tooling:** no new env vars expected for the frontend. **No DB migration**
+— role-change mutates the existing `memberships.role`; org slug/name columns already
+exist; no `owner` role is introduced.
 
-**Unresolved:** the org-admin authorization policy (#2) is genuinely unresolved and must
-be answered before the `user-service` task can be marked `ready`.
+**Unresolved:** none — both blocking decisions are answered. `TB1` (user-service) and
+`T13` are unblocked.
 
 ---
 
@@ -341,8 +347,9 @@ be answered before the `user-service` task can be marked `ready`.
 > split, and `tasks/T<n>.yaml`. Repos: `dfu` = `digital-factory-ui`, `usv` = `user-service`.
 
 ```
-D-AUTH: Confirm org-admin authorization policy (who may role-change/transfer/delete) ──┐
-D-SCOPE: Confirm D2 vs D1 (workspace-entity settings in scope?)                        ──┘ resolve at design approval; gate TB1 / T13
+D-AUTH:  RESOLVED → admin + platform_admin may perform all org admin actions (no new role)
+D-SCOPE: RESOLVED → D2 (org admin only; workspace-entity settings placeholder; no workflow-backend)
+         (both answered at design review — no longer gate TB1 / T13)
 
 T1: Theme tokens + dark VS Code theme — dfu
   └── Can begin now — no blockers
@@ -378,19 +385,18 @@ T7: Login page reskin — dfu
   └── BLOCKED on T1 (theme tokens); independent of the shell (renders outside it)
 
 TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth — usv
-  └── BLOCKED on D-AUTH (authorization policy must be locked before the guard is written)
-  └── Otherwise independent of all dfu work — runs in parallel with T1–T11
+  └── Can begin now — D-AUTH resolved; independent of all dfu work, runs in parallel with T1–T11
   │
   T12: Org settings UI wired to org-admin endpoints — dfu
         └── BLOCKED on T2 (shell) AND TB1 (endpoints must exist)
   │
   T13: Workspace settings UI — member mgmt + role-change real; entity settings placeholder — dfu
         └── BLOCKED on T2 (shell) AND TB1 (role-change endpoint)
-        └── BLOCKED on D-SCOPE (if D1 chosen, add a workflow-backend task upstream)
+        └── (D-SCOPE resolved → D2: no workflow-backend upstream; entity settings are placeholder)
 ```
 
-- **Can start immediately:** `T1` and (once `D-AUTH` is answered) `TB1` — frontend
-  foundation and backend slice run in parallel.
+- **Can start immediately:** `T1` and `TB1` (D-AUTH resolved) — frontend foundation and
+  backend slice run in parallel.
 - **Fan-out after `T2`:** `T3, T4, T5, T6, T8, T9, T10` are mutually independent and run
   in parallel (each renders into the shell).
 - **Tail dependencies:** `T11` after `T4`; `T12`/`T13` after both `T2` and `TB1`.
@@ -403,7 +409,7 @@ TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth —
 |---|---|
 | `digital-factory-ui` | All frontend: shell, theme, every surface, #14 settings UI |
 | `user-service` | New org-admin endpoints + store methods + org-scope auth guard (#14) |
-| `workflow-backend` | **Only if Decision D1** is chosen (workspace-entity rename/delete). Default D2: no change |
+| `workflow-backend` | **No change** — D-SCOPE resolved to D2; workspace-entity settings are placeholder, deferred to a fast-follow feature |
 
 All three are already registered in `workspace.yaml`; no registration change needed.
 Per the one-repo-per-task rule, `#14` is split into a `user-service` backend task (`TB1`)
