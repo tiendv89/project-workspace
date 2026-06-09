@@ -35,3 +35,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:19:10.752Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:19:19.535Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Move owner + FK migrations to workflow-backend (pure migration) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
