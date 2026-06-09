@@ -1,18 +1,18 @@
 id: T16
 title: Blank workspace create (POST /api/workspaces)
 repo: workflow-backend
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/ui-revamp-T16
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-09T12:01:33.882Z
+  last_updated_at: 2026-06-09T12:02:44.657Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/36
-  status: open
+  status: merged
 workspace_pr:
   status: open
   url: https://github.com/tiendv89/project-workspace/pull/521
@@ -84,3 +84,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-09T12:01:33.882Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T12:02:44.657Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
