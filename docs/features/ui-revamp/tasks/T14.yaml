@@ -1,7 +1,7 @@
 id: T14
 title: Create-org + create-workspace flows
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T15
@@ -12,7 +12,7 @@ branch: feature/ui-revamp-T14
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T17:59:05.023Z
+  last_updated_at: 2026-06-09T18:09:15.479Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/130
   status: open
