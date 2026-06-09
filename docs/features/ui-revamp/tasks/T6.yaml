@@ -1,18 +1,22 @@
 id: T6
 title: Settings (Account real; Security/Agent-defaults placeholder)
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/ui-revamp-T6
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-09T12:03:56+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T08:29:11.936Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/120
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/515
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
@@ -22,3 +26,50 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:33:50.680Z
     note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:44:36.632Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:44:44.650Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Settings (Account real; Security/Agent-defaults placeholder) ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:48:40+0000
+    note: executor work phase begun.
+  - action: retried
+    by: tiendv.52@gmail.com
+    note: Max-turns block reset to ready (attempt 1 of 3).
+    at: 2026-06-09T07:10:28.200Z
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T07:12:13.713Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T07:12:18.899Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Settings (Account real; Security/Agent-defaults placeholder) ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/120"
+    at: 2026-06-09T07:37:18.800Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T08:23:41.672Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T08:27:36.738Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T08:29:11.936Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
