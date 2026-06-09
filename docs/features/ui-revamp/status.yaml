@@ -1,12 +1,11 @@
 feature_id: ui-revamp
 title: UI Revamp
 
-feature_status: in_tdd
-current_stage: technical_design
+feature_status: ready_for_implementation
+current_stage: tasks
 next_action: >-
-  Product spec approved. Tech lead runs `tech-lead` (Phase 1) to produce
-  technical-design.md from the approved spec, carrying the Figma link into a
-  ## Figma section.
+  Tasks approved. Wave 1 (T1, TB1, TB2) activated to ready and eligible for
+  execution via start-implementation. Wave 2+ unlock as dependencies complete.
 
 stages:
   product_spec:
@@ -23,17 +22,33 @@ stages:
         reviewed_at: 2026-06-09T04:15:56Z
         comment: Product spec approved by product owner.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-09T05:01:09Z
+    review_comment: >-
+      Technical design approved. ## Figma section present with authoritative
+      frame map; D-SCOPE, D-AUTH, org-create (E), workspace blank-create (F)
+      decisions resolved; org routes under /api/orgs (Decision B) with
+      per-route guard; #14 authorization matrix covers org + workspace scope.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-09T05:01:09Z
+        comment: Technical design approved by tech lead / reviewer.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-09T05:10:03Z
+    review_comment: >-
+      Task breakdown approved. 16 tasks, one repo each (14 digital-factory-ui,
+      1 user-service, 1 workflow-backend). Wave 1 (T1, TB1, TB2) has no
+      blockers and is activated to ready. Every frontend task carries a ### Figma
+      subsection per the propagation rule.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-09T05:10:03Z
+        comment: Task breakdown approved; Wave 1 activated; feature ready_for_implementation.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -47,6 +62,20 @@ history:
     action: stage_approved
     stage: product_spec
     note: Product spec approved; feature advanced to in_tdd / technical_design.
+  - at: 2026-06-09T05:01:09Z
+    actor: pentative@gmail.com
+    action: stage_approved
+    stage: technical_design
+    note: >-
+      Technical design approved; current_stage advanced to tasks. Tech lead to
+      run Phase 2 task breakdown.
+  - at: 2026-06-09T05:10:03Z
+    actor: pentative@gmail.com
+    action: stage_approved
+    stage: tasks
+    note: >-
+      Tasks approved; feature advanced to ready_for_implementation. Wave 1
+      tasks T1, TB1, TB2 activated to ready (empty depends_on).
 
 revalidation:
   product_spec_required: false
