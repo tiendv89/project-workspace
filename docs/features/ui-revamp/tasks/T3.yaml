@@ -30,3 +30,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:35:54.842Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:36:04.347Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board (Kanban + List) reskin into shell ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
