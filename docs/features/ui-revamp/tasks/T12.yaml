@@ -1,0 +1,19 @@
+id: T12
+title: Org settings UI (wired to org-admin endpoints)
+repo: digital-factory-ui
+status: todo
+depends_on: [T2, TB1]
+blocked_reason: null
+branch: feature/ui-revamp-T12
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-09T12:03:56+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-06-09T12:03:56+0700
+    note: Task created during ui-revamp Phase-2 breakdown.

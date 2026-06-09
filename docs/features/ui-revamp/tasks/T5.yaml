@@ -1,0 +1,19 @@
+id: T5
+title: Task Review (real PR meta; diff/thread placeholder)
+repo: digital-factory-ui
+status: todo
+depends_on: [T2]
+blocked_reason: null
+branch: feature/ui-revamp-T5
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-06-09T12:03:56+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-06-09T12:03:56+0700
+    note: Task created during ui-revamp Phase-2 breakdown.
