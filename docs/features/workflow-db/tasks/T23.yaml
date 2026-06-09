@@ -1,7 +1,7 @@
 id: T23
 title: Move owner + FK migrations to workflow-backend (pure migration)
 repo: workflow-backend
-status: todo
+status: ready
 depends_on:
   - T22
 blocked_reason: null
@@ -14,10 +14,10 @@ migration_artifact:
   files:
     - db/testdata/migration-a-owner.sql
     - db/testdata/migration-b-fk-fix.sql
-  note: >-
-    Read the goose SQL from these files in the workflow-orchestrator repo
+  note: Read the goose SQL from these files in the workflow-orchestrator repo
     (feature/workflow-db-T22 branch / merged state). Do not use hardcoded DDL.
-    Delete both files from workflow-orchestrator after porting to workflow-backend.
+    Delete both files from workflow-orchestrator after porting to
+    workflow-backend.
 pr:
   url: null
   status: null
@@ -28,9 +28,13 @@ log:
   - action: created
     by: matthew@swellnetwork.io
     at: 2026-06-09T12:10:28+0700
-    note: >-
-      Pure migration task spawned from T22 per the migration ownership rule.
-      T22 introduced owner discriminator columns and an FK fix directly in
+    note: Pure migration task spawned from T22 per the migration ownership rule. T22
+      introduced owner discriminator columns and an FK fix directly in
       workflow-orchestrator/db/migrations/ — these must be the single source of
       truth in workflow-backend instead. This task adds them as proper goose
-      migrations there and removes the migration files from workflow-orchestrator.
+      migrations there and removes the migration files from
+      workflow-orchestrator.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:17:28.510Z
+    note: Task activated — dependency T22 merged and marked done.
