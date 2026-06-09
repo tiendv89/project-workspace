@@ -1,7 +1,7 @@
 id: T5
 title: Task Review (real PR meta; diff/thread placeholder)
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/ui-revamp-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T06:43:37+0000
+  last_updated_at: 2026-06-09T09:32:03.213Z
 pr:
   url: null
   status: null
@@ -45,3 +45,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-09T16:28:57+0700
     note: Human reset from in_progress to ready for re-execution.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:32:03.213Z
+    note: Claimed via git-based claim protocol.
