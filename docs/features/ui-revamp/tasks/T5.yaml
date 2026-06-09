@@ -1,7 +1,7 @@
 id: T5
 title: Task Review (real PR meta; diff/thread placeholder)
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/ui-revamp-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T09:55:13.641Z
+  last_updated_at: 2026-06-09T09:58:07.518Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/122
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/514
   status: open
@@ -73,3 +73,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-09T09:55:13.641Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:58:07.518Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
