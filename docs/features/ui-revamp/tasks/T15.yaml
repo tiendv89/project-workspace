@@ -1,7 +1,7 @@
 id: T15
 title: Org-admin endpoints + RequireOrgAdminAuth + org create
 repo: user-service
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/ui-revamp-T15
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T12:05:12.899Z
+  last_updated_at: 2026-06-09T12:06:06.761Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/7
   status: open
@@ -68,3 +68,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-09T12:05:12.899Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T12:06:06.761Z
+    note: Fix agent claimed.
