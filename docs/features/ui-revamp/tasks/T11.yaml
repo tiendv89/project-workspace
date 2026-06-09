@@ -1,7 +1,7 @@
 id: T11
 title: Feature IDE — channels placeholder
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/ui-revamp-T11
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-09T10:38:39.460Z
+  last_updated_at: 2026-06-09T10:40:06.991Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/127
-  status: open
+  status: merged
 workspace_pr:
   status: open
   url: https://github.com/tiendv89/project-workspace/pull/519
@@ -54,3 +54,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-09T10:38:39.460Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T10:40:06.991Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
