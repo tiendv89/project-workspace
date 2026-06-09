@@ -52,3 +52,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T17:32:03.511Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T17:32:07.696Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Create-org + create-workspace flows ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
