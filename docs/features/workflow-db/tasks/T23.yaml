@@ -10,7 +10,7 @@ branch: feature/workflow-db-T23
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T06:19:10.752Z
+  last_updated_at: 2026-06-09T06:24:58+0000
 pr:
   url: null
   status: null
@@ -42,3 +42,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: Move owner + FK migrations to workflow-backend (pure migration) workflow-db
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:24:58+0000
+    note: executor work phase begun.
