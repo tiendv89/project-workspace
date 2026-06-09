@@ -41,14 +41,15 @@ contract):
 | **Org settings — Members** | [`122-4310`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-4310&m=dev) | real (#14) | §4 #14 |
 | **Org settings — Workspaces** | [`122-4916`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-4916&m=dev) | real (#14) | §4 #14 |
 | **Org settings — Delete (Danger zone)** | [`122-5495`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-5495&m=dev) | real (#14) | §4 #14 |
-| Workspace — Create | [`122-7652`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-7652&m=dev) | see note¹ | §4 #14 |
+| Workspace — Create | [`122-7652`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-7652&m=dev) | real (Decision F)¹ | §4 #14 |
 | Workspace settings — General | [`122-6046`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-6046&m=dev) | **placeholder** (D2 — entity in workflow-backend) | §4 #14 |
 | Workspace settings — Members | [`122-6576`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-6576&m=dev) | real (#11 + role-change via #14) | §4 #14 |
 | Workspace settings — Danger zone | [`122-7136`](https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI?node-id=122-7136&m=dev) | **placeholder** (D2) | §4 #14 |
 
-¹ **Workspace Create** — workspace creation today is `POST /api/workspaces/import` on
-`workflow-backend`. The Create UI ships, wired to the existing import path; net-new
-fields in the Figma (plan, color) that have no backend are placeholder.
+¹ **Workspace Create** — Decision F adds a blank-create endpoint `POST /api/workspaces`
+on `workflow-backend` (distinct from the existing `import`). `name`/`slug` are real;
+`plan`/`color` are placeholder unless the workspace entity gains those columns. Repo
+import remains available via `/admin/connect`.
 
 Every frontend task in the Phase-2 breakdown that implements one of these surfaces must
 carry a `### Figma` subsection naming the relevant frame `node-id`(s) (frontend Figma
@@ -216,6 +217,36 @@ color / delete) ship as **placeholder** and are deferred to a fast-follow
 > org-scoped operation. The UI may present it under either the org or workspace Members
 > tab, but it mutates `memberships.role`.
 
+### Decision E — Org creation (no API today; orgs are seeded)
+
+`CreateOrganization` exists as a store method but is only called by the seed; there is no
+HTTP path for a user to create an org. The design has a create-org flow (NoOrgState /
+SetupScreen).
+
+**Chosen (CONFIRMED): self-serve org create.** Add `POST /api/orgs` to `user-service`
+— **authenticated users only** (not org-admin-gated; the caller has no org yet). On
+create: insert the org (`CreateOrganization`) and `EnsureMembership(creator, org, "admin")`
+in one transaction so the creator becomes the org admin. This sits **outside**
+`RequireOrgAdminAuth` (a session check suffices). Slug uniqueness + validation enforced.
+
+### Decision F — Workspace creation (only `import` exists today)
+
+The only way a workspace is created today is `POST /api/workspaces/import` (repo URL →
+adapter-service). The design's "Create workspace" (`122-7652`) is a blank create with
+name/slug/color/plan.
+
+- **F-import** — map "Create" to the existing import flow. No new backend.
+- **F-create (CONFIRMED)** — add a **blank-create** endpoint `POST /api/workspaces` to
+  `workflow-backend`. **This brings `workflow-backend` into scope as a third repo**,
+  which Decision D2 had excluded for *settings*. Create is in scope; workspace-entity
+  *settings* (rename/delete) remain D2 placeholder. `name`/`slug` map to the workspace
+  entity; `color`/`plan` are placeholder unless the entity gains those columns.
+
+> **Scope note (flag for approval):** F-create re-opens `workflow-backend`. Since we are
+> now touching that repo and its workspace entity anyway, **reconsidering D1** (also
+> adding rename/delete there) is cheaper than before. Current decisions keep rename/delete
+> as placeholder; revisit at approval if you'd rather complete the workspace-settings tab.
+
 ---
 
 ## 4. Chosen design
@@ -273,15 +304,17 @@ color / delete) ship as **placeholder** and are deferred to a fast-follow
 - Global ⌘K modal. **Navigate** group routes to existing pages (real). **Actions/Agent**
   groups render with permission gating but execution is **stubbed** (placeholder J).
 
-### #14 — Org & workspace administration (full-stack, `user-service` + `digital-factory-ui`)
+### #14 — Org & workspace administration (full-stack, `user-service` + `workflow-backend` + `digital-factory-ui`)
 
-**Backend (`user-service`) — new, building on existing store + schema:**
+**Backend A — `user-service` (org admin + org create) — new, building on existing store + schema:**
 - New store methods in `internal/organizations`: `UpdateOrganization(name, slug)`,
   `DeleteOrganization`, `ChangeMembershipRole(userID, orgID, role)`,
   `RemoveMembership(userID, orgID)`, `TransferOwnership(orgID, newOwnerUserID)`,
   `OrgMembers(orgID)`, `OrgWorkspaces(orgID)`.
-- New org-scoped HTTP routes under `/api/admin/org/:orgId` (illustrative — exact shapes
-  are Phase-2/implementation detail):
+- **Org create (Decision E)** — `POST /api/orgs`, **authenticated (not org-admin-gated)**:
+  `CreateOrganization` + `EnsureMembership(creator, "admin")` in one transaction.
+- New org-scoped admin HTTP routes under `/api/admin/org/:orgId` (illustrative — exact
+  shapes are Phase-2/implementation detail), all behind `RequireOrgAdminAuth`:
   - `GET /api/admin/org/:orgId` · `PATCH /api/admin/org/:orgId` (name/slug)
   - `GET /api/admin/org/:orgId/members`
   - `POST /api/admin/org/:orgId/invitations` (org invite)
@@ -289,6 +322,14 @@ color / delete) ship as **placeholder** and are deferred to a fast-follow
   - `DELETE /api/admin/org/:orgId/members/:userId`
   - `GET /api/admin/org/:orgId/workspaces`
   - `POST /api/admin/org/:orgId/transfer` · `DELETE /api/admin/org/:orgId`
+
+**Backend B — `workflow-backend` (workspace create, Decision F):**
+- New `POST /api/workspaces` — blank-create a workspace (`name`/`slug`) distinct from the
+  existing `POST /api/workspaces/import`. `color`/`plan` placeholder unless the workspace
+  entity gains those columns. Existing `import` path unchanged (used for repo-backed
+  workspaces).
+
+**Org-admin auth guard:**
 - New **`RequireOrgAdminAuth`** guard — **policy CONFIRMED (D-AUTH)**: authorize against
   `memberships.role` for the **path** org (not "some org" as the current workspace guard
   does). A caller with `admin` **or** `platform_admin` on that org may perform **all** org
@@ -303,7 +344,11 @@ color / delete) ship as **placeholder** and are deferred to a fast-follow
   (list/invite/role-change/remove), Workspaces (list), Danger zone (transfer/delete org).
   Workspace **entity** General/Danger (rename/delete) rendered **disabled/placeholder**
   per Decision D2.
-- New `user-service` client methods + React Query hooks mirroring `useAdminMembers`.
+- **Create org** (Decision E) and **Create workspace** (Decision F) flows in the
+  switcher / SetupScreen, wired to `POST /api/orgs` and `POST /api/workspaces`. "Import
+  workspace" remains available via the existing `/admin/connect` import path.
+- New `user-service` + `workflow-backend` client methods + React Query hooks mirroring
+  `useAdminMembers`.
 
 ---
 
@@ -317,20 +362,28 @@ color / delete) ship as **placeholder** and are deferred to a fast-follow
 - Re-theme tokens are foundational to the shell's visual fidelity (soft dependency).
 
 **External / cross-repo:**
-- `user-service` org-admin endpoints — **new in this feature** (no blocker beyond build).
-- `workflow-backend` workspace-entity settings — **out of scope (D2)**; only needed if
-  the human elects D1.
+- `user-service` org-admin endpoints + `POST /api/orgs` (org create) — **new in this
+  feature** (no blocker beyond build).
+- `workflow-backend` `POST /api/workspaces` (blank workspace create, Decision F) — **new
+  in this feature**. Workspace-entity *settings* (rename/delete) remain **out of scope
+  (D2)** — placeholder.
 
 **Blocking decisions — RESOLVED at design review:**
 1. **D-SCOPE (D2 vs D1) → D2.** Workspace-entity rename/delete is **out of scope**
-   (placeholder); no `workflow-backend` work in this feature.
+   (placeholder). NB: Decision F (workspace *create*) still adds `workflow-backend` for a
+   create endpoint — see scope note under Decision F.
 2. **D-AUTH (org-admin authorization) → admin + platform_admin.** Both roles may perform
    all org admin actions; `member` read-only. No new role, no migration. (See §4 #14.)
+3. **D-ORG-CREATE (Decision E) → self-serve.** `POST /api/orgs`, authenticated; creator
+   becomes org `admin`.
+4. **D-WS-CREATE (Decision F) → blank-create endpoint** in `workflow-backend`
+   (`POST /api/workspaces`), in addition to existing import.
 
 **Remaining watch item (not blocking):**
-3. **`workflow-db` API stability** — `workflow-db` is `ready_for_implementation`; confirm
-   no breaking shape change to the workflow-backend REST responses the frontend consumes
-   mid-revamp. Same REST contract, so not a hard blocker — to be watched.
+- **`workflow-db` API stability** — `workflow-db` is `ready_for_implementation`; confirm
+  no breaking shape change to the workflow-backend REST responses the frontend consumes
+  mid-revamp. Same REST contract, so not a hard blocker — to be watched. (Note: Decision
+  F adds a `workflow-backend` endpoint, so coordinate `TB2` with any `workflow-db` work.)
 
 **Configuration / tooling:** no new env vars expected for the frontend. **No DB migration**
 — role-change mutates the existing `memberships.role`; org slug/name columns already
@@ -344,7 +397,8 @@ exist; no `owner` role is introduced.
 ## 6. Parallelization / blocking analysis
 
 > Provisional decomposition (Phase 1). Phase 2 formalizes IDs, the one-repo-per-task
-> split, and `tasks/T<n>.yaml`. Repos: `dfu` = `digital-factory-ui`, `usv` = `user-service`.
+> split, and `tasks/T<n>.yaml`. Repos: `dfu` = `digital-factory-ui`, `usv` = `user-service`,
+> `wfb` = `workflow-backend`.
 
 ```
 D-AUTH:  RESOLVED → admin + platform_admin may perform all org admin actions (no new role)
@@ -384,7 +438,7 @@ T2: App shell — NavRail + Topbar + switcher + breadcrumb + route group — dfu
 T7: Login page reskin — dfu
   └── BLOCKED on T1 (theme tokens); independent of the shell (renders outside it)
 
-TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth — usv
+TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth + org-create (POST /api/orgs) — usv
   └── Can begin now — D-AUTH resolved; independent of all dfu work, runs in parallel with T1–T11
   │
   T12: Org settings UI wired to org-admin endpoints — dfu
@@ -392,14 +446,21 @@ TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth —
   │
   T13: Workspace settings UI — member mgmt + role-change real; entity settings placeholder — dfu
         └── BLOCKED on T2 (shell) AND TB1 (role-change endpoint)
-        └── (D-SCOPE resolved → D2: no workflow-backend upstream; entity settings are placeholder)
+        └── (D-SCOPE resolved → D2: entity rename/delete are placeholder)
+
+TB2: workflow-backend — POST /api/workspaces (blank workspace create, Decision F) — wfb
+  └── Can begin now — no blockers; independent of usv and dfu work
+  │
+  T14: Create-org + create-workspace flows in switcher/SetupScreen — dfu
+        └── BLOCKED on T2 (shell) AND TB1 (org create) AND TB2 (workspace create)
 ```
 
-- **Can start immediately:** `T1` and `TB1` (D-AUTH resolved) — frontend foundation and
-  backend slice run in parallel.
+- **Can start immediately:** `T1` (frontend foundation), `TB1` (user-service), and `TB2`
+  (workflow-backend) — all three run in parallel.
 - **Fan-out after `T2`:** `T3, T4, T5, T6, T8, T9, T10` are mutually independent and run
   in parallel (each renders into the shell).
-- **Tail dependencies:** `T11` after `T4`; `T12`/`T13` after both `T2` and `TB1`.
+- **Tail dependencies:** `T11` after `T4`; `T12`/`T13` after `T2` + `TB1`; `T14` after
+  `T2` + `TB1` + `TB2`.
 
 ---
 
@@ -407,13 +468,14 @@ TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth —
 
 | Repo (`workspace.yaml` id) | Why |
 |---|---|
-| `digital-factory-ui` | All frontend: shell, theme, every surface, #14 settings UI |
-| `user-service` | New org-admin endpoints + store methods + org-scope auth guard (#14) |
-| `workflow-backend` | **No change** — D-SCOPE resolved to D2; workspace-entity settings are placeholder, deferred to a fast-follow feature |
+| `digital-factory-ui` | All frontend: shell, theme, every surface, #14 settings UI, create-org/workspace flows |
+| `user-service` | New org-admin endpoints + store methods + org-scope auth guard + org create (`POST /api/orgs`) |
+| `workflow-backend` | **In scope** — `POST /api/workspaces` (blank workspace create, Decision F). Workspace-entity *settings* (rename/delete) remain placeholder (D2) |
 
 All three are already registered in `workspace.yaml`; no registration change needed.
-Per the one-repo-per-task rule, `#14` is split into a `user-service` backend task (`TB1`)
-and dependent `digital-factory-ui` frontend tasks (`T12`, `T13`).
+Per the one-repo-per-task rule, backend work is split into `user-service` (`TB1`) and
+`workflow-backend` (`TB2`) tasks, with dependent `digital-factory-ui` frontend tasks
+(`T12`, `T13`, `T14`).
 
 ## 8. Validation and release impact
 

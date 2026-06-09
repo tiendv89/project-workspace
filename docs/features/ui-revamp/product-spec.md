@@ -102,11 +102,17 @@ decisions live in one coherent workbench.
 ## Non-goals
 
 - **No new backend *services* in this feature.** The revamp is primarily a frontend
-  re-platforming. The **one** backend exception in scope is adding org/workspace **admin
-  endpoints to the existing `user-service`** (surface #14) — not a new service. All other
-  net-new backend capabilities (diff/PR-content API, team channels, agent-workload
-  telemetry, billing, 2FA/API-token/audit, agent-default config) are explicitly **out of
-  scope** here and tracked as their own future features.
+  re-platforming. The in-scope backend exceptions are additive endpoints on **existing**
+  services (not new services): `user-service` — org admin + org create (`POST /api/orgs`);
+  `workflow-backend` — workspace blank-create (`POST /api/workspaces`). See the technical
+  design §4 #14 and Decisions E/F. All other net-new backend capabilities (diff/PR-content
+  API, team channels, agent-workload telemetry, billing, 2FA/API-token/audit, agent-default
+  config, **workspace-entity rename/delete**) are explicitly **out of scope** here and
+  tracked as their own future features.
+
+  > _Updated post-approval (product owner added self-serve org create + workspace
+  > blank-create). This widens the backend slice from `user-service`-only to also touch
+  > `workflow-backend`. Additive; flagged for re-confirmation at technical-design approval._
 - **No change to the workflow state machine.** Task/feature lifecycle statuses and
   transitions are unchanged (the new design's status set already matches the current
   workflow: `todo … cancelled`, `in_design … cancelled`).
