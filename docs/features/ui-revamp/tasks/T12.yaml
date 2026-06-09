@@ -1,7 +1,7 @@
 id: T12
 title: Org settings UI (wired to org-admin endpoints)
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T2
   - T15
@@ -11,7 +11,7 @@ branch: feature/ui-revamp-T12
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T16:09:35.401Z
+  last_updated_at: 2026-06-09T16:13:53.026Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/128
   status: open
@@ -51,3 +51,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T16:09:35.401Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-09T16:13:53.026Z
