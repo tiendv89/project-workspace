@@ -1,7 +1,7 @@
 id: T4
 title: Feature IDE workbench
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/ui-revamp-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T09:45:17.632Z
+  last_updated_at: 2026-06-09T09:48:55.585Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/121
   status: open
@@ -61,3 +61,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/121"
     at: 2026-06-09T09:45:17.632Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:48:55.585Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
