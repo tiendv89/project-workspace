@@ -1,17 +1,27 @@
 feature_id: ui-revamp
 title: UI Revamp
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: >-
+  Product spec approved. Tech lead runs `tech-lead` (Phase 1) to produce
+  technical-design.md from the approved spec, carrying the Figma link into a
+  ## Figma section.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-09T04:15:56Z
+    review_comment: >-
+      Approved. Scope confirmed: 14 immediate surfaces (incl. #14 org/workspace
+      admin built full-stack across digital-factory-ui + user-service) and 11
+      placeholders. In-place, big-bang cutover. Inbox v1 placeholder.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-09T04:15:56Z
+        comment: Product spec approved by product owner.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +41,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-06-09T04:15:56Z
+    actor: pentative@gmail.com
+    action: stage_approved
+    stage: product_spec
+    note: Product spec approved; feature advanced to in_tdd / technical_design.
 
 revalidation:
   product_spec_required: false
