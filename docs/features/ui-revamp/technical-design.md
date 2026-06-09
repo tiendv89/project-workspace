@@ -311,17 +311,21 @@ name/slug/color/plan.
   `DeleteOrganization`, `ChangeMembershipRole(userID, orgID, role)`,
   `RemoveMembership(userID, orgID)`, `TransferOwnership(orgID, newOwnerUserID)`,
   `OrgMembers(orgID)`, `OrgWorkspaces(orgID)`.
-- **Org create (Decision E)** — `POST /api/orgs`, **authenticated (not org-admin-gated)**:
-  `CreateOrganization` + `EnsureMembership(creator, "admin")` in one transaction.
-- New org-scoped admin HTTP routes under `/api/admin/org/:orgId` (illustrative — exact
-  shapes are Phase-2/implementation detail), all behind `RequireOrgAdminAuth`:
-  - `GET /api/admin/org/:orgId` · `PATCH /api/admin/org/:orgId` (name/slug)
-  - `GET /api/admin/org/:orgId/members`
-  - `POST /api/admin/org/:orgId/invitations` (org invite)
-  - `PATCH /api/admin/org/:orgId/members/:userId` (role-change)
-  - `DELETE /api/admin/org/:orgId/members/:userId`
-  - `GET /api/admin/org/:orgId/workspaces`
-  - `POST /api/admin/org/:orgId/transfer` · `DELETE /api/admin/org/:orgId`
+- **Route naming (Decision B):** all org routes are grouped under **`/api/orgs`** (no
+  `/admin` prefix); authorization is applied **per route** rather than by a blanket group
+  guard. The existing workspace-admin routes (`/api/admin/workspace/...`) are **left
+  untouched** for backward compatibility — only the new org routes use the cleaner tree.
+- **Org create (Decision E)** — `POST /api/orgs`, **authenticated only (no org-admin
+  guard)**: `CreateOrganization` + `EnsureMembership(creator, "admin")` in one transaction.
+- New org HTTP routes under `/api/orgs/:orgId` (illustrative — exact shapes are
+  Phase-2/implementation detail); each `/:orgId/*` route applies `RequireOrgAdminAuth`:
+  - `GET /api/orgs/:orgId` · `PATCH /api/orgs/:orgId` (name/slug)
+  - `GET /api/orgs/:orgId/members`
+  - `POST /api/orgs/:orgId/invitations` (org invite)
+  - `PATCH /api/orgs/:orgId/members/:userId` (role-change)
+  - `DELETE /api/orgs/:orgId/members/:userId`
+  - `GET /api/orgs/:orgId/workspaces`
+  - `POST /api/orgs/:orgId/transfer` · `DELETE /api/orgs/:orgId`
 
 **Backend B — `workflow-backend` (workspace create, Decision F):**
 - New `POST /api/workspaces` — blank-create a workspace (`name`/`slug`) distinct from the
