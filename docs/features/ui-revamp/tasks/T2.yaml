@@ -1,7 +1,7 @@
 id: T2
 title: App shell — NavRail + Topbar + switcher + route group
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T1
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/ui-revamp-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T06:26:55.028Z
+  last_updated_at: 2026-06-09T06:32:17.875Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/119
   status: open
@@ -64,3 +64,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:26:55.028Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T06:32:17.875Z
