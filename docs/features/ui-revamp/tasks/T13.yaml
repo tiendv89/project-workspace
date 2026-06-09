@@ -1,7 +1,7 @@
 id: T13
 title: Workspace settings UI (member mgmt real; entity placeholder)
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T2
   - T15
@@ -11,7 +11,7 @@ branch: feature/ui-revamp-T13
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-09T16:13:39.206Z
+  last_updated_at: 2026-06-09T16:17:13.480Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/129
   status: open
@@ -51,3 +51,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T16:13:39.206Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T16:17:13.480Z
