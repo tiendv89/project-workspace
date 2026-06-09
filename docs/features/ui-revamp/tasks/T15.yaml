@@ -1,7 +1,7 @@
 id: T15
 title: Org-admin endpoints + RequireOrgAdminAuth + org create
 repo: user-service
-status: in_review
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -88,4 +88,8 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-09T20:09:08+0700
     note: Human unblocked — PR exists, resetting to in_review for review cycle.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-09T21:48:32+0700
+    note: Human reset in_review → ready for rework.
 blocked_suggestion: null
