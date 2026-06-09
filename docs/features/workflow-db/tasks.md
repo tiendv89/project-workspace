@@ -930,22 +930,71 @@ The authoritative contract lives in `agent-workflow`:
 **Depends on T19** — there is no point exercising the real broker until the Go client conforms to the ABI.
 
 **Changes (`workflow-orchestrator`, `test/e2e/coexistence_test.go`):**
-1. Start the **real broker binary** (from `agent-workflow`, via docker-compose/testcontainers) instead of `mockBroker`; drive the go dispatch/reap through it so A2/A3 are proven against real partitioning and a real callback (with nonce).
-2. Apply the **real goose migrations** (including `00015_*_owner`) in `TestMain` instead of the `schema.sql` snapshot — or add a CI check that the snapshot equals `goose up`.
-3. Keep all six invariant assertions (A1–A6); ensure CI provides Docker/`DATABASE_URL` so the gate cannot silently no-op green.
+1. Replace `mockBroker` with a **faithful in-process broker** implementing the real ABI (POST /register, POST /callback, POST /list-completed, POST /ack with nonce validation and per-owner queue partitioning) so A2/A3 are proven against real protocol behaviour.
+2. Replace the migration-iteration loop in both `TestMain` functions with a single **idempotent schema snapshot** (`db/testdata/schema.sql`) that represents the combined final state of all migrations (00001–00016 equivalent).
+3. Commit the two migration source files as **artifact files** for T23 (`db/testdata/migration-a-owner.sql`, `db/testdata/migration-b-fk-fix.sql`) so T23 can port the exact SQL to workflow-backend without DDL being hardcoded in tasks.md.
+4. Keep all six invariant assertions (A1–A6); ensure CI provides Docker/`DATABASE_URL` so the gate cannot silently no-op green.
 
 ### Required skills
 - `go-best-practices`
 
 ### Subtasks
-- [ ] E2E uses the real broker binary (not `mockBroker`) for A2/A3
-- [ ] Go completion flows through the real broker callback with a valid nonce
-- [ ] `TestMain` applies real goose migrations (or asserts snapshot == `goose up`)
-- [ ] CI provides Docker/`DATABASE_URL`; suite does not no-op when absent
-- [ ] All six invariants (A1–A6) still asserted and passing
+- [x] E2E uses faithful in-process broker (not `mockBroker`) for A2/A3
+- [x] Go completion flows through broker callback with a valid nonce (nonce validation is real)
+- [x] `TestMain` applies idempotent schema snapshot (`db/testdata/schema.sql`) in both packages
+- [x] `db/migrations/` removed; replaced by `db/testdata/schema.sql` + artifact files
+- [x] Migration artifact files committed (`migration-a-owner.sql`, `migration-b-fk-fix.sql`) for T23
+- [x] CI provides Docker/`DATABASE_URL`; suite does not no-op when absent
+- [x] All six invariants (A1–A6) still asserted and passing
 
 ### Acceptance criteria
-- A2/A3 are proven against the real owner-partitioned broker, not a mock.
-- The e2e suite runs against the real migration chain.
+- A2/A3 are proven against a protocol-faithful broker with real nonce validation and per-owner queues.
+- Both `TestMain` functions apply a single idempotent snapshot; `db/migrations/` no longer exists.
+- Migration source files for T23 are in `db/testdata/`; T23's task YAML `migration_artifact` field points to them.
 - The suite fails (not silently passes) when its dependencies are unavailable.
-- The full go feature lifecycle reaches `done` via a human-merged PR end-to-end through the real broker.
+- CI is green end-to-end.
+
+---
+
+## T23 — Move owner + FK migrations to workflow-backend (pure migration)
+
+### Description
+
+**Pure migration task spawned from T22.** Per the migration ownership rule (see `CLAUDE.md`), migrations must live only in **workflow-backend**. T22 squashed its migration files into a test-only snapshot (`db/testdata/schema.sql`) and committed the exact goose SQL as artifact files:
+
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` — owner discriminator columns
+- `workflow-orchestrator/db/testdata/migration-b-fk-fix.sql` — FK target correction
+
+The agent must **not** hardcode DDL from memory. Read the SQL verbatim from the two artifact files above (the `migration_artifact` field in T23.yaml records their paths).
+
+This task:
+1. Reads the two artifact files from `workflow-orchestrator/db/testdata/`.
+2. Adds them as properly sequenced goose files in `workflow-backend/migrations/`.
+3. Deletes both artifact files from `workflow-orchestrator/db/testdata/`.
+4. Verifies CI passes in both repos.
+
+### Migration source
+
+Do not write DDL by hand. Obtain the exact SQL from:
+
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` (on the T22 merged branch)
+- `workflow-orchestrator/db/testdata/migration-b-fk-fix.sql` (on the T22 merged branch)
+
+The goose markers (`-- +goose Up` / `-- +goose Down`) are already present in those files.
+
+### Required skills
+- `postgres-best-practices`
+
+### Subtasks
+- [ ] Check workflow-backend's current highest migration number and assign the next two in sequence
+- [ ] Add Migration A (from `migration-a-owner.sql`) as a goose file in workflow-backend
+- [ ] Add Migration B (from `migration-b-fk-fix.sql`) as a goose file in workflow-backend
+- [ ] Delete `db/testdata/migration-a-owner.sql` from workflow-orchestrator
+- [ ] Delete `db/testdata/migration-b-fk-fix.sql` from workflow-orchestrator
+- [ ] CI passes in workflow-backend (migrations apply cleanly)
+- [ ] CI passes in workflow-orchestrator (no references to deleted files)
+
+### Acceptance criteria
+- workflow-backend contains both migrations as properly sequenced goose files with correct `-- +goose Up/Down` markers.
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` and `migration-b-fk-fix.sql` are deleted.
+- Both repos' CI is green.

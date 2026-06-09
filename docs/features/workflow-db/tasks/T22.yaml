@@ -1,7 +1,7 @@
 id: T22
 title: Replace E2E mock broker with the real broker and run real migrations
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on:
   - T19
 blocked_reason: null
@@ -9,14 +9,14 @@ blocked_context: null
 branch: feature/workflow-db-T22
 execution:
   actor_type: agent
-  last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-06-09T01:13:35+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T06:17:28.174Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/16
+  status: merged
 workspace_pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/project-workspace/pull/505
+  status: open
 log:
   - action: created
     by: matthew@swellnetwork.io
@@ -33,3 +33,79 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-08T18:41:08.742Z
     note: Task activated — dependency T19 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:42:49.224Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:42:57.601Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Replace E2E mock broker with the real broker and run real migrations
+      workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:56:42+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/16"
+    at: 2026-06-08T19:09:19.995Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T19:10:45.216Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-08T19:17:43.505Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T19:19:00.472Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/16"
+    at: 2026-06-08T19:28:26.750Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T19:29:49.879Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-08T19:40:10.576Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T19:41:28.326Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/16"
+    at: 2026-06-08T19:56:07.972Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T19:57:32.087Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-08T20:08:36.894Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T20:09:53.038Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/16"
+    at: 2026-06-08T20:15:46.197Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:17:28.174Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
