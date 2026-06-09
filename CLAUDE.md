@@ -628,6 +628,7 @@ A task in any service repo (workflow-orchestrator, workflow-backend, etc.) that 
    - Deletes the artifact files from the service repo after porting them to workflow-backend.
 3. **Record artifact paths in the task YAML** — set `migration_artifact.files` in the downstream task's YAML to the paths of the artifact files (relative to the service repo root). This makes the handoff explicit and machine-readable.
 4. **Use the next available migration number** in workflow-backend's sequence. Check existing files before assigning a number.
+5. **Never remove `migration_artifact` from a task YAML** — the field is a permanent audit record. Agents must not delete or omit it when updating status, appending log entries, or moving the task to `in_review` or `done`. The field must survive through the full task lifecycle so reviewers can verify which artifact files were ported.
 
 ### Test schema snapshots
 
