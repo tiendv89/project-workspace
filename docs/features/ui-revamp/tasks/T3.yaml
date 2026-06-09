@@ -1,7 +1,7 @@
 id: T3
 title: Board (Kanban + List) reskin into shell
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T2
 blocked_reason: null
@@ -41,3 +41,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-09T06:43:09+0000
     note: executor work phase begun.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-09T16:25:32+0700
+    note: Human reset from in_progress to ready for re-execution.
