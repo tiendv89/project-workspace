@@ -1,7 +1,7 @@
 feature_id: ui-revamp
 title: UI Revamp
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Tasks approved. Wave 1 (T1, T15, T16) activated to ready and
   eligible for execution via start-implementation. Wave 2+ unlock as
   dependencies complete.
@@ -84,10 +84,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/525
 impl_feature_prs:
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/131
-    status: open
+    status: merged
   - repo: user-service
     url: https://github.com/tiendv89/user-service/pull/8
-    status: open
+    status: merged
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/37
-    status: open
+    status: merged
