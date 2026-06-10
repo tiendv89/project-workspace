@@ -420,13 +420,13 @@ _Cross-cutting rules_
 - **`workflow-db` API stability** — `workflow-db` is `ready_for_implementation`; confirm
   no breaking shape change to the workflow-backend REST responses the frontend consumes
   mid-revamp. Same REST contract, so not a hard blocker — to be watched. (Note: Decision
-  F adds a `workflow-backend` endpoint, so coordinate `TB2` with any `workflow-db` work.)
+  F adds a `workflow-backend` endpoint, so coordinate `T16` with any `workflow-db` work.)
 
 **Configuration / tooling:** no new env vars expected for the frontend. **No DB migration**
 — role-change mutates the existing `memberships.role`; org slug/name columns already
 exist; no `owner` role is introduced.
 
-**Unresolved:** none — both blocking decisions are answered. `TB1` (user-service) and
+**Unresolved:** none — both blocking decisions are answered. `T15` (user-service) and
 `T13` are unblocked.
 
 ---
@@ -440,7 +440,7 @@ exist; no `owner` role is introduced.
 ```
 D-AUTH:  RESOLVED → admin + platform_admin may perform all org admin actions (no new role)
 D-SCOPE: RESOLVED → D2 (org admin only; workspace-entity settings placeholder; no workflow-backend)
-         (both answered at design review — no longer gate TB1 / T13)
+         (both answered at design review — no longer gate T15 / T13)
 
 T1: Theme tokens + dark VS Code theme — dfu
   └── Can begin now — no blockers
@@ -475,29 +475,29 @@ T2: App shell — NavRail + Topbar + switcher + breadcrumb + route group — dfu
 T7: Login page reskin — dfu
   └── BLOCKED on T1 (theme tokens); independent of the shell (renders outside it)
 
-TB1: user-service — org-admin store methods + routes + RequireOrgAdminAuth + org-create (POST /api/orgs) — usv
+T15: user-service — org-admin store methods + routes + RequireOrgAdminAuth + org-create (POST /api/orgs) — usv
   └── Can begin now — D-AUTH resolved; independent of all dfu work, runs in parallel with T1–T11
   │
   T12: Org settings UI wired to org-admin endpoints — dfu
-        └── BLOCKED on T2 (shell) AND TB1 (endpoints must exist)
+        └── BLOCKED on T2 (shell) AND T15 (endpoints must exist)
   │
   T13: Workspace settings UI — member mgmt + role-change real; entity settings placeholder — dfu
-        └── BLOCKED on T2 (shell) AND TB1 (role-change endpoint)
+        └── BLOCKED on T2 (shell) AND T15 (role-change endpoint)
         └── (D-SCOPE resolved → D2: entity rename/delete are placeholder)
 
-TB2: workflow-backend — POST /api/workspaces (blank workspace create, Decision F) — wfb
+T16: workflow-backend — POST /api/workspaces (blank workspace create, Decision F) — wfb
   └── Can begin now — no blockers; independent of usv and dfu work
   │
   T14: Create-org + create-workspace flows in switcher/SetupScreen — dfu
-        └── BLOCKED on T2 (shell) AND TB1 (org create) AND TB2 (workspace create)
+        └── BLOCKED on T2 (shell) AND T15 (org create) AND T16 (workspace create)
 ```
 
-- **Can start immediately:** `T1` (frontend foundation), `TB1` (user-service), and `TB2`
+- **Can start immediately:** `T1` (frontend foundation), `T15` (user-service), and `T16`
   (workflow-backend) — all three run in parallel.
 - **Fan-out after `T2`:** `T3, T4, T5, T6, T8, T9, T10` are mutually independent and run
   in parallel (each renders into the shell).
-- **Tail dependencies:** `T11` after `T4`; `T12`/`T13` after `T2` + `TB1`; `T14` after
-  `T2` + `TB1` + `TB2`.
+- **Tail dependencies:** `T11` after `T4`; `T12`/`T13` after `T2` + `T15`; `T14` after
+  `T2` + `T15` + `T16`.
 
 ---
 
@@ -510,8 +510,8 @@ TB2: workflow-backend — POST /api/workspaces (blank workspace create, Decision
 | `workflow-backend` | **In scope** — `POST /api/workspaces` (blank workspace create, Decision F). Workspace-entity *settings* (rename/delete) remain placeholder (D2) |
 
 All three are already registered in `workspace.yaml`; no registration change needed.
-Per the one-repo-per-task rule, backend work is split into `user-service` (`TB1`) and
-`workflow-backend` (`TB2`) tasks, with dependent `digital-factory-ui` frontend tasks
+Per the one-repo-per-task rule, backend work is split into `user-service` (`T15`) and
+`workflow-backend` (`T16`) tasks, with dependent `digital-factory-ui` frontend tasks
 (`T12`, `T13`, `T14`).
 
 ## 8. Validation and release impact
@@ -524,7 +524,7 @@ Per the one-repo-per-task rule, backend work is split into `user-service` (`TB1`
     role-change, delete/transfer), following the existing `admin_test.go` patterns.
     `golangci-lint run` zero-errors before each commit (workspace Go rule).
 - **Migration/config:** no DB migration anticipated (org name/slug columns exist;
-  role-change mutates existing `memberships.role`). Confirm during `TB1` implementation;
+  role-change mutates existing `memberships.role`). Confirm during `T15` implementation;
   if a column is needed, add a migration under `user-service/migrations`.
 - **Rollout (big-bang):** all work lands on a `feature/ui-revamp` branch per repo; the
   shell swap merges once parity is reached. No long-lived feature flag (spec decision #4).

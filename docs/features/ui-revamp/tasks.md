@@ -18,8 +18,8 @@ https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 | ID | Wave | Title | Repo | Depends on |
 |---|---|---|---|---|
 | T1 | 1 | Theme tokens + dark VS Code theme | digital-factory-ui | — |
-| TB1 | 1 | Org-admin endpoints + `RequireOrgAdminAuth` + org create | user-service | — |
-| TB2 | 1 | Blank workspace create (`POST /api/workspaces`) | workflow-backend | — |
+| T15 | 1 | Org-admin endpoints + `RequireOrgAdminAuth` + org create | user-service | — |
+| T16 | 1 | Blank workspace create (`POST /api/workspaces`) | workflow-backend | — |
 | T2 | 2 | App shell — NavRail + Topbar + switcher + route group | digital-factory-ui | T1 |
 | T7 | 2 | Login page reskin | digital-factory-ui | T1 |
 | T3 | 3 | Board (Kanban + List) reskin into shell | digital-factory-ui | T2 |
@@ -30,15 +30,15 @@ https://www.figma.com/design/KUVm6tSK6eyT89tZGuSko1/Dashboard-Workflow-UI
 | T9 | 3 | Agents/Team (roster real; workload placeholder) | digital-factory-ui | T2 |
 | T10 | 3 | Command palette (nav real; actions placeholder) | digital-factory-ui | T2 |
 | T11 | 4 | Feature IDE — channels placeholder | digital-factory-ui | T4 |
-| T12 | 4 | Org settings UI (wired to org-admin endpoints) | digital-factory-ui | T2, TB1 |
-| T13 | 4 | Workspace settings UI (member mgmt real; entity placeholder) | digital-factory-ui | T2, TB1 |
-| T14 | 4 | Create-org + create-workspace flows | digital-factory-ui | T2, TB1, TB2 |
+| T12 | 4 | Org settings UI (wired to org-admin endpoints) | digital-factory-ui | T2, T15 |
+| T13 | 4 | Workspace settings UI (member mgmt real; entity placeholder) | digital-factory-ui | T2, T15 |
+| T14 | 4 | Create-org + create-workspace flows | digital-factory-ui | T2, T15, T16 |
 
 **Wave summary**
-- **Wave 1 (start now, parallel):** `T1`, `TB1`, `TB2` — no blockers.
+- **Wave 1 (start now, parallel):** `T1`, `T15`, `T16` — no blockers.
 - **Wave 2 (after T1):** `T2` (shell) and `T7` (login) run in parallel.
 - **Wave 3 (after T2):** `T3, T4, T5, T6, T8, T9, T10` — mutually independent, parallel.
-- **Wave 4:** `T11` (after T4); `T12`, `T13` (after T2 + TB1); `T14` (after T2 + TB1 + TB2).
+- **Wave 4:** `T11` (after T4); `T12`, `T13` (after T2 + T15); `T14` (after T2 + T15 + T16).
 
 All frontend tasks must follow the **frontend Figma implementation rule**: read the
 listed frame(s) via the Figma MCP before writing UI when `FIGMA_PERSONAL_ACCESS_TOKEN`
@@ -81,7 +81,7 @@ No hardcoded hex/px that exist as Figma variables (no-orphan-values rule).
 
 ---
 
-## TB1 — Org-admin endpoints + `RequireOrgAdminAuth` + org create (user-service)
+## T15 — Org-admin endpoints + `RequireOrgAdminAuth` + org create (user-service)
 
 ### Description
 Build org administration full-stack on `user-service`, on top of the existing
@@ -130,7 +130,7 @@ org with zero `admin`s (`409`/`422`).
 
 ---
 
-## TB2 — Blank workspace create `POST /api/workspaces` (workflow-backend)
+## T16 — Blank workspace create `POST /api/workspaces` (workflow-backend)
 
 ### Description
 Add a **blank-create** workspace endpoint `POST /api/workspaces` on `workflow-backend`
@@ -453,13 +453,13 @@ labelled, composer disabled. Lives inside the Feature IDE built in T4, hence the
 ## T12 — Org settings UI (wired to org-admin endpoints)
 
 ### Description
-Implement the Org settings modals (`WorkspaceModals` design) wired to the new TB1
+Implement the Org settings modals (`WorkspaceModals` design) wired to the new T15
 `user-service` endpoints: **General** (name/slug edit), **Members**
 (list / invite / role-change / remove), **Workspaces** (list), **Danger zone**
 (transfer / delete org). Add `user-service` client methods + React Query hooks mirroring
 `useAdminMembers`. Authorization affordances must follow the §4 #14 matrix (read-only for
 `member`; admin actions for `admin`/`platform_admin`; last-admin guard surfaced as a clear
-error). Depends on the shell (T2) and the endpoints (TB1).
+error). Depends on the shell (T2) and the endpoints (T15).
 
 ### Required skills
 - frontend-engineer
@@ -492,10 +492,10 @@ error). Depends on the shell (T2) and the endpoints (TB1).
 ### Description
 Implement the Workspace settings modals: **Members** is real (workspace member
 list/invite/remove via the existing #11 APIs; role-change mutates `memberships.role` via the
-TB1 org endpoint). **General** (rename/slug/color) and **Danger zone** (rename/delete) are
+T15 org endpoint). **General** (rename/slug/color) and **Danger zone** (rename/delete) are
 **placeholder/disabled** per Decision D2 — rendered to the design but labelled "managed via
 import/sync," pending a future `workflow-backend` slice. Depends on the shell (T2) and the
-TB1 role-change endpoint.
+T15 role-change endpoint.
 
 ### Required skills
 - frontend-engineer
@@ -512,7 +512,7 @@ TB1 role-change endpoint.
 
 ### Subtasks
 - [ ] Read the three workspace-settings frames via Figma MCP.
-- [ ] Members tab: real list/invite/remove (existing #11 APIs); role-change via TB1 org endpoint.
+- [ ] Members tab: real list/invite/remove (existing #11 APIs); role-change via T15 org endpoint.
 - [ ] General + Danger-zone tabs: rendered disabled/placeholder, labelled (D2).
 - [ ] Surface the org-role note (role lives on org membership) where role-change appears.
 - [ ] Playwright coverage for the real member-management path.
@@ -526,8 +526,8 @@ Wire the **Create org** (Decision E → `POST /api/orgs`) and **Create workspace
 (Decision F → `POST /api/workspaces`) flows into the switcher / SetupScreen (NoOrgState).
 "Import workspace" remains available via the existing `/admin/connect` import path.
 `color`/`plan` on workspace create are placeholder unless the entity gains those columns.
-Depends on the shell (T2), the org-create endpoint (TB1), and the workspace-create
-endpoint (TB2).
+Depends on the shell (T2), the org-create endpoint (T15), and the workspace-create
+endpoint (T16).
 
 ### Required skills
 - frontend-engineer

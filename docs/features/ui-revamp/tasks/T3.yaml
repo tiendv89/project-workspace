@@ -1,19 +1,96 @@
 id: T3
 title: Board (Kanban + List) reskin into shell
 repo: digital-factory-ui
-status: todo
-depends_on: [T2]
+status: done
+depends_on:
+  - T2
 blocked_reason: null
+blocked_context: null
 branch: feature/ui-revamp-T3
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-09T12:03:56+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T10:22:47.901Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/123
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/512
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
     at: 2026-06-09T12:03:56+0700
     note: Task created during ui-revamp Phase-2 breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:33:50.670Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:35:54.842Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:36:04.347Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board (Kanban + List) reskin into shell ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:43:09+0000
+    note: executor work phase begun.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-06-09T16:25:32+0700
+    note: Human reset from in_progress to ready for re-execution.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:28:05.624Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:28:09.837Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Board (Kanban + List) reskin into shell ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:37:06+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/123"
+    at: 2026-06-09T09:43:28.726Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:44:59.068Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-09T09:50:46.741Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:52:06.151Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/123"
+    at: 2026-06-09T10:13:02.543Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T10:16:23.159Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T10:21:00.386Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T10:22:47.901Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
