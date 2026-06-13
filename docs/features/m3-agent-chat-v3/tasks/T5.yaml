@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: interactive tool-call cards + live slash picker"
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -9,14 +9,54 @@ blocked_context: null
 branch: feature/m3-agent-chat-v3-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-13T10:22:11.127Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/132
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/532
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-13T15:49:57+0700
-    note: Task created from approved technical design (§4.5, §4.7). Depends on T3; soft-ordered after T4 on the FE branch.
+    note: Task created from approved technical design (§4.5, §4.7). Depends on T3;
+      soft-ordered after T4 on the FE branch.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:00:23.687Z
+    note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:01:40.242Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:01:48.266Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: interactive tool-call cards + live slash picker
+      m3-agent-chat-v3"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:05:37+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/132"
+    at: 2026-06-13T10:16:38.254Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:17:42.399Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-13T10:21:07.836Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:22:11.127Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
