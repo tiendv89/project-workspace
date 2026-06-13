@@ -1,0 +1,55 @@
+feature_id: m3-agent-chat-v3
+title: m3-agent-chat-v3
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Produce the technical design (tech-lead Phase 1) and submit for approval.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-13T11:41:10+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-13T11:41:10+0700
+        comment: >-
+          Product spec approved. Conversational document authoring loop (agent generates
+          product-spec + technical-design via chat), continuous PR-tracked commits on
+          GitHub, store-aware in-chat approval, light manual edits with read-before-write,
+          reversible state via rollback, and stack-aware tech-design skill loading.
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-06-13T11:41:10+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: product_spec
+    note: >-
+      Product spec approved; feature advanced in_design → in_tdd, current_stage →
+      technical_design.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
