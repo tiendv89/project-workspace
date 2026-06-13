@@ -1,15 +1,15 @@
 id: T2
 title: "workflow-backend: document view/read API (content + PR status)"
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v3-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-13T08:58:48.397Z
 pr:
   url: ""
   status: not_created
@@ -23,3 +23,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-13T08:53:01Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T08:58:48.397Z
+    note: Claimed via git-based claim protocol.
