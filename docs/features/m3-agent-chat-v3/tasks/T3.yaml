@@ -31,3 +31,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T09:26:31.795Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T09:26:39.769Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "hermes-agent: approval tool + stage-transition + tools-list endpoint
+      m3-agent-chat-v3"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
