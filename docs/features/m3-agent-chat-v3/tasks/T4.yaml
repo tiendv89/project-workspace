@@ -32,3 +32,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T10:16:07.065Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:16:15.025Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: document edit + preview + PR indicator
+      m3-agent-chat-v3"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
