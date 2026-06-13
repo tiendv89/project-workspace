@@ -79,3 +79,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m3-agent-chat-v3
 feature_branch_base_sha: 8adc291dff515246ce520135ef7d78469390ff3d
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/527
