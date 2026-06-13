@@ -1,5 +1,5 @@
 id: T4
-title: "digital-factory-ui: document edit + preview + PR indicator"
+title: 'digital-factory-ui: document edit + preview + PR indicator'
 repo: digital-factory-ui
 status: in_progress
 depends_on:
@@ -11,9 +11,9 @@ branch: feature/m3-agent-chat-v3-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-13T10:16:07.065Z
+  last_updated_at: 2026-06-13T10:19:05+0000
 pr:
-  url: ""
+  url: ''
   status: not_created
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/533
@@ -22,8 +22,7 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-13T15:49:57+0700
-    note: Task created from approved technical design (§4.4). Depends on T1 (save) +
-      T2 (content/PR view).
+    note: Task created from approved technical design (§4.4). Depends on T1 (save) + T2 (content/PR view).
   - action: ready
     by: tiendv.52@gmail.com
     at: 2026-06-13T10:14:52.128Z
@@ -37,6 +36,9 @@ log:
     at: 2026-06-13T10:16:15.025Z
     rag_context_injected: false
     rag_summary: query_returned_no_chunks
-    rag_query: "digital-factory-ui: document edit + preview + PR indicator
-      m3-agent-chat-v3"
+    rag_query: 'digital-factory-ui: document edit + preview + PR indicator m3-agent-chat-v3'
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:19:05+0000
+    note: executor work phase begun.
