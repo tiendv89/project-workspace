@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: interactive tool-call cards + live slash picker"
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -19,4 +19,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-13T15:49:57+0700
-    note: Task created from approved technical design (§4.5, §4.7). Depends on T3; soft-ordered after T4 on the FE branch.
+    note: Task created from approved technical design (§4.5, §4.7). Depends on T3;
+      soft-ordered after T4 on the FE branch.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:00:23.687Z
+    note: Task activated — dependency T3 merged and marked done.
