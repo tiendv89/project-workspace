@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: approval tool + stage-transition + tools-list endpoint"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/m3-agent-chat-v3-T3
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-13T09:26:31.795Z
 pr:
   url: ""
   status: not_created
@@ -25,3 +25,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T09:25:16.426Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T09:26:31.795Z
+    note: Claimed via git-based claim protocol.
