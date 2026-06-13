@@ -1,7 +1,7 @@
 id: T4
 title: "digital-factory-ui: document edit + preview + PR indicator"
 repo: digital-factory-ui
-status: reviewing
+status: change_requested
 depends_on:
   - T1
   - T2
@@ -11,7 +11,7 @@ branch: feature/m3-agent-chat-v3-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-13T10:28:58.953Z
+  last_updated_at: 2026-06-13T10:34:47.358Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/133
   status: open
@@ -53,3 +53,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T10:28:58.953Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-13T10:34:47.358Z
