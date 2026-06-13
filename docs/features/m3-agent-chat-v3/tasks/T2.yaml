@@ -1,7 +1,7 @@
 id: T2
 title: "workflow-backend: document view/read API (content + PR status)"
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-agent-chat-v3-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-13T09:58:03.142Z
+  last_updated_at: 2026-06-13T09:59:08.767Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/38
   status: open
@@ -77,3 +77,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/38"
     at: 2026-06-13T09:58:03.142Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T09:59:08.767Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
