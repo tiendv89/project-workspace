@@ -1,7 +1,7 @@
 id: T4
 title: "digital-factory-ui: document edit + preview + PR indicator"
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T1
   - T2
@@ -20,4 +20,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-13T15:49:57+0700
-    note: Task created from approved technical design (§4.4). Depends on T1 (save) + T2 (content/PR view).
+    note: Task created from approved technical design (§4.4). Depends on T1 (save) +
+      T2 (content/PR view).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:14:52.128Z
+    note: Task activated — dependency T2 merged and marked done.
