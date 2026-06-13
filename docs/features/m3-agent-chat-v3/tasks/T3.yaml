@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: approval tool + stage-transition + tools-list endpoint"
 repo: hermes-agent
-status: todo
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -19,4 +19,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-13T15:49:57+0700
-    note: Task created from approved technical design (§4.3). Depends on T1 (reuses document_repo commit path).
+    note: Task created from approved technical design (§4.3). Depends on T1 (reuses
+      document_repo commit path).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T09:25:16.426Z
+    note: Task activated — dependency T1 merged and marked done.
