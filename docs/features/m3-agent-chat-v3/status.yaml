@@ -2,8 +2,8 @@ feature_id: m3-agent-chat-v3
 title: m3-agent-chat-v3
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Produce the technical design (tech-lead Phase 1) and submit for approval.
+current_stage: tasks
+next_action: Produce the task breakdown (tech-lead Phase 2) under tasks/ and submit for approval.
 
 stages:
   product_spec:
@@ -21,11 +21,20 @@ stages:
           GitHub, store-aware in-chat approval, light manual edits with read-before-write,
           reversible state via rollback, and stack-aware tech-design skill loading.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-13T15:46:33+0700
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-13T15:46:33+0700
+        comment: >-
+          Technical design approved. Read/write split (workflow-backend document view API;
+          hermes-agent owns chat + document writes with targeted str_replace + full rewrite,
+          feature-branch commit + create/update PR, read-before-write); store-aware in-chat
+          approval; skills subsystem (G10); ts-only, go deferred. 6 tasks across hermes-agent /
+          workflow-backend / digital-factory-ui.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -47,6 +56,13 @@ history:
     note: >-
       Product spec approved; feature advanced in_design → in_tdd, current_stage →
       technical_design.
+  - at: 2026-06-13T15:46:33+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: technical_design
+    note: >-
+      Technical design approved; current_stage → tasks (task planning). Next: tech-lead
+      Phase 2 produces tasks.md + tasks/T<n>.yaml.
 
 revalidation:
   product_spec_required: false
