@@ -1,6 +1,6 @@
 feature_id: m3-agent-chat-v3
 title: m3-agent-chat-v3
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Wave 1 tasks ready — T1 (hermes-agent), T2 (workflow-backend), T6
   (hermes-agent) can be claimed in parallel via start-implementation. T3 (dep
@@ -53,6 +53,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/534
 history:
   - at: 2026-06-13T11:41:10+0700
     by: pentative@gmail.com
@@ -80,3 +81,14 @@ revalidation:
 feature_branch: feature/m3-agent-chat-v3
 feature_branch_base_sha: 8adc291dff515246ce520135ef7d78469390ff3d
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/527
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/534
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/12
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/39
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/134
+    status: open
