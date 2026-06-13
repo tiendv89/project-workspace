@@ -31,3 +31,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T10:01:40.242Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:01:48.266Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: interactive tool-call cards + live slash picker
+      m3-agent-chat-v3"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
