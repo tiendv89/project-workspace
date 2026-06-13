@@ -29,3 +29,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T08:58:48.397Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T08:58:56.628Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "workflow-backend: document view/read API (content + PR status)
+      m3-agent-chat-v3"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
