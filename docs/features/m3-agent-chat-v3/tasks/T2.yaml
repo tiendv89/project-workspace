@@ -1,0 +1,21 @@
+id: T2
+title: "workflow-backend: document view/read API (content + PR status)"
+repo: workflow-backend
+status: todo
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-chat-v3-T2
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-13T15:49:57+0700
+    note: Task created from approved technical design (§4.2).

@@ -1,0 +1,22 @@
+id: T5
+title: "digital-factory-ui: interactive tool-call cards + live slash picker"
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T3
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-chat-v3-T5
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-13T15:49:57+0700
+    note: Task created from approved technical design (§4.5, §4.7). Depends on T3; soft-ordered after T4 on the FE branch.
