@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: interactive tool-call cards + live slash picker"
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m3-agent-chat-v3-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-13T10:21:07.836Z
+  last_updated_at: 2026-06-13T10:22:11.127Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/132
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/532
   status: open
@@ -56,3 +56,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-13T10:21:07.836Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T10:22:11.127Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
