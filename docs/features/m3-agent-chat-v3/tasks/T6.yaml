@@ -1,7 +1,7 @@
 id: T6
 title: "hermes-agent: skills subsystem (load technical_skills + authoring guidance)"
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-agent-chat-v3-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-13T09:37:46.237Z
+  last_updated_at: 2026-06-13T09:38:47.353Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/10
   status: open
@@ -49,6 +49,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-13T09:37:46.237Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-13T09:38:47.353Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-13T09:31:52.250Z
