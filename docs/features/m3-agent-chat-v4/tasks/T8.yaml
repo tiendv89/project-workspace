@@ -1,7 +1,7 @@
 id: T8
 title: "digital-factory-ui: Channels nav + list + create/admin-delete + member UI"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T4
   - T5
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/m3-agent-chat-v4-T8
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-14T15:59:55.475Z
 pr:
   url: ""
   status: not_created
@@ -26,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-14T15:57:16.031Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:59:55.475Z
+    note: Claimed via git-based claim protocol.
