@@ -2,7 +2,7 @@ id: T3
 title: "hermes-agent: real-time SSE fan-out (pub/sub, stream, send, typing,
   agent republish)"
 repo: hermes-agent
-status: change_requested
+status: in_progress
 depends_on:
   - T2
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/m3-agent-chat-v4-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T09:14:06.426Z
+  last_updated_at: 2026-06-14T09:15:02.273Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/16
   status: open
@@ -55,3 +55,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-14T09:14:06.426Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T09:15:02.273Z
+    note: Fix agent claimed.
