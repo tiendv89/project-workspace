@@ -1,8 +1,10 @@
 id: T6
-title: "digital-factory-ui: persistent subscription transport + per-message attribution"
+title: "digital-factory-ui: persistent subscription transport + per-message
+  attribution"
 repo: digital-factory-ui
-status: todo
-depends_on: [T3]
+status: ready
+depends_on:
+  - T3
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T6
@@ -19,3 +21,7 @@ log:
     by: tech_lead
     at: 2026-06-14T13:43:50+0700
     note: Task created from approved technical design (§4.6).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T11:13:37.310Z
+    note: Task activated — dependency T3 merged and marked done.
