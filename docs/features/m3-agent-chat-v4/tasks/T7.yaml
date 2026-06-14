@@ -1,8 +1,12 @@
 id: T7
-title: "digital-factory-ui: @mention typeahead composer + mention tokens + unread indicator"
+title: "digital-factory-ui: @mention typeahead composer + mention tokens +
+  unread indicator"
 repo: digital-factory-ui
-status: todo
-depends_on: [T2, T5, T6]
+status: ready
+depends_on:
+  - T2
+  - T5
+  - T6
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T7
@@ -19,3 +23,7 @@ log:
     by: tech_lead
     at: 2026-06-14T13:43:50+0700
     note: Task created from approved technical design (§4.7).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:57:16.028Z
+    note: Task activated — dependency T6 merged and marked done.

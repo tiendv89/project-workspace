@@ -2,7 +2,7 @@ id: T6
 title: "digital-factory-ui: persistent subscription transport + per-message
   attribution"
 repo: digital-factory-ui
-status: in_review
+status: done
 depends_on:
   - T3
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/m3-agent-chat-v4-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T12:15:48.688Z
+  last_updated_at: 2026-06-14T15:57:15.919Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/135
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/542
   status: open
@@ -99,3 +99,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/135"
     at: 2026-06-14T12:15:48.688Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:57:15.919Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
