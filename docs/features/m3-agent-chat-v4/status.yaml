@@ -1,18 +1,17 @@
 feature_id: m3-agent-chat-v4
 title: M3 Agent Chat v4
-
 feature_status: ready_for_implementation
 current_stage: implementation
-next_action: Execute Wave 1 tasks (T1, T5) via start-implementation; remaining tasks unblock as deps complete.
-
+next_action: Execute Wave 1 tasks (T1, T5) via start-implementation; remaining
+  tasks unblock as deps complete.
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-14T05:56:03Z
-    review_comment: >-
-      Product spec approved. Scope: M3 "The Thread" — team chat, @mention,
-      triggered @agent, real-time delivery, and admin-managed public Channels.
+    review_comment: 'Product spec approved. Scope: M3 "The Thread" — team chat,
+      @mention, triggered @agent, real-time delivery, and admin-managed public
+      Channels.'
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
@@ -22,12 +21,11 @@ stages:
     review_status: approved
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-14T07:22:41Z
-    review_comment: >-
-      Re-approved after post-approval revisions: channels modelled as
+    review_comment: "Re-approved after post-approval revisions: channels modelled as
       sessions.kind (no channels table), open channel creation with admin-only
       hard delete, and all open questions resolved (SSE in-process pub/sub,
       explicit @agent-only + coalesce, container-aware bare-message default,
-      open-clears mention indicator).
+      open-clears mention indicator)."
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
@@ -36,17 +34,15 @@ stages:
       - review_status: approved
         reviewed_by: pentative@gmail.com
         reviewed_at: 2026-06-14T07:22:41Z
-        review_comment: >-
-          Re-approved revised design (channels-as-sessions.kind, open-create /
-          admin-delete hard delete, OQ resolutions).
+        review_comment: Re-approved revised design (channels-as-sessions.kind,
+          open-create / admin-delete hard delete, OQ resolutions).
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-14T07:25:56Z
-    review_comment: >-
-      Task breakdown approved (8 tasks across hermes-agent, user-service,
-      digital-factory-ui). Wave 1 (T1, T5) activated to ready; feature advanced
-      to ready_for_implementation.
+    review_comment: Task breakdown approved (8 tasks across hermes-agent,
+      user-service, digital-factory-ui). Wave 1 (T1, T5) activated to ready;
+      feature advanced to ready_for_implementation.
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
@@ -58,7 +54,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-06-14T05:56:03Z
     actor: pentative@gmail.com
@@ -80,8 +75,7 @@ history:
     stage: technical_design
     from_status: in_tdd
     to_status: in_tdd
-    note: >-
-      Re-approved technical design after post-approval revisions
+    note: Re-approved technical design after post-approval revisions
       (channels-as-sessions.kind, open-create/admin-delete hard delete, OQ
       resolutions). current_stage remains tasks.
   - at: 2026-06-14T07:25:56Z
@@ -90,12 +84,12 @@ history:
     stage: tasks
     from_status: in_tdd
     to_status: ready_for_implementation
-    note: >-
-      Task breakdown approved; feature advanced to ready_for_implementation.
+    note: Task breakdown approved; feature advanced to ready_for_implementation.
       Wave 1 tasks T1 and T5 activated to ready.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m3-agent-chat-v4
+feature_branch_base_sha: 4c0b5655d03d2b5fb770e251b5ebd5d934c5ca67
