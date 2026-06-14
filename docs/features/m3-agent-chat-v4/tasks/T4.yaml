@@ -1,7 +1,7 @@
 id: T4
 title: "hermes-agent: channels API (member create, admin delete, list, join)"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
   - T5
@@ -11,10 +11,10 @@ branch: feature/m3-agent-chat-v4-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T08:28:48.568Z
+  last_updated_at: 2026-06-14T08:29:57.148Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/14
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/540
   status: open
@@ -55,3 +55,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-14T08:28:48.568Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T08:29:57.148Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
