@@ -1,7 +1,7 @@
 id: T2
 title: "hermes-agent: @mention parse/resolve + @agent-gated dispatch + send service"
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ blocked_context: null
 branch: feature/m3-agent-chat-v4-T2
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-14T08:33:44.811Z
+  last_updated_at: 2026-06-14T08:34:45.284Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/15
@@ -50,6 +50,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-14T08:33:44.811Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T08:34:45.284Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-14T08:29:42.754Z
