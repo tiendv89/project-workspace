@@ -1,8 +1,10 @@
 id: T4
 title: "hermes-agent: channels API (member create, admin delete, list, join)"
 repo: hermes-agent
-status: todo
-depends_on: [T1, T5]
+status: ready
+depends_on:
+  - T1
+  - T5
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T4
@@ -19,3 +21,7 @@ log:
     by: tech_lead
     at: 2026-06-14T13:43:50+0700
     note: Task created from approved technical design (§4.4, §3.6).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T08:08:29.377Z
+    note: Task activated — dependency T1 merged and marked done.
