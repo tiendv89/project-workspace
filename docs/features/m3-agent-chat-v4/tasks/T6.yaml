@@ -2,7 +2,7 @@ id: T6
 title: "digital-factory-ui: persistent subscription transport + per-message
   attribution"
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on:
   - T3
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/m3-agent-chat-v4-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T11:34:39.000Z
+  last_updated_at: 2026-06-14T11:35:33.323Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/135
   status: open
@@ -56,3 +56,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-14T11:34:39.000Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T11:35:33.323Z
+    note: Fix agent claimed.
