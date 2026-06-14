@@ -1,40 +1,44 @@
-id: T2
-title: "hermes-agent: @mention parse/resolve + @agent-gated dispatch + send service"
-repo: hermes-agent
-status: in_progress
-depends_on:
-  - T1
-blocked_reason: null
 blocked_context: null
+blocked_reason: null
 branch: feature/m3-agent-chat-v4-T2
+depends_on:
+- T1
 execution:
   actor_type: agent
+  last_updated_at: 2026-06-14T08:13:02+0000
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T08:09:53.055Z
-pr:
-  url: ""
-  status: not_created
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/539
-  status: open
+id: T2
 log:
-  - action: created
-    by: tech_lead
-    at: 2026-06-14T13:43:50+0700
-    note: Task created from approved technical design (§4.2, §3.5).
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-06-14T08:08:29.374Z
-    note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-06-14T08:09:53.055Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-06-14T08:10:01.267Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "hermes-agent: @mention parse/resolve + @agent-gated dispatch + send
-      service m3-agent-chat-v4"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  at: 2026-06-14T13:43:50+0700
+  by: tech_lead
+  note: Task created from approved technical design (§4.2, §3.5).
+- action: ready
+  at: 2026-06-14 08:08:29.374000+00:00
+  by: tiendv.52@gmail.com
+  note: Task activated — dependency T1 merged and marked done.
+- action: claimed
+  at: 2026-06-14 08:09:53.055000+00:00
+  by: tiendv.52@gmail.com
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  at: 2026-06-14 08:10:01.267000+00:00
+  by: tiendv.52@gmail.com
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+  rag_context_injected: false
+  rag_query: 'hermes-agent: @mention parse/resolve + @agent-gated dispatch + send
+    service m3-agent-chat-v4'
+  rag_summary: query_returned_no_chunks
+- action: started
+  at: 2026-06-14T08:13:02+0000
+  by: tiendv.52@gmail.com
+  note: executor work phase begun.
+pr:
+  status: not_created
+  url: ''
+repo: hermes-agent
+status: in_progress
+title: 'hermes-agent: @mention parse/resolve + @agent-gated dispatch + send service'
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/539
