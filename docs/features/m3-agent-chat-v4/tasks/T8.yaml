@@ -1,7 +1,7 @@
 id: T8
 title: "digital-factory-ui: Channels nav + list + create/admin-delete + member UI"
 repo: digital-factory-ui
-status: reviewing
+status: in_review
 depends_on:
   - T4
   - T5
@@ -53,3 +53,9 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-14T16:16:17.488Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: started
+    by: pye@swellnetwork.io
+    at: 2026-06-15T00:58:23+0700
+    note: >-
+      Human override — rolled status reviewing → in_review to allow a fresh
+      reviewer dispatch. This deviates from the documented transition set.
