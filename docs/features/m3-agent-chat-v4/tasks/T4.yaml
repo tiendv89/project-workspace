@@ -1,0 +1,21 @@
+id: T4
+title: "hermes-agent: channels API (member create, admin delete, list, join)"
+repo: hermes-agent
+status: todo
+depends_on: [T1, T5]
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-chat-v4-T4
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-14T13:43:50+0700
+    note: Task created from approved technical design (§4.4, §3.6).

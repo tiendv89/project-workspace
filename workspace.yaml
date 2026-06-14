@@ -87,6 +87,12 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
+  - id: workflow-bff
+    github: git@github.com:tiendv89/workflow-bff.git
+    local_path: env:WORKFLOW_BFF_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
   - id: workflow-backend
     github: git@github.com:tiendv89/workflow-backend.git
     local_path: env:WORKFLOW_BACKEND_LOCAL_PATH
