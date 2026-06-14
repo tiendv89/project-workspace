@@ -39,3 +39,7 @@ log:
     rag_query: "digital-factory-ui: persistent subscription transport + per-message
       attribution m3-agent-chat-v4"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T11:17:03+0000
+    note: executor work phase begun.
