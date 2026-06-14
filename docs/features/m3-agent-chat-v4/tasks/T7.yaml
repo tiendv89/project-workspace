@@ -2,7 +2,7 @@ id: T7
 title: "digital-factory-ui: @mention typeahead composer + mention tokens +
   unread indicator"
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on:
   - T2
   - T5
@@ -13,7 +13,7 @@ branch: feature/m3-agent-chat-v4-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T16:30:34.707Z
+  last_updated_at: 2026-06-14T16:31:30.437Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/137
   status: open
@@ -58,3 +58,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-14T16:30:34.707Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:31:30.437Z
+    note: Fix agent claimed.
