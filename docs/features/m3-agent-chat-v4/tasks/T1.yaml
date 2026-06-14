@@ -2,7 +2,7 @@ id: T1
 title: "hermes-agent: conversation data model + store (members, authorship,
   mentions, channels)"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ branch: feature/m3-agent-chat-v4-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-14T08:07:26.940Z
+  last_updated_at: 2026-06-14T08:08:29.302Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/13
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/537
   status: open
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-14T08:07:26.940Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T08:08:29.302Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
