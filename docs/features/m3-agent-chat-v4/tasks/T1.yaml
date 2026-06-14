@@ -1,15 +1,16 @@
 id: T1
-title: "hermes-agent: conversation data model + store (members, authorship, mentions, channels)"
+title: "hermes-agent: conversation data model + store (members, authorship,
+  mentions, channels)"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T1
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-14T07:34:44.120Z
 pr:
   url: ""
   status: not_created
@@ -23,3 +24,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-14T07:25:56Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T07:34:44.120Z
+    note: Claimed via git-based claim protocol.
