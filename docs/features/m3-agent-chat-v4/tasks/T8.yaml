@@ -1,7 +1,7 @@
 id: T8
 title: "digital-factory-ui: Channels nav + list + create/admin-delete + member UI"
 repo: digital-factory-ui
-status: ready
+status: done
 depends_on:
   - T4
   - T5
@@ -11,12 +11,14 @@ blocked_context: null
 branch: feature/m3-agent-chat-v4-T8
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-15T02:48:16.091Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/136
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/544
+  status: open
 log:
   - action: created
     by: tech_lead
@@ -26,3 +28,55 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-14T15:57:16.031Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:59:55.475Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:00:04.000Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: Channels nav + list + create/admin-delete +
+      member UI m3-agent-chat-v4"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:03:37+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/136"
+    at: 2026-06-14T16:15:05.418Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:16:17.488Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: started
+    by: pye@swellnetwork.io
+    at: 2026-06-15T00:58:23+0700
+    note: Human override — rolled status reviewing → in_review to allow a fresh
+      reviewer dispatch. This deviates from the documented transition set.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T17:59:59.519Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-14T18:05:30.746Z
+  - action: rebase_completed
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T18:11:56.366Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-15T02:48:16.091Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolved
+rebase_log:
+  - at: 2026-06-14T18:06:25.085Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/m3-agent-chat-v4.
