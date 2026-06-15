@@ -1,15 +1,17 @@
 id: T9
-title: "hermes-agent: workspace-level team threads (kind='thread', feature_id='' create + member-scoped listing)"
+title: "hermes-agent: workspace-level team threads (kind='thread', feature_id=''
+  create + member-scoped listing)"
 repo: hermes-agent
-status: ready
-depends_on: [T1]
+status: in_progress
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T9
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-15T03:23:24.769Z
 pr:
   url: ""
   status: not_created
@@ -18,11 +20,14 @@ log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-06-15T10:05:48+0700
-    note: >-
-      Task created to close the workspace-chat gap (team threads existed only
-      inside features). Adds workspace-level kind='thread', feature_id='' threads
-      reusing T1-T3 (design §4.9, product G12). Depends on T1.
+    note: Task created to close the workspace-chat gap (team threads existed only
+      inside features). Adds workspace-level kind='thread', feature_id=''
+      threads reusing T1-T3 (design §4.9, product G12). Depends on T1.
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-06-15T10:19:54+0700
-    note: Activated to ready — sole dependency T1 is done (PR #13 merged).
+    note: Activated to ready — sole dependency T1 is done (PR
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-15T03:23:24.769Z
+    note: Claimed via git-based claim protocol.
