@@ -1,7 +1,7 @@
 feature_id: m3-agent-chat-v4
 title: M3 Agent Chat v4
-feature_status: ready_for_implementation
-current_stage: implementation
+feature_status: in_handoff
+current_stage: handoff
 next_action: Execute Wave 1 tasks (T1, T5) via start-implementation; remaining
   tasks unblock as deps complete.
 stages:
@@ -54,6 +54,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/545
 history:
   - at: 2026-06-14T05:56:03Z
     actor: pentative@gmail.com
@@ -94,3 +95,14 @@ revalidation:
 feature_branch: feature/m3-agent-chat-v4
 feature_branch_base_sha: 4c0b5655d03d2b5fb770e251b5ebd5d934c5ca67
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/536
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/545
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/17
+    status: open
+  - repo: user-service
+    url: https://github.com/tiendv89/user-service/pull/10
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/138
+    status: open
