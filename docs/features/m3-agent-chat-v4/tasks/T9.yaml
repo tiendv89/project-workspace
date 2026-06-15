@@ -33,3 +33,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-15T03:23:24.769Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-15T03:23:33.298Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "hermes-agent: workspace-level team threads (kind='thread',
+      feature_id='' create + member-scoped listing) m3-agent-chat-v4"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
