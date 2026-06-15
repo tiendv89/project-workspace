@@ -2,7 +2,7 @@ id: T9
 title: "hermes-agent: workspace-level team threads (kind='thread', feature_id=''
   create + member-scoped listing)"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/m3-agent-chat-v4-T9
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-15T03:41:22.598Z
+  last_updated_at: 2026-06-15T03:42:26.602Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/18
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/546
   status: open
@@ -57,3 +57,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-15T03:41:22.598Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-15T03:42:26.602Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
