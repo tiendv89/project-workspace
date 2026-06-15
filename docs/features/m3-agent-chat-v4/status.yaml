@@ -1,9 +1,13 @@
 feature_id: m3-agent-chat-v4
 title: M3 Agent Chat v4
-feature_status: in_handoff
-current_stage: handoff
-next_action: Execute Wave 1 tasks (T1, T5) via start-implementation; remaining
-  tasks unblock as deps complete.
+feature_status: in_implementation
+current_stage: implementation
+next_action: >-
+  Scope expanded post-handoff: spec/design/tasks revised to add workspace-level
+  team threads (new tasks T9 hermes-agent, T10 digital-factory-ui). Re-approve
+  the revised task breakdown, then implement T9 (Wave 2, dep T1) and T10
+  (Wave 4, dep T6+T9) before completing handoff. Handoff PR #545 and the impl
+  PRs are paused pending the added scope.
 stages:
   product_spec:
     review_status: approved
@@ -87,10 +91,22 @@ history:
     to_status: ready_for_implementation
     note: Task breakdown approved; feature advanced to ready_for_implementation.
       Wave 1 tasks T1 and T5 activated to ready.
+  - at: 2026-06-15T10:12:08+0700
+    actor: pye@swellnetwork.io
+    action: revise_scope
+    stage: tasks
+    from_status: in_handoff
+    to_status: in_implementation
+    note: >-
+      Closed the workspace-chat gap (team threads existed only inside features).
+      Revised product-spec (G12), technical-design (§4.9 + feature_id-keyed
+      dispatch), and tasks (added T9 hermes-agent, T10 digital-factory-ui).
+      Rolled the feature back from in_handoff to in_implementation since the new
+      tasks are unimplemented; artifacts marked for re-validation.
 revalidation:
-  product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
+  product_spec_required: true
+  technical_design_required: true
+  tasks_required: true
   deployment_checklist_required: false
 feature_branch: feature/m3-agent-chat-v4
 feature_branch_base_sha: 4c0b5655d03d2b5fb770e251b5ebd5d934c5ca67
