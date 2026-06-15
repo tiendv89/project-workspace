@@ -2,7 +2,7 @@ id: T10
 title: "digital-factory-ui: workspace Team Chat nav entry + workspace-thread
   list + create"
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T6
   - T9
@@ -12,10 +12,10 @@ branch: feature/m3-agent-chat-v4-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-15T03:47:40+0000
+  last_updated_at: 2026-06-15T03:54:27.904Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/139
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/547
   status: open
