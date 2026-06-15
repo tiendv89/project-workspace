@@ -4,10 +4,10 @@
 > **Machine-mutable state (status, depends_on, branch, pr, log) lives in `tasks/T<n>.yaml`** —
 > this file is narrative only. Source of truth for state is the YAML.
 
-Design basis: `technical-design.md` (§4 chosen design, §6 parallelization). 8 tasks across 3
-repos: **hermes-agent** (×4 — conversation backend + transport + channels), **digital-factory-ui**
-(×3 — UI), **user-service** (×1 — member/role reads). `workflow-bff` and `workflow-backend` need
-no change.
+Design basis: `technical-design.md` (§4 chosen design, §6 parallelization). 10 tasks across 3
+repos: **hermes-agent** (×5 — conversation backend + transport + channels + workspace threads),
+**digital-factory-ui** (×4 — UI), **user-service** (×1 — member/role reads). `workflow-bff` and
+`workflow-backend` need no change.
 
 ## Index
 
@@ -21,6 +21,8 @@ no change.
 | T6 | 4 | digital-factory-ui: persistent subscription transport + per-message attribution | T3 |
 | T7 | 4 | digital-factory-ui: @mention typeahead composer + mention tokens + unread indicator | T2, T5, T6 |
 | T8 | 4 | digital-factory-ui: Channels nav + list + create (any member) / admin-only delete + member UI | T4, T5, T6 |
+| T9 | 2 | hermes-agent: workspace-level team threads (kind='thread', feature_id='' create + member-scoped listing) | T1 |
+| T10 | 4 | digital-factory-ui: workspace Team Chat nav entry + workspace-thread list + create | T6, T9 |
 
 ---
 
@@ -97,12 +99,14 @@ message" from "run an agent turn".
   resolves them against thread members (by **unique handle**) + the `@agent` sentinel, persists
   `message_mentions`, and then **gates** the agent turn.
 - **Trigger rules (resolved):** only an **explicit `@agent`** triggers a turn; a plain reply to the
-  agent does **not** re-trigger. **Bare-message default by container:** a bare message (no `@agent`)
-  triggers the agent in a **feature thread** but **never** in a **channel**.
+  agent does **not** re-trigger. **Bare-message default keyed on `feature_id`:** a bare message
+  (no `@agent`) triggers the agent in a **feature thread** (`feature_id` set) but **never** in a
+  **feature-less session** (`feature_id=''` — a channel or a workspace-level thread, T9).
 - Reuse the per-session `_active_runs` guard; multiple `@agent` mentions during an in-flight turn
   **coalesce into one** follow-up turn (not N turns).
-- **Container-aware agent context:** a feature thread (`feature_id` set) keeps full v3 behaviour;
-  a channel (`feature_id=''`) gets workspace-scoped context and the feature authoring/approval
+- **Container-aware agent context (keyed on `feature_id`, not `kind`):** a session with a
+  `feature_id` (feature thread) keeps full v3 behaviour; a feature-less session (`feature_id=''` —
+  channel or workspace thread) gets workspace-scoped context and the feature authoring/approval
   tools are inert (NG12 — enforced by the absent `feature_id`, no new guard).
 
 ### Required skills
@@ -264,4 +268,72 @@ The Channels surface and membership management UI (design §4.8; product G9/G10/
 - [ ] Render a channel's conversation using the shared chat surface (T6/T7).
 - [ ] Add a create-channel control for any member; gate the delete control to admins (role from T5).
 - [ ] Add member list UI (view/add/remove) with role labels for threads + channels.
+- [ ] Tests/typecheck/lint; run the full JS/TS suite before PR.
+
+---
+
+## T9 — hermes-agent: workspace-level team threads
+
+### Description
+Closes the workspace-chat gap (design §4.9; product G12). Today a `kind='thread'` session always
+carries a `feature_id`, so the membership-scoped collaboration surface exists **only** inside a
+feature; the only workspace-level conversation is a named public channel. Add a workspace-level
+**team thread**: a `kind='thread'`, `feature_id=''` session with explicit membership (unlike a
+public channel), reusing the full team-chat stack. **No schema change beyond T1** — the `kind`
+discriminator and member/mention/stream model already cover it.
+
+- `POST /api/v1/threads {workspace_id, title?, members?}` → create a `kind='thread'`,
+  `feature_id=''` session; creator auto-joined; optional initial members added.
+- Extend the member-scoped session listing (T1, G7) so a member's history returns their feature
+  threads **and** workspace-level threads (own ∪ member-of), filterable to the workspace-thread
+  set for the Team Chat surface; non-members are excluded.
+- Conversation, mentions, `@agent`-gated dispatch, and SSE fan-out (T2/T3) apply **unchanged** —
+  they key on session id / `feature_id`, so a workspace thread automatically gets workspace-scoped
+  agent context and explicit-`@agent`-only triggering (NG12). **No T2/T3 code change.**
+
+### Required skills
+- python-best-practices
+- postgres-best-practices
+- backend-engineer
+
+### Subtasks
+- [ ] Implement `POST /api/v1/threads` (create `kind='thread'`, `feature_id=''` session; creator
+      auto-joined; optional initial members).
+- [ ] Extend the member-scoped session listing to include workspace threads; add a
+      workspace-thread filter for the Team Chat surface.
+- [ ] Verify dispatch/context (T2) treats the new feature-less thread as workspace-scoped and
+      explicit-`@agent`-only — no feature authoring/approval tools — without new code.
+- [ ] Tests: create ⇒ `kind='thread'`, `feature_id=''`, creator joined; listing returns own ∪
+      member-of and excludes non-members; workspace thread omits feature tools; bare message does
+      not trigger the agent (feature-less), explicit `@agent` does.
+- [ ] Run full Python suite + lint before PR.
+
+---
+
+## T10 — digital-factory-ui: workspace Team Chat nav entry + workspace-thread list + create
+
+### Description
+The workspace-level team-chat surface (design §4.9; product G12). Reuses the shared chat surface
+(T6), `@mention` composer (T7), and member list/add-remove UI (T8) — adds only the workspace-level
+entry point and create/list wiring.
+
+- Add a workspace-level **Team Chat** entry to `nav-rail.tsx` (alongside Channels) listing the
+  caller's workspace threads (from T9).
+- A **create-thread** control (available to any workspace member) that opens a new workspace
+  thread and lets the creator add members.
+- Opening a workspace thread renders the **same** chat surface as feature threads and channels
+  (T6), with the `@mention` composer (T7) and member list/add-remove UI (T8). No feature
+  authoring/approval affordances render (no `feature_id`).
+
+### Required skills
+- nextjs-best-practices
+- typescript-best-practices
+- heroui-react
+- frontend-engineer
+
+### Subtasks
+- [ ] Add the Team Chat nav entry + workspace-thread list view (from T9).
+- [ ] Add a create-thread control (any member) with initial member selection.
+- [ ] Render a workspace thread using the shared chat surface (T6/T7) + member UI (T8).
+- [ ] Confirm no feature authoring/approval affordances render in a workspace thread.
 - [ ] Tests/typecheck/lint; run the full JS/TS suite before PR.

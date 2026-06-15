@@ -96,6 +96,14 @@ team to talk — standing topics, cross-feature coordination, announcements, or 
 and no way for an admin to organize team chat into named **channels** the way every team tool
 does. Discussion that isn't about one specific feature has nowhere to live.
 
+Channels (below) give the team **named, public** workspace spaces, but they do not close the
+whole gap: there is still no workspace-level **thread** — an ad-hoc, membership-scoped team
+conversation exactly like a feature thread (explicit members, `@mention`, the triggered
+`@agent`, real-time delivery) but **not born from a feature**. The collaborative thread surface
+— the heart of "the team in the room" — exists *only* inside features. A few people who want to
+talk something through with the agent, without a feature and without standing up a public
+channel, have nowhere to do it.
+
 ## Goals
 
 - **G1 — Threads have members.** A session is a **thread** with an explicit member set:
@@ -141,6 +149,15 @@ does. Discussion that isn't about one specific feature has nowhere to live.
   create** a channel; **only admins may delete** one. Channels are **public**: any workspace
   member may join and post. Deletion is the only admin-gated action; creating, joining, and
   posting are open to every workspace member.
+- **G12 — Workspace-level team threads.** A thread (the membership-scoped collaboration surface:
+  explicit members, `@mention`, the triggered `@agent`, attribution, real-time delivery) can be
+  created at the **workspace level**, not only inside a feature. A workspace thread is **not** a
+  named public channel — it has an explicit member set (like a feature thread, only members see
+  and post) and is **not** tied to a `feature_id`. It is discoverable and resumable by its
+  members from the session/history surface (G7) and reuses the exact same team-chat stack as
+  feature threads and channels. Because it carries no `feature_id`, the `@agent` runs with
+  workspace-scoped context and the v3 feature-authoring/approval tools stay inert (same boundary
+  as a channel — NG12).
 
 ## Non-goals
 
@@ -224,6 +241,15 @@ runs a turn (G4) — no refresh needed.
 3. A member `@mentions` the `@agent` in the channel to pull it in; the agent is triggered and
    posts back, exactly as in a feature thread. Human-to-human messages do not wake it (G3).
 
+### Starting a workspace-level team chat
+1. A user opens the workspace-level **Team Chat** entry (not inside any feature) and starts a new
+   thread, adding a couple of colleagues as members.
+2. The thread behaves exactly like a feature thread — attributed, real-time, `@mention` of a
+   member or the `@agent` — but it is not tied to a feature and only its members can see it (G12,
+   G7). They discuss freely; `@agent` pulls the agent in with workspace-scoped context.
+3. The thread appears in each member's history alongside their feature threads; non-members do
+   not see it.
+
 ### Managing channels
 Any member creates a new channel from the Channels section. Deleting a channel that is no longer
 needed is an **admin-only** action; non-admins can create, join, and post but cannot delete
@@ -239,6 +265,17 @@ channels (G11, NG10).
 - A member-aware session/history listing so a user sees **the threads they own and the threads
   they have been added to** (G7).
 - Member-list UI in the thread; role-label display on members (G9).
+
+**Workspace-level team threads (backend + UI)**
+- The ability to create a thread at the **workspace level** — `feature_id`-less, membership-
+  scoped — distinct from named public channels (G12). A workspace member starts it, adds
+  members, and it reuses the full team-chat stack (membership, attribution, real-time fan-out,
+  `@mention` + triggered `@agent`).
+- A workspace-level **Team Chat** entry point in the navigation to create and open these threads;
+  they also surface in the member-aware history listing (G7) for their members only.
+- The `@agent` in a workspace thread runs with workspace-scoped context; feature
+  authoring/approval tools stay inert (same boundary as channels — NG12), enforced by the absent
+  `feature_id`.
 
 **`@mention` (UI + backend)**
 - An inline `@` **typeahead picker** in the composer listing the thread's human members and the
@@ -357,6 +394,9 @@ implementation detail.
   changes live.
 - Any workspace member can create a channel and open, join, and post in one, with messages
   attributed and delivered live; only admins can delete a channel (non-admins cannot).
+- A workspace member can create a **workspace-level thread** (not tied to any feature) from the
+  Team Chat entry, add members, and use the full team-chat surface (attribution, real-time,
+  `@mention`, triggered `@agent` with workspace-scoped context); only its members see it (G12).
 - `@mentioning` the `@agent` in a channel triggers a posted-back response under the same
   triggered-only discipline; human-to-human channel messages never trigger it.
 - Lint, type-check, and the full test suites of the touched repos pass before any PR.

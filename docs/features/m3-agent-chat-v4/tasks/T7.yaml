@@ -1,21 +1,81 @@
 id: T7
-title: "digital-factory-ui: @mention typeahead composer + mention tokens + unread indicator"
+title: "digital-factory-ui: @mention typeahead composer + mention tokens +
+  unread indicator"
 repo: digital-factory-ui
-status: todo
-depends_on: [T2, T5, T6]
+status: done
+depends_on:
+  - T2
+  - T5
+  - T6
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-v4-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-14T16:49:04.781Z
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/137
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/543
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-14T13:43:50+0700
     note: Task created from approved technical design (§4.7).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:57:16.028Z
+    note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:58:30.414Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T15:58:38.975Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: @mention typeahead composer + mention tokens +
+      unread indicator m3-agent-chat-v4"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:02:40+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/137"
+    at: 2026-06-14T16:20:53.811Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:21:57.217Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-14T16:30:34.707Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:31:30.437Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/137"
+    at: 2026-06-14T16:37:29.007Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:38:32.082Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-14T16:48:01.818Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-14T16:49:04.781Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
