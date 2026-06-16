@@ -1,8 +1,10 @@
 id: T3
 title: "workflow-bff: proxy path-mapping for the diff + review-thread routes"
 repo: workflow-bff
-status: todo
-depends_on: [T1, T2]
+status: ready
+depends_on:
+  - T1
+  - T2
 blocked_reason: null
 blocked_context: null
 branch: feature/task-review-T3
@@ -18,4 +20,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-16T15:27:27+0700
-    note: Task created from approved technical design (§4 data flow, §6 wave 2, §7 repo impact).
+    note: Task created from approved technical design (§4 data flow, §6 wave 2, §7
+      repo impact).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T12:44:54.151Z
+    note: Task activated — dependency T2 merged and marked done.
