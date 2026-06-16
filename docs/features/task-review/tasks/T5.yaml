@@ -1,0 +1,21 @@
+id: T5
+title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab + states"
+repo: digital-factory-ui
+status: todo
+depends_on: [T4]
+blocked_reason: null
+blocked_context: null
+branch: feature/task-review-T5
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+pr:
+  url: ""
+  status: not_created
+workspace_pr: null
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-16T15:27:27+0700
+    note: Task created from approved technical design (§4 chosen design, §6 wave 4, §7 repo impact).

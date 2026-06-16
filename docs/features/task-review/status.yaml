@@ -1,0 +1,67 @@
+feature_id: task-review
+title: Task Review
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Execute Wave-1 tasks (T1, T2) via start-implementation in their impl repos.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-16T07:10:12Z
+    review_comment: Product spec approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-16T07:10:12Z
+        comment: Product spec approved.
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-16T08:26:11Z
+    review_comment: Technical design approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-16T08:26:11Z
+        comment: Technical design approved.
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-16T09:03:18Z
+    review_comment: Task breakdown approved; T1 and T2 activated to ready.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-16T09:03:18Z
+        comment: Task breakdown approved; T1 and T2 activated to ready.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-16T07:10:12Z
+    note: Product spec approved; feature advanced to in_tdd.
+  - stage: technical_design
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-16T08:26:11Z
+    note: Technical design approved; task-planning stage unlocked (tech-lead Phase 2).
+  - stage: tasks
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-16T09:03:18Z
+    note: Task breakdown approved; feature advanced to ready_for_implementation. T1 and T2 activated to ready.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
