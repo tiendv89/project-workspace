@@ -1,15 +1,16 @@
 id: T2
-title: "workflow-backend: PR reviews+comments GitHub client methods + review-thread endpoint"
+title: "workflow-backend: PR reviews+comments GitHub client methods +
+  review-thread endpoint"
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/task-review-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-16T11:27:29.368Z
 pr:
   url: ""
   status: not_created
@@ -18,8 +19,13 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-16T15:27:27+0700
-    note: Task created from approved technical design (§4 chosen design, §6 wave 1, §7 repo impact).
+    note: Task created from approved technical design (§4 chosen design, §6 wave 1,
+      §7 repo impact).
   - action: ready
     by: pentative@gmail.com
     at: 2026-06-16T09:03:18Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T11:27:29.368Z
+    note: Claimed via git-based claim protocol.
