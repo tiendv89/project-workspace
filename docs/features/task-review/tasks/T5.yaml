@@ -2,7 +2,7 @@ id: T5
 title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab
   + states"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T4
 blocked_reason: null
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/task-review-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-16T13:36:46.033Z
 pr:
   url: ""
   status: not_created
@@ -26,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-16T13:35:22.171Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:36:46.033Z
+    note: Claimed via git-based claim protocol.
