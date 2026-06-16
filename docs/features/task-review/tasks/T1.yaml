@@ -1,7 +1,7 @@
 id: T1
 title: "workflow-backend: PR files+diff GitHub client methods + task diff endpoint"
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/task-review-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-16T11:29:51+0000
+  last_updated_at: 2026-06-16T11:52:35.320Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/workflow-backend/pull/40
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/552
   status: open
