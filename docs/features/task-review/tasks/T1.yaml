@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-16T11:26:00.765Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T11:26:08.995Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "workflow-backend: PR files+diff GitHub client methods + task diff
+      endpoint task-review"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
