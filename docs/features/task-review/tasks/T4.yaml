@@ -33,3 +33,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-16T13:16:52.972Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:17:01.587Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: diff + review-thread service methods, types, and
+      hooks task-review"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
