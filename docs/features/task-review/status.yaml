@@ -1,7 +1,7 @@
 feature_id: task-review
 title: Task Review
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Execute Wave-1 tasks (T1, T2) via start-implementation in their impl repos.
 stages:
   product_spec:
@@ -71,10 +71,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/557
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/42
-    status: open
+    status: merged
   - repo: workflow-bff
     url: https://github.com/tiendv89/workflow-bff/pull/2
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/142
-    status: open
+    status: merged
