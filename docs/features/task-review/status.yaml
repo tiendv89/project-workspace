@@ -1,10 +1,8 @@
 feature_id: task-review
 title: Task Review
-
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: done
+current_stage: done
 next_action: Execute Wave-1 tasks (T1, T2) via start-implementation in their impl repos.
-
 stages:
   product_spec:
     review_status: approved
@@ -42,7 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/557
 history:
   - stage: product_spec
     action: approved
@@ -53,15 +51,30 @@ history:
     action: approved
     actor: pentative@gmail.com
     at: 2026-06-16T08:26:11Z
-    note: Technical design approved; task-planning stage unlocked (tech-lead Phase 2).
+    note: Technical design approved; task-planning stage unlocked (tech-lead Phase
+      2).
   - stage: tasks
     action: approved
     actor: pentative@gmail.com
     at: 2026-06-16T09:03:18Z
-    note: Task breakdown approved; feature advanced to ready_for_implementation. T1 and T2 activated to ready.
-
+    note: Task breakdown approved; feature advanced to ready_for_implementation. T1
+      and T2 activated to ready.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/task-review
+feature_branch_base_sha: ad7418d5ac9fe626004fa6241013334dcae4d56f
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/551
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/557
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/42
+    status: merged
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/2
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/142
+    status: merged
