@@ -1,7 +1,7 @@
 id: T4
 title: "digital-factory-ui: diff + review-thread service methods, types, and hooks"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T2
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/task-review-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-16T13:16:52.972Z
 pr:
   url: ""
   status: not_created
@@ -27,3 +27,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-16T13:15:32.452Z
     note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:16:52.972Z
+    note: Claimed via git-based claim protocol.
