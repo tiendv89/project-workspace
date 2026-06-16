@@ -2,7 +2,7 @@ id: T2
 title: "workflow-backend: PR reviews+comments GitHub client methods +
   review-thread endpoint"
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ branch: feature/task-review-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-16T12:35:58.714Z
+  last_updated_at: 2026-06-16T12:37:02.217Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/41
   status: open
@@ -67,6 +67,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-16T12:35:58.714Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T12:37:02.217Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-16T12:16:30.054Z
