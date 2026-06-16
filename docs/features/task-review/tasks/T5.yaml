@@ -2,7 +2,7 @@ id: T5
 title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab
   + states"
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T4
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/task-review-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-16T13:43:03+0000
+  last_updated_at: 2026-06-16T13:52:51.690Z
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/141
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/556
   status: open
