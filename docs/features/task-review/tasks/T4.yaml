@@ -1,7 +1,7 @@
 id: T4
 title: "digital-factory-ui: diff + review-thread service methods, types, and hooks"
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T1
   - T2
@@ -12,10 +12,10 @@ branch: feature/task-review-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-16T13:34:17.482Z
+  last_updated_at: 2026-06-16T13:35:22.111Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/140
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/555
   status: open
@@ -58,3 +58,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-16T13:34:17.482Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:35:22.111Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

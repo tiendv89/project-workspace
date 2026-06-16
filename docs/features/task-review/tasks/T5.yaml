@@ -1,8 +1,10 @@
 id: T5
-title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab + states"
+title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab
+  + states"
 repo: digital-factory-ui
-status: todo
-depends_on: [T4]
+status: ready
+depends_on:
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/task-review-T5
@@ -18,4 +20,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-16T15:27:27+0700
-    note: Task created from approved technical design (§4 chosen design, §6 wave 4, §7 repo impact).
+    note: Task created from approved technical design (§4 chosen design, §6 wave 4,
+      §7 repo impact).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:35:22.171Z
+    note: Task activated — dependency T4 merged and marked done.
