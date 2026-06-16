@@ -65,3 +65,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/task-review
 feature_branch_base_sha: ad7418d5ac9fe626004fa6241013334dcae4d56f
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/551
