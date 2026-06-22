@@ -1,9 +1,9 @@
 feature_id: feature-initialization-compatible
 title: Feature Initialization Compatible
 
-feature_status: in_tdd
+feature_status: ready_for_implementation
 current_stage: tasks
-next_action: Tech lead to produce task breakdown for approval.
+next_action: Execute tasks — T1 is ready, T2 and T3 activate when T1 is done.
 
 stages:
   product_spec:
@@ -27,11 +27,15 @@ stages:
         reviewed_at: "2026-06-22T17:52:11+0700"
         review_comment: null
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-22T17:55:30+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-22T17:55:30+0700"
+        review_comment: null
   handoff:
     review_status: draft
     reviewed_by: null
@@ -50,6 +54,11 @@ history:
     by: pentative@gmail.com
     at: "2026-06-22T17:52:11+0700"
     note: Technical design approved.
+  - stage: tasks
+    action: approved
+    by: pentative@gmail.com
+    at: "2026-06-22T17:55:30+0700"
+    note: Task breakdown approved.
 
 revalidation:
   product_spec_required: false
