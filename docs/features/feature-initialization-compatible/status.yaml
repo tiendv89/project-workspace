@@ -1,0 +1,49 @@
+feature_id: feature-initialization-compatible
+title: Feature Initialization Compatible
+
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead to produce technical-design.md for approval.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-22T16:17:38+0700"
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-22T16:17:38+0700"
+        review_comment: null
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    by: pentative@gmail.com
+    at: "2026-06-22T16:17:38+0700"
+    note: Product spec approved.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
