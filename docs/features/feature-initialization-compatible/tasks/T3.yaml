@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: document tools commit to init PR + owner awareness"
 repo: hermes-agent
-status: change_requested
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -9,7 +9,7 @@ blocked_context: null
 branch: feature/feature-initialization-compatible-T3
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-22T13:52:34.056Z
+  last_updated_at: 2026-06-22T13:53:30.669Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/19
@@ -54,3 +54,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-06-22T13:52:34.056Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-22T13:53:30.669Z
+    note: Fix agent claimed.
