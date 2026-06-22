@@ -115,10 +115,13 @@ One new migration — `init_pr_url TEXT` on `workspace_features`. `owner` alread
 
 ```sql
 ALTER TABLE workspace_features
-  ADD COLUMN IF NOT EXISTS init_pr_url TEXT;  -- GitHub PR HTML URL, set at feature creation
+  ADD COLUMN IF NOT EXISTS init_pr_url    TEXT,              -- GitHub PR HTML URL, set at feature creation
+  ADD COLUMN IF NOT EXISTS init_pr_merged BOOLEAN NOT NULL DEFAULT FALSE;  -- true once init PR is merged
 ```
 
-`init_pr_url` is null for features created before this feature ships. The UI and Hermes must handle null gracefully (no banner, no button).
+`init_pr_url` is null for features created before this feature ships. The UI and Hermes must handle null gracefully.
+
+`init_pr_merged` is set lazily: on `GET /features/:id`, if `init_pr_url` is non-null and `init_pr_merged = false`, workflow-backend calls the GitHub PR API to check `merged_at`. If merged, it writes `init_pr_merged = true` to the DB and returns `true` in the response. This avoids a dedicated adapter sync step — the check happens on read, is fast (~100 ms), and self-heals on the first page load after the user merges on GitHub.
 
 ### New API endpoint
 
@@ -128,7 +131,7 @@ POST /api/workspaces/:workspaceId/features
   201:  FeatureSummary (includes init_pr_url, owner)
 ```
 
-`FeatureSummary` already has `Owner *string`. Add `InitPRURL *string json:"init_pr_url,omitempty"`.
+`FeatureSummary` already has `Owner *string`. Add `InitPRURL *string json:"init_pr_url,omitempty"` and `InitPRMerged bool json:"init_pr_merged"`.
 
 ### Hermes document tool updates
 Both `write_product_spec` and `write_technical_design` follow the same pattern:
@@ -146,9 +149,21 @@ Both `write_product_spec` and `write_technical_design` follow the same pattern:
 Before any owner-dependent operation (write task YAML, create task branch), tools read `feature_state["owner"]`. When `owner == "go"`, git/YAML operations are skipped with a descriptive message. When `owner == "ts"` or absent, existing behaviour is unchanged.
 
 ### UI feature detail changes
-- Add `init_pr_url` to `FeatureSummary` / `FeatureDetail` TypeScript types.
-- Render an "Init PR" section when `init_pr_url` is non-null: a "View on GitHub" link (opens in new tab). Static link — no API call.
-- Approve button display is already handled by existing `review_status = awaiting_approval` logic (Hermes sets this via `request_approval`). No new UI gating logic needed.
+
+**Types**: Add `init_pr_url?: string` and `init_pr_merged: boolean` to `FeatureSummary` / `FeatureDetail`.
+
+**Init PR banner**: When `init_pr_url` is non-null, show a "View on GitHub" link in the feature detail header. No API call needed.
+
+**Document tab status tags** (in `FeatureIDEDocsPanel`): After Hermes writes a document, the document tab gains a status tag driven by `init_pr_url` + `init_pr_merged`:
+- `init_pr_url` null → no tag (pre-existing feature or init PR not yet created)
+- `init_pr_url` set + `init_pr_merged = false` → **"in PR"** badge (amber) — document is on the init branch, not yet on main
+- `init_pr_url` set + `init_pr_merged = true` → **"verified"** badge (green) — init PR merged, document is on main
+
+The existing `FeatureIDEDocsPanel` already shows a green checkmark when a stage is approved. The new tags appear on the document tab label itself (alongside the existing checkmark), not as a separate section.
+
+**Auto-switch right panel**: When a `workflow_write_product_spec` or `workflow_write_technical_design` tool card appears in the chat (`DocumentEditCard`), the right panel (`FeatureIDEDocsPanel`) automatically switches to the corresponding document tab. The `FeatureWorkbench` already invalidates document query caches on agent artifact save (lines 312–325) — extend this to also signal the active tab.
+
+**Approve button**: Already handled by `review_status = awaiting_approval` set by Hermes via `request_approval`. No additional UI gating needed.
 
 ## Dependency Analysis
 
@@ -184,9 +199,9 @@ T2 and T3 run in parallel once T1 merges.
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New migration (`init_pr_url TEXT`); `CreateFeature` on `Service` + `WorkspaceService`; `CommitFiles` on `github.Client`; `InitPRURL *string` on `FeatureSummary`; one new route; embedded template strings |
-| `digital-factory-ui` | Add `owner` to `CreateFeatureRequest`; add `init_pr_url` to `FeatureSummary`/`FeatureDetail` types; orchestrator type selector in `NewFeatureModal`; init PR link section in feature detail |
-| `hermes-agent` | `write_product_spec` + `write_technical_design` updated to commit to init PR branch (with fallback create guard); owner-type guard on owner-dependent tools; PR link interactive button in chat response |
+| `workflow-backend` | New migration (`init_pr_url TEXT`, `init_pr_merged BOOLEAN DEFAULT FALSE`); `CreateFeature` on `Service` + `WorkspaceService`; lazy `init_pr_merged` check on `GetFeature`; `CommitFiles` on `github.Client`; `InitPRURL`, `InitPRMerged` on `FeatureSummary`; one new route; embedded template strings |
+| `digital-factory-ui` | Add `owner` to `CreateFeatureRequest`; add `init_pr_url`, `init_pr_merged` to `FeatureSummary`/`FeatureDetail` types; orchestrator type selector in `NewFeatureModal`; init PR banner; "in PR"/"verified" document tab tags in `FeatureIDEDocsPanel`; auto-switch right panel tab on agent document write |
+| `hermes-agent` | `write_product_spec` + `write_technical_design` updated to commit to init PR branch (with fallback); owner-type guard on owner-dependent tools; PR link interactive button in chat response |
 
 Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `workspace-github-adapter`, `rag-service`, `git-nexus`, `user-service`.
 
@@ -198,7 +213,7 @@ Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `worksp
 - **hermes-agent**: Unit test for `write_product_spec` / `write_technical_design` with mock feature state (init_pr_url null path and non-null path). Owner-type guard tested for both `ts` and `go`.
 
 ### Migration / config impact
-- One new migration: `init_pr_url TEXT` on `workspace_features`. Nullable, no default — backward compatible. Existing rows have `init_pr_url = NULL`; UI and Hermes handle null gracefully (no banner, no button).
+- One new migration: `init_pr_url TEXT` (nullable) and `init_pr_merged BOOLEAN NOT NULL DEFAULT FALSE` on `workspace_features`. Backward compatible — existing rows have `init_pr_url = NULL`, `init_pr_merged = false`. UI and Hermes handle null `init_pr_url` gracefully (no tag, no banner).
 - `owner` column already present (migration 00015). No further schema changes beyond `init_pr_url`.
 
 ### Rollout concerns
