@@ -1,4 +1,4 @@
-current_stage: technical_design
+current_stage: tasks
 feature_id: test-feature-2
 feature_status: in_tdd
 history:
@@ -7,7 +7,12 @@ history:
   by: agent
   note: product_spec approved by agent.
   stage: product_spec
-next_action: Technical design required. Use the tech-lead skill (Phase 1).
+- action: stage_approved
+  at: 2026-06-22T17:38:00+0000
+  by: agent
+  note: technical_design approved by agent.
+  stage: technical_design
+next_action: Task breakdown required. Use the tech-lead skill (Phase 2).
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
@@ -38,8 +43,12 @@ stages:
     reviewed_by: null
   technical_design:
     review_comment: null
-    review_history: []
-    review_status: draft
-    reviewed_at: null
-    reviewed_by: null
+    review_history:
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-06-22T17:38:00+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-06-22T17:38:00+0000
+    reviewed_by: agent
 title: test-feature-2
