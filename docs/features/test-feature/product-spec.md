@@ -1,21 +1,4 @@
-# Product Specification
-
-## Feature
-- Feature ID: `test-feature`
-- Title: test-feature
-
-## Problem
-
-_Describe the problem this feature solves._
-
-## Goals
-
-_List the goals._
-
-## Non-goals
-
-_List what is explicitly out of scope._
-
-## Acceptance Criteria
-
-_List the acceptance criteria._
+{
+  "content": "# Product Specification\n\n## Feature\n- Feature ID: `test-feature`\n- Title: Smart Notification Digest\n\n## Problem\nUsers are overwhelmed by real-time notifications from multiple sources (email, Slack, in-app alerts). They frequently miss important updates buried in notification noise, leading to delayed responses and reduced productivity. There is no unified view that summarizes and prioritizes notifications intelligently.\n\n## Goals\n- Aggregate notifications from all connected sources into a single digest feed\n- Use AI-based relevance scoring to surface the most important notifications at the top\n- Allow users to configure digest delivery frequency (real-time, hourly, daily)\n- Reduce notification fatigue by grouping related alerts into single digest entries\n- Provide a one-click action surface so users can respond to notifications without leaving the digest view\n\n## Non-goals\n- Building a new notification delivery channel (e.g. SMS, push) — we surface existing channels only\n- Replacing the underlying notification systems of third-party integrations\n- Providing analytics or reporting on notification patterns in this iteration\n- Supporting mobile native apps — web only for v1\n",
+  "commit_message": "docs: add test product spec for Smart Notification Digest"
+}
