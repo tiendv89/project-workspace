@@ -1,4 +1,21 @@
-{
-  "content": "# Product Specification\n\n## Feature\n- Feature ID: `test-feature`\n- Title: Smart Notification Digest\n\n## Problem\nUsers are overwhelmed by real-time notifications from multiple sources (email, Slack, in-app alerts). They frequently miss important updates buried in notification noise, leading to delayed responses and reduced productivity. There is no unified view that summarizes and prioritizes notifications intelligently.\n\n## Goals\n- Aggregate notifications from all connected sources into a single digest feed\n- Use AI-based relevance scoring to surface the most important notifications at the top\n- Allow users to configure digest delivery frequency (real-time, hourly, daily)\n- Reduce notification fatigue by grouping related alerts into single digest entries\n- Provide a one-click action surface so users can respond to notifications without leaving the digest view\n\n## Non-goals\n- Building a new notification delivery channel (e.g. SMS, push) — we surface existing channels only\n- Replacing the underlying notification systems of third-party integrations\n- Providing analytics or reporting on notification patterns in this iteration\n- Supporting mobile native apps — web only for v1\n",
-  "commit_message": "docs: add test product spec for Smart Notification Digest"
-}
+# Product Specification
+
+## Feature
+- Feature ID: `test-feature`
+- Title: Smart Notification Digest
+
+## Problem
+Users are overwhelmed by a high volume of real-time notifications from the platform — messages, alerts, and activity updates arrive continuously throughout the day, causing notification fatigue and reducing engagement. Users either disable notifications entirely or miss important updates buried in the noise.
+
+## Goals
+- Aggregate and batch non-urgent notifications into a configurable daily or weekly digest email
+- Allow users to set quiet hours during which real-time push notifications are suppressed
+- Provide a priority-based notification system so critical alerts still surface immediately
+- Improve notification open rates by 20% within 90 days of launch
+- Reduce notification-related support tickets by 30%
+
+## Non-goals
+- Building a new email infrastructure — this feature uses the existing transactional email service
+- Replacing real-time notifications entirely — high-priority alerts (security, billing) always fire immediately
+- Supporting SMS or push-notification digests in this iteration — email only
+- Personalisation via ML — digest grouping is rule-based, not model-driven
