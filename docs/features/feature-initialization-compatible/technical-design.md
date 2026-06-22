@@ -29,12 +29,11 @@
 
 ## Problem Framing
 
-Four independent gaps must close:
+Three independent gaps must close:
 
-1. **Missing backend**: `POST /features` is not implemented. The DB has no columns for owner type or init PR state.
-2. **Missing UI affordances**: The create-feature modal has no `owner` selector; the feature detail view has no init PR link.
-3. **Adapter blind to init PR status**: When the init PR is merged on GitHub, `init_pr_status` in the DB stays stale until the adapter is taught to update it on sync.
-4. **Hermes is owner-blind**: It does not distinguish `ts` from `go` when writing task files or creating branches, and cannot surface the init PR link to the user.
+1. **Missing backend**: `POST /features` is not implemented. The DB has no column for orchestrator type.
+2. **Missing UI affordances**: The create-feature modal has no orchestrator type selector; the feature detail view has no init PR link.
+3. **Hermes is owner-blind**: It does not distinguish `ts` from `go` when writing task files or creating branches, and cannot surface the init PR link to the user.
 
 What must remain stable:
 - The existing workspace sync path (workspace-github-adapter → webhook → task queue → DB write).
@@ -91,30 +90,23 @@ Template files are embedded in workflow-backend as Go string constants:
 ### DB schema additions (new migration)
 ```sql
 ALTER TABLE workspace_features
-  ADD COLUMN IF NOT EXISTS owner          TEXT,          -- null = ts (legacy), 'go' = go orchestrator
-  ADD COLUMN IF NOT EXISTS init_pr_url    TEXT,          -- GitHub PR HTML URL
-  ADD COLUMN IF NOT EXISTS init_pr_status TEXT;          -- 'open' | 'merged' | null (not yet created)
+  ADD COLUMN IF NOT EXISTS owner TEXT;  -- null = ts (legacy), 'go' = go orchestrator
 ```
+
+`init_pr_url` and `init_pr_status` are not stored. The init PR branch is always `feature/<feature_id>-init` — deterministic from the feature ID. workflow-backend returns `init_pr_url` as a computed field in the `POST /features` 201 response (constructed from the workspace management repo URL + branch name) without persisting it. The adapter's existing webhook-triggered sync already re-reads git state on every PR event; no additional status tracking is needed.
 
 ### New API endpoint (single)
 
 ```
 POST /api/workspaces/:workspaceId/features
   Body: { name, description?, owner }   owner: "ts" | "go"
-  201:  FeatureSummary + init_pr: { url, status }
+  201:  FeatureSummary + init_pr_url (computed, not persisted)
 ```
 
-No merge endpoint. The user merges the PR directly on GitHub; the adapter's sync cycle updates `init_pr_status`.
-
-### workspace-github-adapter sync change
-No new trigger needed — merging the init PR on GitHub already fires a webhook, which the adapter receives and translates into a `workspace:sync` job automatically. The only change is within the existing sync handler: after upserting feature rows, for any feature with `init_pr_status = 'open'`, query the GitHub PR API (`GET /repos/{owner}/{repo}/pulls/{number}`) and check `merged_at`. If the PR is merged, write `init_pr_status = 'merged'` in the DB. One additive check inside the existing sync path — no new queue job, no new webhook registration.
+No merge endpoint. No adapter change. The user merges the PR directly on GitHub.
 
 ### UI init PR section
-The feature detail view renders an "Init PR" banner when `init_pr_url` is non-null. The banner shows:
-- PR status badge (`open` / `merged`)
-- A "View on GitHub" link (opens `init_pr_url` in a new tab) — **no API call, no merge button**
-- When `init_pr_status = 'open'`: a note "Merge this PR on GitHub to complete initialization"
-- When `init_pr_status = 'merged'`: badge changes to "Initialized"
+The feature detail view renders an "Init PR" banner using the `init_pr_url` returned in the `POST /features` 201 response and cached in frontend state. The banner shows a "View on GitHub" link that opens the PR in a new tab. No API call is needed to check merge status — the banner is a static link, not a stateful widget.
 
 ### Hermes owner-type branching
 Before any owner-dependent action (write task YAML, create git branch for task state), tools read `feature_state["owner"]` from the DB-backed `get_feature_state` result. When `owner == "go"`, the tool skips the git/YAML operation and returns a descriptive message. When `owner == "ts"` or absent, existing behaviour is unchanged.
@@ -124,58 +116,47 @@ Hermes surfaces the init PR link as a clickable button in its response when `fea
 ## Dependency Analysis
 
 ### Internal dependencies
-- T1 (`workflow-backend`) must be complete before T3's UI can display `init_pr_url` and before T4's owner-awareness reads from a populated `owner` column.
-- T2 (`workspace-github-adapter`) depends on T1 — `init_pr_status` column must exist before the sync can update it.
-- T3 (`digital-factory-ui`) depends on T1 — needs `init_pr_url` / `init_pr_status` in the feature response.
-- T4 (`hermes-agent`) depends on T1 — needs the `owner` column populated for new features. Owner-type branching logic can be written independently; the column just needs to exist.
+- T1 (`workflow-backend`) must be complete before T2 and T3 — T2 needs `init_pr_url` in the feature creation response; T3 needs the `owner` column populated for new features.
+- T2 (`digital-factory-ui`) and T3 (`hermes-agent`) are independent of each other and run in parallel once T1 merges.
 
 ### External dependencies
-- `GITHUB_TOKEN` must be available in workflow-backend's environment with write scope (branch create + PR open) on the management repo.
+- `GITHUB_TOKEN` with write scope (branch create + PR open) on the management repo — **confirmed (D1 resolved)**.
 
 ### Blocking decisions
-- **D1**: Confirm `GITHUB_TOKEN` write scope in workflow-backend config. If absent, T1 must add it to the config struct and `.env`.
+- None. D1 is resolved.
 
 ### Unresolved
-- None beyond D1.
+- None.
 
 ## Parallelization / Blocking Analysis
 
 ```
-D1: Confirm GITHUB_TOKEN write-scope in workflow-backend config
-  └── Resolve before T1 begins (likely already present — check with pye)
+T1: workflow-backend — DB migration (owner column) + CreateFeature endpoint + GitHub git-init
+  └── Can begin now — D1 confirmed, no blockers
 
-T1: workflow-backend — DB migration + CreateFeature endpoint + GitHub git-init
-  └── Can begin now (pending D1 confirm)
-  └── BLOCKED on D1 (GITHUB_TOKEN needed for git-init calls)
-  │
-  T2: workspace-github-adapter — detect merged init PR on sync, update init_pr_status
-      └── BLOCKED on T1 (init_pr_status column must exist in DB)
+  T2: digital-factory-ui — orchestrator selector + init PR link banner
+      └── BLOCKED on T1 (needs init_pr_url in POST /features response)
 
-  T3: digital-factory-ui — orchestrator selector + init PR link banner
-      └── BLOCKED on T1 (needs init_pr_url / init_pr_status in feature response)
-
-  T4: hermes-agent — owner-type branching + init PR link button in chat
+  T3: hermes-agent — owner-type branching + init PR link button in chat
       └── BLOCKED on T1 (owner column must be populated for new features)
 ```
 
-T2, T3, and T4 are all unblocked simultaneously once T1 merges and runs in parallel.
+T2 and T3 run in parallel once T1 merges.
 
 ## Repository Impact
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New DB migration; `CreateFeature` added to `Service` interface and `WorkspaceService`; `CommitFiles` added to `github.Client`; one new route in handler; embedded template strings |
-| `workspace-github-adapter` | Sync worker updated to check merged status of open init PRs and write `init_pr_status = 'merged'` |
-| `digital-factory-ui` | Updated types (`CreateFeatureRequest`, `FeatureSummary`, `FeatureDetail`); orchestrator type selector in `NewFeatureModal`; new init-PR banner component (link only, no merge API call) |
-| `hermes-agent` | Owner-type guard added to owner-dependent tools; init PR link rendered as interactive button in chat when status is `open` |
+| `workflow-backend` | New DB migration (`owner` column only); `CreateFeature` added to `Service` interface and `WorkspaceService`; `CommitFiles` added to `github.Client`; one new route in handler; embedded template strings; `init_pr_url` returned as computed field in 201 response |
+| `digital-factory-ui` | Updated types (`CreateFeatureRequest`, `FeatureSummary`); orchestrator type selector in `NewFeatureModal`; init-PR banner (link only, no API call) shown after feature creation |
+| `hermes-agent` | Owner-type guard added to owner-dependent tools; init PR link rendered as interactive button in chat |
 
-Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `rag-service`, `git-nexus`, `user-service`.
+Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `workspace-github-adapter`, `rag-service`, `git-nexus`, `user-service`.
 
 ## Validation and Release Impact
 
 ### Testing expectations
 - **workflow-backend**: Unit tests for `CreateFeature` service method with a mock `github.Client`. Unit tests for `CommitFiles` GitHub method. Existing handler tests must still pass.
-- **workspace-github-adapter**: Unit test for the init-PR status check logic with a mock GitHub API response.
 - **digital-factory-ui**: Component test for `NewFeatureModal` with the orchestrator selector. Smoke test: create feature → verify init PR banner appears with correct link.
 - **hermes-agent**: Owner-type guard tested with both `ts` and `go` feature states. Init PR button tested with a feature state that has `init_pr_url` set.
 
