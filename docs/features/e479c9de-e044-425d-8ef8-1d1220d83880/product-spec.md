@@ -2,23 +2,23 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: Neighborhood Marketplace — Hyperlocal Buy, Sell & Trade Platform
+- Title: FocusForge — Adaptive Deep Work Session Manager
 
 ## Problem
-Online marketplaces like eBay and Facebook Marketplace are plagued by shipping delays, high fees, and distrust between strangers. Neighbors who live minutes apart still go through the same cumbersome process as cross-country sellers. There is no dedicated, trust-first platform that makes it effortless to exchange goods with people in your immediate neighborhood — people you're likely to see again, with shared community accountability.
+Knowledge workers lose an estimated 2–3 hours per day to context switching, notification overload, and poor session planning. Existing focus tools (Pomodoro timers, website blockers) are rigid and one-size-fits-all — they don't adapt to how a specific person actually works. Workers burn out from forcing themselves into 25-minute blocks that don't match their natural concentration rhythms, and they have no data to understand what conditions produce their best deep work.
 
 ## Goals
-- Enable users to list items for sale, trade, or free giveaway within a configurable radius (e.g. 1–10 km)
-- Show listings on an interactive map so buyers can see exactly how close an item is
-- Build trust through a neighborhood-verified identity system (soft verification via address confirmation, not government ID)
-- Support in-app messaging between buyer and seller to coordinate meetups without sharing personal contact info
-- Allow community members to rate and review each other after a completed exchange
-- Send real-time push notifications when a new listing matching a user's saved search appears nearby
-- Provide a "Community Board" for non-commercial posts: lost pets, local events, recommendations
+- Track focus sessions with a flexible timer that users can configure (custom durations, break ratios) rather than forcing the Pomodoro model
+- Automatically detect and surface each user's personal "peak focus window" based on historical session data (time of day, session length, completion rate)
+- Integrate with calendar (Google Calendar, Outlook) to auto-block focus time and protect it from meeting invites
+- Provide a distraction log where users can quickly capture stray thoughts during a session without breaking flow
+- Generate a weekly Focus Report showing total deep work hours, peak performance times, and trend over the past 4 weeks
+- Support ambient sound modes (white noise, rain, café) that activate automatically when a session starts
+- Allow teams to set shared "focus hours" windows where no internal meetings are scheduled
 
 ## Non-goals
-- No payment processing or escrow in this phase — all transactions are cash or personal arrangement at meetup
-- No shipping or delivery logistics — this is strictly local, in-person exchange only
-- No business or commercial seller accounts — individual residents only
-- No moderation AI in v1 — human flagging and manual review only
-- No integration with external inventory or e-commerce platforms (Shopify, WooCommerce, etc.)
+- No website or app blocking in this phase — focus enforcement is motivational, not technical
+- No integration with task management tools (Jira, Linear, Asana) in v1
+- No AI-generated task suggestions or work prioritization
+- No mobile app in v1 — desktop web only
+- No billing or subscription management — this spec covers the core product experience only
