@@ -1,6 +1,6 @@
-current_stage: tasks
+current_stage: handoff
 feature_id: test-feature-2
-feature_status: in_tdd
+feature_status: ready_for_implementation
 history:
 - action: stage_approved
   at: 2026-06-22T17:35:55+0000
@@ -12,7 +12,12 @@ history:
   by: agent
   note: technical_design approved by agent.
   stage: technical_design
-next_action: Task breakdown required. Use the tech-lead skill (Phase 2).
+- action: stage_approved
+  at: 2026-06-22T17:40:05+0000
+  by: agent
+  note: tasks approved by agent.
+  stage: tasks
+next_action: Tasks ready for implementation.
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
@@ -37,10 +42,14 @@ stages:
     reviewed_by: agent
   tasks:
     review_comment: null
-    review_history: []
-    review_status: draft
-    reviewed_at: null
-    reviewed_by: null
+    review_history:
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-06-22T17:40:05+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-06-22T17:40:05+0000
+    reviewed_by: agent
   technical_design:
     review_comment: null
     review_history:
