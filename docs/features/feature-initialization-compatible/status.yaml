@@ -63,3 +63,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/feature-initialization-compatible
 feature_branch_base_sha: 3e3c44acaf4131297ef0e8a60f00b217c96ac470
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/562
