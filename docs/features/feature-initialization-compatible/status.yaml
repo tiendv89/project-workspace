@@ -1,40 +1,38 @@
 feature_id: feature-initialization-compatible
 title: Feature Initialization Compatible
-
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: Execute tasks — T1 is ready, T2 and T3 activate when T1 is done.
-
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-22T16:17:38+0700"
+    reviewed_at: 2026-06-22T16:17:38+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-22T16:17:38+0700"
+        reviewed_at: 2026-06-22T16:17:38+0700
         review_comment: null
   technical_design:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-22T17:52:11+0700"
+    reviewed_at: 2026-06-22T17:52:11+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-22T17:52:11+0700"
+        reviewed_at: 2026-06-22T17:52:11+0700
         review_comment: null
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-22T17:55:30+0700"
+    reviewed_at: 2026-06-22T17:55:30+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-22T17:55:30+0700"
+        reviewed_at: 2026-06-22T17:55:30+0700
         review_comment: null
   handoff:
     review_status: draft
@@ -42,26 +40,26 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - stage: product_spec
     action: approved
     by: pentative@gmail.com
-    at: "2026-06-22T16:17:38+0700"
+    at: 2026-06-22T16:17:38+0700
     note: Product spec approved.
   - stage: technical_design
     action: approved
     by: pentative@gmail.com
-    at: "2026-06-22T17:52:11+0700"
+    at: 2026-06-22T17:52:11+0700
     note: Technical design approved.
   - stage: tasks
     action: approved
     by: pentative@gmail.com
-    at: "2026-06-22T17:55:30+0700"
+    at: 2026-06-22T17:55:30+0700
     note: Task breakdown approved.
-
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/feature-initialization-compatible
+feature_branch_base_sha: 3e3c44acaf4131297ef0e8a60f00b217c96ac470
