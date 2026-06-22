@@ -81,10 +81,11 @@ User opens feature detail
 User chats with Hermes: "write the product spec"
   → write_product_spec:
       get feature_state → read init_pr_url
-      if init_pr_url missing (fallback): create init PR, save URL
-      commit product-spec.md content to init PR branch
+      if init_pr_url non-null and branch exists → commit to init PR branch
+      if init_pr_url non-null but branch gone (merged) → commit to feature/<id> branch
+      if init_pr_url null (pre-existing feature) → commit to feature/<id> branch directly
       call request_approval(stage: "product_spec")
-      return PR link as interactive button in chat
+      return branch/PR link as interactive button in chat
   → review_status = awaiting_approval
   → approve button appears in feature detail
 
@@ -103,6 +104,8 @@ User approves product spec → stage advances to technical_design
 | `docs/features/{id}/handoffs/.gitkeep` | ✓ | ✓ |
 
 Template files are embedded in workflow-backend as Go string constants. Template selection is based on the `owner` field in the `POST /features` request.
+
+**`owner` in `status.yaml` is human-readable context only.** The workspace-github-adapter sync does not parse `owner` from YAML — `featureStatusYAML` has no `owner` field and `UpsertWorkspaceFeatureParams` does not include it. The DB `owner` column is set exclusively by the `POST /features` endpoint at creation time and preserved on subsequent syncs via `COALESCE(workspace_features.owner, EXCLUDED.owner)`. Hermes reads `owner` from the DB-backed `get_feature_state` result, not from the YAML file directly.
 
 ### Git-init commit strategy
 Add `CommitFiles(ctx, owner, repo, branch, baseBranch, message string, files map[string]string) error` to `github.Client` using the GitHub Git Data API (create blobs → create tree → create commit → update ref). Single atomic commit for all template files.
@@ -129,11 +132,15 @@ POST /api/workspaces/:workspaceId/features
 
 ### Hermes document tool updates
 Both `write_product_spec` and `write_technical_design` follow the same pattern:
+
 1. Call `get_feature_state` → read `init_pr_url` and `owner`.
-2. If `init_pr_url` is null (fallback guard): call workflow-backend `POST /features/:id/ensure-init-pr` or create directly via GitHub API and persist the URL.
-3. Commit the document content to the init PR branch via `PutFileContent` (management repo GitHub API).
+2. **Branch decision** (backward-compatible):
+   - `init_pr_url` is non-null **and** init PR branch still exists → commit to init PR branch.
+   - `init_pr_url` is non-null **but** init PR branch is gone (PR merged) → commit to `feature/<id>` branch (create from `main` if absent).
+   - `init_pr_url` is null (pre-existing feature created before this ships) → commit to `feature/<id>` branch directly; **do not create an init PR**. Existing features were initialized manually and have no init PR concept.
+3. Commit the document content via `PutFileContent` on the management repo.
 4. Call `request_approval(stage: <product_spec|technical_design>)` to set `review_status = awaiting_approval`.
-5. Return the PR link as a clickable interactive button in the chat response.
+5. Return the target branch/PR link as a clickable interactive button in the chat response.
 
 ### Hermes owner-type branching
 Before any owner-dependent operation (write task YAML, create task branch), tools read `feature_state["owner"]`. When `owner == "go"`, git/YAML operations are skipped with a descriptive message. When `owner == "ts"` or absent, existing behaviour is unchanged.
