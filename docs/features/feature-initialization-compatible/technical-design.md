@@ -128,7 +128,7 @@ Hermes surfaces the init PR link as a clickable button in its response when `fea
 ## Parallelization / Blocking Analysis
 
 ```
-T1: workflow-backend — DB migration (owner column) + CreateFeature endpoint + GitHub git-init
+T1: workflow-backend — CreateFeature endpoint + GitHub git-init
   └── Can begin now — D1 confirmed, no blockers
 
   T2: digital-factory-ui — orchestrator selector + init PR link banner
