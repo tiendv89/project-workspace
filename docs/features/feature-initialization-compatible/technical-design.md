@@ -10,8 +10,8 @@
 - `RegisterRoutes` exposes `GET/POST /workspaces`, `GET /workspaces/:id/features`, etc. — but there is **no `POST /workspaces/:id/features`** route registered. The frontend call lands on a 404.
 - `Service` interface has no `CreateFeature` method.
 - `WorkspaceService` reads features from the DB (populated by the sync worker). It has no write path for features.
-- `internal/github/client.go` already provides `EnsureBranch`, `PutFileContent`, `EnsurePR`, and `ListPRsForBranch`.
-- `workspace_features` DB table has no `owner`, `init_pr_url`, or `init_pr_status` columns.
+- `internal/github/client.go` already provides `EnsureBranch`, `PutFileContent`, `EnsurePR`, and `ListPRsForBranch`. No `CommitFiles` (multi-file atomic commit) method yet.
+- **Already landed (workflow-db merge #34)**: `owner TEXT` column on `workspace_features` and `workspace_tasks` (migration 00015); `Owner *string` on `FeatureSummary` / `TaskSummary` DTOs; service layer maps `owner` through all read paths; `source_path` made nullable for go-owned rows; `feature_id` FK fix (migration 00016).
 
 ### workspace-github-adapter
 - Handles `workspace:sync` and `task:sync` asynq jobs triggered by GitHub webhooks. A PR merge on any branch already fires a webhook → the adapter enqueues `workspace:sync` automatically.
@@ -52,8 +52,8 @@ Fixed assumptions:
 - workflow-backend calls the GitHub REST API directly using its existing `github.Client` to create the branch, commit template files, and open the PR — all within the `POST /features` handler.
 - Pros: Simple. PR URL available in the 201. No new queue job or async state machine. `github.Client` already has `EnsureBranch`, `PutFileContent`, `EnsurePR`.
 - Cons: ~1–2 s added to feature creation latency. GitHub API failures surface as 5xx.
-- Implementation impact: Add `CreateFeature` to `Service` interface and `WorkspaceService`. Add `CommitFiles` to `github.Client`. Embed template files as Go strings.
-- Dependency impact: Requires `GITHUB_TOKEN` with write scope in workflow-backend config (confirm D1).
+- Implementation impact: Add `CreateFeature` to `Service` interface and `WorkspaceService`. Add `CommitFiles` to `github.Client`. Embed template files as Go strings. No DB migration — `owner` column already exists.
+- Dependency impact: `GITHUB_TOKEN` with write scope confirmed (D1 resolved).
 
 ### Option B — Async git-init via asynq to workspace-github-adapter
 - workflow-backend creates the DB record, enqueues a `feature:git-init` asynq task. workspace-github-adapter executes it. UI polls until `init_pr_url` is populated.
@@ -87,11 +87,8 @@ Template files are embedded in workflow-backend as Go string constants:
 | `docs/features/{id}/tasks/.gitkeep` | ✓ | — |
 | `docs/features/{id}/handoffs/.gitkeep` | ✓ | ✓ |
 
-### DB schema additions (new migration)
-```sql
-ALTER TABLE workspace_features
-  ADD COLUMN IF NOT EXISTS owner TEXT;  -- null = ts (legacy), 'go' = go orchestrator
-```
+### DB schema — no migration needed
+The `owner TEXT` column already exists on `workspace_features` (migration 00015, landed in workflow-db merge). No further schema changes are required for this feature.
 
 `init_pr_url` and `init_pr_status` are not stored. The init PR branch is always `feature/<feature_id>-init` — deterministic from the feature ID. workflow-backend returns `init_pr_url` as a computed field in the `POST /features` 201 response (constructed from the workspace management repo URL + branch name) without persisting it. The adapter's existing webhook-triggered sync already re-reads git state on every PR event; no additional status tracking is needed.
 
@@ -147,7 +144,7 @@ T2 and T3 run in parallel once T1 merges.
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | New DB migration (`owner` column only); `CreateFeature` added to `Service` interface and `WorkspaceService`; `CommitFiles` added to `github.Client`; one new route in handler; embedded template strings; `init_pr_url` returned as computed field in 201 response |
+| `workflow-backend` | No new migration (`owner` column already landed in workflow-db); `CreateFeature` added to `Service` interface and `WorkspaceService`; `CommitFiles` added to `github.Client`; one new route in handler; embedded template strings; `init_pr_url` returned as computed field in 201 response |
 | `digital-factory-ui` | Updated types (`CreateFeatureRequest`, `FeatureSummary`); orchestrator type selector in `NewFeatureModal`; init-PR banner (link only, no API call) shown after feature creation |
 | `hermes-agent` | Owner-type guard added to owner-dependent tools; init PR link rendered as interactive button in chat |
 
@@ -156,13 +153,13 @@ Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `worksp
 ## Validation and Release Impact
 
 ### Testing expectations
-- **workflow-backend**: Unit tests for `CreateFeature` service method with a mock `github.Client`. Unit tests for `CommitFiles` GitHub method. Existing handler tests must still pass.
+- **workflow-backend**: Unit tests for `CreateFeature` service method with a mock `github.Client`. Unit test for `CommitFiles` GitHub method. Existing handler tests must still pass. No migration test update needed — `owner` column already covered by workflow-db tests.
 - **digital-factory-ui**: Component test for `NewFeatureModal` with the orchestrator selector. Smoke test: create feature → verify init PR banner appears with correct link.
 - **hermes-agent**: Owner-type guard tested with both `ts` and `go` feature states. Init PR button tested with a feature state that has `init_pr_url` set.
 
 ### Migration / config impact
-- One new migration. All three columns are nullable with no default — fully backward compatible. Existing rows have `owner = NULL` (interpreted as `ts`), `init_pr_url = NULL`, `init_pr_status = NULL`.
-- `GITHUB_TOKEN` with write scope must be present in workflow-backend environment (D1).
+- No new migration required — `owner` column already exists (migration 00015, workflow-db merge). Existing rows have `owner = NULL` (interpreted as `ts`), which is fully backward compatible.
+- `GITHUB_TOKEN` with write scope is confirmed present in workflow-backend environment (D1 resolved).
 
 ### Rollout concerns
 - Features created before this ships have `init_pr_url = NULL`. UI must handle gracefully — no banner if null. No backfill needed.
