@@ -1,4 +1,4 @@
-current_stage: tasks
+current_stage: technical_design
 feature_id: test-feature
 feature_status: in_tdd
 history:
@@ -22,11 +22,16 @@ history:
   by: agent
   note: tasks reopened by agent.
   stage: tasks
-next_action: Tasks reopened. Update the task breakdown and re-submit for approval.
+- action: stage_reopened
+  at: 2026-06-22T17:27:09+0000
+  by: agent
+  note: technical_design reopened by agent.
+  stage: technical_design
+next_action: Technical design reopened. Update the artifact and re-submit for approval.
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
-  tasks_required: false
+  tasks_required: true
   technical_design_required: false
 stages:
   handoff:
@@ -66,7 +71,11 @@ stages:
       review_status: approved
       reviewed_at: 2026-06-22T16:57:21+0000
       reviewed_by: agent
-    review_status: approved
-    reviewed_at: 2026-06-22T16:57:21+0000
-    reviewed_by: agent
+    - comment: Stage reopened by agent.
+      review_status: draft
+      reviewed_at: 2026-06-22T17:27:09+0000
+      reviewed_by: agent
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
 title: test-feature
