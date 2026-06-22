@@ -1,6 +1,6 @@
-current_stage: handoff
+current_stage: tasks
 feature_id: test-feature
-feature_status: ready_for_implementation
+feature_status: in_tdd
 history:
 - action: stage_approved
   at: 2026-06-22T16:55:58+0000
@@ -17,7 +17,12 @@ history:
   by: agent
   note: tasks approved by agent.
   stage: tasks
-next_action: Tasks ready for implementation.
+- action: stage_reopened
+  at: 2026-06-22T17:27:04+0000
+  by: agent
+  note: tasks reopened by agent.
+  stage: tasks
+next_action: Tasks reopened. Update the task breakdown and re-submit for approval.
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
@@ -47,9 +52,13 @@ stages:
       review_status: approved
       reviewed_at: 2026-06-22T17:16:44+0000
       reviewed_by: agent
-    review_status: approved
-    reviewed_at: 2026-06-22T17:16:44+0000
-    reviewed_by: agent
+    - comment: Stage reopened by agent.
+      review_status: draft
+      reviewed_at: 2026-06-22T17:27:04+0000
+      reviewed_by: agent
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
   technical_design:
     review_comment: null
     review_history:
