@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: document tools commit to init PR + owner awareness"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,11 +9,11 @@ blocked_context: null
 branch: feature/feature-initialization-compatible-T3
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-22T14:11:36.048Z
+  last_updated_at: 2026-06-22T14:12:53.658Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/19
-  status: open
+  status: merged
 workspace_pr:
   status: open
   url: https://github.com/tiendv89/project-workspace/pull/565
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-22T14:11:36.048Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-22T14:12:53.658Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
