@@ -7,77 +7,92 @@
 ## Current State
 
 ### workflow-backend
-- `RegisterRoutes` exposes `GET/POST /workspaces`, `GET /workspaces/:id/features`, etc. — but there is **no `POST /workspaces/:id/features`** route registered. The frontend call lands on a 404.
-- `Service` interface has no `CreateFeature` method.
-- `WorkspaceService` reads features from the DB (populated by the sync worker). It has no write path for features.
-- `internal/github/client.go` already provides `EnsureBranch`, `PutFileContent`, `EnsurePR`, and `ListPRsForBranch`. No `CommitFiles` (multi-file atomic commit) method yet.
-- **Already landed (workflow-db merge #34)**: `owner TEXT` column on `workspace_features` and `workspace_tasks` (migration 00015); `Owner *string` on `FeatureSummary` / `TaskSummary` DTOs; service layer maps `owner` through all read paths; `source_path` made nullable for go-owned rows; `feature_id` FK fix (migration 00016).
-
-### workspace-github-adapter
-- Handles `workspace:sync` and `task:sync` asynq jobs triggered by GitHub webhooks. A PR merge on any branch already fires a webhook → the adapter enqueues `workspace:sync` automatically.
-- Sync worker reads feature YAML/markdown from git and upserts rows into `workspace_features`. It does not currently check or update `init_pr_status`.
+- `RegisterRoutes` has no `POST /workspaces/:id/features` route. Frontend call lands on a 404.
+- `Service` interface has no `CreateFeature` method. `WorkspaceService` has no feature write path.
+- `internal/github/client.go` provides `EnsureBranch`, `PutFileContent`, `EnsurePR`, `ListPRsForBranch`. No `CommitFiles` (multi-file atomic commit) yet.
+- **Already landed (workflow-db merge #34)**: `owner TEXT` column on `workspace_features` and `workspace_tasks` (migration 00015); `Owner *string` on `FeatureSummary` / `TaskSummary` DTOs; service layer maps `owner` through all read paths; `source_path` nullable; `feature_id` FK fixed (migration 00016).
+- `init_pr_url` is not stored anywhere.
 
 ### digital-factory-ui
-- `NewFeatureModal` sends `{name, description, start_stage}` to `POST /features`. The form has no orchestrator type selector.
-- `CreateFeatureRequest` type has no `owner` field.
-- `FeatureSummary` and `FeatureDetail` types have no `init_pr_url` / `init_pr_status` fields.
-- There is no init-PR section in any feature view component.
+- `NewFeatureModal` sends `{name, description, start_stage}` — no `owner` field.
+- `FeatureSummary` / `FeatureDetail` types have no `init_pr_url`.
+- No init PR section in any feature view component.
 
 ### hermes-agent
-- Registered tools: `get_workspace_context`, `get_feature_state`, `write_product_spec`, `write_technical_design`, `edit_document`, `get_tasks`, `query_gitnexus`, `query_rag`, `load_skill`, `request_approval`.
-- No owner-type branching. Tools that touch git or task-state do not check `status.yaml`'s `owner` field before acting.
+- `write_product_spec` and `write_technical_design` tools write documents but do not commit to an init PR branch — they write directly without ensuring a PR exists.
+- No owner-type branching. Tools do not read `owner` before git or task-state operations.
+- `request_approval` tool surfaces an Approve/Reject card in chat and sets `review_status = awaiting_approval` in the DB — this is already the mechanism for gating the approve button in the feature detail view.
 
 ## Problem Framing
 
-Three independent gaps must close:
+Four gaps must close:
 
-1. **Missing backend**: `POST /features` is not implemented. The DB has no column for orchestrator type.
-2. **Missing UI affordances**: The create-feature modal has no orchestrator type selector; the feature detail view has no init PR link.
-3. **Hermes is owner-blind**: It does not distinguish `ts` from `go` when writing task files or creating branches, and cannot surface the init PR link to the user.
+1. **Missing backend**: `POST /features` is not implemented. `init_pr_url` is not stored in the DB.
+2. **Missing UI affordances**: No orchestrator type selector in the create modal; no init PR link in the feature detail view.
+3. **Hermes document tools don't commit to init PR**: `write_product_spec` and `write_technical_design` write documents without ensuring an init PR branch exists and without committing to it.
+4. **Hermes is owner-blind**: Tools do not distinguish `ts` from `go` when writing task files or creating branches.
 
 What must remain stable:
-- The existing workspace sync path (workspace-github-adapter → webhook → task queue → DB write).
-- All existing read endpoints (`GET /features`, `GET /features/:id`, `GET /features/:id/tasks`, etc.).
-- Existing Hermes tools — the owner-awareness change is additive: when `owner` is absent or `ts`, existing behaviour is preserved.
+- Existing workspace sync path (workspace-github-adapter → webhook → DB write).
+- All existing read endpoints.
+- Existing Hermes tools — owner-awareness is additive; absent/`ts` preserves current behaviour.
 
 Fixed assumptions:
-- The GitHub token available to workflow-backend is sufficient to create branches, commit files, and open PRs on the management repo.
-- The management repo URL is derivable from the workspace record (via the existing `githubRepoURL` helper).
-- Git-init runs synchronously in the create-feature handler. The PR URL is known before 201 is returned. We accept the ~1–2 s latency.
-- Merge is performed by the user directly on GitHub. The adapter's webhook-triggered sync is the mechanism that updates `init_pr_status` to `merged` — no dedicated merge API endpoint is needed.
+- `GITHUB_TOKEN` with write scope on the management repo is confirmed present in workflow-backend (D1 resolved).
+- Management repo URL is derivable from the workspace record via `githubRepoURL`.
+- Git-init runs synchronously in the `POST /features` handler. PR URL is known before 201 is returned. ~1–2 s latency accepted.
+- User merges the init PR directly on GitHub — no merge endpoint needed.
+- The approve button in the feature detail is already gated by `review_status = awaiting_approval`, which Hermes sets via `request_approval` after writing a document. No additional UI gatekeeping logic is required.
 
 ## Options Considered
 
-### Option A — Synchronous git-init inside workflow-backend
-- workflow-backend calls the GitHub REST API directly using its existing `github.Client` to create the branch, commit template files, and open the PR — all within the `POST /features` handler.
-- Pros: Simple. PR URL available in the 201. No new queue job or async state machine. `github.Client` already has `EnsureBranch`, `PutFileContent`, `EnsurePR`.
+### Option A — Synchronous git-init inside workflow-backend (chosen)
+- `POST /features` creates the DB record and immediately calls GitHub to create the branch, commit template files, and open the PR. `init_pr_url` stored and returned in the 201.
+- Pros: PR URL available in the 201. No polling. No new queue job. `github.Client` already has the primitives.
 - Cons: ~1–2 s added to feature creation latency. GitHub API failures surface as 5xx.
-- Implementation impact: Add `CreateFeature` to `Service` interface and `WorkspaceService`. Add `CommitFiles` to `github.Client`. Embed template files as Go strings. No DB migration — `owner` column already exists.
-- Dependency impact: `GITHUB_TOKEN` with write scope confirmed (D1 resolved).
 
-### Option B — Async git-init via asynq to workspace-github-adapter
-- workflow-backend creates the DB record, enqueues a `feature:git-init` asynq task. workspace-github-adapter executes it. UI polls until `init_pr_url` is populated.
-- Pros: Non-blocking.
-- Cons: PR URL not in the 201 — UI must poll. New queue job type needed. Adds async failure modes. UI needs a loading/polling state.
-- Implementation impact: High — spans two services plus UI polling logic.
+### Option B — Async git-init via asynq
+- DB record created first, git-init enqueued. UI polls until `init_pr_url` is populated.
+- Cons: PR URL not in 201, UI must poll, new queue job type, async failure modes.
+- Rejected: complexity not justified for a small one-time operation.
 
 ## Chosen Design
 
 **Option A — synchronous git-init inside workflow-backend.**
 
-Rationale: Git-init creates 4–5 small text files and opens one PR. GitHub REST API p95 for these operations is well under 2 s. The synchronous path keeps implementation entirely in workflow-backend, delivers the PR URL in the 201, and eliminates async failure modes. Option B's complexity is not justified.
+Both `ts` and `go` features follow the same initialization flow. The only difference is which template files go on the init branch and how task state is stored later. The init PR is always created eagerly at feature creation — Hermes document tools commit to the existing branch and have a fallback "create init PR if missing" guard for robustness.
 
-### Affected repositories
-- `workflow-backend` — new `POST /features` endpoint, DB migration, GitHub git-init logic
-- `workspace-github-adapter` — update sync to detect merged init PR and write `init_pr_status = 'merged'`
-- `digital-factory-ui` — orchestrator type selector, init PR link display
-- `hermes-agent` — owner-type branching, init PR link as interactive button in chat
+### Full flow
 
-### Git-init commit strategy
-`PutFileContent` creates one commit per file. To produce a single clean init commit, we add a `CommitFiles(ctx, owner, repo, branch, baseBranch, message string, files map[string]string) error` method to `github.Client` using the GitHub Git Data API: create blobs → create tree → create commit → update ref.
+```
+POST /features {name, description, owner}
+  → Create workspace_features row (owner set, init_pr_url null initially)
+  → git-init:
+      create branch  feature/<feature_id>-init  from main
+      commit template files (owner-specific set, see below)
+      open PR: feature/<feature_id>-init → main
+  → save init_pr_url to DB
+  → 201: FeatureSummary with init_pr_url
 
-### Template files (embedded Go strings)
-Template files are embedded in workflow-backend as Go string constants:
+User opens feature detail
+  → init PR link shown (View on GitHub)
+  → no approve button yet (review_status = draft)
+
+User chats with Hermes: "write the product spec"
+  → write_product_spec:
+      get feature_state → read init_pr_url
+      if init_pr_url missing (fallback): create init PR, save URL
+      commit product-spec.md content to init PR branch
+      call request_approval(stage: "product_spec")
+      return PR link as interactive button in chat
+  → review_status = awaiting_approval
+  → approve button appears in feature detail
+
+User approves product spec → stage advances to technical_design
+  → same pattern for write_technical_design
+```
+
+### ts vs go template files
 
 | Path | `ts` feature | `go` feature |
 |---|---|---|
@@ -87,40 +102,58 @@ Template files are embedded in workflow-backend as Go string constants:
 | `docs/features/{id}/tasks/.gitkeep` | ✓ | — |
 | `docs/features/{id}/handoffs/.gitkeep` | ✓ | ✓ |
 
-### DB schema — no migration needed
-The `owner TEXT` column already exists on `workspace_features` (migration 00015, landed in workflow-db merge). No further schema changes are required for this feature.
+Template files are embedded in workflow-backend as Go string constants. Template selection is based on the `owner` field in the `POST /features` request.
 
-`init_pr_url` and `init_pr_status` are not stored. The init PR branch is always `feature/<feature_id>-init` — deterministic from the feature ID. workflow-backend returns `init_pr_url` as a computed field in the `POST /features` 201 response (constructed from the workspace management repo URL + branch name) without persisting it. The adapter's existing webhook-triggered sync already re-reads git state on every PR event; no additional status tracking is needed.
+### Git-init commit strategy
+Add `CommitFiles(ctx, owner, repo, branch, baseBranch, message string, files map[string]string) error` to `github.Client` using the GitHub Git Data API (create blobs → create tree → create commit → update ref). Single atomic commit for all template files.
 
-### New API endpoint (single)
+### DB schema
+One new migration — `init_pr_url TEXT` on `workspace_features`. `owner` already exists.
+
+```sql
+ALTER TABLE workspace_features
+  ADD COLUMN IF NOT EXISTS init_pr_url TEXT;  -- GitHub PR HTML URL, set at feature creation
+```
+
+`init_pr_url` is null for features created before this feature ships. The UI and Hermes must handle null gracefully (no banner, no button).
+
+### New API endpoint
 
 ```
 POST /api/workspaces/:workspaceId/features
   Body: { name, description?, owner }   owner: "ts" | "go"
-  201:  FeatureSummary + init_pr_url (computed, not persisted)
+  201:  FeatureSummary (includes init_pr_url, owner)
 ```
 
-No merge endpoint. No adapter change. The user merges the PR directly on GitHub.
+`FeatureSummary` already has `Owner *string`. Add `InitPRURL *string json:"init_pr_url,omitempty"`.
 
-### UI init PR section
-The feature detail view renders an "Init PR" banner using the `init_pr_url` returned in the `POST /features` 201 response and cached in frontend state. The banner shows a "View on GitHub" link that opens the PR in a new tab. No API call is needed to check merge status — the banner is a static link, not a stateful widget.
+### Hermes document tool updates
+Both `write_product_spec` and `write_technical_design` follow the same pattern:
+1. Call `get_feature_state` → read `init_pr_url` and `owner`.
+2. If `init_pr_url` is null (fallback guard): call workflow-backend `POST /features/:id/ensure-init-pr` or create directly via GitHub API and persist the URL.
+3. Commit the document content to the init PR branch via `PutFileContent` (management repo GitHub API).
+4. Call `request_approval(stage: <product_spec|technical_design>)` to set `review_status = awaiting_approval`.
+5. Return the PR link as a clickable interactive button in the chat response.
 
 ### Hermes owner-type branching
-Before any owner-dependent action (write task YAML, create git branch for task state), tools read `feature_state["owner"]` from the DB-backed `get_feature_state` result. When `owner == "go"`, the tool skips the git/YAML operation and returns a descriptive message. When `owner == "ts"` or absent, existing behaviour is unchanged.
+Before any owner-dependent operation (write task YAML, create task branch), tools read `feature_state["owner"]`. When `owner == "go"`, git/YAML operations are skipped with a descriptive message. When `owner == "ts"` or absent, existing behaviour is unchanged.
 
-Hermes surfaces the init PR link as a clickable button in its response when `feature_state["init_pr_url"]` is non-null and `init_pr_status == "open"`. No tool call is needed — this is a read-only display in the chat response.
+### UI feature detail changes
+- Add `init_pr_url` to `FeatureSummary` / `FeatureDetail` TypeScript types.
+- Render an "Init PR" section when `init_pr_url` is non-null: a "View on GitHub" link (opens in new tab). Static link — no API call.
+- Approve button display is already handled by existing `review_status = awaiting_approval` logic (Hermes sets this via `request_approval`). No new UI gating logic needed.
 
 ## Dependency Analysis
 
 ### Internal dependencies
-- T1 (`workflow-backend`) must be complete before T2 and T3 — T2 needs `init_pr_url` in the feature creation response; T3 needs the `owner` column populated for new features.
-- T2 (`digital-factory-ui`) and T3 (`hermes-agent`) are independent of each other and run in parallel once T1 merges.
+- T1 (`workflow-backend`) must be complete before T2 and T3: T2 needs `init_pr_url` in the feature response; T3's Hermes tools need the init PR to exist and `init_pr_url` to be readable from `get_feature_state`.
+- T2 (`digital-factory-ui`) and T3 (`hermes-agent`) are independent of each other — run in parallel once T1 merges.
 
 ### External dependencies
-- `GITHUB_TOKEN` with write scope (branch create + PR open) on the management repo — **confirmed (D1 resolved)**.
+- `GITHUB_TOKEN` write scope — **confirmed (D1 resolved)**.
 
 ### Blocking decisions
-- None. D1 is resolved.
+- None.
 
 ### Unresolved
 - None.
@@ -128,14 +161,14 @@ Hermes surfaces the init PR link as a clickable button in its response when `fea
 ## Parallelization / Blocking Analysis
 
 ```
-T1: workflow-backend — CreateFeature endpoint + GitHub git-init
-  └── Can begin now — D1 confirmed, no blockers
+T1: workflow-backend — CreateFeature endpoint + git-init + init_pr_url migration
+  └── Can begin now — no blockers
 
-  T2: digital-factory-ui — orchestrator selector + init PR link banner
-      └── BLOCKED on T1 (needs init_pr_url in POST /features response)
+  T2: digital-factory-ui — orchestrator type selector + init PR link in feature detail
+      └── BLOCKED on T1 (needs init_pr_url in POST /features response and FeatureSummary type)
 
-  T3: hermes-agent — owner-type branching + init PR link button in chat
-      └── BLOCKED on T1 (owner column must be populated for new features)
+  T3: hermes-agent — document tools commit to init PR + owner-type branching + PR link button
+      └── BLOCKED on T1 (needs init_pr_url in feature_state + init PR to exist on the branch)
 ```
 
 T2 and T3 run in parallel once T1 merges.
@@ -144,28 +177,28 @@ T2 and T3 run in parallel once T1 merges.
 
 | Repo | Changes |
 |---|---|
-| `workflow-backend` | No new migration (`owner` column already landed in workflow-db); `CreateFeature` added to `Service` interface and `WorkspaceService`; `CommitFiles` added to `github.Client`; one new route in handler; embedded template strings; `init_pr_url` returned as computed field in 201 response |
-| `digital-factory-ui` | Updated types (`CreateFeatureRequest`, `FeatureSummary`); orchestrator type selector in `NewFeatureModal`; init-PR banner (link only, no API call) shown after feature creation |
-| `hermes-agent` | Owner-type guard added to owner-dependent tools; init PR link rendered as interactive button in chat |
+| `workflow-backend` | New migration (`init_pr_url TEXT`); `CreateFeature` on `Service` + `WorkspaceService`; `CommitFiles` on `github.Client`; `InitPRURL *string` on `FeatureSummary`; one new route; embedded template strings |
+| `digital-factory-ui` | Add `owner` to `CreateFeatureRequest`; add `init_pr_url` to `FeatureSummary`/`FeatureDetail` types; orchestrator type selector in `NewFeatureModal`; init PR link section in feature detail |
+| `hermes-agent` | `write_product_spec` + `write_technical_design` updated to commit to init PR branch (with fallback create guard); owner-type guard on owner-dependent tools; PR link interactive button in chat response |
 
 Repos not affected: `workflow`, `workflow-orchestrator`, `workflow-bff`, `workspace-github-adapter`, `rag-service`, `git-nexus`, `user-service`.
 
 ## Validation and Release Impact
 
 ### Testing expectations
-- **workflow-backend**: Unit tests for `CreateFeature` service method with a mock `github.Client`. Unit test for `CommitFiles` GitHub method. Existing handler tests must still pass. No migration test update needed — `owner` column already covered by workflow-db tests.
-- **digital-factory-ui**: Component test for `NewFeatureModal` with the orchestrator selector. Smoke test: create feature → verify init PR banner appears with correct link.
-- **hermes-agent**: Owner-type guard tested with both `ts` and `go` feature states. Init PR button tested with a feature state that has `init_pr_url` set.
+- **workflow-backend**: Unit test for `CreateFeature` service with mocked `github.Client`. Unit test for `CommitFiles`. Handler test for `POST /features`. Existing tests must pass.
+- **digital-factory-ui**: Component test for `NewFeatureModal` with owner selector. Smoke: create feature → init PR link appears.
+- **hermes-agent**: Unit test for `write_product_spec` / `write_technical_design` with mock feature state (init_pr_url null path and non-null path). Owner-type guard tested for both `ts` and `go`.
 
 ### Migration / config impact
-- No new migration required — `owner` column already exists (migration 00015, workflow-db merge). Existing rows have `owner = NULL` (interpreted as `ts`), which is fully backward compatible.
-- `GITHUB_TOKEN` with write scope is confirmed present in workflow-backend environment (D1 resolved).
+- One new migration: `init_pr_url TEXT` on `workspace_features`. Nullable, no default — backward compatible. Existing rows have `init_pr_url = NULL`; UI and Hermes handle null gracefully (no banner, no button).
+- `owner` column already present (migration 00015). No further schema changes beyond `init_pr_url`.
 
 ### Rollout concerns
-- Features created before this ships have `init_pr_url = NULL`. UI must handle gracefully — no banner if null. No backfill needed.
-- The `owner = NULL` → `ts` default preserves all existing feature records.
+- Features created before this ships have `init_pr_url = NULL`. No backfill needed; the init PR link simply doesn't appear for old features.
+- `owner = NULL` → `ts` default preserved for all existing records.
 
 ### Backward compatibility
 - All existing read endpoints unchanged.
 - Existing Hermes tools unchanged when `owner` is absent or `ts`.
-- `start_stage` is ignored by the new endpoint (init always starts at `in_design`). UI should drop it from the payload; the backend ignores unknown fields, so this is non-breaking.
+- `start_stage` in the request body is ignored by the new endpoint (init always starts at `in_design`).
