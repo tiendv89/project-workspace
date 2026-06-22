@@ -14,7 +14,7 @@
 - `workspace_features` DB table has no `owner`, `init_pr_url`, or `init_pr_status` columns.
 
 ### workspace-github-adapter
-- Handles `workspace:sync` and `task:sync` asynq jobs triggered by GitHub webhooks.
+- Handles `workspace:sync` and `task:sync` asynq jobs triggered by GitHub webhooks. A PR merge on any branch already fires a webhook → the adapter enqueues `workspace:sync` automatically.
 - Sync worker reads feature YAML/markdown from git and upserts rows into `workspace_features`. It does not currently check or update `init_pr_status`.
 
 ### digital-factory-ui
@@ -107,7 +107,7 @@ POST /api/workspaces/:workspaceId/features
 No merge endpoint. The user merges the PR directly on GitHub; the adapter's sync cycle updates `init_pr_status`.
 
 ### workspace-github-adapter sync change
-On each `workspace:sync` run, after upserting feature rows, for any feature where `init_pr_status = 'open'`: call `GET /repos/{owner}/{repo}/pulls` filtered by `head = feature/{id}-init` and `state = closed`, or check `merged_at` on the PR. If merged, update `init_pr_status = 'merged'` in the DB. This is an additive query — no existing sync logic changes.
+No new trigger needed — merging the init PR on GitHub already fires a webhook, which the adapter receives and translates into a `workspace:sync` job automatically. The only change is within the existing sync handler: after upserting feature rows, for any feature with `init_pr_status = 'open'`, query the GitHub PR API (`GET /repos/{owner}/{repo}/pulls/{number}`) and check `merged_at`. If the PR is merged, write `init_pr_status = 'merged'` in the DB. One additive check inside the existing sync path — no new queue job, no new webhook registration.
 
 ### UI init PR section
 The feature detail view renders an "Init PR" banner when `init_pr_url` is non-null. The banner shows:
