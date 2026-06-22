@@ -1,7 +1,7 @@
 feature_id: feature-initialization-compatible
 title: Feature Initialization Compatible
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Execute tasks — T1 is ready, T2 and T3 activate when T1 is done.
 stages:
   product_spec:
@@ -69,10 +69,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/566
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/44
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/144
-    status: open
+    status: merged
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/20
-    status: open
+    status: merged
