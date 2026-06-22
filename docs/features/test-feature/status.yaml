@@ -1,0 +1,45 @@
+current_stage: technical_design
+feature_id: test-feature
+feature_status: in_tdd
+history:
+- action: stage_approved
+  at: 2026-06-22T16:43:33+0000
+  by: agent
+  note: product_spec approved by agent.
+  stage: product_spec
+next_action: Technical design required. Use the tech-lead skill (Phase 1).
+revalidation:
+  deployment_checklist_required: false
+  product_spec_required: false
+  tasks_required: false
+  technical_design_required: false
+stages:
+  handoff:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  product_spec:
+    review_comment: null
+    review_history:
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-06-22T16:43:33+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-06-22T16:43:33+0000
+    reviewed_by: agent
+  tasks:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  technical_design:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+title: test-feature
