@@ -245,10 +245,9 @@ A settings page (route TBD by frontend — `/settings/profile` or equivalent) wi
 
 ### Internal
 
-- **T1 → T2** *(resolved)*: Schema docs (`database/user-service/v002/`) were written directly as part of the technical design phase and are already merged. T2 may begin immediately.
-- **T2 → T3**: The lookup-or-create OAuth logic depends on the unique email constraint being applied — without it, the dedup guarantee is absent and concurrent sign-ins can still create duplicates.
-- **T2 → T4**: `PATCH /api/me` needs the `username` column to exist (added in v002).
-- **T4 → T5**: The profile UI depends on `PATCH /api/me` being deployed and reachable.
+- **T1 → T2**: The lookup-or-create OAuth logic depends on the unique email constraint being applied — without it, the dedup guarantee is absent and concurrent sign-ins can still create duplicates.
+- **T1 → T3**: `PATCH /api/me` needs the `username` column to exist (added in v002).
+- **T3 → T4**: The profile UI depends on `PATCH /api/me` being deployed and reachable.
 
 ### External
 
@@ -265,18 +264,16 @@ A settings page (route TBD by frontend — `/settings/profile` or equivalent) wi
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Schema docs v002 (management-repo) ── DONE (written directly during tech design phase)
+T1: Migration v002 + data dedup (user-service)
+  └── Can begin now — schema docs already merged
   │
-  T2: Migration v002 + data dedup (user-service)
-      └── Can begin now — T1 is resolved; schema docs are already in main
+  T2: OAuth lookup-or-create by email (user-service)   ── parallel with T3
+  T3: PATCH /api/me profile endpoint (user-service)   ── parallel with T2
+      └── BLOCKED on T1 (unique email constraint + username column must exist in DB)
+      └── T2 and T3 run in parallel
       │
-      T3: OAuth lookup-or-create by email (user-service)   ── parallel with T4
-      T4: PATCH /api/me profile endpoint (user-service)   ── parallel with T3
-          └── BLOCKED on T2 (unique email constraint + username column must exist in DB)
-          └── T3 and T4 run in parallel
-          │
-          T5: Profile settings UI (digital-factory-ui)
-                └── BLOCKED on T4 (PATCH /api/me must be deployed and reachable)
+      T4: Profile settings UI (digital-factory-ui)
+            └── BLOCKED on T3 (PATCH /api/me must be deployed and reachable)
 ```
 
 ---
@@ -285,7 +282,7 @@ T1: Schema docs v002 (management-repo) ── DONE (written directly during tech
 
 | Repo | Changes |
 |---|---|
-| `management-repo` | `database/user-service/v002/schema.dbml` (new). `database/user-service/schema.dbml` updated (username, unique email index). |
+| `management-repo` | Schema docs updated directly during tech design phase — `database/user-service/v002/schema.dbml` and `database/user-service/schema.dbml` already reflect v002. No implementation task needed. |
 | `user-service` | Migration `v002.sql` (dedup + username + unique index). OAuth callback handler (lookup-or-create). `PATCH /api/me` handler. `/api/me` response struct updates. |
 | `digital-factory-ui` | Profile settings page. `PATCH /api/me` client call. Username/display name/avatar form. |
 | `workflow-backend` | No changes. |
@@ -314,7 +311,6 @@ T1: Schema docs v002 (management-repo) ── DONE (written directly during tech
 
 ### Rollout order
 
-1. **T1** (management-repo schema docs) — reviewed and merged first.
-2. **T2** (migration) — apply to dev, then staging, then production.
-3. **T3 + T4** (callback logic + profile API) — deploy atomically with or after T2. T3 before T2 leaves the unique constraint absent; T4 before T2 references a missing column. Both must wait for T2.
-4. **T5** (profile UI) — can deploy independently once T4 is live.
+1. **T1** (migration) — apply to dev, then staging, then production.
+2. **T2 + T3** (callback logic + profile API) — deploy atomically with or after T1. T2 before T1 leaves the unique constraint absent; T3 before T1 references a missing column. Both must wait for T1.
+3. **T4** (profile UI) — can deploy independently once T3 is live.
