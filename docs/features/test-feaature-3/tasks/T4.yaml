@@ -1,5 +1,5 @@
 id: T4
-title: REST API v1 routes
+title: REST API v1 routes — workspaces, projects, tasks, users, comments
 repo: management-repo
 status: todo
 depends_on:

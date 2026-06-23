@@ -1,19 +1,16 @@
 id: T7
-title: Integration tests & end-to-end validation
+title: API key admin UI — workspace admin panel page
 repo: management-repo
 status: todo
 depends_on:
-- T3
 - T4
-- T5
-- T6
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
 branch: feature/test-feaature-3
 execution:
-  actor_type: agent
+  actor_type: human
   last_updated_by: null
   last_updated_at: null
   suggested_next_step: null

@@ -1,8 +1,13 @@
-id: T2
-title: API key management — generate, store, revoke, scope
+id: T8
+title: Integration tests & end-to-end validation
 repo: management-repo
 status: todo
-depends_on: []
+depends_on:
+- T3
+- T4
+- T5
+- T6
+- T7
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null

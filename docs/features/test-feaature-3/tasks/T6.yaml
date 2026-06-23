@@ -1,5 +1,5 @@
 id: T6
-title: OpenAPI docs portal
+title: OpenAPI docs portal — Swagger UI at /developer
 repo: management-repo
 status: todo
 depends_on:
