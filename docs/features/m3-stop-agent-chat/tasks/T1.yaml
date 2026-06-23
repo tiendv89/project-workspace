@@ -31,3 +31,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-23T18:06:12.834Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:06:21.592Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: hermes-agent — cancel endpoint + Task tracking + CancelledError
+      handler m3-stop-agent-chat
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
