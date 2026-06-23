@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `Dark Mode & Theme Customization`
+- Title: `AI-Powered Document Summarization`
 
 ## Problem
-The platform currently only supports a single light theme. Users who work in low-light environments or prefer dark interfaces have repeatedly requested a dark mode option — it is the #1 most upvoted feature request with over 2,400 votes. The absence of dark mode is cited in churn surveys as a friction point, particularly among developers and power users who spend extended hours in the product. Additionally, organizations want to apply their own brand colors to align the platform with their visual identity.
+Users frequently need to review long documents, reports, and meeting notes before taking action. Reading through lengthy content is time-consuming, and there is currently no way to get a quick overview without reading the full document. This slows down decision-making and creates bottlenecks when users need to review many documents in a short time. Teams report spending an average of 45 minutes per day reading documents that could be summarized in under 2 minutes.
 
 ## Goals
-- Ship a system-aware dark mode that automatically matches the user's OS preference (light/dark)
-- Allow users to manually override the theme (light, dark, or system default) via their profile settings
-- Persist the theme preference per account across devices and sessions
-- Provide a basic brand theming option for workspace admins to set a primary accent color
-- Ensure full WCAG 2.1 AA color contrast compliance in both light and dark themes
+- Provide a one-click "Summarize" action on any document that generates a concise 3–5 sentence summary
+- Support bullet-point summary mode in addition to prose for users who prefer scannable output
+- Allow users to ask follow-up questions about the document via a contextual chat interface (Q&A mode)
+- Process documents up to 100,000 tokens in length
+- Display summaries inline within the document view without navigating away
 
 ## Non-goals
-- Custom CSS injection or full white-labeling of the UI
-- Per-page or per-component theme overrides by end users
-- High-contrast accessibility theme (planned as a separate accessibility initiative)
-- Native mobile app theming — web only in this iteration
-- More than one accent color slot in the admin brand theming panel
+- Summarization of audio or video content
+- Automatic background summarization of all documents (opt-in only, triggered manually)
+- Translation of summaries into other languages
+- Fine-tuning or training custom models — this feature uses existing LLM APIs
+- Storing or indexing generated summaries for search
