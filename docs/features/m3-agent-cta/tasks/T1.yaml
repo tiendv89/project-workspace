@@ -29,3 +29,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-23T18:40:03.406Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:40:11.612Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Hermes agent: suggest_next_actions tool + DB migration m3-agent-cta"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
