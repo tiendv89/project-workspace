@@ -1,7 +1,7 @@
 id: T1
 title: Migration v002 — email unique + username backfill + dedup
 repo: user-service
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m1-unified-user-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-23T18:27:11.001Z
+  last_updated_at: 2026-06-23T18:28:45.366Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/11
   status: open
@@ -60,3 +60,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/user-service/pull/11"
     at: 2026-06-23T18:27:11.001Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:28:45.366Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
