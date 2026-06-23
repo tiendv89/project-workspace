@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `User Notification Preferences Center`
+- Title: `Smart Search & Auto-Complete`
 
 ## Problem
-Users currently receive all platform notifications by default with no way to customize which notifications they receive or through which channels (email, in-app, SMS). This leads to notification fatigue, users ignoring important alerts, and increased unsubscribe rates. There is no centralized place for users to manage their notification settings.
+The platform's current search experience is basic and keyword-only. Users must type exact terms to find what they're looking for, and there is no auto-complete, typo tolerance, or relevance ranking. This results in high "zero results" rates (~40% of searches), users abandoning the product to search externally, and slower task completion times.
 
 ## Goals
-- Provide a self-service Notification Preferences Center where users can enable or disable individual notification types
-- Support at least three delivery channels: in-app, email, and SMS
-- Persist user preferences per account so settings survive logout and device changes
-- Reduce notification-related support tickets by 30% within 60 days of launch
-- Allow product teams to define new notification types without requiring frontend changes
+- Deliver a real-time auto-complete dropdown that suggests results as the user types (under 150ms p95 latency)
+- Support fuzzy matching and typo tolerance so minor misspellings still return relevant results
+- Rank results by relevance using recency, popularity, and user history signals
+- Surface results across multiple entity types (documents, users, projects, tags) in a unified results view
+- Instrument search interactions (query, result clicks, zero-result events) for ongoing quality improvement
 
 ## Non-goals
-- Building a notification delivery engine or replacing the existing one — this feature only manages preferences, not sending
-- Supporting push notifications (mobile) in this iteration
-- Admin-level bulk management of user preferences
-- Retroactive suppression of already-delivered notifications
-- A/B testing or experimentation on notification content
+- Natural language / conversational search (e.g. "show me documents edited last week")
+- Image or file-content search (searching inside attachments)
+- Building a custom search engine — an existing search service (e.g. Elasticsearch or Typesense) will be used
+- Federated search across external third-party systems
+- Replacing the existing advanced filter UI — smart search is additive, not a replacement
