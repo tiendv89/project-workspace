@@ -1,0 +1,141 @@
+# Task Breakdown — m3-agent-cta
+
+Feature status: `in_tdd` | Stage: `tasks` (awaiting approval)
+Machine state (status, branch, PR, log) lives in `tasks/T<n>.yaml`.
+
+## Index
+
+| ID | Wave | Title | Depends on |
+|----|------|-------|------------|
+| T1 | 1 | Hermes agent — suggest_next_actions tool + DB migration | — |
+| T2 | 1 | BFF — workspace capabilities endpoint | — |
+| T3 | 2 | Frontend — CTA card components + integration | T1, T2 |
+
+## Dependency diagram
+
+```
+T1: suggest_next_actions tool + DB migration   [workflow-backend]
+  └── Can begin now — no blockers
+  │
+T2: workspace capabilities endpoint            [workflow-bff]
+  └── Can begin now — no blockers
+  │   T1 and T2 run in parallel
+  │
+  T3: CTA card components + integration        [digital-factory-ui]
+      └── BLOCKED on T1 (turn.cta_suggestions SSE event shape and
+                         messages.cta_suggestions DB column must be defined
+                         before the frontend can consume CTA data from the API)
+      └── BLOCKED on T2 (GET /api/v1/workspace/capabilities must be live
+                         before EmptyStateCTARow can gate capability starters)
+```
+
+---
+
+## T1 — Hermes agent: suggest_next_actions tool + DB migration
+
+### Description
+
+Register a new `suggest_next_actions` tool in the Hermes tool registry. The agent calls this
+tool at the end of a turn when a natural next action exists. The executor handles the call
+locally — no external API hit:
+
+1. Validates the `suggestions` payload against the `CtaSuggestion` JSON schema.
+2. Persists the suggestions to a new `messages.cta_suggestions JSONB` column.
+3. Publishes a `turn.cta_suggestions` event on the in-process SSE bus.
+4. Returns `{"status": "ok"}` to the agent so the turn ends cleanly.
+
+Also extends the Hermes system prompt with guidance on when and how to call
+`suggest_next_actions` (including examples for lifecycle and clarifying CTAs).
+
+### Required skills
+
+- backend-engineer
+- python-best-practices
+- postgres-best-practices
+
+### Subtasks
+
+- [ ] Write Alembic migration: `ALTER TABLE messages ADD COLUMN cta_suggestions JSONB NOT NULL DEFAULT '[]'::jsonb`
+- [ ] Define `CtaSuggestion` schema in `tools/suggest_next_actions.py` with `category` enum and `maxItems: 3`
+- [ ] Register tool in the Hermes tool registry alongside existing tools (e.g. `save_artifact`)
+- [ ] Implement executor local handler: validate → persist → `bus.publish(session_id, {type: "turn.cta_suggestions", message_id, suggestions})` → return `{"status": "ok"}`
+- [ ] Extend Hermes system prompt: when to call, when to omit, `action_text` format rules, `button_label` length constraint
+- [ ] Unit test: handler persists correct JSON and publishes the event
+- [ ] Unit test: schema validation rejects `> 3` suggestions and invalid `category` values
+- [ ] Integration test: full agent turn with CTA tool call → `messages.cta_suggestions` populated + SSE event received
+
+---
+
+## T2 — BFF: workspace capabilities endpoint
+
+### Description
+
+Add a new `GET /api/v1/workspace/capabilities` route to the BFF. The endpoint reads its own
+runtime environment to determine which optional agent tools are configured and returns a
+simple boolean JSON payload:
+
+```json
+{ "gitnexus": true, "rag": false }
+```
+
+- `gitnexus`: `true` when `GITNEXUS_MCP_URL` is set and non-empty in the BFF environment.
+- `rag`: `true` when `MCP_RAG_URL` is set and non-empty.
+
+No auth or per-user check required (capability presence is not a secret). Response is safe
+to cache for the session lifetime on the client.
+
+Also verify that the existing BFF SSE proxy forwards `turn.cta_suggestions` events
+generically — the proxy should already be event-type-agnostic; document the finding and
+add a test if it requires any change.
+
+### Required skills
+
+- backend-engineer
+- python-best-practices
+
+### Subtasks
+
+- [ ] Add `GET /api/v1/workspace/capabilities` route returning `{"gitnexus": bool, "rag": bool}`
+- [ ] Resolve `GITNEXUS_MCP_URL` and `MCP_RAG_URL` from the BFF environment (os.environ)
+- [ ] Verify SSE proxy is event-type-agnostic; add test if not already covered
+- [ ] Unit test: endpoint returns `true` when env var is set, `false` when absent or empty
+- [ ] Integration test: endpoint reachable under existing auth model
+
+---
+
+## T3 — Frontend: CTA card components + integration
+
+### Description
+
+Implement the full CTA surface in `digital-factory-ui`:
+
+**Post-reply CTA row**: Handle the `turn.cta_suggestions` SSE event in the chat store slice,
+attaching suggestions to the relevant message. Render a `CTASuggestionRow` below the assistant
+bubble after the turn ends (`[DONE]` received). Cards fade in on arrival. Past-turn cards
+(from history re-hydration) render as inert (disabled, `opacity-50`). Clicking an active card
+clears any composer draft and submits `action_text` as the next user message.
+
+**Empty-state starters**: `EmptyStateCTARow` shown when a thread has zero messages.
+Fetches `GET /api/v1/workspace/capabilities` on mount, reads the feature's lifecycle stage
+from existing feature context, and maps stage → 1–2 lifecycle starter cards + gated capability
+starters. Dismissed when the first message is sent or a card is clicked.
+
+### Required skills
+
+- frontend-engineer
+- typescript-best-practices
+- heroui-react
+
+### Subtasks
+
+- [ ] Define `CtaSuggestion` and `WorkspaceCapabilities` TypeScript interfaces
+- [ ] Extend chat store slice: handle `turn.cta_suggestions` event → `setMessageCtas({messageId, ctas})`; hydrate from `message.cta_suggestions` on history load
+- [ ] Build `CTACard` component: `active` / inert variants (disabled button + `opacity-50` on inert), icon, title, category chip, description, action button
+- [ ] Build `CTASuggestionRow`: horizontal flex row on desktop, vertical stack < 768 px, fade-in CSS transition after turn complete
+- [ ] Wire `CTASuggestionRow` into the message bubble: render after `[DONE]` received, not mid-stream (AC8)
+- [ ] Click handler: `setInputDraft('')` → `submitMessage(actionText)` → dismiss/gray the row
+- [ ] Build `EmptyStateCTARow`: fetch capabilities on mount, map feature stage to starters per spec table, suppress GitNexus/RAG starters when capability is `false`
+- [ ] Dismiss `EmptyStateCTARow` on first `message.created` event or card click (ephemeral UI state, not persisted)
+- [ ] Component tests: active vs inert `CTACard`; `CTASuggestionRow` mobile stacking; stage-to-starters mapping; capability gating
+- [ ] E2E test: click CTA → message submitted → CTA row grayed out
+- [ ] Visual regression: past-turn inert cards; mobile layout at 767 px
