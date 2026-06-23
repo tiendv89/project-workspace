@@ -245,7 +245,7 @@ A settings page (route TBD by frontend — `/settings/profile` or equivalent) wi
 
 ### Internal
 
-- **T1 → T2**: Schema docs (`management-repo`) must be written and reviewed before the SQL migration is implemented in `user-service`. The schema is the contract.
+- **T1 → T2** *(resolved)*: Schema docs (`database/user-service/v002/`) were written directly as part of the technical design phase and are already merged. T2 may begin immediately.
 - **T2 → T3**: The lookup-or-create OAuth logic depends on the unique email constraint being applied — without it, the dedup guarantee is absent and concurrent sign-ins can still create duplicates.
 - **T2 → T4**: `PATCH /api/me` needs the `username` column to exist (added in v002).
 - **T4 → T5**: The profile UI depends on `PATCH /api/me` being deployed and reachable.
@@ -265,11 +265,10 @@ A settings page (route TBD by frontend — `/settings/profile` or equivalent) wi
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Schema docs v002 (management-repo)
-  └── Can begin now — no blockers
+T1: Schema docs v002 (management-repo) ── DONE (written directly during tech design phase)
   │
   T2: Migration v002 + data dedup (user-service)
-      └── BLOCKED on T1 (schema must be finalized in docs before SQL is written and applied)
+      └── Can begin now — T1 is resolved; schema docs are already in main
       │
       T3: OAuth lookup-or-create by email (user-service)   ── parallel with T4
       T4: PATCH /api/me profile endpoint (user-service)   ── parallel with T3
