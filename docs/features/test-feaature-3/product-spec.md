@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `Team Activity Dashboard`
+- Title: `Onboarding Checklist & Guided Setup`
 
 ## Problem
-Team leads and managers have no centralized view of what their team is working on day-to-day. Activity is scattered across multiple tools and there is no aggregated feed, making it difficult to spot blockers early, recognize contributions, or understand team velocity without manually polling each member. This leads to delayed interventions, missed deadlines, and low visibility into team health.
+New users currently land on an empty dashboard with no guidance on how to get started. There is no onboarding flow, checklist, or contextual help, resulting in a 60% drop-off rate within the first 7 days. Users who do stay take an average of 3 weeks to reach their first meaningful milestone, compared to an industry benchmark of 5 days. Customer success teams spend significant time on manual onboarding calls that could be self-served.
 
 ## Goals
-- Provide a real-time Team Activity Dashboard showing a chronological feed of team actions (task updates, comments, file uploads, status changes)
-- Allow managers to filter activity by team member, project, date range, and action type
-- Highlight blocked items and overdue tasks prominently so leads can act quickly
-- Display summary metrics (tasks completed this week, active blockers, average cycle time) in a top-level KPI strip
-- Support teams of up to 200 members without performance degradation
+- Present new users with a personalized onboarding checklist on first login, tailored to their role (admin, contributor, viewer)
+- Guide users through 5–7 key setup steps with inline tooltips, progress tracking, and celebratory completion states
+- Reduce time-to-first-value from 3 weeks to under 5 days
+- Decrease manual onboarding calls handled by customer success by 40%
+- Allow product teams to configure checklist steps without engineering involvement via a CMS-backed admin panel
 
 ## Non-goals
-- Individual employee performance scoring or ranking
-- Integration with external HR or payroll systems
-- Time tracking or timesheet functionality
-- Real-time presence indicators (who is online right now)
-- Automated alerts or notifications triggered by activity thresholds (planned for a future iteration)
+- Interactive product tours or overlay walkthroughs (e.g. Intercom-style hotspots)
+- Onboarding for mobile native apps — web only in this iteration
+- Automated email drip campaigns tied to checklist progress
+- Localization / i18n of checklist content (English only for launch)
+- Retroactively showing the checklist to existing users
