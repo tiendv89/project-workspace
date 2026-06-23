@@ -47,3 +47,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m3-stop-agent-chat
 feature_branch_base_sha: 754e9240c296ad6aff3e8f963d1b40a5cc00eda7
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/580
