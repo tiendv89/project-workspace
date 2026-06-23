@@ -1,14 +1,18 @@
 feature_id: m1-unified-user
 title: m1-unified-user
-feature_status: in_design
-current_stage: product_spec
+feature_status: in_tdd
+current_stage: technical_design
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-24T00:15:25+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-06-24T00:15:25+0700"
+        comment: null
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -27,7 +31,11 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-history: []
+history:
+  - stage: product_spec
+    event: approved
+    by: pentative@gmail.com
+    at: "2026-06-24T00:15:25+0700"
 revalidation:
   product_spec_required: false
   technical_design_required: false
