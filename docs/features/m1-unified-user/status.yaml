@@ -59,3 +59,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m1-unified-user
 feature_branch_base_sha: b9c3c7ead69e66bcf13d910dadf810c3e6a6c935
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/577
