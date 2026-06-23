@@ -1,7 +1,7 @@
 id: T2
 title: OAuth callback — lookup-or-create by email
 repo: user-service
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m1-unified-user-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-23T19:56:22.650Z
+  last_updated_at: 2026-06-23T19:57:40.080Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/12
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/586
   status: open
@@ -73,6 +73,10 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-23T19:56:22.650Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T19:57:40.080Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-23T19:36:28.792Z
