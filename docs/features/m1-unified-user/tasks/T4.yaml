@@ -1,7 +1,7 @@
 id: T4
 title: Profile settings UI
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T3
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m1-unified-user-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-23T19:47:24.111Z
+  last_updated_at: 2026-06-23T19:53:17.906Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/145
   status: open
@@ -50,3 +50,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-23T19:47:24.111Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-23T19:53:17.906Z
