@@ -73,7 +73,7 @@ Step 4 is the bug: a user who signs in with Google first, then GitHub (same emai
 1. **Email uniqueness** — `users.email` must become a UNIQUE column (case-insensitive, enforced via a unique index on `lower(email)`). Duplicate rows must be merged before the constraint is applied.
 2. **Lookup-or-create by email** — the OAuth callback must search for an existing `users` row by email before creating a new one. If a user with the same email exists (from a different provider), the new `auth_identity` is linked to the existing user, not a new row.
 3. **Data migration for existing duplicates** — existing `users` rows that share the same `lower(email)` must be merged into one canonical row. All dependent records (`auth_identities`, `memberships`, `workspace_memberships`) must be repointed to the surviving row.
-4. **`username` field** — add a nullable, unique `username` column to `users`. Case-insensitive uniqueness enforced via a partial unique index on `lower(username) WHERE username IS NOT NULL`. Users may set it later via the profile API.
+4. **`username` field** — add a nullable, unique `username` column to `users`. Case-insensitive uniqueness enforced via a partial unique index on `lower(username) WHERE username IS NOT NULL`. During the migration, backfill `username` from `display_name` for all existing users: lowercase, replace spaces with `_`, strip non-alphanumeric characters (except `_` and `-`), truncate to 30 characters, and append a numeric suffix if the result collides with an existing username. Users may update their username later via the profile API.
 5. **Profile update API** — add `PATCH /api/me` to let authenticated users update `display_name`, `username`, and `avatar_url`.
 6. **Profile UI** — a settings page in `digital-factory-ui` where a signed-in user can view and update their profile fields.
 
@@ -155,13 +155,25 @@ CREATE UNIQUE INDEX idx_users_username_lower
   ON users (lower(username))
   WHERE username IS NOT NULL;
 
--- Step 2: dedup migration (inside a transaction)
+-- Step 2: backfill username from display_name for all existing users
+--   Derivation rule (applied per row in application code or a PL/pgSQL block):
+--     1. lower(display_name)
+--     2. replace spaces with '_'
+--     3. strip characters that are not [a-z0-9_-]
+--     4. truncate to 30 characters
+--     5. if the result collides with an already-assigned username, append '_2', '_3', … until unique
+--   Users with a null or empty display_name get a null username (they will be prompted to set one via the UI).
+UPDATE users
+SET username = <derived_slug>   -- implemented in a goose Go migration, not raw SQL
+WHERE display_name IS NOT NULL AND display_name <> '';
+
+-- Step 3: dedup migration (inside a transaction)
 --   For each group sharing lower(email), keep the row with the oldest created_at.
 --   Repoint auth_identities, memberships, workspace_memberships to the canonical user_id.
 --   Delete retired user rows.
 --   Delete sessions that reference retired user_ids (scs stores user_id in session data).
 
--- Step 3: enforce email uniqueness
+-- Step 5: enforce email uniqueness
 DROP INDEX idx_users_email_lower;
 CREATE UNIQUE INDEX idx_users_email_lower_unique ON users (lower(email));
 ```
