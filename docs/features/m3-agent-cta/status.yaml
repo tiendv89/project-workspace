@@ -60,3 +60,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m3-agent-cta
 feature_branch_base_sha: 183f876b22d5a018c26493d0132f125704a0c7a7
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/583
