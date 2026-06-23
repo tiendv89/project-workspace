@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `Smart Search & Auto-Complete`
+- Title: `Team Activity Dashboard`
 
 ## Problem
-The platform's current search experience is basic and keyword-only. Users must type exact terms to find what they're looking for, and there is no auto-complete, typo tolerance, or relevance ranking. This results in high "zero results" rates (~40% of searches), users abandoning the product to search externally, and slower task completion times.
+Team leads and managers have no centralized view of what their team is working on day-to-day. Activity is scattered across multiple tools and there is no aggregated feed, making it difficult to spot blockers early, recognize contributions, or understand team velocity without manually polling each member. This leads to delayed interventions, missed deadlines, and low visibility into team health.
 
 ## Goals
-- Deliver a real-time auto-complete dropdown that suggests results as the user types (under 150ms p95 latency)
-- Support fuzzy matching and typo tolerance so minor misspellings still return relevant results
-- Rank results by relevance using recency, popularity, and user history signals
-- Surface results across multiple entity types (documents, users, projects, tags) in a unified results view
-- Instrument search interactions (query, result clicks, zero-result events) for ongoing quality improvement
+- Provide a real-time Team Activity Dashboard showing a chronological feed of team actions (task updates, comments, file uploads, status changes)
+- Allow managers to filter activity by team member, project, date range, and action type
+- Highlight blocked items and overdue tasks prominently so leads can act quickly
+- Display summary metrics (tasks completed this week, active blockers, average cycle time) in a top-level KPI strip
+- Support teams of up to 200 members without performance degradation
 
 ## Non-goals
-- Natural language / conversational search (e.g. "show me documents edited last week")
-- Image or file-content search (searching inside attachments)
-- Building a custom search engine — an existing search service (e.g. Elasticsearch or Typesense) will be used
-- Federated search across external third-party systems
-- Replacing the existing advanced filter UI — smart search is additive, not a replacement
+- Individual employee performance scoring or ranking
+- Integration with external HR or payroll systems
+- Time tracking or timesheet functionality
+- Real-time presence indicators (who is online right now)
+- Automated alerts or notifications triggered by activity thresholds (planned for a future iteration)
