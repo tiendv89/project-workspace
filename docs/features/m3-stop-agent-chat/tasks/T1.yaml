@@ -1,0 +1,26 @@
+id: T1
+title: "hermes-agent — cancel endpoint + Task tracking + CancelledError handler"
+repo: hermes-agent
+status: ready
+depends_on: []
+blocked_reason: null
+branch: feature/m3-stop-agent-chat-T1
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: "2026-06-24T01:03:46+0700"
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: "2026-06-24T01:00:30+0700"
+    note: >-
+      Task created during tech-lead Phase 2 breakdown.
+      External prerequisites: v4 T2 + T3 from m3-agent-chat-v4 must be merged
+      into hermes-agent before this task is advanced to ready.
+  - action: ready
+    by: pentative@gmail.com
+    at: "2026-06-23T18:03:46Z"
+    note: "Task activated on tasks-stage approval — dependencies met."
