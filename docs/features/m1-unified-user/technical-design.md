@@ -254,10 +254,24 @@ A settings page (route TBD by frontend — `/settings/profile` or equivalent) wi
 - No new OAuth App registrations — callback URL and scopes are unchanged.
 - No new infrastructure — all changes are within the existing `user-service` process and its Postgres instance.
 
-### Unresolved decisions (must be resolved before T2 implementation)
+### Resolved decisions
 
-- **D1 — Session invalidation on merge:** Should the migration actively delete sessions for retired `user_id` values, or rely on natural expiry? Active deletion is cleaner; it requires parsing scs session payloads in the migration to match on `user_id`. **Recommended: active deletion** — add a `DELETE FROM sessions WHERE …` step inside the transaction. Confirm with the team before T2.
-- **D2 — Canonical user selection on merge:** When two users share an email, which UUID survives? **Recommended: oldest `created_at`** (first registration wins). Confirm before T2.
+- **D1 — Session invalidation on merge:** Active deletion in the migration transaction. `DELETE FROM sessions` for all session tokens whose Gob-encoded payload references a retired `user_id`. Cleaner than relying on natural expiry.
+- **D2 — Canonical user selection on merge:** Oldest `created_at` survives. First registration wins — its `user_id` is preserved in all downstream tables.
+- **D3 — Profile field merge policy:** The canonical (oldest) row's `user_id` is kept, but `display_name` and `avatar_url` are taken from the **newer** duplicate row when non-null. Rationale: Google OAuth in particular returns the user's real name and photo; the older row often has a cruder value (e.g. a GitHub username slug). Username derived from `display_name` stays with the canonical row.
+
+  Concrete example from current data:
+
+  | Field | Canonical (`aa0b1ee9`, GitHub, 2026-06-06) | Duplicate (`02417639`, Google, 2026-06-23) | Merged result |
+  |---|---|---|---|
+  | `user_id` | `aa0b1ee9` ✓ kept | retired | `aa0b1ee9` |
+  | `email` | `pentative@gmail.com` | `pentative@gmail.com` | `pentative@gmail.com` |
+  | `display_name` | `pye` | `Duc Tran` | `Duc Tran` (newer, non-null) |
+  | `avatar_url` | GitHub avatar | Google avatar | Google avatar (newer, non-null) |
+  | `username` | `pye` (backfilled) | `duc_tran` (backfilled, discarded) | `pye` |
+  | `auth_identities` | GitHub identity | Google identity → repointed to `aa0b1ee9` | both linked to `aa0b1ee9` |
+
+  Merge rule in code: after repointing dependents, run `UPDATE users SET display_name = COALESCE(newer.display_name, canonical.display_name), avatar_url = COALESCE(newer.avatar_url, canonical.avatar_url) WHERE id = canonical.id`.
 
 ---
 
