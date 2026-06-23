@@ -1,7 +1,7 @@
 id: T2
 title: "BFF: workspace capabilities endpoint"
 repo: workflow-bff
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-agent-cta-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-23T19:06:22.809Z
+  last_updated_at: 2026-06-23T19:19:04.622Z
 pr:
   url: https://github.com/tiendv89/workflow-bff/pull/3
   status: open
