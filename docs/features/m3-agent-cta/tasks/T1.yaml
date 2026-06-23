@@ -1,23 +1,29 @@
 id: T1
 title: "Hermes agent: suggest_next_actions tool + DB migration"
 repo: workflow-backend
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: null
+blocked_context: null
+branch: feature/m3-agent-cta-T1
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: "2026-06-23T18:37:42Z"
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-23T18:40:03.406Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-06-23T18:36:54Z"
+    at: 2026-06-23T18:36:54Z
     note: Task created during tech-lead Phase 2 task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-06-23T18:37:42Z"
+    at: 2026-06-23T18:37:42Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:40:03.406Z
+    note: Claimed via git-based claim protocol.
