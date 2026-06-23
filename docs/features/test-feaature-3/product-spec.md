@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `AI-Powered Document Summarization`
+- Title: `Two-Factor Authentication (2FA)`
 
 ## Problem
-Users frequently need to review long documents, reports, and meeting notes before taking action. Reading through lengthy content is time-consuming, and there is currently no way to get a quick overview without reading the full document. This slows down decision-making and creates bottlenecks when users need to review many documents in a short time. Teams report spending an average of 45 minutes per day reading documents that could be summarized in under 2 minutes.
+The platform currently supports only username and password authentication, leaving user accounts vulnerable to credential stuffing, phishing, and brute-force attacks. Several enterprise customers have flagged the absence of 2FA as a security compliance blocker, preventing them from signing contracts. Three data breach incidents in the past year were attributed to compromised passwords with no secondary verification layer.
 
 ## Goals
-- Provide a one-click "Summarize" action on any document that generates a concise 3–5 sentence summary
-- Support bullet-point summary mode in addition to prose for users who prefer scannable output
-- Allow users to ask follow-up questions about the document via a contextual chat interface (Q&A mode)
-- Process documents up to 100,000 tokens in length
-- Display summaries inline within the document view without navigating away
+- Offer TOTP-based 2FA (Google Authenticator, Authy) as an opt-in security layer for all users
+- Allow workspace admins to enforce mandatory 2FA for all members in their organization
+- Provide recovery codes at enrollment time so users can regain access if they lose their authenticator device
+- Support trusted device management so users can skip 2FA on devices they have previously verified (30-day trust window)
+- Log all 2FA enrollment, verification, and bypass events to the security audit log
 
 ## Non-goals
-- Summarization of audio or video content
-- Automatic background summarization of all documents (opt-in only, triggered manually)
-- Translation of summaries into other languages
-- Fine-tuning or training custom models — this feature uses existing LLM APIs
-- Storing or indexing generated summaries for search
+- SMS-based OTP (excluded due to SIM-swap attack risk; may be revisited separately)
+- Hardware security key support (FIDO2 / WebAuthn) — planned for a future security hardening initiative
+- Single sign-on (SSO) or SAML integration
+- Biometric authentication (Face ID, Touch ID)
+- Per-app or per-resource 2FA step-up challenges
