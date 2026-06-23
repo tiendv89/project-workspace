@@ -6,32 +6,32 @@ stages:
   product_spec:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T01:21:38+0700"
+    reviewed_at: 2026-06-24T01:21:38+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-24T01:21:38+0700"
+        reviewed_at: 2026-06-24T01:21:38+0700
         review_comment: null
   technical_design:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T01:34:42+0700"
+    reviewed_at: 2026-06-24T01:34:42+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-24T01:34:42+0700"
+        reviewed_at: 2026-06-24T01:34:42+0700
         review_comment: null
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T01:37:42+0700"
+    reviewed_at: 2026-06-24T01:37:42+0700
     review_comment: null
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-06-24T01:37:42+0700"
+        reviewed_at: 2026-06-24T01:37:42+0700
         review_comment: null
   handoff:
     review_status: draft
@@ -42,18 +42,21 @@ stages:
 history:
   - event: product_spec_approved
     by: pentative@gmail.com
-    at: "2026-06-24T01:21:38+0700"
+    at: 2026-06-24T01:21:38+0700
     note: Product spec approved. Feature advanced to in_tdd.
   - event: technical_design_approved
     by: pentative@gmail.com
-    at: "2026-06-24T01:34:42+0700"
+    at: 2026-06-24T01:34:42+0700
     note: Technical design approved. Advanced to task planning stage.
   - event: tasks_approved
     by: pentative@gmail.com
-    at: "2026-06-24T01:37:42+0700"
-    note: Tasks approved. Feature advanced to ready_for_implementation. T1 and T2 activated.
+    at: 2026-06-24T01:37:42+0700
+    note: Tasks approved. Feature advanced to ready_for_implementation. T1 and T2
+      activated.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m3-agent-cta
+feature_branch_base_sha: 183f876b22d5a018c26493d0132f125704a0c7a7
