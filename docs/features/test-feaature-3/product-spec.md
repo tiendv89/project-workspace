@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `Two-Factor Authentication (2FA)`
+- Title: `CSV & Excel Data Import`
 
 ## Problem
-The platform currently supports only username and password authentication, leaving user accounts vulnerable to credential stuffing, phishing, and brute-force attacks. Several enterprise customers have flagged the absence of 2FA as a security compliance blocker, preventing them from signing contracts. Three data breach incidents in the past year were attributed to compromised passwords with no secondary verification layer.
+Users who migrate to the platform from other tools or maintain data in spreadsheets have no way to bulk-import records. Every item must be created manually, one by one. This is the #2 most-requested feature among new enterprise customers and is directly cited as an onboarding friction point in 35% of implementation project retrospectives. Sales engineers report losing deals to competitors who offer import capabilities out of the box.
 
 ## Goals
-- Offer TOTP-based 2FA (Google Authenticator, Authy) as an opt-in security layer for all users
-- Allow workspace admins to enforce mandatory 2FA for all members in their organization
-- Provide recovery codes at enrollment time so users can regain access if they lose their authenticator device
-- Support trusted device management so users can skip 2FA on devices they have previously verified (30-day trust window)
-- Log all 2FA enrollment, verification, and bypass events to the security audit log
+- Allow users to upload CSV and XLSX files to bulk-create records in any supported entity type (tasks, contacts, projects)
+- Provide an interactive column-mapping step so users can match spreadsheet columns to platform fields
+- Validate data before import and surface a clear error report (row-level) for invalid or missing required fields
+- Support files up to 50,000 rows and 50 MB without timeout
+- Send an in-app and email notification when a large import job completes (async processing for files over 1,000 rows)
 
 ## Non-goals
-- SMS-based OTP (excluded due to SIM-swap attack risk; may be revisited separately)
-- Hardware security key support (FIDO2 / WebAuthn) — planned for a future security hardening initiative
-- Single sign-on (SSO) or SAML integration
-- Biometric authentication (Face ID, Touch ID)
-- Per-app or per-resource 2FA step-up challenges
+- Real-time two-way sync with Google Sheets or Excel Online
+- Importing binary file attachments embedded in spreadsheets
+- Support for file formats other than CSV and XLSX (e.g. ODS, JSON, XML) in this iteration
+- Scheduled or recurring automated imports
+- Undo / rollback of a completed import
