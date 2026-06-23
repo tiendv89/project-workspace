@@ -1,7 +1,7 @@
 id: T1
 title: "Hermes agent: suggest_next_actions tool + DB migration"
 repo: workflow-backend
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-agent-cta-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-23T19:26:05.063Z
+  last_updated_at: 2026-06-23T19:31:52.783Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/45
   status: open
@@ -60,3 +60,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/45"
     at: 2026-06-23T19:26:05.063Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T19:31:52.783Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
