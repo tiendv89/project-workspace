@@ -1,0 +1,59 @@
+feature_id: m1-unified-user
+title: m1-unified-user
+feature_status: ready_for_implementation
+current_stage: tasks
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-24T00:15:25+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-06-24T00:15:25+0700"
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-24T00:37:41+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-06-24T00:37:41+0700"
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-24T00:40:43+0700"
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: "2026-06-24T00:40:43+0700"
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+history:
+  - stage: product_spec
+    event: approved
+    by: pentative@gmail.com
+    at: "2026-06-24T00:15:25+0700"
+  - stage: technical_design
+    event: approved
+    by: pentative@gmail.com
+    at: "2026-06-24T00:37:41+0700"
+  - stage: tasks
+    event: approved
+    by: pentative@gmail.com
+    at: "2026-06-24T00:40:43+0700"
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
