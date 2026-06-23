@@ -1,0 +1,19 @@
+id: T1
+title: "Hermes agent: suggest_next_actions tool + DB migration"
+repo: workflow-backend
+status: todo
+depends_on: []
+blocked_reason: null
+branch: null
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: "2026-06-23T18:36:54Z"
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: "2026-06-23T18:36:54Z"
+    note: Task created during tech-lead Phase 2 task breakdown.
