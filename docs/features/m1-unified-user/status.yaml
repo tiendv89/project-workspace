@@ -1,7 +1,7 @@
 feature_id: m1-unified-user
 title: m1-unified-user
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 stages:
   product_spec:
     review_status: approved
@@ -39,6 +39,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/589
 history:
   - stage: product_spec
     event: approved
@@ -60,3 +61,11 @@ revalidation:
 feature_branch: feature/m1-unified-user
 feature_branch_base_sha: b9c3c7ead69e66bcf13d910dadf810c3e6a6c935
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/577
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/589
+impl_feature_prs:
+  - repo: user-service
+    url: https://github.com/tiendv89/user-service/pull/14
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/146
+    status: open
