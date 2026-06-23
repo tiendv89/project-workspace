@@ -4,7 +4,7 @@ feature_status: in_design
 current_stage: product_spec
 stages:
   product_spec:
-    review_status: draft
+    review_status: awaiting_approval
     reviewed_by: null
     reviewed_at: null
     review_comment: null
