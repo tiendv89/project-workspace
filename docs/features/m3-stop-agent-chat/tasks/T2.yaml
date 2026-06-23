@@ -1,0 +1,24 @@
+id: T2
+title: "digital-factory-ui — Stop button + stopped-message rendering"
+repo: digital-factory-ui
+status: todo
+depends_on:
+  - T1
+blocked_reason: null
+branch: feature/m3-stop-agent-chat-T2
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: "2026-06-24T01:00:30+0700"
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: "2026-06-24T01:00:30+0700"
+    note: >-
+      Task created during tech-lead Phase 2 breakdown.
+      Depends on T1 (cancel endpoint + turn.stopped event contract).
+      External prerequisite: v4 T6 from m3-agent-chat-v4 must be merged into
+      digital-factory-ui before this task can begin (agentWorking state wiring).
