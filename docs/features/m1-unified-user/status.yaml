@@ -6,32 +6,32 @@ stages:
   product_spec:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T00:15:25+0700"
+    reviewed_at: 2026-06-24T00:15:25+0700
     review_comment: null
     review_history:
       - status: approved
         by: pentative@gmail.com
-        at: "2026-06-24T00:15:25+0700"
+        at: 2026-06-24T00:15:25+0700
         comment: null
   technical_design:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T00:37:41+0700"
+    reviewed_at: 2026-06-24T00:37:41+0700
     review_comment: null
     review_history:
       - status: approved
         by: pentative@gmail.com
-        at: "2026-06-24T00:37:41+0700"
+        at: 2026-06-24T00:37:41+0700
         comment: null
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-06-24T00:40:43+0700"
+    reviewed_at: 2026-06-24T00:40:43+0700
     review_comment: null
     review_history:
       - status: approved
         by: pentative@gmail.com
-        at: "2026-06-24T00:40:43+0700"
+        at: 2026-06-24T00:40:43+0700
         comment: null
   handoff:
     review_status: draft
@@ -43,17 +43,19 @@ history:
   - stage: product_spec
     event: approved
     by: pentative@gmail.com
-    at: "2026-06-24T00:15:25+0700"
+    at: 2026-06-24T00:15:25+0700
   - stage: technical_design
     event: approved
     by: pentative@gmail.com
-    at: "2026-06-24T00:37:41+0700"
+    at: 2026-06-24T00:37:41+0700
   - stage: tasks
     event: approved
     by: pentative@gmail.com
-    at: "2026-06-24T00:40:43+0700"
+    at: 2026-06-24T00:40:43+0700
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m1-unified-user
+feature_branch_base_sha: b9c3c7ead69e66bcf13d910dadf810c3e6a6c935
