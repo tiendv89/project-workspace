@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `Onboarding Checklist & Guided Setup`
+- Title: `Dark Mode & Theme Customization`
 
 ## Problem
-New users currently land on an empty dashboard with no guidance on how to get started. There is no onboarding flow, checklist, or contextual help, resulting in a 60% drop-off rate within the first 7 days. Users who do stay take an average of 3 weeks to reach their first meaningful milestone, compared to an industry benchmark of 5 days. Customer success teams spend significant time on manual onboarding calls that could be self-served.
+The platform currently only supports a single light theme. Users who work in low-light environments or prefer dark interfaces have repeatedly requested a dark mode option — it is the #1 most upvoted feature request with over 2,400 votes. The absence of dark mode is cited in churn surveys as a friction point, particularly among developers and power users who spend extended hours in the product. Additionally, organizations want to apply their own brand colors to align the platform with their visual identity.
 
 ## Goals
-- Present new users with a personalized onboarding checklist on first login, tailored to their role (admin, contributor, viewer)
-- Guide users through 5–7 key setup steps with inline tooltips, progress tracking, and celebratory completion states
-- Reduce time-to-first-value from 3 weeks to under 5 days
-- Decrease manual onboarding calls handled by customer success by 40%
-- Allow product teams to configure checklist steps without engineering involvement via a CMS-backed admin panel
+- Ship a system-aware dark mode that automatically matches the user's OS preference (light/dark)
+- Allow users to manually override the theme (light, dark, or system default) via their profile settings
+- Persist the theme preference per account across devices and sessions
+- Provide a basic brand theming option for workspace admins to set a primary accent color
+- Ensure full WCAG 2.1 AA color contrast compliance in both light and dark themes
 
 ## Non-goals
-- Interactive product tours or overlay walkthroughs (e.g. Intercom-style hotspots)
-- Onboarding for mobile native apps — web only in this iteration
-- Automated email drip campaigns tied to checklist progress
-- Localization / i18n of checklist content (English only for launch)
-- Retroactively showing the checklist to existing users
+- Custom CSS injection or full white-labeling of the UI
+- Per-page or per-component theme overrides by end users
+- High-contrast accessibility theme (planned as a separate accessibility initiative)
+- Native mobile app theming — web only in this iteration
+- More than one accent color slot in the admin brand theming panel
