@@ -2,21 +2,21 @@
 
 ## Feature
 - Feature ID: `test-feaature-3`
-- Title: `CSV & Excel Data Import`
+- Title: `Public API & Developer Webhooks`
 
 ## Problem
-Users who migrate to the platform from other tools or maintain data in spreadsheets have no way to bulk-import records. Every item must be created manually, one by one. This is the #2 most-requested feature among new enterprise customers and is directly cited as an onboarding friction point in 35% of implementation project retrospectives. Sales engineers report losing deals to competitors who offer import capabilities out of the box.
+The platform has no public API or webhook system, making it impossible for customers to integrate it with their own tools, automation pipelines, or internal systems. Enterprise customers increasingly require programmatic access as a procurement requirement. Developer-facing integrations (Zapier, Make, internal scripts) are blocked entirely, and the customer success team manually handles data export requests that could be self-served via API. This limits the platform's ecosystem potential and stalls deals with technical buyers.
 
 ## Goals
-- Allow users to upload CSV and XLSX files to bulk-create records in any supported entity type (tasks, contacts, projects)
-- Provide an interactive column-mapping step so users can match spreadsheet columns to platform fields
-- Validate data before import and surface a clear error report (row-level) for invalid or missing required fields
-- Support files up to 50,000 rows and 50 MB without timeout
-- Send an in-app and email notification when a large import job completes (async processing for files over 1,000 rows)
+- Launch a versioned REST API (v1) covering core entities: workspaces, projects, tasks, users, and comments
+- Implement API key authentication with scoped permissions (read-only, read-write, admin)
+- Provide a webhook system allowing customers to subscribe to platform events (task created, status changed, comment added, etc.) with configurable endpoint URLs
+- Publish interactive API documentation (OpenAPI / Swagger) at a public developer portal
+- Enforce rate limiting (1,000 requests/min per API key) with clear error responses and retry-after headers
 
 ## Non-goals
-- Real-time two-way sync with Google Sheets or Excel Online
-- Importing binary file attachments embedded in spreadsheets
-- Support for file formats other than CSV and XLSX (e.g. ODS, JSON, XML) in this iteration
-- Scheduled or recurring automated imports
-- Undo / rollback of a completed import
+- GraphQL API — REST only in v1
+- OAuth 2.0 / third-party app authorization flow (planned for v2)
+- Official SDK libraries in any language at launch
+- Real-time streaming API (WebSocket or SSE)
+- Webhook event replay or guaranteed delivery (best-effort delivery in v1)
