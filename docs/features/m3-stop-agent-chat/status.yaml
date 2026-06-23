@@ -1,14 +1,18 @@
 feature_id: m3-stop-agent-chat
 title: m3-stop-agent-chat
-feature_status: in_design
-current_stage: product_spec
+feature_status: in_tdd
+current_stage: technical_design
 stages:
   product_spec:
-    review_status: awaiting_approval
-    reviewed_by: null
-    reviewed_at: null
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-06-24T00:50:10+0700"
     review_comment: null
-    review_history: []
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-06-24T00:50:10+0700"
+        review_comment: null
   technical_design:
     review_status: draft
     reviewed_by: null

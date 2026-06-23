@@ -65,9 +65,6 @@ is disruptive.
   the user can refer back to what was generated up to that point.
 - **G6 — Works across all chat surfaces.** The stop capability applies in feature-thread sessions,
   workspace-level team threads, and workspace channels (wherever the triggered `@agent` can run).
-- **G7 — Keyboard shortcut.** Pressing `Escape` while an agent turn is in progress triggers the
-  same stop action as clicking the Stop button.
-
 ## Non-goals
 
 - **NG1 — No stopping of orchestrator-managed task execution.** Stopping tasks that run via the
@@ -114,7 +111,7 @@ is disruptive.
 ## Acceptance Criteria
 
 - While the agent is generating, a **Stop** button (or equivalent control) is visible and
-  interactive in the chat UI; pressing `Escape` also triggers stop.
+  interactive in the chat UI.
 - Clicking Stop halts the visible token stream within one render cycle and persists the partial
   response marked as stopped.
 - The message composer is immediately re-enabled after stop; the user can send the next message
@@ -134,7 +131,6 @@ is disruptive.
 **UI (digital-factory-ui)**
 - Stop button rendered in the message input area while an agent turn is active; hidden / replaced
   by Send when no turn is running.
-- `Escape` keyboard shortcut wired to the same stop action.
 - Visual "stopped" indicator appended to the partial message bubble.
 - Composer unlocks immediately on stop.
 
