@@ -2,7 +2,7 @@ id: T2
 title: "digital-factory-ui: live thinking area + session-only Show thinking
   collapse toggle"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/m3-agent-chat-thinking-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T15:49:10.723Z
 pr:
   url: ""
   status: not_created
@@ -26,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:47:45.948Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:49:10.723Z
+    note: Claimed via git-based claim protocol.
