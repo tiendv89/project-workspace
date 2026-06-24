@@ -1,7 +1,7 @@
 id: T4
 title: "workflow-bff: cost/quota gateway handlers + forward platform_roles"
 repo: workflow-bff
-status: reviewing
+status: change_requested
 depends_on:
   - T2
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m4-agent-cost-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T19:11:50.302Z
+  last_updated_at: 2026-06-24T19:18:27.328Z
 pr:
   url: https://github.com/tiendv89/workflow-bff/pull/6
   status: open
@@ -66,3 +66,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T19:11:50.302Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T19:18:27.328Z
