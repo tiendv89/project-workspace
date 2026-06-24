@@ -40,3 +40,7 @@ log:
     rag_query: "digital-factory-ui: live thinking area + session-only Show thinking
       collapse toggle m3-agent-chat-thinking"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:50:59+0000
+    note: executor work phase begun.
