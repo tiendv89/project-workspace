@@ -1,8 +1,10 @@
 id: T29
 title: "workflow-mcp auth: session_id cookie from mcpServers env"
 repo: workflow-mcp
-status: todo
-depends_on: [T28, T27]
+status: ready
+depends_on:
+  - T28
+  - T27
 blocked_reason: null
 branch: workflow-db/T29
 execution:
@@ -16,5 +18,9 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T28, T27.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T28, T27.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:23:07.218Z
+    note: Task activated — dependency T27 merged and marked done.
