@@ -1,7 +1,7 @@
 id: T1
 title: "user-service: billing/quota + platform-role migrations & seeds"
 repo: user-service
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/m4-agent-cost-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T17:13:04+0000
+  last_updated_at: 2026-06-24T17:26:15.823Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/user-service/pull/15
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/619
   status: open
