@@ -1,18 +1,18 @@
 id: T36
 title: "approve-feature: go-mode guide to run /create-tasks"
 repo: workflow
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T36
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T13:52:10.277Z
+  last_updated_by: batu4404@gmail.com
+  last_updated_at: 2026-06-24T13:52:39.172Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/271
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/604
   status: open
@@ -68,3 +68,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-24T13:52:10.277Z
+  - action: done
+    by: batu4404@gmail.com
+    at: 2026-06-24T13:52:39.172Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
