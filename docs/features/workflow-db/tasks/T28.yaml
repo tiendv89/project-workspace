@@ -22,7 +22,7 @@ branch: feature/workflow-db-T28
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:10:26.797Z
+  last_updated_at: 2026-06-24T14:10:33.660Z
 pr:
   url: null
   status: null
@@ -74,3 +74,20 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio) workflow-db
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: >
+      repo_materialization_failed: Error: Command failed: git clone
+      "git@github.com:batu4404/workflow-mcp.git" "/workspace/impl"
+
+      Cloning into '/workspace/impl'...
+
+      ERROR: Repository not found.
+
+      fatal: Could not read from remote repository.
+
+
+      Please make sure you have the correct access rights
+
+      and the repository exists.
+    at: 2026-06-24T14:10:33.660Z
