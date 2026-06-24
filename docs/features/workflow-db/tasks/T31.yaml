@@ -1,18 +1,20 @@
 id: T31
 title: "workflow-mcp E2E: create feature then create_tasks via MCP"
 repo: workflow-mcp
-status: ready
+status: in_progress
 depends_on:
   - T30
 blocked_reason: null
-branch: workflow-db/T31
+blocked_context: null
+branch: feature/workflow-db-T31
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:01:58+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T15:59:51.462Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
@@ -23,3 +25,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:58:30.942Z
     note: Task activated — dependency T30 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:59:51.462Z
+    note: Claimed via git-based claim protocol.
