@@ -1,8 +1,9 @@
 id: T7
 title: "digital-factory-ui: Settings → Usage page"
 repo: digital-factory-ui
-status: todo
-depends_on: [T4]
+status: ready
+depends_on:
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T7
@@ -18,3 +19,7 @@ log:
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:43:48.498Z
+    note: Task activated — dependency T4 merged and marked done.
