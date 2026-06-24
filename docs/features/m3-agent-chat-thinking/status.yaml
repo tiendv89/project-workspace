@@ -1,10 +1,9 @@
 feature_id: m3-agent-chat-thinking
 title: M3 Agent Chat Thinking
-
 feature_status: ready_for_implementation
 current_stage: implementation
-next_action: Agents claim ready tasks (T1) via start-implementation; T2 readies when T1 is done.
-
+next_action: Agents claim ready tasks (T1) via start-implementation; T2 readies
+  when T1 is done.
 stages:
   product_spec:
     review_status: approved
@@ -42,7 +41,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - stage: product_spec
     action: approved
@@ -58,10 +56,12 @@ history:
     action: approved
     actor: pentative@gmail.com
     at: 2026-06-24T15:03:18Z
-    note: Task breakdown approved; feature ready_for_implementation. T1 activated to ready.
-
+    note: Task breakdown approved; feature ready_for_implementation. T1 activated to
+      ready.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m3-agent-chat-thinking
+feature_branch_base_sha: 2f38a094a53d2c8fe06030f8c26ebf5f959b6c84
