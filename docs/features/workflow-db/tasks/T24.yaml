@@ -1,15 +1,15 @@
 id: T24
 title: "DB layer: CreateWorkspaceTasks (bulk, all-or-nothing)"
 repo: workflow-backend
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: executor_failed:dispatch_dlq_after_5_deliveries
+blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T24
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T13:40:06.467Z
+  last_updated_by: batu4404@gmail.com
+  last_updated_at: 2026-06-24T20:52:37+0700
 pr:
   url: null
   status: null
@@ -29,8 +29,9 @@ log:
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T20:35:43+0700
-    note: "Reset from in_progress — prior agent claimed but never started
-      implementation. Workspace PR #600 kept open for the re-run."
+    note: >-
+      Reset from in_progress — prior agent claimed but never started
+      implementation. Workspace PR #600 kept open for the re-run.
   - action: claimed
     by: tiendv.52@gmail.com
     at: 2026-06-24T13:36:28.314Z
@@ -46,3 +47,9 @@ log:
     by: tiendv.52@gmail.com
     note: dispatch_dlq_after_5_deliveries
     at: 2026-06-24T13:40:06.467Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T20:52:37+0700
+    note: >-
+      Human reset from blocked (executor_failed:dispatch_dlq_after_5_deliveries).
+      pr.url is null so resetting to ready per unblock-target rule.
