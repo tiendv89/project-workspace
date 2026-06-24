@@ -1,15 +1,15 @@
 id: T35
 title: "orchestrator: remove create.go + cmd/seed from the production path"
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T35
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T21:15:50+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T14:18:14.858Z
 pr:
   url: null
   status: null
@@ -45,6 +45,10 @@ log:
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T21:15:50+0700
-    note: >-
-      Human reset from blocked (executor_failed:dispatch_dlq_after_5_deliveries).
-      pr.url is null so resetting to ready per unblock-target rule.
+    note: Human reset from blocked
+      (executor_failed:dispatch_dlq_after_5_deliveries). pr.url is null so
+      resetting to ready per unblock-target rule.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:18:14.858Z
+    note: Claimed via git-based claim protocol.
