@@ -1,15 +1,15 @@
 id: T28
 title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: executor_failed:dispatch_dlq_after_5_deliveries
+blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T28
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T11:11:28.464Z
+  last_updated_by: batu4404@gmail.com
+  last_updated_at: 2026-06-24T21:03:22+0700
 pr:
   url: null
   status: null
@@ -44,3 +44,9 @@ log:
     by: tiendv.52@gmail.com
     note: dispatch_dlq_after_5_deliveries
     at: 2026-06-24T11:11:28.464Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:03:22+0700
+    note: >-
+      Human reset from blocked (executor_failed:dispatch_dlq_after_5_deliveries).
+      pr.url is null so resetting to ready per unblock-target rule.
