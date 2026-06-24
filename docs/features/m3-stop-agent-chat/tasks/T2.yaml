@@ -1,7 +1,7 @@
 id: T2
 title: digital-factory-ui — Stop button + stopped-message rendering
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m3-stop-agent-chat-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T04:44:31.126Z
+  last_updated_at: 2026-06-24T04:51:00.431Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/148
   status: open
@@ -71,3 +71,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T04:44:31.126Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T04:51:00.431Z
