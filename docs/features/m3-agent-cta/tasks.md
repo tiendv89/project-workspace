@@ -10,23 +10,17 @@ Machine state (status, branch, PR, log) lives in `tasks/T<n>.yaml`.
 | T1 | 1 | Hermes agent — suggest_next_actions tool + DB migration | — |
 | T2 | 1 | BFF — workspace capabilities endpoint | — |
 | T3 | 2 | Frontend — CTA card components + integration | T1, T2 |
+| T4 | 3 | Hermes agent (hermes-agent): suggest_next_actions tool + DB migration [fix T1 wrong repo] | — |
 
 ## Dependency diagram
 
 ```
-T1: suggest_next_actions tool + DB migration   [workflow-backend]
+T1: suggest_next_actions tool + DB migration   [workflow-backend] ← WRONG REPO (done but in wrong repo)
+T2: workspace capabilities endpoint            [workflow-bff]     ← done
+T3: CTA card components + integration          [digital-factory-ui] ← done
+
+T4: suggest_next_actions tool + DB migration   [hermes-agent]    ← fixes T1 wrong repo
   └── Can begin now — no blockers
-  │
-T2: workspace capabilities endpoint            [workflow-bff]
-  └── Can begin now — no blockers
-  │   T1 and T2 run in parallel
-  │
-  T3: CTA card components + integration        [digital-factory-ui]
-      └── BLOCKED on T1 (turn.cta_suggestions SSE event shape and
-                         messages.cta_suggestions DB column must be defined
-                         before the frontend can consume CTA data from the API)
-      └── BLOCKED on T2 (GET /api/v1/workspace/capabilities must be live
-                         before EmptyStateCTARow can gate capability starters)
 ```
 
 ---
@@ -139,3 +133,39 @@ starters. Dismissed when the first message is sent or a card is clicked.
 - [ ] Component tests: active vs inert `CTACard`; `CTASuggestionRow` mobile stacking; stage-to-starters mapping; capability gating
 - [ ] E2E test: click CTA → message submitted → CTA row grayed out
 - [ ] Visual regression: past-turn inert cards; mobile layout at 767 px
+
+---
+
+## T4 — Hermes agent (hermes-agent): suggest_next_actions tool + DB migration [fix T1 wrong repo]
+
+### Description
+
+T1 was implemented in `workflow-backend` — the wrong repository. The `suggest_next_actions` tool,
+its executor handler, the `messages.cta_suggestions` DB migration, and the system prompt extension
+all belong in `hermes-agent` where the Hermes agent actually runs.
+
+This task re-implements the full T1 scope in `hermes-agent`. The work is identical to T1 in
+substance; only the target repo differs. Reference T1's merged PR (https://github.com/tiendv89/workflow-backend/pull/45)
+for the exact implementation to port.
+
+1. Validates the `suggestions` payload against the `CtaSuggestion` JSON schema.
+2. Persists the suggestions to a new `messages.cta_suggestions JSONB` column.
+3. Publishes a `turn.cta_suggestions` event on the in-process SSE bus.
+4. Returns `{"status": "ok"}` to the agent so the turn ends cleanly.
+
+### Required skills
+
+- backend-engineer
+- python-best-practices
+- postgres-best-practices
+
+### Subtasks
+
+- [ ] Write Alembic migration: `ALTER TABLE messages ADD COLUMN cta_suggestions JSONB NOT NULL DEFAULT '[]'::jsonb`
+- [ ] Define `CtaSuggestion` schema in `tools/suggest_next_actions.py` with `category` enum and `maxItems: 3`
+- [ ] Register tool in the Hermes tool registry alongside existing tools (e.g. `save_artifact`)
+- [ ] Implement executor local handler: validate → persist → `bus.publish(session_id, {type: "turn.cta_suggestions", message_id, suggestions})` → return `{"status": "ok"}`
+- [ ] Extend Hermes system prompt: when to call, when to omit, `action_text` format rules, `button_label` length constraint
+- [ ] Unit test: handler persists correct JSON and publishes the event
+- [ ] Unit test: schema validation rejects `> 3` suggestions and invalid `category` values
+- [ ] Integration test: full agent turn with CTA tool call → `messages.cta_suggestions` populated + SSE event received

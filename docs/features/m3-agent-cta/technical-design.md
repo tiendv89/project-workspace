@@ -98,7 +98,7 @@ A new `suggest_next_actions(suggestions: CtaSuggestion[])` tool is registered in
 
 ## 4. Chosen Design
 
-### 4.1 Hermes agent — `workflow-backend`
+### 4.1 Hermes agent — `hermes-agent`
 
 #### New tool: `suggest_next_actions`
 
@@ -278,9 +278,9 @@ function handleCtaClick(actionText: string) {
 
 | Dependency | Type | Status | Notes |
 |---|---|---|---|
-| Hermes tool registry (`suggest_next_actions`) | Internal | Unbuilt | Delivered by T1 |
-| `messages.cta_suggestions` DB column | Internal | Unbuilt | Delivered by T1; additive migration only |
-| `turn.cta_suggestions` SSE event type | Internal | Unbuilt | Defined by T1; BFF passthrough is free |
+| Hermes tool registry (`suggest_next_actions`) | Internal | Unbuilt | Delivered by T4 (T1 wrong repo) |
+| `messages.cta_suggestions` DB column | Internal | Unbuilt | Delivered by T4 (T1 wrong repo) |
+| `turn.cta_suggestions` SSE event type | Internal | Unbuilt | Defined by T4 (T1 wrong repo); BFF passthrough is free |
 | `GET /api/v1/workspace/capabilities` | Internal | Unbuilt | Delivered by T2 |
 | v4 in-process SSE bus (`bus.publish`) | Internal | Done | Landed in m3-agent-chat-v4 |
 | v4 `messages` table + `session_id` FK | Internal | Done | Landed in m3-agent-chat-v4 |
@@ -294,18 +294,14 @@ No external vendor integrations are new. No blocking external decisions exist.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Hermes agent — suggest_next_actions tool + DB migration   [workflow-backend]
-  └── Can begin now — no blockers
+T4: Hermes agent — suggest_next_actions tool + DB migration   [hermes-agent]
+  └── Can begin now — no blockers (fixes T1 which was incorrectly in workflow-backend)
   │
 T2: BFF — workspace capabilities endpoint                     [workflow-bff]
-  └── Can begin now — no blockers
-  │   T1 and T2 run in parallel
+  └── Done
   │
   T3: Frontend — CTA card components + empty-state starters   [digital-factory-ui]
-      └── BLOCKED on T1 (turn.cta_suggestions event schema + message.cta_suggestions field
-                         must be defined before the frontend can consume them from history API)
-      └── BLOCKED on T2 (GET /api/v1/workspace/capabilities must exist before EmptyStateCTARow
-                         can gate capability starters)
+      └── Done (was BLOCKED on T1/T2; T2 done, T4 provides correct T1 replacement)
 ```
 
 T3 is the sole downstream task. It covers both post-reply CTA cards and empty-state starters in one frontend task; the two components are independent enough to write in parallel within the same task but live in the same repo and are small enough to not warrant splitting.
@@ -316,7 +312,7 @@ T3 is the sole downstream task. It covers both post-reply CTA cards and empty-st
 
 | Repo | Tasks | Changes |
 |---|---|---|
-| `workflow-backend` | T1 | New `suggest_next_actions` tool + handler; `messages` Alembic migration; system prompt extension |
+| `hermes-agent` | T4 | New `suggest_next_actions` tool + handler; `messages` Alembic migration; system prompt extension (T1 was incorrectly targeted at `workflow-backend` — T4 corrects this) |
 | `workflow-bff` | T2 | New `GET /api/v1/workspace/capabilities` route; SSE passthrough is zero-change |
 | `digital-factory-ui` | T3 | New `CTACard`, `CTASuggestionRow`, `EmptyStateCTARow` components; chat store extension; `WorkspaceCapabilities` API call |
 
@@ -326,7 +322,7 @@ T3 is the sole downstream task. It covers both post-reply CTA cards and empty-st
 
 ### Testing expectations
 
-**T1 (`workflow-backend`)**:
+**T4 (`hermes-agent`)** — corrects T1 which targeted wrong repo:
 - Unit test: `suggest_next_actions` handler persists correct JSON and publishes `turn.cta_suggestions` event.
 - Unit test: tool schema validation rejects payloads with `> 3` suggestions or invalid `category` values.
 - Integration test: full agent turn with CTA tool call → verify `messages.cta_suggestions` populated and SSE event received.
