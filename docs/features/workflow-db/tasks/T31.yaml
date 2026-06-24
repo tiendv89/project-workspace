@@ -1,7 +1,7 @@
 id: T31
 title: "workflow-mcp E2E: create feature then create_tasks via MCP"
 repo: workflow-mcp
-status: reviewing
+status: review_passed
 depends_on:
   - T30
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T31
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T16:09:44.497Z
+  last_updated_at: 2026-06-24T16:15:13.694Z
 pr:
   url: https://github.com/batu4404/workflow-mcp/pull/4
   status: open
@@ -50,3 +50,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T16:09:44.497Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T16:15:13.694Z
