@@ -1,27 +1,33 @@
 id: T28
-title: "workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)"
+title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T28
+blocked_context: null
+branch: feature/workflow-db-T28
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T11:08:21.619Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Human prerequisite:
-      the workflow-mcp GitHub repo must exist and WORKFLOW_MCP_LOCAL_PATH be set before this runs.
+    note: "Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Human prerequisite: the workflow-mcp GitHub repo must exist and
+      WORKFLOW_MCP_LOCAL_PATH be set before this runs."
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
-    note: >-
-      Task activated on tasks-stage approval — no task dependencies. Note: blocks at execution
-      until the workflow-mcp GitHub repo exists and WORKFLOW_MCP_LOCAL_PATH is set.
+    note: "Task activated on tasks-stage approval — no task dependencies. Note:
+      blocks at execution until the workflow-mcp GitHub repo exists and
+      WORKFLOW_MCP_LOCAL_PATH is set."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:08:21.619Z
+    note: Claimed via git-based claim protocol.
