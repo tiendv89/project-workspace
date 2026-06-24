@@ -1,7 +1,7 @@
 id: T32
 title: "install.sh: register already-built workflow-mcp (claude mcp add)"
 repo: workflow
-status: in_review
+status: reviewing
 depends_on:
   - T28
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T32
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:47:04.552Z
+  last_updated_at: 2026-06-24T14:48:11.715Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/273
   status: open
@@ -47,3 +47,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/273"
     at: 2026-06-24T14:47:04.552Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:48:11.715Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
