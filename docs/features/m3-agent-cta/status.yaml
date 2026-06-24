@@ -1,7 +1,7 @@
 feature_id: m3-agent-cta
 title: m3-agent-cta
-feature_status: in_implementation
-current_stage: implementation
+feature_status: in_handoff
+current_stage: handoff
 stages:
   product_spec:
     review_status: approved
@@ -61,6 +61,12 @@ history:
       Reset from in_handoff to in_implementation to allow agent runtime to execute
       T4 (hermes-agent: suggest_next_actions tool — fix for T1 wrong repo) and
       T5 (digital-factory-ui: remove WorkspaceCapabilities gating).
+  - event: transitioned_to_in_handoff
+    by: pye@swellnetwork.io
+    at: 2026-06-24T14:22:48+0700
+    note: >-
+      T4 and T5 merged. Corrected impl repos to hermes-agent and digital-factory-ui
+      (workflow-backend and workflow-bff were incorrect). Advanced back to in_handoff.
 revalidation:
   product_spec_required: false
   technical_design_required: false
@@ -71,12 +77,9 @@ feature_branch_base_sha: 183f876b22d5a018c26493d0132f125704a0c7a7
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/583
 handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/592
 impl_feature_prs:
-  - repo: workflow-backend
-    url: https://github.com/tiendv89/workflow-backend/pull/46
-    status: open
-  - repo: workflow-bff
-    url: https://github.com/tiendv89/workflow-bff/pull/4
-    status: open
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/23
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/149
-    status: open
+    status: merged
