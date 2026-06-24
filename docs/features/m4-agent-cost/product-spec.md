@@ -2,7 +2,7 @@
 
 ## Feature
 - Feature ID: `m4-agent-cost`
-- Title: Agent Cost Tracking — Credits, Usage Visibility, and Quota
+- Title: Agent Cost Tracking — Credits, Billing Plans, and Quota
 
 ## Background
 
@@ -13,21 +13,19 @@ Today that usage is **invisible**: there is no record of what a turn costs, no p
 accumulation, and no cost surface in the UI.
 
 M4 is scoped as "Meter & Monetize" — metering ledger, credits, tiers, spend caps, and per-
-workspace cost dashboard. None of that is buildable without first capturing the raw cost
-signal and expressing it in a unit users actually see.
+workspace cost dashboard. The roadmap is explicit: *"plan → entitlement mapping is
+config/data; enforcement is deterministic code, never an LLM judgement."* This feature
+delivers the foundation for that: cost capture, a credit-based quota system, and
+**admin-managed billing plans** that drive the quota caps for individual users and orgs.
 
-This feature delivers three things that M4's billing engine will build on:
-1. **Cost capture** — token usage per agent turn, converted to **credits** (not raw USD).
-   Credits are the user-facing unit; USD stays internal for accounting only.
-2. **Cost storage owned by `user-service`** — the service that already holds user identity
-   and workspace membership is the right home for per-user cost and quota state. Keeping it
-   there avoids scattering usage accounting across multiple services.
-3. **Daily and weekly quota** — each user gets a credit allowance that refreshes on a daily
-   and weekly schedule, matching the pattern established by Claude's own usage limits. For
-   now the cap is a fixed system-wide number; the billing plan will parameterize it in M4.
+This feature deliberately excludes self-serve payment, payment processing, and billing
+infrastructure. Plans are created and assigned by an admin via the admin panel —
+not purchased by users. M4's full billing engine (Stripe, wallet, auto-pause, invoicing)
+is a follow-on; this feature builds the plan data model and enforcement gate that billing
+will slot into without rework.
 
-The agent runtime (task-execution workers in the workflow orchestrator) will eventually need
-the same signal. This feature designs the data model with that extension in mind.
+This feature also designs the data model so the agent runtime (task-execution workers in
+the workflow orchestrator) can emit cost events with no schema migration required.
 
 ## Problem
 
@@ -55,7 +53,15 @@ model for the runtime purely speculative.
 A user has no idea how many credits an agent session consumes, and no visibility into how
 much of their daily or weekly allowance is left. The absence of a quota signal means the
 first time a user hits a limit is a surprise — a trust and UX problem that becomes acute
-the moment M4 introduces any kind of cap or credit enforcement.
+the moment any cap is enforced.
+
+### All users share the same hardcoded cap — no differentiation
+
+Without a billing plan layer, every user gets the same quota regardless of their role,
+engagement type, or commercial arrangement. There is no way to give a paying client a
+higher allowance, put an inactive account on a tighter limit, or set a workspace-level
+baseline that all members inherit. Any future commercial differentiation (Free / Pro / Team
+/ Enterprise tiers) needs this plan-data-model to already exist.
 
 ## Goals
 
@@ -73,49 +79,53 @@ the moment M4 introduces any kind of cap or credit enforcement.
   incrementally by `user-service`, not recomputed on read.
 - **G4 — Display credits in the chat UI.** Each agent message card shows its cost in
   credits (`4 credits`). The session / thread header shows the running session total
-  (`Session: 25 credits`). Cost is always visible but secondary — small, non-prominent.
+  (`Session: 25 credits`) and the user's remaining daily quota. Cost is always visible but
+  secondary — small, non-prominent.
 - **G5 — Expose cost query API via `workflow-bff`, backed by `user-service`.** `workflow-bff`
   exposes endpoints to query per-turn credits and session-level totals; it proxies to
   `user-service` for storage and retrieval. The API is designed to generalize beyond chat:
   any cost producer (agent runtime task, future tool runs) can submit a cost event and
-  appear in the same query surface without workflow-bff changes.
-- **G6 — Daily and weekly credit quota per user.** `user-service` tracks each user's
-  daily and weekly credit consumption. Each quota refreshes on its own schedule (daily
-  at midnight UTC; weekly on Monday midnight UTC). The cap is a fixed system-wide constant
-  for now (`DAILY_CREDIT_QUOTA`, `WEEKLY_CREDIT_QUOTA`). The quota surface is exposed via
-  the cost query API so the UI can display remaining allowance.
+  appear in the same query surface without `workflow-bff` changes.
+- **G6 — Daily and weekly credit quota, driven by billing plan.** `user-service` tracks each
+  user's daily and weekly credit consumption. The daily and weekly caps come from the user's
+  **effective billing plan** (resolved from individual plan → org plan → system default,
+  in that priority order). Each quota refreshes on schedule (daily at midnight UTC; weekly
+  on Monday midnight UTC). The quota surface is exposed via the cost query API.
 - **G7 — Immutable cost history ledger.** `turn_cost` is an append-only event log — one row
   per agent turn, never mutated after insert. This makes it the authoritative record for
-  future cost analysis: filter by `source_type` to see "Hermes agent chat" vs. "agent
-  runtime task" spend; join on `task_id` to see per-task runtime costs; group by `user_id`
-  and date for usage reports. The schema carries a `source_type` discriminator
-  (`chat_turn` | `task_run` | future values) and a nullable `task_id` so runtime wiring is
-  additive — no migration needed.
+  future cost analysis: filter by `source_type` to see Hermes agent chat vs. agent runtime
+  spend; join on `task_id` to see per-task costs; group by `user_id` and date for usage
+  reports. The schema carries a `source_type` discriminator (`chat_turn` | `task_run` |
+  future values) and a nullable `task_id` so runtime wiring is additive — no migration.
 - **G8 — Quota guard in `hermes-agent`.** Before invoking the Claude API for a new turn,
-  `hermes-agent` calls `user-service` to check the user's current quota state. If either
-  the daily or weekly cap is reached, the turn is **rejected before any tokens are
-  consumed**: the agent posts a system message to the thread explaining which quota is
-  exhausted and when it resets, and the input composer remains enabled so the user can send
-  their message again after the reset.
+  `hermes-agent` checks the user's current quota state via `user-service`. If either the
+  daily or weekly cap is reached, the turn is **rejected before any tokens are consumed**:
+  the agent posts a system message to the thread with the exhausted quota type and reset
+  time, and the composer remains enabled.
+- **G9 — Admin-managed billing plans (individual and org).** An admin can create and edit
+  billing plans (name, daily credit cap, weekly credit cap). Plans can be assigned to an
+  **individual user** or to an **org** (applies to all org members as a baseline). The
+  resolution order is: individual plan → org plan → system default. No self-serve payment
+  or plan-purchase UI exists; all plan assignment is admin-only, via the admin panel.
 
 ## Non-goals
 
-- **NG1 — No billing tiers, auto-pause, or credit deduction.** Tier-driven caps, auto-pause
-  at a spend threshold, credit purchase, and credit deduction from a wallet are M4's core
-  deliverables and are out of scope here. The quota guard (G8) enforces the fixed system
-  cap at the `hermes-agent` layer only; it does not touch billing state.
+- **NG1 — No self-serve payment or payment processing.** Users cannot purchase plans or
+  credits through the UI. All plan assignment is admin-only. Stripe, wallets, invoicing,
+  and credit purchase flows are M4's full billing engine, explicitly out of scope here.
 - **NG2 — No USD display to users.** USD is an internal accounting unit only; it must not
   appear anywhere in the UI. Users see credits exclusively.
-- **NG3 — No BYO key or model-gateway managed mode.** Per-key or per-org cost allocation
+- **NG3 — No auto-pause or spend-cap enforcement beyond the daily/weekly quota guard.**
+  Automatic subscription downgrade, auto-pause at a rolling spend threshold, and prorated
+  billing are M4 proper.
+- **NG4 — No BYO key or model-gateway managed mode.** Per-key or per-org cost allocation
   and gateway-managed API routing are separate enabling track concerns.
-- **NG4 — No metering of human actions.** Only LLM API calls generate cost records.
-- **NG5 — No retroactive backfill.** Cost records start from the deploy date.
-- **NG6 — No agent-runtime wiring in this feature.** The schema supports it (`source_type:
+- **NG5 — No metering of human actions.** Only LLM API calls generate cost records.
+- **NG6 — No retroactive backfill.** Cost records start from the deploy date.
+- **NG7 — No agent-runtime wiring in this feature.** The schema supports it (`source_type:
   task_run`), but the runtime pipeline is a follow-on feature.
-- **NG7 — No cross-session aggregate dashboard or invoice download.** Per-workspace cost
+- **NG8 — No cross-session aggregate dashboard or invoice download.** Per-workspace cost
   dashboards and invoice generation are M4 proper.
-- **NG8 — No billing-plan-driven quota caps.** The quota cap is a fixed system constant for
-  now; billing plan parameterization is M4 proper.
 
 ## User Flows
 
@@ -125,7 +135,7 @@ the moment M4 introduces any kind of cap or credit enforcement.
 2. The agent generates and completes the turn.
 3. The agent message card appears with a small credit badge: *4 credits*.
 4. The session header updates from *Session: 21 credits* to *Session: 25 credits*.
-5. The quota indicator in the header refreshes: *Daily: 9,975 / 10,000 credits remaining*.
+5. The quota indicator refreshes: *Daily: 9,975 / 10,000 credits remaining*.
 
 ### Stopping a turn and seeing the partial cost
 
@@ -134,99 +144,163 @@ the moment M4 introduces any kind of cap or credit enforcement.
 3. The credit badge shows the tokens consumed up to the stop: *1 credit*.
 4. The session total and quota remaining both update.
 
-### Checking remaining quota
-
-1. At any time the user can see remaining daily and weekly credits in the session header or
-   a profile panel.
-2. The quota resets automatically — daily at midnight UTC, weekly on Monday — with no user
-   action required.
-
 ### Hitting the daily quota limit
 
 1. A user sends `@agent` when their daily quota is already exhausted.
 2. `hermes-agent` calls the quota check endpoint **before** calling the Claude API.
 3. The check returns `{ allowed: false, reason: 'daily_exceeded', resets_at: <timestamp> }`.
 4. No Claude API call is made; zero tokens are consumed.
-5. The agent posts a system message to the thread:
-   *"You've reached your daily credit limit. Your quota resets at midnight UTC (in 3h 42m)."*
-6. The message composer stays enabled — the user can send a message again after the reset.
-7. The same flow applies when the weekly quota is exhausted, with an appropriate reset time.
+5. The agent posts a system message:
+   *"You've reached your daily credit limit (10,000). Your quota resets at midnight UTC
+   (in 3h 42m)."*
+6. The composer stays enabled — the user can try again after the reset.
+7. The same flow applies for weekly exhaustion with an appropriate reset time.
+
+### Admin creates a billing plan
+
+1. An admin opens the admin panel → **Plans** section.
+2. They click **New Plan**, enter a name (e.g. `Pro`), a daily cap (50,000 credits), and a
+   weekly cap (200,000 credits), then save.
+3. The plan appears in the plan list and is available to assign.
+
+### Admin assigns a plan to an individual user
+
+1. In the admin panel → **Users**, the admin finds a user and opens their profile.
+2. Under **Billing Plan**, the admin selects `Pro` from the plan dropdown and saves.
+3. On the next quota check for that user, `user-service` resolves their effective plan as
+   `Pro` (individual plan takes precedence) and applies its caps.
+
+### Admin assigns a plan to an org
+
+1. In the admin panel → **Orgs**, the admin opens an org and selects a plan (e.g. `Team`).
+2. All members of that org who do **not** have an individual plan assigned inherit the
+   `Team` plan's caps. Members with an individual plan are unaffected.
+
+### Effective plan resolution (visible in admin)
+
+The admin panel shows each user's **effective plan** and its source:
+- *Pro (individual)* — user has an individual plan assigned
+- *Team (org)* — user inherits from their org's plan
+- *Free (default)* — neither individual nor org plan is set; system default applies
 
 ### Future: billing dashboard consumes the API
 
-M4's billing dashboard will call `GET /users/:id/cost` (via `workflow-bff` → `user-service`)
-to produce per-workspace, per-session cost breakdowns. The API shape delivered here is
-what M4 consumes — no rework needed.
+M4's billing dashboard will call the cost query API to produce per-workspace, per-session
+cost breakdowns. The plan model delivered here is what M4 connects Stripe to — no rework.
 
 ## Scope
 
 ### In scope
 
 **Cost capture and quota guard (hermes-agent)**
-- **Pre-turn quota check (G8):** before invoking the Claude API, call
-  `GET /internal/users/:id/quota/check` on `user-service` (via `workflow-bff`).
-  - If `allowed: false` → post a system message to the thread with the reason and reset
-    time; return without calling the Claude API. No tokens consumed.
-  - If `allowed: true` → proceed with generation.
-- After every agent turn completion or stop, extract the `usage` block from the Claude API
-  response and emit a cost event to `workflow-bff`.
+- **Pre-turn quota check (G8):** before invoking the Claude API, call the quota check
+  endpoint via `workflow-bff`. If `allowed: false` → post system message, return without
+  calling the API. Zero tokens consumed on a blocked turn.
+- After every turn completion or stop, extract the `usage` block and emit a cost event to
+  `workflow-bff`.
 - Event payload: `session_id`, `turn_id`, `user_id`, `model_id`, `input_tokens`,
   `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `stopped` (bool), `timestamp`.
-- Stopped turns emit the event with `stopped: true` and the token counts returned up to
-  cancellation.
+- Stopped turns emit with `stopped: true` and the token counts up to cancellation.
 
-**Cost storage, pricing, and quota (user-service)**
-- `model_pricing` table: internal USD per-token rates per model, seeded with current
-  Anthropic pricing for Haiku 4.5, Sonnet 4.6, Opus 4.8, Fable 5.
-- `credit_rate` config: a single system-wide constant `usd_to_credits` (e.g. 10,000
-  credits per USD). Stored as a config row, not hardcoded.
-- `turn_cost` table: stores raw token counts, `cost_usd` (internal), and `credits_used`
-  (user-facing) per turn. Includes `source_type` and nullable `task_id` for runtime
-  extension.
-- `user_usage_quota` table: per-user daily and weekly credit usage and cap, with
-  `daily_reset_at` and `weekly_reset_at` timestamps. Incremented on every `turn_cost`
-  insert; reset on schedule.
-- A `GET /internal/users/:id/quota/check` endpoint: returns
-  `{ allowed: bool, reason?: 'daily_exceeded' | 'weekly_exceeded', resets_at?: timestamp }`.
-  Applies reset logic before answering (if `daily_reset_at` is in the past, zero the daily
-  counter first). This is the gate called by `hermes-agent` before every turn.
-- A `POST /internal/turn-costs` endpoint on `user-service` to receive cost events from
-  `workflow-bff`. Calculates credits, writes `turn_cost`, increments quota.
-- A `GET /internal/users/:id/cost` endpoint returning per-turn credits, session totals,
-  and quota state.
+**Billing plans, cost storage, pricing, and quota (user-service)**
+
+*Plan management:*
+- `billing_plan` table: named plans with `daily_credits_cap` and `weekly_credits_cap`.
+  Seeded with a `Free` default plan (values from `DAILY_CREDIT_QUOTA` /
+  `WEEKLY_CREDIT_QUOTA` system constants). Admin creates additional plans via API.
+- `user_plan_assignment` table: assigns a plan to an individual user (admin-only write).
+- `org_plan_assignment` table: assigns a plan to an org (admin-only write).
+- Plan resolution function: given a `user_id`, returns the effective plan following the
+  priority order — individual → org → system default (`Free`). Used by quota check and
+  quota increment.
+
+*Internal API endpoints:*
+- `GET /internal/users/:id/quota/check` — resolves effective plan, applies lazy reset if
+  needed, returns `{ allowed, reason?, resets_at?, plan_name, daily_cap, weekly_cap }`.
+- `POST /internal/turn-costs` — calculates credits, writes `turn_cost`, increments quota.
+- `GET /internal/users/:id/cost` — returns per-turn credits, session totals, and quota
+  state including plan name and caps.
+
+*Admin API endpoints (new, admin-auth required):*
+- `POST /admin/plans` — create a plan.
+- `PATCH /admin/plans/:id` — edit a plan's caps or name.
+- `GET /admin/plans` — list all plans.
+- `POST /admin/users/:id/plan` — assign a plan to a user.
+- `DELETE /admin/users/:id/plan` — remove a user's individual plan assignment.
+- `POST /admin/orgs/:id/plan` — assign a plan to an org.
+- `DELETE /admin/orgs/:id/plan` — remove an org plan assignment.
+- `GET /admin/users/:id/effective-plan` — return the user's effective plan and source
+  (`individual` | `org` | `default`).
+
+*Tables:*
+- `model_pricing`: internal USD rates per model, seeded with current Anthropic pricing.
+- `credit_config`: single-row `usd_to_credits` conversion constant.
+- `turn_cost`: append-only cost history ledger (see Data Model).
+- `user_usage_quota`: per-user usage counters with `plan_id` FK (resolved at quota check;
+  updated if the user's plan changes).
 
 **Cost API (workflow-bff)**
 - `POST /sessions/:id/turn-costs` — receive cost event from `hermes-agent`, forward to
-  `user-service`. Does not write cost data itself.
-- `GET /sessions/:id/cost` — proxy to `user-service`, return `{ session_credits,
-  turn_count, quota: { daily_used, daily_limit, weekly_used, weekly_limit,
-  daily_reset_at, weekly_reset_at }, turns: [{turn_id, credits_used, model_id,
-  tokens, stopped}] }`.
-- `GET /sessions/:id/quota/check` — proxy the quota check to `user-service`; called by
-  `hermes-agent` before each turn. Returns the same `{ allowed, reason, resets_at }` shape.
-- Both endpoints require workspace-scoped auth (existing session auth).
+  `user-service`.
+- `GET /sessions/:id/cost` — proxy to `user-service`; returns `{ session_credits,
+  turn_count, quota: { daily_used, daily_cap, weekly_used, weekly_cap, plan_name,
+  daily_reset_at, weekly_reset_at }, turns: [{turn_id, credits_used, model_id, tokens,
+  stopped}] }`.
+- `GET /sessions/:id/quota/check` — proxy the pre-turn quota check to `user-service`.
+- All endpoints require workspace-scoped auth.
 
-**Cost display (digital-factory-ui)**
-- Agent message card: small credit badge (`4 credits`) below message content. Stopped
-  messages show the badge alongside the stopped indicator.
+**Admin plan UI (digital-factory-ui — admin panel)**
+- **Plans** section: list plans, create plan (name, daily cap, weekly cap), edit caps.
+- **User profile** (admin view): effective plan badge + source label; dropdown to assign /
+  unassign an individual plan.
+- **Org detail** (admin view): current org plan badge; dropdown to assign / unassign an org
+  plan.
+- Admin UI uses the existing admin-panel route and admin-auth guard.
+
+**Cost display (digital-factory-ui — chat UI)**
+- Agent message card: small credit badge (`4 credits`). Stopped messages show the badge
+  alongside the stopped indicator.
 - Session / thread header: running session total (`Session: 25 credits`) and quota
-  indicator (`Daily: 9,975 / 10,000`). Updates reactively as new turn costs arrive via
-  the existing SSE stream or message-list refresh.
-- No USD values appear anywhere in the UI.
+  indicator (`Daily: 9,975 / 10,000 · Pro plan`). Updates reactively.
+- No USD values anywhere in the UI.
 
 ### Out of scope (tracked separately)
 
-- Agent-runtime (task-execution) cost wiring — follow-on, same schema, different producer.
-- Billing-tier-driven quota caps and auto-pause — M4 proper.
-- Billing-plan-driven quota caps — M4 proper.
-- Cross-session cost dashboard, cost export, invoice download — M4 proper.
+- Self-serve plan purchase, Stripe, wallets, invoicing, auto-pause — M4 full billing engine.
+- Agent-runtime cost wiring — follow-on, same schema, different producer.
+- Cross-session aggregate cost dashboard — M4 proper.
 - BYO key / gateway-managed cost allocation.
 
 ## Data Model
 
-All cost and quota tables live in **`user-service`**.
+All tables live in **`user-service`**.
 
 ```
+billing_plan                         (user-service)
+├── id                 UUID PK
+├── name               TEXT UNIQUE    -- e.g. 'free', 'pro', 'team', 'enterprise'
+├── display_name       TEXT
+├── daily_credits_cap  NUMERIC(12,2)
+├── weekly_credits_cap NUMERIC(12,2)
+├── created_at         TIMESTAMPTZ DEFAULT now()
+└── updated_at         TIMESTAMPTZ DEFAULT now()
+
+user_plan_assignment                 (user-service — admin-only writes)
+├── id                 UUID PK
+├── user_id            UUID FK → users UNIQUE
+├── plan_id            UUID FK → billing_plan
+├── assigned_by        UUID FK → users  -- admin user
+├── assigned_at        TIMESTAMPTZ DEFAULT now()
+└── expires_at         TIMESTAMPTZ nullable   -- null = no expiry
+
+org_plan_assignment                  (user-service — admin-only writes)
+├── id                 UUID PK
+├── org_id             UUID UNIQUE           -- FK reference (cross-service)
+├── plan_id            UUID FK → billing_plan
+├── assigned_by        UUID FK → users
+├── assigned_at        TIMESTAMPTZ DEFAULT now()
+└── expires_at         TIMESTAMPTZ nullable
+
 model_pricing                        (user-service)
 ├── model_id           TEXT PK
 ├── input_cost_per_mtok      NUMERIC  -- USD per million input tokens (internal)
@@ -238,43 +312,49 @@ model_pricing                        (user-service)
 
 credit_config                        (user-service — single row)
 ├── id                 INTEGER PK DEFAULT 1
-└── usd_to_credits     NUMERIC        -- e.g. 10000 (credits per USD)
+└── usd_to_credits     NUMERIC        -- e.g. 10000 credits per USD
 
 turn_cost                            (user-service — append-only cost history ledger)
 ├── id                 UUID PK
 ├── user_id            UUID FK → users
-├── session_id         UUID           -- FK reference only; not a FK constraint (cross-service)
-├── turn_id            UUID           -- FK reference only
-├── source_type        TEXT           -- 'chat_turn' | 'task_run'  (analysis discriminator)
-├── source_label       TEXT           -- human-readable: 'Hermes Agent' | 'Agent Runtime' | …
-├── task_id            UUID nullable  -- populated by runtime wiring later; enables per-task cost
+├── session_id         UUID           -- cross-service reference (no FK constraint)
+├── turn_id            UUID           -- cross-service reference
+├── source_type        TEXT           -- 'chat_turn' | 'task_run'
+├── source_label       TEXT           -- 'Hermes Agent' | 'Agent Runtime' | …
+├── task_id            UUID nullable  -- populated by runtime wiring later
 ├── model_id           TEXT FK → model_pricing
 ├── input_tokens       INTEGER
 ├── output_tokens      INTEGER
 ├── cache_read_tokens  INTEGER
 ├── cache_write_tokens INTEGER
-├── cost_usd           NUMERIC(12,8)  -- internal accounting only, never exposed to UI
+├── cost_usd           NUMERIC(12,8)  -- internal only, never exposed to UI
 ├── credits_used       NUMERIC(12,2)  -- user-facing unit
 ├── stopped            BOOLEAN DEFAULT false
 └── created_at         TIMESTAMPTZ DEFAULT now()
--- Index on (user_id, created_at) for per-user history queries
--- Index on (source_type, created_at) for cost-by-source analysis
+-- Index: (user_id, created_at)
+-- Index: (source_type, created_at)
 
-user_usage_quota                     (user-service)
+user_usage_quota                     (user-service — one row per user, upserted)
 ├── id                 UUID PK
 ├── user_id            UUID FK → users UNIQUE
+├── plan_id            UUID FK → billing_plan   -- effective plan at last check
 ├── daily_credits_used NUMERIC(12,2) DEFAULT 0
-├── daily_credits_cap  NUMERIC(12,2)  -- system constant for now (DAILY_CREDIT_QUOTA)
 ├── daily_reset_at     TIMESTAMPTZ    -- next midnight UTC
 ├── weekly_credits_used NUMERIC(12,2) DEFAULT 0
-├── weekly_credits_cap  NUMERIC(12,2) -- system constant for now (WEEKLY_CREDIT_QUOTA)
 ├── weekly_reset_at    TIMESTAMPTZ    -- next Monday midnight UTC
 └── updated_at         TIMESTAMPTZ DEFAULT now()
+-- Caps are read from billing_plan at check time, not stored here —
+-- so a plan cap change takes effect on the next check without a migration.
 ```
 
-`session.total_credits_used` is derived from `SUM(turn_cost.credits_used)` on read (or
-cached by `user-service` in a `session_cost_cache` table if query performance requires it —
-technical design decision).
+**Plan resolution algorithm** (used by quota check and any cap read):
+1. Check `user_plan_assignment` for the `user_id` — if found and not expired, use that plan.
+2. Else look up the user's `org_id`, check `org_plan_assignment` — if found and not expired,
+   use that plan.
+3. Else use the `billing_plan` row where `name = 'free'` (the seeded system default).
+
+`session.total_credits_used` is derived from `SUM(turn_cost.credits_used)` on read, or
+cached by `user-service` if query performance requires it (technical design decision).
 
 ## Open Questions
 
@@ -283,37 +363,44 @@ None — all scoping decisions are locked.
 ## Success Criteria
 
 - When a user's daily or weekly quota is exhausted, `hermes-agent` rejects the turn before
-  calling the Claude API; a system message appears in the thread with the quota reason and
-  reset time. Zero tokens are consumed on a rejected turn.
-- Every completed or stopped agent chat turn produces a `turn_cost` record in `user-service`
-  with correct token counts, a non-zero `credits_used`, and a `cost_usd` (internal only).
-- The agent message card shows `credits_used` immediately after the turn completes (or stops).
-  No USD values appear anywhere in the UI.
-- The session header shows the running session total in credits and updates after each turn.
-- The quota indicator shows correct `daily_credits_used`, `daily_credits_cap`,
-  `weekly_credits_used`, and `weekly_credits_cap` for the authenticated user.
-- Daily quota resets at midnight UTC; weekly quota resets Monday midnight UTC.
-- The cost query API returns credits (not USD) for all per-turn and session-level values.
-- `workflow-bff` does not own any cost or quota tables — all writes and reads go through
+  calling the Claude API; a system message appears in the thread with the quota type, cap,
+  and reset time. Zero tokens are consumed on a rejected turn.
+- Every completed or stopped agent chat turn produces a `turn_cost` record with correct
+  token counts, `credits_used`, and `cost_usd` (internal only). `source_label` is
+  `'Hermes Agent'` for all chat-turn records.
+- `user_usage_quota` counters reflect the correct cumulative credits used; daily counter
+  resets at midnight UTC and weekly counter resets Monday midnight UTC.
+- The quota caps applied at check time come from the user's effective billing plan
+  (individual → org → free default), not a hardcoded constant.
+- An admin can create a plan, assign it to a user, assign it to an org, and view each
+  user's effective plan and source in the admin panel.
+- A user assigned an individual plan sees that plan's caps in the quota indicator.
+- An org member without an individual plan sees the org plan's caps; a member with an
+  individual plan is unaffected by the org plan.
+- The agent message card shows `credits_used` in the UI. No USD values appear anywhere.
+- The session header shows the session credit total, remaining daily quota, and plan name.
+- `workflow-bff` owns no cost or quota tables — all writes and reads go through
   `user-service`.
-- A `model_pricing` seed migration in `user-service` contains current Anthropic pricing
-  for Haiku 4.5, Sonnet 4.6, Opus 4.8, and Fable 5.
-- `turn_cost.source_type`, `turn_cost.source_label`, and `turn_cost.task_id` are present,
-  confirming the cost history ledger is queryable by source and the runtime extension path
-  is ready. `source_label` reads `'Hermes Agent'` for all chat-turn records in this feature.
-- No row in `turn_cost` is ever mutated after insert — the table is append-only.
+- `turn_cost` rows are never mutated after insert (append-only verified in tests).
+- `turn_cost.source_type`, `source_label`, and `task_id` are present, confirming the cost
+  history ledger is ready for runtime extension.
+- A `model_pricing` seed and a `billing_plan` seed (at minimum: `free`) are present in
+  `user-service` migrations.
 - Lint, type-check, and the full test suites of all touched repos pass before any PR.
 
 ## References
 
-- Roadmap: `docs/roadmap-milestone.md` → **M4 — Meter & Monetize** (credits, per-model
-  conversion table, tier ladder, spend caps, cost dashboard). This feature delivers the
-  raw credit signal and quota foundation M4's billing engine will build on.
-- Stop-agent-chat: `docs/features/m3-stop-agent-chat/` — stopped turns must also emit a
-  cost event with the tokens consumed up to cancellation.
+- Roadmap: `docs/roadmap-milestone.md` → **M4 — Meter & Monetize** — "the full tier ladder
+  (Free / Pro / Max / Team / Enterprise)"; "plan → entitlement mapping is config/data;
+  enforcement is deterministic code." This feature delivers the plan data model and
+  enforcement gate M4's billing engine will slot into.
+- Stop-agent-chat: `docs/features/m3-stop-agent-chat/` — stopped turns must emit a cost
+  event with tokens consumed up to cancellation.
 - Agent chat v4: `docs/features/m3-agent-chat-v4/` — the real-time thread surface where
-  per-turn credit badges and quota indicators will be displayed.
+  per-turn credit badges and the quota indicator are displayed.
+- Admin panel: `docs/features/m1-admin-panel/` — the existing admin panel route and auth
+  guard that the Plans UI extends.
 - Claude usage limits (design reference): daily and weekly refresh quota pattern.
-- Touched repos: `hermes-agent` (cost event emission), `user-service` (model pricing,
-  turn_cost, quota tables + internal API), `workflow-bff` (cost event routing + cost
-  query proxy), `digital-factory-ui` (credit badges + quota indicator).
+- Touched repos: `hermes-agent` (cost event emission + quota guard), `user-service` (plan
+  tables, pricing, quota, admin + internal APIs), `workflow-bff` (cost event routing + cost
+  query proxy), `digital-factory-ui` (credit badges, quota indicator, admin plan UI).
