@@ -2,7 +2,7 @@ id: T2
 title: "digital-factory-ui: live thinking area + session-only Show thinking
   collapse toggle"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/m3-agent-chat-thinking-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T16:11:10.410Z
+  last_updated_at: 2026-06-24T16:12:28.487Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/152
   status: open
@@ -49,3 +49,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/152"
     at: 2026-06-24T16:11:10.410Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:12:28.487Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
