@@ -98,7 +98,7 @@ A new `suggest_next_actions(suggestions: CtaSuggestion[])` tool is registered in
 
 ## 4. Chosen Design
 
-### 4.1 Hermes agent — `workflow-backend`
+### 4.1 Hermes agent — `hermes-agent`
 
 #### New tool: `suggest_next_actions`
 
@@ -193,22 +193,9 @@ Additive — existing rows get `[]` by default; no backfill required.
 
 The `turn.cta_suggestions` event is forwarded automatically — the BFF's SSE proxy already passes all typed events from the bus without an allow-list. **No structural BFF change required.**
 
-#### New endpoint: `GET /api/v1/workspace/capabilities`
+#### ~~`GET /api/v1/workspace/capabilities`~~ — removed
 
-Returns which optional agent capabilities are configured for this workspace deployment.
-
-```json
-{
-  "gitnexus": true,
-  "rag": false
-}
-```
-
-The BFF resolves this from environment variables already present in its runtime:
-- `gitnexus`: `GITNEXUS_MCP_URL` is set and non-empty → `true`
-- `rag`: `MCP_RAG_URL` is set and non-empty → `true`
-
-No auth required (workspace-scoped, not per-user secret). Response is safe to cache for the session lifetime.
+This endpoint was implemented in T2 but is no longer needed. CTA starters (including GitNexus and RAG starters) are shown by default without capability gating. The endpoint is harmless dead code; T5 removes the frontend call.
 
 ### 4.3 Frontend — `digital-factory-ui`
 
@@ -224,12 +211,9 @@ interface CtaSuggestion {
   button_label: string
   icon?: string
 }
-
-interface WorkspaceCapabilities {
-  gitnexus: boolean
-  rag: boolean
-}
 ```
+
+`WorkspaceCapabilities` is removed — capability gating is not required; all starters show by default.
 
 #### Chat store extension
 
@@ -256,9 +240,9 @@ On history load, `message.cta_suggestions` from the API response is mapped into 
 - Rendered immediately below the assistant message bubble, before the next message
 
 **`EmptyStateCTARow`** — shown in the thread empty-state (zero messages):
-- Accepts `featureStatus` (from existing feature context) and `capabilities` (from `GET /api/v1/workspace/capabilities`)
+- Accepts `featureStatus` (from existing feature context)
 - Maps feature stage → 1–2 lifecycle starter cards using the static table from the product spec
-- Appends capability starters only for `capabilities.gitnexus === true` / `capabilities.rag === true`
+- All starters (including GitNexus and RAG) shown by default — no capability gating
 - Dismissed on first `message.created` event or on card click
 - Not persisted in message history (ephemeral UI state only)
 
@@ -278,10 +262,10 @@ function handleCtaClick(actionText: string) {
 
 | Dependency | Type | Status | Notes |
 |---|---|---|---|
-| Hermes tool registry (`suggest_next_actions`) | Internal | Unbuilt | Delivered by T1 |
-| `messages.cta_suggestions` DB column | Internal | Unbuilt | Delivered by T1; additive migration only |
-| `turn.cta_suggestions` SSE event type | Internal | Unbuilt | Defined by T1; BFF passthrough is free |
-| `GET /api/v1/workspace/capabilities` | Internal | Unbuilt | Delivered by T2 |
+| Hermes tool registry (`suggest_next_actions`) | Internal | Unbuilt | Delivered by T4 (T1 wrong repo) |
+| `messages.cta_suggestions` DB column | Internal | Unbuilt | Delivered by T4 (T1 wrong repo) |
+| `turn.cta_suggestions` SSE event type | Internal | Unbuilt | Defined by T4 (T1 wrong repo); BFF passthrough is free |
+| ~~`GET /api/v1/workspace/capabilities`~~ | Internal | Removed | Implemented in T2 but no longer needed; T5 removes frontend call |
 | v4 in-process SSE bus (`bus.publish`) | Internal | Done | Landed in m3-agent-chat-v4 |
 | v4 `messages` table + `session_id` FK | Internal | Done | Landed in m3-agent-chat-v4 |
 | Hermes system-prompt extension | Internal | Unbuilt | Part of T1 |
@@ -294,18 +278,14 @@ No external vendor integrations are new. No blocking external decisions exist.
 ## 6. Parallelization / Blocking Analysis
 
 ```
-T1: Hermes agent — suggest_next_actions tool + DB migration   [workflow-backend]
-  └── Can begin now — no blockers
+T4: Hermes agent — suggest_next_actions tool + DB migration   [hermes-agent]
+  └── Can begin now — no blockers (fixes T1 which was incorrectly in workflow-backend)
   │
 T2: BFF — workspace capabilities endpoint                     [workflow-bff]
-  └── Can begin now — no blockers
-  │   T1 and T2 run in parallel
+  └── Done
   │
   T3: Frontend — CTA card components + empty-state starters   [digital-factory-ui]
-      └── BLOCKED on T1 (turn.cta_suggestions event schema + message.cta_suggestions field
-                         must be defined before the frontend can consume them from history API)
-      └── BLOCKED on T2 (GET /api/v1/workspace/capabilities must exist before EmptyStateCTARow
-                         can gate capability starters)
+      └── Done (was BLOCKED on T1/T2; T2 done, T4 provides correct T1 replacement)
 ```
 
 T3 is the sole downstream task. It covers both post-reply CTA cards and empty-state starters in one frontend task; the two components are independent enough to write in parallel within the same task but live in the same repo and are small enough to not warrant splitting.
@@ -316,9 +296,10 @@ T3 is the sole downstream task. It covers both post-reply CTA cards and empty-st
 
 | Repo | Tasks | Changes |
 |---|---|---|
-| `workflow-backend` | T1 | New `suggest_next_actions` tool + handler; `messages` Alembic migration; system prompt extension |
-| `workflow-bff` | T2 | New `GET /api/v1/workspace/capabilities` route; SSE passthrough is zero-change |
-| `digital-factory-ui` | T3 | New `CTACard`, `CTASuggestionRow`, `EmptyStateCTARow` components; chat store extension; `WorkspaceCapabilities` API call |
+| `hermes-agent` | T4 | New `suggest_next_actions` tool + handler; `messages` Alembic migration; system prompt extension (T1 was incorrectly targeted at `workflow-backend` — T4 corrects this) |
+| `workflow-bff` | T2 | SSE passthrough only — `GET /api/v1/workspace/capabilities` implemented but is dead code (removed from frontend by T5) |
+| `digital-factory-ui` | T3, T5 | New `CTACard`, `CTASuggestionRow`, `EmptyStateCTARow` components; chat store extension. T5 removes `WorkspaceCapabilities` fetch and capability gating. |
+| `hermes-agent` | T4 | New `suggest_next_actions` tool + handler; `messages` Alembic migration; system prompt extension (T1 targeted wrong repo) |
 
 ---
 
@@ -326,14 +307,14 @@ T3 is the sole downstream task. It covers both post-reply CTA cards and empty-st
 
 ### Testing expectations
 
-**T1 (`workflow-backend`)**:
+**T4 (`hermes-agent`)** — corrects T1 which targeted wrong repo:
 - Unit test: `suggest_next_actions` handler persists correct JSON and publishes `turn.cta_suggestions` event.
 - Unit test: tool schema validation rejects payloads with `> 3` suggestions or invalid `category` values.
 - Integration test: full agent turn with CTA tool call → verify `messages.cta_suggestions` populated and SSE event received.
 
 **T2 (`workflow-bff`)**:
-- Unit test: `GET /api/v1/workspace/capabilities` returns correct booleans based on env var presence.
-- Integration test: endpoint accessible under existing auth model.
+- SSE passthrough is already event-type-agnostic — no changes needed.
+- `GET /api/v1/workspace/capabilities` was implemented but is no longer called (dead code, removed by T5 on the frontend side).
 
 **T3 (`digital-factory-ui`)**:
 - Component tests: `CTACard` active vs inert states; `CTASuggestionRow` fade-in timing; `EmptyStateCTARow` stage-to-starters mapping; capability gating hides GitNexus/RAG when `false`.
