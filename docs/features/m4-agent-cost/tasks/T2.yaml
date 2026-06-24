@@ -1,7 +1,7 @@
 id: T2
 title: "user-service: plan resolution + lazy quota + internal cost/quota APIs"
 repo: user-service
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m4-agent-cost-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T18:16:19.066Z
+  last_updated_at: 2026-06-24T18:17:33.140Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/16
   status: open
@@ -62,3 +62,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/user-service/pull/16"
     at: 2026-06-24T18:16:19.066Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:17:33.140Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
