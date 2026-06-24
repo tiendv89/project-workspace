@@ -1,15 +1,15 @@
 id: T36
 title: "approve-feature: go-mode guide to run /create-tasks"
 repo: workflow
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T36
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T20:42:09+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T13:43:17.205Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/271
   status: open
@@ -44,12 +44,15 @@ log:
   - action: run_completed
     by: batu4404@gmail.com
     at: 2026-06-24T20:20:08+0700
-    note: >-
-      Implementation PR: https://github.com/tiendv89/agent-workflow/pull/271
-      (manual completion — executor did not write result.json).
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/271
+      (manual completion — executor did not write result.json)."
   - action: unblocked
     by: batu4404@gmail.com
     at: 2026-06-24T20:42:09+0700
-    note: >-
-      Human reset after review_incomplete — removed reviewer_started and
-      review_blocked entries; reset to in_review per unblock-target rule (pr.url set).
+    note: Human reset after review_incomplete — removed reviewer_started and
+      review_blocked entries; reset to in_review per unblock-target rule (pr.url
+      set).
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T13:43:17.205Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
