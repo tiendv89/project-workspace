@@ -1,7 +1,7 @@
 id: T1
 title: hermes-agent — cancel endpoint + Task tracking + CancelledError handler
 repo: hermes-agent
-status: reviewing
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -67,3 +67,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-23T19:00:45.793Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: retried
+    by: pye@swellnetwork.io
+    at: "2026-06-24T10:05:17+0700"
+    note: Human reset from reviewing to in_review.
