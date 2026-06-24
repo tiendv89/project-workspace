@@ -1,7 +1,7 @@
 id: T33
 title: "create-tasks skill (go mode): tasks.md -> MCP create_tasks"
 repo: workflow
-status: in_review
+status: reviewing
 depends_on:
   - T30
   - T32
@@ -11,7 +11,7 @@ branch: feature/workflow-db-T33
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T16:12:46.026Z
+  last_updated_at: 2026-06-24T16:13:53.420Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/274
   status: open
@@ -48,3 +48,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/274"
     at: 2026-06-24T16:12:46.026Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:13:53.420Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
