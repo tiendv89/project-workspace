@@ -1,0 +1,25 @@
+id: T34
+title: "tech-lead skill: drop the Materialization (go) JSON block"
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+branch: workflow-db/T34
+execution:
+  actor_type: agent
+  last_updated_by: batu4404@gmail.com
+  last_updated_at: 2026-06-24T16:16:10+0700
+pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: batu4404@gmail.com
+    at: 2026-06-24T16:01:58+0700
+    note: >-
+      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Supersedes the old T17
+      materialization-block behavior. No blockers.
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T16:16:10+0700
+    note: Task activated on tasks-stage approval — dependencies met.

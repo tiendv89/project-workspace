@@ -14,6 +14,8 @@ Workflow state — features, tasks, stages, log entries, dependencies — lives 
 
 This is the foundation we need to fix before the platform can grow. `workflow-db` stands up a database as the system of record for the live task state of the features it owns, with the runtime writing that state to it instead of git. The **primary goal is to introduce the Go/Postgres orchestrator** (writing directly to the database) so it can **gradually take over and ultimately replace** the TS/git orchestrator — this feature is the first step, not a permanent two-orchestrator end-state. It runs **alongside** the existing git/YAML path rather than replacing it in one step (see "Coexistence model — parallel orchestrators"): new features are created in the database world, while existing features finish their lifecycle in git. For a database-owned feature the management repo retains only narrative artifacts (product specs, technical designs, tasks.md) and is no longer the source of truth for its live task state.
 
+**Task creation.** A go feature's task definitions must reach the database through a supported, safe path. The only path that exists — `hermes-agent` writing rows straight into `workspace_tasks` with its own database credentials — violates the credential-isolation and single-writer principles this feature is built on. Task creation is instead an **authenticated API** in the read/write backend, reachable through an **MCP server** (for chat/IDE agents) and a **local skill** (for a human in the editor), so a go feature's tasks are created without any client holding database credentials — and the Go orchestrator stays **execution-only**.
+
 ## Goals
 
 - Make task-state writes (claim, status transition, log entries, blocked state) database operations rather than git commits, for features the Go orchestrator owns.
@@ -22,6 +24,8 @@ This is the foundation we need to fix before the platform can grow. `workflow-db
 - Store state so cross-feature questions (all ready tasks, all blocked tasks with reason, the task dependency graph, agent activity by time range) are answerable from the database in a single query — not by parsing YAML files one at a time. (The read API that exposes these to the frontend is `workspace-data-backend`'s, not this feature's — see "Relationship to other features".)
 - Keep git for code artifacts and narrative documents — only live task state moves to the database.
 - **Run the Go/Postgres orchestrator in parallel with the TS/git orchestrator, partitioned by a nullable `owner` field.** The TS orchestrator keeps driving legacy features and may take at most a small additive change (e.g. declaring its `owner` to the broker) — nothing that alters its legacy behaviour. Non-null `owner` = Go (state in the DB); null/absent = legacy TS (state in git). New features are created in whichever world owns them; existing git features stay in git. The two share only the completion broker / dispatch queue, which must be partitioned by `owner` so neither orchestrator drains the other's work. (See "Coexistence model — parallel orchestrators".)
+- **Provide a supported, authenticated path to create a go feature's tasks in the database** — usable both by a human locally (a workflow skill) and by chat/IDE agents (an MCP server) — **without any client holding database credentials**. (See "Task creation model".)
+- **Keep task creation and task execution as separate concerns.** A write API in the existing backend owns *creation*; the Go orchestrator owns *execution* only. There is a single, coordinated writer per concern — the orchestrator and a creation client never race on the same rows.
 
 ## Non-goals
 
@@ -29,7 +33,8 @@ This is the foundation we need to fix before the platform can grow. `workflow-db
 - Not building a full Jira replacement — no issue assignment, sprint planning, or time tracking in v1.
 - Not real-time push notifications in v1 — polling is acceptable for the dashboard.
 - **Not the frontend read layer, and not a new read API.** The frontend reads features through `workspace-data-backend`'s existing read API (see "Relationship to other features"). Because the Go orchestrator writes `go`-owned features into the database that API already serves, the frontend should need little or no change — `workflow-db` does not build a read API or modify the FE.
-- **Not the MCP server for external LLM clients.** Exposing workflow reads/writes to IDE plugins and copilots via MCP is deferred to its own downstream feature (see "Relationship to other features"). It is not required for `workflow-db`.
+- **Not the full workflow write/update API + MCP.** Scope here is a **task-creation slice only**: create a feature's tasks (bulk, all-or-nothing) via an authenticated API, fronted by a `workflow-mcp` MCP server and a local skill. The broader write/update surface — status/FSM transitions, `blocked→ready`, `cancelled`, task-definition edits, feature creation — and non-interactive programmatic auth belong to the downstream `workflow-db-mcp`.
+- **Not a new authentication system.** The creation API reuses the existing BFF auth: the MCP authenticates as the user by reusing a browser-login session cookie. A purpose-built non-interactive credential (PAT / device-code) is deferred.
 
 ## Relationship to other features
 
@@ -52,9 +57,9 @@ This is the foundation we need to fix before the platform can grow. `workflow-db
 
 Done right, the **frontend needs little or no change**: it already reads the database through `workspace-data-backend`; `workflow-db` simply adds a second, live writer (the Go orchestrator) alongside the existing YAML→DB sync. The coordination point — whether the two features share one database and one schema — is open question #8.
 
-### Downstream — workflow MCP server (separate feature)
+### Downstream — `workflow-db-mcp` (broader write/update API + MCP)
 
-Exposing workflow reads and writes to external LLM clients (IDE plugins, copilots) through an MCP server is a **separate downstream feature**, out of scope here. When it is built it belongs on `workflow-db` (the live system of record, which owns the write path) rather than on the read-only FE API — but that is a later step.
+Task creation lives in `workflow-db`: a `workflow-mcp` server exposing `create_tasks` + `get_feature`, plus a local `create-tasks` skill. The **broader** write/update surface for external LLM clients — status/FSM transitions, manual interventions (`blocked→ready`, `cancelled`), task-definition edits, feature creation, and a non-interactive auth credential — is the separate downstream feature `workflow-db-mcp`, built on the same authenticated-API pattern.
 
 ## Coexistence model — parallel orchestrators
 
@@ -66,24 +71,41 @@ Exposing workflow reads and writes to external LLM clients (IDE plugins, copilot
 
 **The one surface the two orchestrators share is the broker — and it must be partitioned by `owner`.** The completion broker and dispatch queue (one Redis, from `standalone-executor-hardening`) are shared infrastructure, and today completions are *drained opportunistically by any orchestrator*. That is unsafe across the two worlds: a TS orchestrator that drained a Go executor's completion could not resolve the task (it is not in git), and vice versa. So the broker must scope each orchestrator to its own completions by `owner` — e.g. owner-namespaced queues or an `owner` filter on the drain. The TS orchestrator takes a small additive change to declare `owner='ts'`; an absent owner still maps to the legacy queue so partial rollouts degrade safely. This is the only place the two touch. See open question #7.
 
+## Task creation model
+
+Creating a go feature's tasks is a first-class flow, separate from execution:
+
+- **One write API, two clients.** Task creation is an authenticated endpoint in the read/write backend (`workflow-backend`), reached **through the BFF** so it rides the existing user auth. Two clients call it: a **`workflow-mcp` MCP server** (for chat/IDE agents) and a **local `create-tasks` skill** (for a human in the editor). Neither client holds database credentials — only the backend does.
+- **The orchestrator never creates.** The Go orchestrator is execution-only: it claims, dispatches, reaps, and transitions tasks that already exist. Creation is not its job.
+- **Creation and execution are coordinated, not racing.** The creation API owns a task's *definition* (title, repo, dependencies) only until the orchestrator claims it for execution; from the claim onward the orchestrator owns its *state* (status, PR, log). A task already being executed cannot be redefined through the creation API. This is the single-writer guarantee, expressed per task.
+- **Bulk, all-or-nothing creation.** A feature's tasks are created in one request (features can have 30+). If any task in the batch is invalid or already exists, the whole batch is rejected and nothing is created — the client gets back exactly which tasks failed and why. There is never a half-created feature.
+- **Authoring stays in git; state lives in the DB.** The human-readable breakdown (`tasks.md`) remains the authored, reviewed artifact in git; the creation client reads it and creates the corresponding rows. The database is the source of truth for live task *state*, not for the narrative.
+
+The deep mechanics (endpoint contract, the definition/state write boundary, auth, MCP packaging) are in the technical design.
+
 ## Key open questions (to resolve in technical design)
 
 1. **Database** — DECIDED: **PostgreSQL**. (SQLite was considered for zero-infra simplicity but rejected; Postgres is the operational standard and matches the `Go/Postgres` orchestrator named throughout this spec and `standalone-executor-hardening`.)
-2. **API surface** — the FE read API is `workspace-data-backend`'s (see "Relationship to other features"), so `workflow-db` likely needs no read API of its own. Does it expose an HTTP *write* API in v1, or is the Go orchestrator's in-process DB access the only writer? (Ties to #3; external-client write access is the deferred MCP feature.)
-3. **Agent write path** — RESOLVED by `standalone-executor-hardening` (see "Relationship to other features"). The executor never writes workflow state; the **orchestrator** owns the entire claim and all status/log writes. In the DB world this means the **Go orchestrator** writes to Postgres, and executors (agent containers) never hold DB credentials or touch the database — exactly as they hold no spawn credentials today. Still open for technical design (with #2): whether the orchestrator writes to Postgres directly (in-process driver) or through an HTTP write API. (External, non-runtime write clients are the deferred MCP feature — not v1.)
+2. **API surface** — the FE read API is `workspace-data-backend`'s, so `workflow-db` needs no read API of its own. The Go orchestrator's *execution* writes are in-process pgx (no HTTP). Task **creation** goes through an authenticated HTTP write API in `workflow-backend`, fronted by `workflow-mcp` + the `create-tasks` skill (see "Task creation model"). The broader external-client write/update surface is the deferred `workflow-db-mcp`.
+3. **Agent write path** — RESOLVED by `standalone-executor-hardening` (see "Relationship to other features"). The executor never writes workflow state; the **orchestrator** owns the entire claim and all status/log writes. In the DB world this means the **Go orchestrator** writes to Postgres, and executors (agent containers) never hold DB credentials or touch the database — exactly as they hold no spawn credentials today. The orchestrator writes to Postgres directly (in-process pgx); non-runtime clients (humans, chat/IDE agents) reach the DB only through the authenticated creation API (see #2), never directly.
 4. **Claim protocol** — optimistic locking vs `SELECT FOR UPDATE`. What is the right mechanism for the new atomic claim?
-5. **Auth** — the write API is consumed by the **orchestrator** (the executor never touches the DB — see #3); a service token authenticating the orchestrator is the minimum. Is that sufficient for v1, or is per-tenant scoping needed from the start?
+5. **Auth** — execution writes need no API auth (the orchestrator holds DB creds in-process). The **creation** API is consumed by the MCP/skill as the *user*, reusing the existing BFF auth (a browser-login session cookie) and org-scoping; a purpose-built non-interactive credential (PAT / device-code) is deferred to `workflow-db-mcp`.
 6. **Deployment** — local Docker Compose for development, hosted Postgres for production?
 7. **Broker partitioning by `owner`** — the completion broker / dispatch queue is the one surface both orchestrators share (one Redis, from `standalone-executor-hardening`), and today any orchestrator drains any completion. It must be partitioned so the TS orchestrator never drains or dispatches a non-null-`owner` (Go) feature's executor work, and vice versa. Open for technical design: an `owner` filter parameter on the broker drain (treating null/yaml as legacy) vs owner-namespaced queues per world. The TS orchestrator may take a small additive change to declare `owner='ts'`; an absent owner maps to the legacy queue for safe defaults.
 8. **Shared database & schema ownership** — does `workflow-db` write to the *same* database `workspace-data-backend` reads (so the frontend needs no change), and if so, who owns the schema the two must agree on? The "FE needs no change" outcome depends on a single shared schema; a separate `workflow-db` database would reintroduce a sync step and defeat the purpose.
 
 ## Success criteria
 
-- A feature with a **non-null `owner`** (set automatically when the Go orchestrator creates it) is picked up by the Go orchestrator; null-`owner` features are ignored by it and left to the TS/git orchestrator.
+- A feature with a **non-null `owner`** (set when the feature is created) is picked up by the Go orchestrator; null-`owner` features are ignored by it and left to the TS/git orchestrator.
 - For a `go`-owned feature, task-state writes (claim, status transition, log) are database operations, not git commits.
 - The TS/git orchestrator keeps driving its null-`owner` features from git/YAML **unchanged in behaviour** (at most a small additive `owner='ts'` declaration to the broker) while the Go orchestrator runs in parallel on the same workspace.
 - The shared completion broker / dispatch queue is partitioned by `owner`: the TS orchestrator never drains or dispatches a non-null-`owner` (Go) feature's executor work, and the Go orchestrator never drains a legacy one's — achieved without changing the TS orchestrator itself.
 - No dual-write or contention occurs between the two orchestrators: each mutates state only for the features it owns.
 - A `go`-owned feature's live state lives **only** in the database — it has no git/YAML representation, and the database is its sole source of truth.
 - Cross-feature questions over `go`-owned features (all ready tasks, all blocked tasks) are answerable from the database in a single query, against live state with no static build step.
-- A `go`-owned feature created by the Go orchestrator surfaces through `workspace-data-backend`'s existing read API with little or no change to the frontend.
+- A `go`-owned feature surfaces through `workspace-data-backend`'s existing read API with little or no change to the frontend.
+- A human can create an approved go feature's tasks **in one action** (the `create-tasks` skill), and a chat/IDE agent can do the same via the `workflow-mcp` MCP — **without holding database credentials**.
+- Task creation goes through the authenticated BFF path; an unauthenticated or out-of-scope caller is rejected.
+- A creation request that includes an invalid or already-existing task creates **nothing** and returns which tasks failed and why (no partial creation).
+- A task already claimed for execution cannot be altered through the creation API.
+- No client other than the backend holds database credentials for task creation; `hermes-agent`'s direct-DB-write path is recognized as tech-debt to be replaced by this API (tracked as a follow-up).

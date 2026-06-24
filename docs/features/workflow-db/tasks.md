@@ -2,7 +2,7 @@
 
 **Feature status**: `in_tdd` | **Stage**: `tasks` (awaiting human approval)
 Machine state (status, log, PR, branch) lives in `tasks/T<n>.yaml`. This document is narrative only — agents tick subtasks here and do not modify task YAML structure.
-Technical design: `docs/features/workflow-db/technical-design.md` (approved 2026-06-07).
+Technical design: `docs/features/workflow-db/technical-design.md` (approved 2026-06-24).
 
 ---
 
@@ -29,6 +29,19 @@ Technical design: `docs/features/workflow-db/technical-design.md` (approved 2026
 | T17 | 4 | `tech-lead` owner-aware | `workflow` | T4, T6 |
 | T14 | 5 | Orchestration loop | `workflow-orchestrator` | T7, T8, T9, T10, T11, T12, T13 |
 | T18 | 6 | E2E coexistence test | `workflow-orchestrator` | T2, T4, T14, T15 |
+| T24 | 1 | DB layer: `CreateWorkspaceTasks` (bulk, all-or-nothing) | `workflow-backend` | — |
+| T25 | 1 | Features API: `?name=` exact-match filter | `workflow-backend` | — |
+| T28 | 1 | `workflow-mcp` scaffold (TS, stdio) | `workflow-mcp` | — |
+| T34 | 1 | `tech-lead`: drop Materialization (go) block | `workflow` | — |
+| T35 | 1 | Orchestrator: remove `create.go` + `cmd/seed` | `workflow-orchestrator` | — |
+| T36 | 1 | `approve-feature`: go-mode create-tasks guide | `workflow` | — |
+| T26 | 2 | Task-create endpoint (bulk, all-or-nothing) | `workflow-backend` | T24 |
+| T32 | 2 | `install.sh`: clone+build+register `workflow-mcp` | `workflow` | T28 |
+| T27 | 3 | BFF: verify proxy + passthrough test | `workflow-bff` | T26, T25 |
+| T29 | 4 | `workflow-mcp` auth (session cookie) | `workflow-mcp` | T28, T27 |
+| T30 | 5 | `workflow-mcp` tools: `get_feature` + `create_tasks` | `workflow-mcp` | T28, T29, T26, T25 |
+| T31 | 6 | `workflow-mcp` E2E | `workflow-mcp` | T30 |
+| T33 | 6 | `create-tasks` skill (go mode) | `workflow` | T30, T32 |
 
 ---
 
@@ -817,3 +830,196 @@ Invoked with: `go test ./test/e2e/... -tags integration`; must complete in under
 - [ ] Assert A5: both features surface via read API
 - [ ] Assert A6: ts feature lifecycle unaffected
 - [ ] Test completes in under 5 minutes
+
+---
+
+## T24 — DB layer: `CreateWorkspaceTasks` (bulk, all-or-nothing)
+
+### Description
+
+Add the data-layer function that inserts a go feature's tasks in **one transaction, all-or-nothing** (technical-design §4.8). Inserts each task with `owner='go'`, `source_path=NULL`, and per-task initial `status` (`ready` if `depends_on=[]`, else `todo`); `depends_on` is stored as `task_name` slugs (resolved at runtime — forward/intra-batch references are fine). Validates every task first (non-empty unique `name`; `actor_type` defaults to `agent`, else ∈ `{agent,human,either}`; existing `task_name` = conflict) and **rolls back the whole batch on any failure**, returning a failure list `[{name, reason}]`.
+
+### Required skills
+- `postgres-best-practices`
+- `go-best-practices`
+- `backend-engineer`
+
+### Subtasks
+- [ ] Add the sqlc query + `Reader`/writer method twinning `CreateWorkspaceFeature`
+- [ ] One transaction; validate all tasks before any insert; roll back on any failure
+- [ ] Return the per-task failure list `[{name, reason}]`; existing task_name = conflict
+- [ ] Unit + DB tests: all-valid inserts all with correct initial status; one bad/conflicting task creates nothing
+
+## T25 — Features API: `?name=` exact-match filter
+
+### Description
+
+Extend `GET /api/workspaces/:wsId/features` with an additive **`?name=<slug>` exact-match filter** that returns the matching feature (including its UUID) or an empty result, org-scoped exactly like the unfiltered list. Backs the MCP `get_feature` tool (§4.8); the BFF proxies it unchanged.
+
+### Required skills
+- `go-best-practices`
+- `backend-engineer`
+
+### Subtasks
+- [ ] Add the `name` query param + query path (exact match on `feature_name`)
+- [ ] Preserve org-scoping (`AccessibleOrgIDs`)
+- [ ] Tests: filter returns the feature or empty; org-scope enforced
+
+## T26 — Task-create endpoint: `POST .../features/:id/tasks`
+
+### Description
+
+Service + gin handler for `POST /api/workspaces/:workspaceId/features/:featureId/tasks` — a **BFF-identity** route, twin of `CreateFeature` (§4.8). Bulk array body; authorize via injected identity (workspace ∈ `AccessibleOrgIDs`, `organization_id` server-derived); assert feature `owner='go'`; call `CreateWorkspaceTasks` (T24) in one all-or-nothing transaction; respond with created tasks or `409`/`422` + the failure list `[{name, reason}]`.
+
+### Required skills
+- `go-best-practices`
+- `backend-engineer`
+- `postgres-best-practices`
+
+### Subtasks
+- [ ] Handler + service + request/response DTOs
+- [ ] BFF-identity auth + org-scope; feature `owner='go'` check
+- [ ] Map failure list to `409`/`422`; success DTO for created tasks
+- [ ] Handler tests incl. org-scope rejection + all-or-nothing behavior
+
+## T27 — BFF: verify proxy forwards create + `?name=` routes
+
+### Description
+
+Confirm the generic `/bff/workflow-backend/*` proxy already forwards `POST .../features/:id/tasks` **and** `GET .../features?name=` with `auth_required` + identity injection. **No code change expected** — the deliverable is a passthrough integration test proving both routes reach the backend with `X-User-Id`/`X-Org-Id` set. Workspace-membership enforcement is out of scope (org-scoping is the bar).
+
+### Required skills
+- `go-best-practices`
+- `backend-engineer`
+
+### Subtasks
+- [ ] Confirm the two routes are covered by the existing upstream config
+- [ ] Passthrough test: identity headers reach the backend
+- [ ] If (and only if) a gap is found, add the minimal route/config
+
+## T28 — `workflow-mcp` scaffold (TypeScript, MCP TS SDK, stdio)
+
+### Description
+
+Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** transport. **The repo owns its own build + global install** — `package.json` with a `"bin"` entry (`workflow-mcp` → `dist/index.js`) and a `build` script (tsc → `dist/`), so a developer runs `npm install && npm run build && npm link` to expose a global `workflow-mcp` command (documented in its README). **Not published to npm in this version.** Read config from process `env` (`WORKFLOW_BFF_URL` with a default + override; `session_id` cookie). **Ship agent usage docs in the repo** (`README.md` / `AGENTS.md`): the `get_feature`/`create_tasks` tools, the cookie auth/config, the create-tasks flow, and conflict/failure-list handling.
+
+**Human prerequisite:** the `workflow-mcp` GitHub repo must exist and `WORKFLOW_MCP_LOCAL_PATH` be set before this runs.
+
+### Required skills
+- `typescript-best-practices`
+
+### Subtasks
+- [ ] `package.json` (`"bin": {"workflow-mcp": "dist/index.js"}`) + tsconfig + `build`; stdio entry point
+- [ ] MCP server bootstrap (stdio); config read from process env (BFF URL + cookie)
+- [ ] Agent usage docs (`README.md` / `AGENTS.md`): tools, auth, flow, conflicts
+- [ ] README: `npm install && npm run build && npm link`; verify the global `workflow-mcp` starts a stdio MCP server
+
+## T29 — `workflow-mcp` auth: session cookie
+
+### Description
+
+Read the `session_id` cookie from the `mcpServers` `env`; send it as `Cookie: session_id=…` on every BFF call (the proxy authenticates on this cookie — no BFF auth change, §4.8). On a `401`, return clear "re-login and update the cookie" guidance.
+
+### Required skills
+- `typescript-best-practices`
+
+### Subtasks
+- [ ] BFF HTTP client that attaches `Cookie: session_id`
+- [ ] Configurable `WORKFLOW_BFF_URL` (default + override)
+- [ ] `401` → actionable re-auth message
+
+## T30 — `workflow-mcp` tools: `get_feature` + `create_tasks`
+
+### Description
+
+Implement exactly two MCP tools (§4.8): `get_feature` (by name → feature incl. UUID via the T25 `?name=` filter, or not-found) and `create_tasks` (bulk → created tasks, or the failure list `[{name, reason}]`). Both call the BFF with the authed identity. **No `create_feature`, no `list_features`** in this slice.
+
+### Required skills
+- `typescript-best-practices`
+
+### Subtasks
+- [ ] `get_feature(workspace_id, name)` → feature/UUID or not-found
+- [ ] `create_tasks(workspace_id, feature_id, tasks[])` → created or failure list
+- [ ] Map backend errors/failure list back to the tool caller
+- [ ] Tool tests against a mock BFF
+
+## T31 — `workflow-mcp` E2E
+
+### Description
+
+End-to-end through `workflow-mcp` → BFF → backend: create a go feature via the **existing** `CreateFeature` endpoint, then `get_feature` → `create_tasks`; assert all rows + initial `ready` + that the orchestrator's eligibility scan picks up no-dependency tasks. A batch containing an already-existing task → **whole batch rejected with the failure list** (nothing created).
+
+### Required skills
+- `typescript-best-practices`
+
+### Subtasks
+- [ ] Spin up backend + BFF (or fakes) with a seeded session
+- [ ] Happy path: create feature → create_tasks → rows + initial ready
+- [ ] Conflict path: existing task → whole batch rejected, failure list returned
+
+## T32 — `install.sh`: register the linked `workflow-mcp`
+
+### Description
+
+Update `agent-workflow/scripts/install.sh` to **register the already-built + `npm link`-ed `workflow-mcp`** into the workspace's local MCP config via a command: `claude mcp add workflow-mcp --scope local --env WORKFLOW_BFF_URL=<default> --env WORKFLOW_SESSION_COOKIE=<placeholder> -- workflow-mcp`. install.sh **does not build** — building + `npm link` is the `workflow-mcp` repo's own concern (T28); install.sh **assumes the `workflow-mcp` bin is on PATH** and registers it. The `--env` values land in the gitignored local MCP config (`~/.claude.json`, project-scoped). (Fallback if `claude mcp add` is unavailable: write the equivalent `mcpServers` stdio entry, per the figma-mcp `setup.sh` pattern.)
+
+### Required skills
+
+### Subtasks
+- [ ] Register via `claude mcp add … -- workflow-mcp` (local scope; `--env` BFF URL + cookie)
+- [ ] Skip/warn gracefully if `workflow-mcp` is not on PATH (not built/linked) — do not build
+- [ ] Idempotent re-run (`claude mcp remove` then add); document the cookie placeholder; fallback to JSON entry if no `claude` CLI
+
+## T33 — `create-tasks` skill (go mode)
+
+### Description
+
+New `claude/workflow_skills/create-tasks` skill (§4.8): resolve the feature from session context (ask + confirm if ambiguous); precondition `owner: go` + tasks approved; resolve `WORKSPACE_ID` from `.env`; resolve the feature UUID via the MCP `get_feature`; parse the `tasks.md` index table (actor_type defaults to `agent`); create in one bulk `create_tasks` call; on rejection show each failed task + reason and ask **stop / retry / skip-failing-and-retry-rest**; notify when the feature isn't found. Writes nothing to git.
+
+### Required skills
+
+### Subtasks
+- [ ] SKILL.md: feature resolution + confirm; preconditions hard-stop
+- [ ] Parse the `tasks.md` index table → task array (actor_type → `agent`)
+- [ ] Call MCP `get_feature` then `create_tasks`; handle rejection (stop/retry/skip)
+- [ ] Not-found → notify; writes nothing to git
+
+## T34 — `tech-lead` skill: drop the Materialization (go) block
+
+### Description
+
+Update the `tech-lead` skill so a go feature's Phase-2 output is `tasks.md` only — **no `## Materialization (go)` JSON block**. The `tasks.md` index table (`ID | Wave | Title | Repo | Depends on`) is the parseable source the `create-tasks` skill (T33) reads; `actor_type` defaults to `agent`. Supersedes the old T17 materialization-block behavior.
+
+### Required skills
+
+### Subtasks
+- [ ] Remove the `## Materialization (go)` block instructions
+- [ ] Ensure the documented `tasks.md` index table carries `repo` + `depends_on`
+- [ ] Note: `create-tasks` (T33) consumes the index table
+
+## T35 — Orchestrator: remove `create.go` + `cmd/seed` from production
+
+### Description
+
+Remove `internal/orchestrator/create.go` + `cmd/seed` from the `workflow-orchestrator` production path: delete them or move them behind a **test-only build** (fixtures used solely by the E2E harness); assert no production code references them; add a README/doc note that **the backend API is the creation path** (§4.8). The orchestrator is execution-only.
+
+### Required skills
+- `go-best-practices`
+
+### Subtasks
+- [ ] Delete or test-only-gate `create.go` + `cmd/seed`
+- [ ] Assert no production reference remains; build/tests green
+- [ ] README note: creation is the backend API
+
+## T36 — `approve-feature`: go-mode create-tasks guide
+
+### Description
+
+Make `approve-feature` owner-aware at the `tasks` stage (§4.7): for a go feature there are no git `tasks/*.yaml` to activate, so skip YAML activation and instead **emit a guide to run `/create-tasks <feature>`** (materialize the approved tasks into the DB) and set `next_action` accordingly. A ts feature still auto-activates its YAMLs unchanged.
+
+### Required skills
+
+### Subtasks
+- [ ] Read `owner` from `status.yaml` at tasks-stage approval
+- [ ] go: skip YAML activation; print the `/create-tasks` guide; set `next_action`
+- [ ] ts: unchanged (activate eligible YAMLs)
