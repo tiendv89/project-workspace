@@ -158,30 +158,30 @@ baseline that all members inherit. Any future commercial differentiation (Free /
 
 ### Admin creates a billing plan
 
-1. An admin opens the admin panel → **Plans** section.
+1. An admin opens the **admin app** → **Plans** page.
 2. They click **New Plan**, enter a name (e.g. `Pro`), a daily cap (50,000 credits), and a
    weekly cap (200,000 credits), then save.
-3. The plan appears in the plan list and is available to assign.
+3. The plan appears in the plan list immediately and is available to assign — no redeploy.
 
 ### Admin assigns a plan to an individual user
 
-1. In the admin panel → **Users**, the admin finds a user and opens their profile.
-2. Under **Billing Plan**, the admin selects `Pro` from the plan dropdown and saves.
-3. On the next quota check for that user, `user-service` resolves their effective plan as
+1. In the admin app → **Users**, the admin finds a user.
+2. Under **Billing Plan**, they select `Pro` from the plan dropdown and save.
+3. On the next quota check for that user, `user-service` resolves the effective plan as
    `Pro` (individual plan takes precedence) and applies its caps.
 
 ### Admin assigns a plan to an org
 
-1. In the admin panel → **Orgs**, the admin opens an org and selects a plan (e.g. `Team`).
-2. All members of that org who do **not** have an individual plan assigned inherit the
-   `Team` plan's caps. Members with an individual plan are unaffected.
+1. In the admin app → **Orgs**, the admin opens an org and selects a plan (e.g. `Team`).
+2. All members of that org without an individual plan assigned now inherit `Team` caps.
+   Members with an individual plan are unaffected.
 
 ### Effective plan resolution (visible in admin)
 
-The admin panel shows each user's **effective plan** and its source:
+The admin app shows each user's **effective plan** and its source:
 - *Pro (individual)* — user has an individual plan assigned
 - *Team (org)* — user inherits from their org's plan
-- *Free (default)* — neither individual nor org plan is set; system default applies
+- *Free (default)* — neither individual nor org plan is set; seeded default applies
 
 ### Future: billing dashboard consumes the API
 
@@ -206,13 +206,15 @@ cost breakdowns. The plan model delivered here is what M4 connects Stripe to —
 
 *Plan management:*
 - `billing_plan` table: named plans with `daily_credits_cap` and `weekly_credits_cap`.
-  Seeded with a `Free` default plan (values from `DAILY_CREDIT_QUOTA` /
-  `WEEKLY_CREDIT_QUOTA` system constants). Admin creates additional plans via API.
+  All caps are **admin-configurable data** — they live in the DB and can be changed via
+  the admin panel at any time without a code deploy or environment variable change.
+  A `free` plan is seeded in the initial migration with sensible defaults; the admin may
+  edit those defaults after deploy. No plan property is hardcoded or driven by env vars.
 - `user_plan_assignment` table: assigns a plan to an individual user (admin-only write).
 - `org_plan_assignment` table: assigns a plan to an org (admin-only write).
 - Plan resolution function: given a `user_id`, returns the effective plan following the
-  priority order — individual → org → system default (`Free`). Used by quota check and
-  quota increment.
+  priority order — individual → org → `free` default. Used by quota check and quota
+  increment.
 
 *Internal API endpoints:*
 - `GET /internal/users/:id/quota/check` — resolves effective plan, applies lazy reset if
@@ -249,13 +251,17 @@ cost breakdowns. The plan model delivered here is what M4 connects Stripe to —
 - `GET /sessions/:id/quota/check` — proxy the pre-turn quota check to `user-service`.
 - All endpoints require workspace-scoped auth.
 
-**Admin plan UI (digital-factory-ui — admin panel)**
-- **Plans** section: list plans, create plan (name, daily cap, weekly cap), edit caps.
-- **User profile** (admin view): effective plan badge + source label; dropdown to assign /
-  unassign an individual plan.
-- **Org detail** (admin view): current org plan badge; dropdown to assign / unassign an org
-  plan.
-- Admin UI uses the existing admin-panel route and admin-auth guard.
+**Admin plan UI (standalone admin app — separate from `digital-factory-ui`)**
+- The admin interface is a **separate frontend application**, not a route or panel inside
+  `digital-factory-ui`. It is only accessible to users with the admin role and is deployed
+  independently.
+- **Plans page**: list all plans, create a plan (name, display name, daily cap, weekly cap),
+  edit any plan's caps inline. All edits persist to `user-service` immediately — no deploy.
+- **Users page**: per-user row showing effective plan + source (`individual` / `org` /
+  `default`); click a user to assign or remove an individual plan.
+- **Orgs page**: per-org row showing current org plan; assign or remove an org plan.
+- Admin app authenticates against the same identity layer as `digital-factory-ui` but
+  enforces an admin-role guard on every route.
 
 **Cost display (digital-factory-ui — chat UI)**
 - Agent message card: small credit badge (`4 credits`). Stopped messages show the badge
@@ -280,8 +286,8 @@ billing_plan                         (user-service)
 ├── id                 UUID PK
 ├── name               TEXT UNIQUE    -- e.g. 'free', 'pro', 'team', 'enterprise'
 ├── display_name       TEXT
-├── daily_credits_cap  NUMERIC(12,2)
-├── weekly_credits_cap NUMERIC(12,2)
+├── daily_credits_cap  NUMERIC(12,2)  -- admin-editable; no env-var backing
+├── weekly_credits_cap NUMERIC(12,2)  -- admin-editable; no env-var backing
 ├── created_at         TIMESTAMPTZ DEFAULT now()
 └── updated_at         TIMESTAMPTZ DEFAULT now()
 
@@ -384,8 +390,9 @@ None — all scoping decisions are locked.
 - `turn_cost` rows are never mutated after insert (append-only verified in tests).
 - `turn_cost.source_type`, `source_label`, and `task_id` are present, confirming the cost
   history ledger is ready for runtime extension.
-- A `model_pricing` seed and a `billing_plan` seed (at minimum: `free`) are present in
-  `user-service` migrations.
+- A `model_pricing` seed and a `billing_plan` seed (at minimum: `free` with reasonable
+  default caps) are present in `user-service` migrations. The `free` plan's caps are
+  editable by an admin after deploy — no redeploy or env-var change required.
 - Lint, type-check, and the full test suites of all touched repos pass before any PR.
 
 ## References
@@ -398,9 +405,11 @@ None — all scoping decisions are locked.
   event with tokens consumed up to cancellation.
 - Agent chat v4: `docs/features/m3-agent-chat-v4/` — the real-time thread surface where
   per-turn credit badges and the quota indicator are displayed.
-- Admin panel: `docs/features/m1-admin-panel/` — the existing admin panel route and auth
-  guard that the Plans UI extends.
+- Admin panel: `docs/features/m1-admin-panel/` — context on the existing admin identity
+  model and auth guard the new standalone admin app will reuse.
 - Claude usage limits (design reference): daily and weekly refresh quota pattern.
 - Touched repos: `hermes-agent` (cost event emission + quota guard), `user-service` (plan
   tables, pricing, quota, admin + internal APIs), `workflow-bff` (cost event routing + cost
-  query proxy), `digital-factory-ui` (credit badges, quota indicator, admin plan UI).
+  query proxy), `digital-factory-ui` (credit badges + quota indicator in chat UI),
+  and a **new standalone admin app repo** (billing plan management UI — repo to be
+  registered in `workspace.yaml` by the tech lead during technical design).
