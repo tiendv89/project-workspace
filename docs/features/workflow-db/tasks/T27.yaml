@@ -1,7 +1,7 @@
 id: T27
 title: "BFF: verify proxy forwards task-create + ?name= routes (passthrough test)"
 repo: workflow-bff
-status: in_progress
+status: in_review
 depends_on:
   - T26
   - T25
@@ -11,10 +11,10 @@ branch: feature/workflow-db-T27
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:05:28+0000
+  last_updated_at: 2026-06-24T15:17:13.881Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-bff/pull/5
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/607
   status: open
