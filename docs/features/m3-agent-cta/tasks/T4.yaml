@@ -1,0 +1,28 @@
+id: T4
+title: "Hermes agent (hermes-agent): suggest_next_actions tool + DB migration [fix T1 wrong repo]"
+repo: hermes-agent
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-cta-T4
+execution:
+  actor_type: agent
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pye@swellnetwork.io
+    at: 2026-06-24T11:44:11+0700
+    note: >-
+      T1 was incorrectly implemented in workflow-backend. The suggest_next_actions
+      tool, DB migration, and system prompt extension belong in hermes-agent.
+      This task re-implements T1's scope in the correct repo.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-24T11:44:11+0700
+    note: No dependencies — activated immediately on creation.
