@@ -1,24 +1,80 @@
 id: T25
 title: "Features API: ?name= exact-match filter"
 repo: workflow-backend
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T25
+blocked_context: null
+branch: feature/workflow-db-T25
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T14:31:34.192Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/48
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/599
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). No blockers.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8). No
+      blockers.
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:06:59.649Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:07:08.834Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Features API: ?name= exact-match filter workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: dispatch_dlq_after_5_deliveries
+    at: 2026-06-24T11:10:07.941Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:09:55+0700
+    note: Human reset from blocked
+      (executor_failed:dispatch_dlq_after_5_deliveries). pr.url is null so
+      resetting to ready per unblock-target rule.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:11:34.768Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:11:39.091Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Features API: ?name= exact-match filter workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:15:11+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/48"
+    at: 2026-06-24T14:25:19.189Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:26:43.586Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T14:30:31.287Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:31:34.192Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
