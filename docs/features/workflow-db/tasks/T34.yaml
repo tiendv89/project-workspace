@@ -1,25 +1,73 @@
 id: T34
 title: "tech-lead skill: drop the Materialization (go) JSON block"
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T34
+blocked_context: null
+branch: feature/workflow-db-T34
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T17:05:59.442Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/272
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/602
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Supersedes the old T17
-      materialization-block behavior. No blockers.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Supersedes the old T17 materialization-block behavior. No blockers.
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: batu4404@gmail.com
+    at: 2026-06-24T11:09:13.098Z
+    note: Claimed via git-based claim protocol.
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:13:22+0700
+    note: "Human reset from in_progress — executor never started, pr.url is null.
+      Recorded workspace_pr #602. Resetting to ready per unblock-target rule."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:15:17.887Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:15:21.844Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "tech-lead skill: drop the Materialization (go) JSON block workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:18:36+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/272"
+    at: 2026-06-24T14:20:24.434Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-25T00:00:58+0700
+    note: "Human reset reviewing → in_review and removed the stale reviewer_started
+      entry so the orchestrator can dispatch a fresh reviewer for PR #602."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:02:04.133Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T17:04:54.932Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:05:59.442Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
