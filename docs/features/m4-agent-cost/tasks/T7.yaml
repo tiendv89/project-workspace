@@ -37,3 +37,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: "digital-factory-ui: Settings → Usage page m4-agent-cost"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:52:17+0000
+    note: executor work phase begun.
