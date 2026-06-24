@@ -1,18 +1,20 @@
 id: T2
 title: digital-factory-ui — Stop button + stopped-message rendering
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
+blocked_context: null
 branch: feature/m3-stop-agent-chat-T2
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-24T01:00:30+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T04:04:30.570Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pentative@gmail.com
@@ -25,3 +27,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T04:03:00.876Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T04:04:30.570Z
+    note: Claimed via git-based claim protocol.
