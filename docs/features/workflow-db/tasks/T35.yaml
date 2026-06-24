@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T11:09:40.731Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:09:48.888Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "orchestrator: remove create.go + cmd/seed from the production path
+      workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
