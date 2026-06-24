@@ -1,8 +1,9 @@
 id: T4
 title: "workflow-bff: cost/quota gateway handlers + forward platform_roles"
 repo: workflow-bff
-status: todo
-depends_on: [T2]
+status: ready
+depends_on:
+  - T2
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T4
@@ -18,3 +19,7 @@ log:
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:25:38.634Z
+    note: Task activated — dependency T2 merged and marked done.

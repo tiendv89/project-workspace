@@ -1,7 +1,7 @@
 id: T2
 title: "user-service: plan resolution + lazy quota + internal cost/quota APIs"
 repo: user-service
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,11 +9,14 @@ blocked_context: null
 branch: feature/m4-agent-cost-T2
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: 2026-06-24T23:50:04+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T18:25:38.558Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/user-service/pull/16
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/620
+  status: open
 log:
   - action: created
     by: tech_lead
@@ -23,3 +26,51 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T17:34:07.375Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:35:32.861Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:35:42.116Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "user-service: plan resolution + lazy quota + internal cost/quota
+      APIs m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:39:12+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/16"
+    at: 2026-06-24T17:57:34.576Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:58:47.134Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T18:05:13.228Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:06:18.818Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/16"
+    at: 2026-06-24T18:16:19.066Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:17:33.140Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T18:24:27.830Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:25:38.558Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
