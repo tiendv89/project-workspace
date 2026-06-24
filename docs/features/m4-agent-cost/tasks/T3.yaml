@@ -2,7 +2,7 @@ id: T3
 title: "user-service: admin plan APIs + RequirePlatformRole guard +
   platform_roles in payload"
 repo: user-service
-status: in_progress
+status: in_review
 depends_on:
   - T2
 blocked_reason: null
@@ -11,10 +11,10 @@ branch: feature/m4-agent-cost-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T18:31:08+0000
+  last_updated_at: 2026-06-24T18:52:45.453Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/user-service/pull/17
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/621
   status: open
