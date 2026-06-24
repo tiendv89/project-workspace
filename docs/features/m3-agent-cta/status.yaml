@@ -1,7 +1,7 @@
 feature_id: m3-agent-cta
 title: m3-agent-cta
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 stages:
   product_spec:
     review_status: approved
@@ -39,6 +39,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/592
 history:
   - event: product_spec_approved
     by: pentative@gmail.com
@@ -61,3 +62,14 @@ revalidation:
 feature_branch: feature/m3-agent-cta
 feature_branch_base_sha: 183f876b22d5a018c26493d0132f125704a0c7a7
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/583
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/592
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/46
+    status: open
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/4
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/149
+    status: open
