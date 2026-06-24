@@ -1,8 +1,9 @@
 id: T32
 title: "install.sh: register already-built workflow-mcp (claude mcp add)"
 repo: workflow
-status: todo
-depends_on: [T28]
+status: ready
+depends_on:
+  - T28
 blocked_reason: null
 branch: workflow-db/T32
 execution:
@@ -16,5 +17,9 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T28.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T28.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:35:55.442Z
+    note: Task activated — dependency T28 merged and marked done.

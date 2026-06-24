@@ -1,8 +1,9 @@
 id: T26
 title: "Task-create endpoint: POST .../features/:id/tasks (bulk, all-or-nothing)"
 repo: workflow-backend
-status: todo
-depends_on: [T24]
+status: ready
+depends_on:
+  - T24
 blocked_reason: null
 branch: workflow-db/T26
 execution:
@@ -16,5 +17,9 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T24.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T24.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:23:24.999Z
+    note: Task activated — dependency T24 merged and marked done.
