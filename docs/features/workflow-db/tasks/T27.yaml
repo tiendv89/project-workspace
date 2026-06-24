@@ -11,7 +11,7 @@ branch: feature/workflow-db-T27
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:02:36.526Z
+  last_updated_at: 2026-06-24T15:05:28+0000
 pr:
   url: null
   status: null
@@ -40,3 +40,7 @@ log:
     rag_query: "BFF: verify proxy forwards task-create + ?name= routes (passthrough
       test) workflow-db"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:05:28+0000
+    note: executor work phase begun.
