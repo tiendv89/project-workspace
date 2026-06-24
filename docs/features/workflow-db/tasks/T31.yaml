@@ -1,5 +1,5 @@
 id: T31
-title: "workflow-mcp E2E: create feature then create_tasks via MCP"
+title: 'workflow-mcp E2E: create feature then create_tasks via MCP'
 repo: workflow-mcp
 status: in_progress
 depends_on:
@@ -10,7 +10,7 @@ branch: feature/workflow-db-T31
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:59:51.462Z
+  last_updated_at: 2026-06-24T16:04:27+0000
 pr:
   url: null
   status: null
@@ -21,7 +21,8 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+    note: >-
+      Created in the workflow-db task-creation revamp (Workstream C, §4.8).
       Blocked on T30.
   - action: ready
     by: tiendv.52@gmail.com
@@ -36,5 +37,9 @@ log:
     at: 2026-06-24T16:00:00.426Z
     rag_context_injected: false
     rag_summary: query_returned_no_chunks
-    rag_query: "workflow-mcp E2E: create feature then create_tasks via MCP workflow-db"
+    rag_query: 'workflow-mcp E2E: create feature then create_tasks via MCP workflow-db'
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:04:27+0000
+    note: executor work phase begun.
