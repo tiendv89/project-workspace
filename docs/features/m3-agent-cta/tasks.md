@@ -11,6 +11,7 @@ Machine state (status, branch, PR, log) lives in `tasks/T<n>.yaml`.
 | T2 | 1 | BFF — workspace capabilities endpoint | — |
 | T3 | 2 | Frontend — CTA card components + integration | T1, T2 |
 | T4 | 3 | Hermes agent (hermes-agent): suggest_next_actions tool + DB migration [fix T1 wrong repo] | — |
+| T5 | 3 | Frontend: remove WorkspaceCapabilities gating — show all CTA starters by default | — |
 
 ## Dependency diagram
 
@@ -60,7 +61,7 @@ Also extends the Hermes system prompt with guidance on when and how to call
 
 ---
 
-## T2 — BFF: workspace capabilities endpoint
+## T2 — BFF: workspace capabilities endpoint (SSE passthrough only — capabilities endpoint is dead code, frontend call removed by T5)
 
 ### Description
 
@@ -169,3 +170,33 @@ for the exact implementation to port.
 - [ ] Unit test: handler persists correct JSON and publishes the event
 - [ ] Unit test: schema validation rejects `> 3` suggestions and invalid `category` values
 - [ ] Integration test: full agent turn with CTA tool call → `messages.cta_suggestions` populated + SSE event received
+
+---
+
+## T5 — Frontend: remove WorkspaceCapabilities gating — show all CTA starters by default
+
+### Description
+
+Design decision: `WorkspaceCapabilities` is removed. T3 implemented `EmptyStateCTARow` to fetch
+`GET /api/v1/workspace/capabilities` on mount and suppress GitNexus/RAG starters when the
+respective capability flag is `false`. This gating is no longer required — all starters show
+by default regardless of deployment configuration.
+
+Changes:
+1. Remove the `WorkspaceCapabilities` TypeScript interface.
+2. Remove the `GET /api/v1/workspace/capabilities` fetch call from `EmptyStateCTARow`.
+3. Remove capability gating logic — always render GitNexus and RAG starters unconditionally.
+4. Update component tests that asserted gating behaviour.
+
+### Required skills
+
+- frontend-engineer
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Delete `WorkspaceCapabilities` interface
+- [ ] Remove `useEffect` / fetch call for `/api/v1/workspace/capabilities` in `EmptyStateCTARow`
+- [ ] Remove `capabilities` prop/state and all conditional rendering based on it
+- [ ] GitNexus and RAG starters always rendered — no capability check
+- [ ] Update component tests: remove capability-gating assertions, verify all starters render unconditionally
