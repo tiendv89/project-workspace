@@ -1,18 +1,22 @@
 id: T31
 title: "workflow-mcp E2E: create feature then create_tasks via MCP"
 repo: workflow-mcp
-status: ready
+status: done
 depends_on:
   - T30
 blocked_reason: null
-branch: workflow-db/T31
+blocked_context: null
+branch: feature/workflow-db-T31
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:01:58+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T16:16:22.170Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/batu4404/workflow-mcp/pull/4
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/614
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
@@ -23,3 +27,34 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:58:30.942Z
     note: Task activated — dependency T30 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:59:51.462Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:00:00.426Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "workflow-mcp E2E: create feature then create_tasks via MCP workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:04:27+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/batu4404/workflow-mcp/pull/4"
+    at: 2026-06-24T16:08:26.684Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:09:44.497Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T16:15:13.694Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:16:22.170Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
