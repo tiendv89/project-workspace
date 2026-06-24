@@ -1,23 +1,74 @@
 id: T1
-title: "Migration v002 — email unique + username backfill + dedup"
+title: Migration v002 — email unique + username backfill + dedup
 repo: user-service
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: null
+blocked_context: null
+branch: feature/m1-unified-user-T1
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: "2026-06-23T17:40:43Z"
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-23T18:43:24.624Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/user-service/pull/11
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/578
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-06-24T00:38:40+0700"
-    note: "Task created during tech-lead Phase 2 task breakdown."
+    at: 2026-06-24T00:38:40+0700
+    note: Task created during tech-lead Phase 2 task breakdown.
   - action: ready
     by: pentative@gmail.com
-    at: "2026-06-23T17:40:43Z"
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-06-23T17:40:43Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T17:43:58.398Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T17:44:06.912Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Migration v002 — email unique + username backfill + dedup m1-unified-user
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T17:50:48+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/11"
+    at: 2026-06-23T18:04:54.283Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:08:04.455Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-23T18:14:01.007Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:15:03.142Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/user-service/pull/11"
+    at: 2026-06-23T18:27:11.001Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:28:45.366Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-23T18:40:27.137Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:43:24.624Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
