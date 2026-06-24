@@ -1,7 +1,7 @@
 id: T24
 title: "DB layer: CreateWorkspaceTasks (bulk, all-or-nothing)"
 repo: workflow-backend
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/workflow-db-T24
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T11:07:36.940Z
+  last_updated_at: 2026-06-24T20:35:43+0700
 pr:
   url: null
   status: null
@@ -26,14 +26,9 @@ log:
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
     note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
+  - action: ready
     by: batu4404@gmail.com
-    at: 2026-06-24T11:07:36.940Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: batu4404@gmail.com
-    at: 2026-06-24T11:07:49.336Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "DB layer: CreateWorkspaceTasks (bulk, all-or-nothing) workflow-db"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+    at: 2026-06-24T20:35:43+0700
+    note: >-
+      Reset from in_progress — prior agent claimed but never started implementation.
+      Workspace PR #600 kept open for the re-run.
