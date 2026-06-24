@@ -1,13 +1,16 @@
 id: T5
-title: "Frontend: remove WorkspaceCapabilities gating — show all CTA starters by default"
+title: "Frontend: remove WorkspaceCapabilities gating — show all CTA starters by
+  default"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-cta-T5
 execution:
   actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T04:57:59.048Z
 pr:
   url: null
   status: null
@@ -18,11 +21,14 @@ log:
   - action: created
     by: pye@swellnetwork.io
     at: 2026-06-24T11:50:19+0700
-    note: >-
-      Design decision: WorkspaceCapabilities is removed. CTA starters (including
-      GitNexus and RAG starters) should show by default without capability gating.
-      T3 implemented the gating; this task removes it.
+    note: "Design decision: WorkspaceCapabilities is removed. CTA starters
+      (including GitNexus and RAG starters) should show by default without
+      capability gating. T3 implemented the gating; this task removes it."
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-06-24T11:50:19+0700
     note: No dependencies — activated immediately on creation.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T04:57:59.048Z
+    note: Claimed via git-based claim protocol.
