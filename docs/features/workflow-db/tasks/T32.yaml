@@ -31,3 +31,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T14:37:08.726Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:37:17.292Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "install.sh: register already-built workflow-mcp (claude mcp add)
+      workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
