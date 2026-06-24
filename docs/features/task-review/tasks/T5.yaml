@@ -1,0 +1,80 @@
+id: T5
+title: "digital-factory-ui: wire task-review-view to real diff, thread, Spec tab
+  + states"
+repo: digital-factory-ui
+status: done
+depends_on:
+  - T4
+blocked_reason: null
+blocked_context: null
+branch: feature/task-review-T5
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-16T14:17:51.581Z
+pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/141
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/556
+  status: open
+log:
+  - action: created
+    by: tech_lead
+    at: 2026-06-16T15:27:27+0700
+    note: Task created from approved technical design (§4 chosen design, §6 wave 4,
+      §7 repo impact).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:35:22.171Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:36:46.033Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:36:54.849Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: wire task-review-view to real diff, thread, Spec
+      tab + states task-review"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:43:03+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/141"
+    at: 2026-06-16T13:52:57.765Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T13:54:03.601Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-16T13:59:41.112Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T14:00:37.108Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/141"
+    at: 2026-06-16T14:10:16.517Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T14:11:22.424Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-16T14:16:45.262Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-16T14:17:51.581Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

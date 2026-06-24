@@ -1,27 +1,26 @@
 // user-service v002
-// Identity and tenancy layer — owns the Kitelabs platform's user, organization,
-// and session model. Federated login (Google + GitHub) lands here; downstream
-// services validate sessions against this database via user-service's
-// /internal/sessions/validate endpoint.
+// Unified user identity — adds username, enforces email uniqueness, and
+// backfills username from display_name for existing rows.
+//
+// Changes from v001:
+//   users.username     — new nullable unique column (case-insensitive unique index)
+//   users.email        — now unique (idx_users_email_lower replaced by
+//                        idx_users_email_lower_unique); dedup migration runs first
+//   auth_identities    — unchanged
+//   all tenancy tables — unchanged
+//
+// Migration order (v002.sql):
+//   1. ALTER TABLE users ADD COLUMN username text
+//   2. CREATE UNIQUE INDEX idx_users_username_lower ON users (lower(username)) WHERE username IS NOT NULL
+//   3. Backfill username from display_name (Go migration step):
+//        lower(display_name), spaces → '_', strip [^a-z0-9_-], truncate 30, suffix on collision
+//        Rows with null/empty display_name get username = null
+//   4. Dedup users by lower(email) — keep oldest created_at, repoint auth_identities /
+//        memberships / workspace_memberships, delete retired rows, delete their sessions
+//   5. DROP INDEX idx_users_email_lower
+//   6. CREATE UNIQUE INDEX idx_users_email_lower_unique ON users (lower(email))
 //
 // Visualise at: https://dbdiagram.io (paste this file)
-//
-// Tenancy model
-//   - `users` are global (a person exists once across the platform).
-//   - `organizations` are the tenancy boundary — the unit Kitelabs sells delivery to.
-//   - `workspaces` (workspace_id) live in the workspace DB; this service stores
-//     workspace_id values as plain UUIDs with NO foreign key (cross-DB).
-//
-// Layers
-//   Identity     — users, auth_identities (provider-side authentication)
-//   Tenancy      — organizations, memberships, workspace_memberships
-//   Onboarding   — organization_invitations
-//   Sessions     — sessions (managed by alexedwards/scs/v2 + postgresstore)
-//
-// v002 changes (m1-unified-user):
-//   - users.username added (nullable, unique case-insensitive)
-//   - users.email is now unique (case-insensitive); dedup migration removes duplicate rows
-//   - username backfilled from display_name for existing users on migration
 
 // ─────────────────────────────────────────────
 // IDENTITY
@@ -30,7 +29,7 @@
 Table users {
   id           uuid        [primary key, default: `gen_random_uuid()`]
   email        text        [not null, note: 'Primary email; unique (case-insensitive). Canonical identity anchor across OAuth providers.']
-  username     text        [note: 'User-chosen handle; unique (case-insensitive), nullable. Backfilled from display_name on v002 migration. Format: [a-z0-9_-], 3–30 chars.']
+  username     text        [note: 'User-chosen handle; unique (case-insensitive), nullable. Backfilled from display_name on v002 migration for existing rows. Format: [a-z0-9_-], 3–30 chars.']
   display_name text
   avatar_url   text
   created_at   timestamptz [not null, default: `now()`]

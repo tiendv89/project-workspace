@@ -81,9 +81,21 @@ repos:
     base_branch: main
     owner_role: tech_lead
 
+  - id: workflow-mcp
+    github: git@github.com:batu4404/workflow-mcp.git
+    local_path: env:WORKFLOW_MCP_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
   - id: digital-factory-ui
     github: git@github.com:tiendv89/digital-factory-ui.git
     local_path: env:DIGITAL_FACTORY_UI_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
+
+  - id: workflow-bff
+    github: git@github.com:tiendv89/workflow-bff.git
+    local_path: env:WORKFLOW_BFF_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
 

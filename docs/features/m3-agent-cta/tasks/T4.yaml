@@ -1,0 +1,79 @@
+id: T4
+title: "Hermes agent (hermes-agent): suggest_next_actions tool + DB migration
+  [fix T1 wrong repo]"
+repo: hermes-agent
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-cta-T4
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T05:45:37.816Z
+pr:
+  url: https://github.com/tiendv89/hermes-agent/pull/23
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/594
+  status: open
+log:
+  - action: created
+    by: pye@swellnetwork.io
+    at: 2026-06-24T11:44:11+0700
+    note: T1 was incorrectly implemented in workflow-backend. The
+      suggest_next_actions tool, DB migration, and system prompt extension
+      belong in hermes-agent. This task re-implements T1's scope in the correct
+      repo.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-24T11:44:11+0700
+    note: No dependencies — activated immediately on creation.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T04:56:22.895Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T04:56:31.396Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Hermes agent (hermes-agent): suggest_next_actions tool + DB
+      migration [fix T1 wrong repo] m3-agent-cta"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T05:04:42+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/23"
+    at: 2026-06-24T05:16:34.122Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T05:17:45.895Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T05:24:27.751Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T05:25:30.406Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/23"
+    at: 2026-06-24T05:36:51.457Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T05:38:05.763Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T05:44:28.129Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T05:45:37.816Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

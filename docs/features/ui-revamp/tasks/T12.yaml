@@ -1,0 +1,105 @@
+id: T12
+title: Org settings UI (wired to org-admin endpoints)
+repo: digital-factory-ui
+status: done
+depends_on:
+  - T2
+  - T15
+blocked_reason: null
+blocked_context: null
+branch: feature/ui-revamp-T12
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T16:46:25.280Z
+pr:
+  url: https://github.com/tiendv89/digital-factory-ui/pull/128
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/522
+  status: open
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-06-09T12:03:56+0700
+    note: Task created during ui-revamp Phase-2 breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T15:42:43.325Z
+    note: Task activated — dependency T15 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T15:43:55.535Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T15:44:04.675Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Org settings UI (wired to org-admin endpoints) ui-revamp
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T15:45:40+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/128"
+    at: 2026-06-09T16:08:13.875Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:09:35.401Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-09T16:13:53.026Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:14:47.768Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/128"
+    at: 2026-06-09T16:18:59.291Z
+  - action: rebase_completed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:24:18.176Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:25:18.624Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-09T16:32:47.232Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:33:40.380Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/128"
+    at: 2026-06-09T16:38:00.521Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:39:04.830Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T16:45:24.001Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T16:46:25.280Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolved
+rebase_log:
+  - at: 2026-06-09T16:19:56.834Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/ui-revamp.

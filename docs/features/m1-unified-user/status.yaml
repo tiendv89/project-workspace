@@ -1,0 +1,71 @@
+feature_id: m1-unified-user
+title: m1-unified-user
+feature_status: done
+current_stage: done
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T00:15:25+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: 2026-06-24T00:15:25+0700
+        comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T00:37:41+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: 2026-06-24T00:37:41+0700
+        comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T00:40:43+0700
+    review_comment: null
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: 2026-06-24T00:40:43+0700
+        comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/589
+history:
+  - stage: product_spec
+    event: approved
+    by: pentative@gmail.com
+    at: 2026-06-24T00:15:25+0700
+  - stage: technical_design
+    event: approved
+    by: pentative@gmail.com
+    at: 2026-06-24T00:37:41+0700
+  - stage: tasks
+    event: approved
+    by: pentative@gmail.com
+    at: 2026-06-24T00:40:43+0700
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
+feature_branch: feature/m1-unified-user
+feature_branch_base_sha: b9c3c7ead69e66bcf13d910dadf810c3e6a6c935
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/577
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/589
+impl_feature_prs:
+  - repo: user-service
+    url: https://github.com/tiendv89/user-service/pull/14
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/146
+    status: merged

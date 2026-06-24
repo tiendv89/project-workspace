@@ -1,0 +1,84 @@
+feature_id: m3-agent-cta
+title: m3-agent-cta
+feature_status: done
+current_stage: done
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T01:21:38+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T01:21:38+0700
+        review_comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T01:34:42+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T01:34:42+0700
+        review_comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T01:37:42+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T01:37:42+0700
+        review_comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/592
+history:
+  - event: product_spec_approved
+    by: pentative@gmail.com
+    at: 2026-06-24T01:21:38+0700
+    note: Product spec approved. Feature advanced to in_tdd.
+  - event: technical_design_approved
+    by: pentative@gmail.com
+    at: 2026-06-24T01:34:42+0700
+    note: Technical design approved. Advanced to task planning stage.
+  - event: tasks_approved
+    by: pentative@gmail.com
+    at: 2026-06-24T01:37:42+0700
+    note: Tasks approved. Feature advanced to ready_for_implementation. T1 and T2
+      activated.
+  - event: reset_to_in_implementation
+    by: pye@swellnetwork.io
+    at: 2026-06-24T11:53:34+0700
+    note: "Reset from in_handoff to in_implementation to allow agent runtime to
+      execute T4 (hermes-agent: suggest_next_actions tool — fix for T1 wrong
+      repo) and T5 (digital-factory-ui: remove WorkspaceCapabilities gating)."
+  - event: transitioned_to_in_handoff
+    by: pye@swellnetwork.io
+    at: 2026-06-24T14:22:48+0700
+    note: T4 and T5 merged. Corrected impl repos to hermes-agent and
+      digital-factory-ui (workflow-backend and workflow-bff were incorrect).
+      Advanced back to in_handoff.
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
+feature_branch: feature/m3-agent-cta
+feature_branch_base_sha: 183f876b22d5a018c26493d0132f125704a0c7a7
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/583
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/592
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/23
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/149
+    status: merged

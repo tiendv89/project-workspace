@@ -1,0 +1,94 @@
+feature_id: m3-agent-chat-v3
+title: m3-agent-chat-v3
+feature_status: done
+current_stage: done
+next_action: Wave 1 tasks ready — T1 (hermes-agent), T2 (workflow-backend), T6
+  (hermes-agent) can be claimed in parallel via start-implementation. T3 (dep
+  T1), T4 (dep T1, T2), and T5 (dep T3) unlock as their dependencies reach done.
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-13T11:41:10+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-13T11:41:10+0700
+        comment: Product spec approved. Conversational document authoring loop (agent
+          generates product-spec + technical-design via chat), continuous
+          PR-tracked commits on GitHub, store-aware in-chat approval, light
+          manual edits with read-before-write, reversible state via rollback,
+          and stack-aware tech-design skill loading.
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-13T15:46:33+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-13T15:46:33+0700
+        comment: Technical design approved. Read/write split (workflow-backend document
+          view API; hermes-agent owns chat + document writes with targeted
+          str_replace + full rewrite, feature-branch commit + create/update PR,
+          read-before-write); store-aware in-chat approval; skills subsystem
+          (G10); ts-only, go deferred. 6 tasks across hermes-agent /
+          workflow-backend / digital-factory-ui.
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-13T15:53:01+0700
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-13T15:53:01+0700
+        comment: Task breakdown approved. 6 tasks (T1–T6) across hermes-agent /
+          workflow-backend / digital-factory-ui; Wave 1 = T1, T2, T6 (activated
+          to ready). Feature → ready_for_implementation.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/534
+history:
+  - at: 2026-06-13T11:41:10+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: product_spec
+    note: Product spec approved; feature advanced in_design → in_tdd, current_stage
+      → technical_design.
+  - at: 2026-06-13T15:46:33+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: technical_design
+    note: "Technical design approved; current_stage → tasks (task planning). Next:
+      tech-lead Phase 2 produces tasks.md + tasks/T<n>.yaml."
+  - at: 2026-06-13T15:53:01+0700
+    by: pentative@gmail.com
+    action: stage_approved
+    stage: tasks
+    note: Tasks approved; feature → ready_for_implementation. Wave 1 (T1, T2, T6)
+      auto-readied; T3/T4/T5 remain todo until dependencies reach done.
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
+feature_branch: feature/m3-agent-chat-v3
+feature_branch_base_sha: 8adc291dff515246ce520135ef7d78469390ff3d
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/527
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/534
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/12
+    status: merged
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/39
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/134
+    status: merged
