@@ -163,27 +163,27 @@ baseline that all members inherit. Any future commercial differentiation (Free /
 
 ### Admin creates a billing plan
 
-1. An admin opens the **admin app** → **Plans** page.
+1. An admin opens the **admin panel** in `digital-factory-ui` (`/admin/plans`).
 2. They click **New Plan**, enter a name (e.g. `Pro`), a daily cap (50,000 credits), and a
    weekly cap (200,000 credits), then save.
 3. The plan appears in the plan list immediately and is available to assign — no redeploy.
 
 ### Admin assigns a plan to an individual user
 
-1. In the admin app → **Users**, the admin finds a user.
+1. In the admin panel → **Users** (`/admin/users`), the admin finds a user.
 2. Under **Billing Plan**, they select `Pro` from the plan dropdown and save.
 3. On the next quota check for that user, `user-service` resolves the effective plan as
    `Pro` (individual plan takes precedence) and applies its caps.
 
 ### Admin assigns a plan to an org
 
-1. In the admin app → **Orgs**, the admin opens an org and selects a plan (e.g. `Team`).
+1. In the admin panel → **Orgs** (`/admin/orgs`), the admin opens an org and selects a plan (e.g. `Team`).
 2. All members of that org without an individual plan assigned now inherit `Team` caps.
    Members with an individual plan are unaffected.
 
 ### Effective plan resolution (visible in admin)
 
-The admin app shows each user's **effective plan** and its source:
+The admin panel shows each user's **effective plan** and its source:
 - *Pro (individual)* — user has an individual plan assigned
 - *Team (org)* — user inherits from their org's plan
 - *Free (default)* — neither individual nor org plan is set; seeded default applies
@@ -273,17 +273,25 @@ cost breakdowns. The plan model delivered here is what M4 connects Stripe to —
   weekly_reset_at }`. Does not require a session context — scoped to the authenticated user.
 - All endpoints require workspace-scoped auth.
 
-**Admin plan UI (standalone admin app — separate from `digital-factory-ui`)**
-- The admin interface is a **separate frontend application**, not a route or panel inside
-  `digital-factory-ui`. It is only accessible to users with the admin role and is deployed
-  independently.
-- **Plans page**: list all plans, create a plan (name, display name, daily cap, weekly cap),
-  edit any plan's caps inline. All edits persist to `user-service` immediately — no deploy.
-- **Users page**: per-user row showing effective plan + source (`individual` / `org` /
-  `default`); click a user to assign or remove an individual plan.
-- **Orgs page**: per-org row showing current org plan; assign or remove an org plan.
-- Admin app authenticates against the same identity layer as `digital-factory-ui` but
-  enforces an admin-role guard on every route.
+**Admin plan UI (inside `digital-factory-ui` — under the existing `/admin/` tree)**
+- The admin interface is **not** a separate application. The plan-management pages live
+  inside `digital-factory-ui` under the existing `/admin/` route tree (the same tree that
+  already hosts `/admin/members`), behind the existing admin-role layout guard. No new repo
+  is created and no separate deployment is introduced.
+- **Plans page** (`/admin/plans`): list all plans, create a plan (name, display name, daily
+  cap, weekly cap), edit any plan's caps inline. All edits persist to `user-service`
+  immediately — no deploy.
+- **Users page** (`/admin/users`): per-user row showing effective plan + source
+  (`individual` / `org` / `default`); click a user to assign or remove an individual plan.
+- **Orgs page** (`/admin/orgs`): per-org row showing current org plan; assign or remove an
+  org plan.
+- Access is gated by a **platform-role** check: the user must hold the `platform_admin`
+  internal role (see Data Model → `platform_role` / `platform_role_assignment`). This is a
+  platform-level role, distinct from the org-scoped `memberships.role` used by
+  `m1-admin-panel`. The model is role-general — more internal roles can be added as data
+  later — but M4 ships and uses only `platform_admin`. The existing `/admin/` layout guard
+  in `digital-factory-ui` is updated to read the user's platform roles from the session
+  identity payload.
 
 **Cost display (digital-factory-ui — chat UI)**
 - Agent message card: small credit badge (`4 credits`). Stopped messages show the badge
@@ -390,6 +398,26 @@ user_usage_quota                     (user-service — one row per user, upserte
 └── updated_at         TIMESTAMPTZ DEFAULT now()
 -- Caps are read from billing_plan at check time, not stored here —
 -- so a plan cap change takes effect on the next check without a migration.
+
+-- Platform roles (internal access control) — separate from org-scoped
+-- `memberships.role`. Gates the /admin/* APIs and the /admin/ UI pages.
+-- Role-general by design: more internal roles (e.g. billing_ops, support)
+-- can be added later as data, with no migration.
+
+platform_role                        (user-service — role catalog, seedable data)
+├── key          TEXT PK        -- 'platform_admin', and future internal roles
+├── display_name TEXT
+├── description  TEXT
+└── created_at   TIMESTAMPTZ DEFAULT now()
+-- seeded: ('platform_admin', 'Platform Admin', 'Full internal admin access')
+
+platform_role_assignment             (user-service — internal role grants)
+├── id          UUID PK
+├── user_id     UUID FK → users
+├── role_key    TEXT FK → platform_role(key)
+├── granted_by  UUID FK → users
+├── granted_at  TIMESTAMPTZ DEFAULT now()
+└── UNIQUE (user_id, role_key)        -- a user may hold multiple platform roles
 ```
 
 **Plan resolution algorithm** (used by quota check and any cap read):
@@ -419,6 +447,10 @@ None — all scoping decisions are locked.
   (individual → org → free default), not a hardcoded constant.
 - An admin can create a plan, assign it to a user, assign it to an org, and view each
   user's effective plan and source in the admin panel.
+- The `/admin/*` plan APIs and the `/admin/` plan pages are reachable only by a user holding
+  the `platform_admin` platform role; a non-platform-admin user (including an org-scoped
+  admin) is denied. The `platform_role` catalog and `platform_admin` seed exist in
+  `user-service` migrations, and adding a future internal role requires no migration.
 - A user assigned an individual plan sees that plan's caps in the quota indicator.
 - An org member without an individual plan sees the org plan's caps; a member with an
   individual plan is unaffected by the org plan.
@@ -447,11 +479,12 @@ None — all scoping decisions are locked.
   event with tokens consumed up to cancellation.
 - Agent chat v4: `docs/features/m3-agent-chat-v4/` — the real-time thread surface where
   per-turn credit badges and the quota indicator are displayed.
-- Admin panel: `docs/features/m1-admin-panel/` — context on the existing admin identity
-  model and auth guard the new standalone admin app will reuse.
+- Admin panel: `docs/features/m1-admin-panel/` — the existing `/admin/` tree in
+  `digital-factory-ui` (e.g. `/admin/members`), its `platform_admin`/`admin` layout guard,
+  and admin identity model. The new plan-management pages reuse this same tree and guard.
 - Claude usage limits (design reference): daily and weekly refresh quota pattern.
 - Touched repos: `hermes-agent` (cost event emission + quota guard), `user-service` (plan
   tables, pricing, quota, admin + internal APIs), `workflow-bff` (cost event routing + cost
-  query proxy), `digital-factory-ui` (credit badges + quota indicator in chat UI),
-  and a **new standalone admin app repo** (billing plan management UI — repo to be
-  registered in `workspace.yaml` by the tech lead during technical design).
+  query proxy), and `digital-factory-ui` (credit badges + quota indicator in chat UI,
+  Settings → Usage page, **and the billing-plan admin pages under the existing `/admin/`
+  tree** — no new repo).
