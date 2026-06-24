@@ -1,18 +1,19 @@
 id: T1
 title: "user-service: billing/quota + platform-role migrations & seeds"
 repo: user-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T1
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-06-24T17:02:43Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T17:09:59.295Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: tech_lead
@@ -22,3 +23,7 @@ log:
     by: pentative@gmail.com
     at: 2026-06-24T17:02:43Z
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:09:59.295Z
+    note: Claimed via git-based claim protocol.
