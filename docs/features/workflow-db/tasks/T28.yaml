@@ -1,15 +1,15 @@
 id: T28
 title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/workflow-db-T28
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T21:14:38+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T14:16:37.528Z
 pr:
   url: null
   status: null
@@ -81,7 +81,10 @@ log:
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T21:14:38+0700
-    note: >-
-      Human reset from blocked (repo_materialization_failed: workflow-mcp repo
+    note: "Human reset from blocked (repo_materialization_failed: workflow-mcp repo
       not found). Note: will block again until github.com/batu4404/workflow-mcp
-      is created and WORKFLOW_MCP_LOCAL_PATH is set in .env.
+      is created and WORKFLOW_MCP_LOCAL_PATH is set in .env."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:16:37.528Z
+    note: Claimed via git-based claim protocol.
