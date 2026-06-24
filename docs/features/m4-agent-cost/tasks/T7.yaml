@@ -1,7 +1,7 @@
 id: T7
 title: "digital-factory-ui: Settings → Usage page"
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T4
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m4-agent-cost-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T20:36:28.745Z
+  last_updated_at: 2026-06-24T20:42:59.337Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/154
   status: open
@@ -67,3 +67,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T20:36:28.745Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T20:42:59.337Z
