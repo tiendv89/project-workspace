@@ -1,8 +1,10 @@
 id: T33
 title: "create-tasks skill (go mode): tasks.md -> MCP create_tasks"
 repo: workflow
-status: todo
-depends_on: [T30, T32]
+status: ready
+depends_on:
+  - T30
+  - T32
 blocked_reason: null
 branch: workflow-db/T33
 execution:
@@ -16,6 +18,10 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T30, T32
-      (the get_feature tool transitively needs the ?name= filter, T25).
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T30, T32 (the get_feature tool transitively needs the ?name=
+      filter, T25).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:58:30.947Z
+    note: Task activated — dependency T30 merged and marked done.

@@ -1,8 +1,9 @@
 id: T31
 title: "workflow-mcp E2E: create feature then create_tasks via MCP"
 repo: workflow-mcp
-status: todo
-depends_on: [T30]
+status: ready
+depends_on:
+  - T30
 blocked_reason: null
 branch: workflow-db/T31
 execution:
@@ -16,5 +17,9 @@ log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T30.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T30.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:58:30.942Z
+    note: Task activated — dependency T30 merged and marked done.
