@@ -1,15 +1,15 @@
 id: T25
 title: "Features API: ?name= exact-match filter"
 repo: workflow-backend
-status: in_progress
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: executor_failed:dispatch_dlq_after_5_deliveries
 blocked_context: null
 branch: feature/workflow-db-T25
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T11:06:59.649Z
+  last_updated_at: 2026-06-24T11:10:01.668Z
 pr:
   url: null
   status: null
