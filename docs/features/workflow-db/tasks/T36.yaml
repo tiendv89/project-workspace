@@ -1,24 +1,30 @@
 id: T36
 title: "approve-feature: go-mode guide to run /create-tasks"
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T36
+blocked_context: null
+branch: feature/workflow-db-T36
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_at: 2026-06-24T11:10:47.780Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). No blockers.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8). No
+      blockers.
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: batu4404@gmail.com
+    at: 2026-06-24T11:10:47.780Z
+    note: Claimed via git-based claim protocol.
