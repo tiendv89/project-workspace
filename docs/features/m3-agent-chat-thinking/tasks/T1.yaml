@@ -2,14 +2,14 @@ id: T1
 title: "hermes-agent: emit ephemeral agent.reasoning SSE event (translator +
   callback wiring)"
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-thinking-T1
 execution:
   actor_type: agent
-  last_updated_at: 2026-06-24T15:24:56.909Z
+  last_updated_at: 2026-06-24T15:26:07.430Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/25
@@ -46,3 +46,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/25"
     at: 2026-06-24T15:24:56.909Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:26:07.430Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
