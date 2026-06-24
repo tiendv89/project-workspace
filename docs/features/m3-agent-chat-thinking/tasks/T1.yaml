@@ -1,40 +1,44 @@
-id: T1
-title: "hermes-agent: emit ephemeral agent.reasoning SSE event (translator +
-  callback wiring)"
-repo: hermes-agent
-status: in_progress
-depends_on: []
-blocked_reason: null
 blocked_context: null
+blocked_reason: null
 branch: feature/m3-agent-chat-thinking-T1
+depends_on: []
 execution:
   actor_type: agent
+  last_updated_at: 2026-06-24T15:16:53+0000
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:13:55.265Z
-pr:
-  url: ""
-  status: not_created
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/610
-  status: open
+id: T1
 log:
-  - action: created
-    by: tech_lead
-    at: 2026-06-24T22:00:27+0700
-    note: Task created from approved technical design (§4.1).
-  - action: ready
-    by: pentative@gmail.com
-    at: 2026-06-24T15:03:18Z
-    note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-06-24T15:13:55.265Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-06-24T15:14:08.443Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "hermes-agent: emit ephemeral agent.reasoning SSE event (translator +
-      callback wiring) m3-agent-chat-thinking"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  at: 2026-06-24T22:00:27+0700
+  by: tech_lead
+  note: Task created from approved technical design (§4.1).
+- action: ready
+  at: 2026-06-24 15:03:18+00:00
+  by: pentative@gmail.com
+  note: Task activated on tasks-stage approval — dependencies met.
+- action: claimed
+  at: 2026-06-24 15:13:55.265000+00:00
+  by: tiendv.52@gmail.com
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  at: 2026-06-24 15:14:08.443000+00:00
+  by: tiendv.52@gmail.com
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+  rag_context_injected: false
+  rag_query: 'hermes-agent: emit ephemeral agent.reasoning SSE event (translator +
+    callback wiring) m3-agent-chat-thinking'
+  rag_summary: query_returned_no_chunks
+- action: started
+  at: 2026-06-24T15:16:53+0000
+  by: tiendv.52@gmail.com
+  note: executor work phase begun.
+pr:
+  status: not_created
+  url: ''
+repo: hermes-agent
+status: in_progress
+title: 'hermes-agent: emit ephemeral agent.reasoning SSE event (translator + callback
+  wiring)'
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/610
