@@ -107,6 +107,11 @@ baseline that all members inherit. Any future commercial differentiation (Free /
   **individual user** or to an **org** (applies to all org members as a baseline). The
   resolution order is: individual plan → org plan → system default. No self-serve payment
   or plan-purchase UI exists; all plan assignment is admin-only, via the admin panel.
+- **G10 — Usage page in Settings.** `digital-factory-ui` includes a **Usage** entry in the
+  Settings drawer. The page shows the user's current plan name, a daily progress bar with
+  credits used / cap and a live countdown to reset, a weekly progress bar with the same
+  detail, and a "Last updated" timestamp with a manual refresh button. Color shifts from
+  neutral → warning as usage approaches the cap.
 
 ## Non-goals
 
@@ -183,6 +188,20 @@ The admin app shows each user's **effective plan** and its source:
 - *Team (org)* — user inherits from their org's plan
 - *Free (default)* — neither individual nor org plan is set; seeded default applies
 
+### Viewing usage in Settings
+
+1. A user opens Settings → **Usage**.
+2. The page header reads **"Your usage limits"** with the plan name as a tag beside it
+   (e.g. *"Your usage limits  Team"*).
+3. **Daily** section: a progress bar fills proportionally to `daily_credits_used /
+   daily_credits_cap`. The bar color is neutral (blue) below ~80% and shifts to warning
+   (amber) as it approaches the cap. A percentage label appears on the right (*"53% used"*).
+   Below the bar: *"Resets in 3 hr 0 min"* — a live countdown to `daily_reset_at`.
+4. **Weekly** section: same layout for weekly usage. Reset label shows the calendar day and
+   local time (e.g. *"Resets Sun 5:00 PM"*).
+5. Footer: *"Last updated: just now"* with a circular refresh icon. Clicking refresh
+   re-fetches quota state from `workflow-bff`.
+
 ### Future: billing dashboard consumes the API
 
 M4's billing dashboard will call the cost query API to produce per-workspace, per-session
@@ -249,6 +268,9 @@ cost breakdowns. The plan model delivered here is what M4 connects Stripe to —
   daily_reset_at, weekly_reset_at }, turns: [{turn_id, credits_used, model_id, tokens,
   stopped}] }`.
 - `GET /sessions/:id/quota/check` — proxy the pre-turn quota check to `user-service`.
+- `GET /users/me/quota` — user-facing quota endpoint for the Settings Usage page; returns
+  `{ plan_name, daily_used, daily_cap, weekly_used, weekly_cap, daily_reset_at,
+  weekly_reset_at }`. Does not require a session context — scoped to the authenticated user.
 - All endpoints require workspace-scoped auth.
 
 **Admin plan UI (standalone admin app — separate from `digital-factory-ui`)**
@@ -269,6 +291,23 @@ cost breakdowns. The plan model delivered here is what M4 connects Stripe to —
 - Session / thread header: running session total (`Session: 25 credits`) and quota
   indicator (`Daily: 9,975 / 10,000 · Pro plan`). Updates reactively.
 - No USD values anywhere in the UI.
+
+**Usage page (digital-factory-ui — Settings → Usage)**
+- **Settings drawer entry**: add a **Usage** item with a bar-chart icon between Account
+  and any other settings entries.
+- **Page header**: `"Your usage limits"` + plan name badge (e.g. `Team`) on the same line.
+- **Daily section**:
+  - Label: *"Daily"*
+  - Progress bar: fills to `daily_used / daily_cap`; color neutral (blue) below 80%,
+    warning (amber) at 80–99%, danger (red) at 100%.
+  - Right label: `"X% used"` (integer percent).
+  - Subtitle: `"Resets in Xh Ym"` — live countdown computed from `daily_reset_at`
+    (updates every minute client-side without re-fetching).
+- **Weekly section**: same layout; subtitle shows calendar day + local time
+  (`"Resets Sun 5:00 PM"`).
+- **Footer**: `"Last updated: just now"` (relative timestamp of last fetch) + circular
+  refresh icon that triggers a manual re-fetch of `GET /users/me/quota`.
+- Page fetches on mount; no auto-polling (manual refresh only).
 
 ### Out of scope (tracked separately)
 
@@ -393,6 +432,9 @@ None — all scoping decisions are locked.
 - A `model_pricing` seed and a `billing_plan` seed (at minimum: `free` with reasonable
   default caps) are present in `user-service` migrations. The `free` plan's caps are
   editable by an admin after deploy — no redeploy or env-var change required.
+- The Settings drawer contains a **Usage** entry. Opening it shows the plan name, daily and
+  weekly progress bars with correct percentages, reset countdowns, and a working refresh
+  button. Color shifts to amber at ≥80% and red at 100%.
 - Lint, type-check, and the full test suites of all touched repos pass before any PR.
 
 ## References
