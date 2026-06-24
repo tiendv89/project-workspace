@@ -1,15 +1,28 @@
 id: T28
 title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: in_progress
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: >
+  executor_failed:repo_materialization_failed: Error: Command failed: git clone
+  "git@github.com:batu4404/workflow-mcp.git" "/workspace/impl"
+
+  Cloning into '/workspace/impl'...
+
+  ERROR: Repository not found.
+
+  fatal: Could not read from remote repository.
+
+
+  Please make sure you have the correct access rights
+
+  and the repository exists.
 blocked_context: null
 branch: feature/workflow-db-T28
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:08:29.746Z
+  last_updated_at: 2026-06-24T14:10:26.797Z
 pr:
   url: null
   status: null
