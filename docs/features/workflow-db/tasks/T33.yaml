@@ -40,3 +40,7 @@ log:
     rag_summary: query_returned_no_chunks
     rag_query: "create-tasks skill (go mode): tasks.md -> MCP create_tasks workflow-db"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T16:06:45+0000
+    note: executor work phase begun.
