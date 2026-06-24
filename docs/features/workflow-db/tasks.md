@@ -901,7 +901,7 @@ Confirm the generic `/bff/workflow-backend/*` proxy already forwards `POST .../f
 
 ### Description
 
-Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** transport. `package.json` with a `build` script (tsc → `dist/`) and a stdio entry point so it runs via `node dist/index.js` from the local clone — **not published to npm in this version** (built and installed locally). Read config from process `env` (`WORKFLOW_BFF_URL` with a default + override; `session_id` cookie). **Ship agent usage docs in the repo** (`README.md` / `AGENTS.md`): the `get_feature`/`create_tasks` tools, the cookie auth/config, the create-tasks flow, and conflict/failure-list handling.
+Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** transport. **The repo owns its own build + global install** — `package.json` with a `"bin"` entry (`workflow-mcp` → `dist/index.js`) and a `build` script (tsc → `dist/`), so a developer runs `npm install && npm run build && npm link` to expose a global `workflow-mcp` command (documented in its README). **Not published to npm in this version.** Read config from process `env` (`WORKFLOW_BFF_URL` with a default + override; `session_id` cookie). **Ship agent usage docs in the repo** (`README.md` / `AGENTS.md`): the `get_feature`/`create_tasks` tools, the cookie auth/config, the create-tasks flow, and conflict/failure-list handling.
 
 **Human prerequisite:** the `workflow-mcp` GitHub repo must exist and `WORKFLOW_MCP_LOCAL_PATH` be set before this runs.
 
@@ -909,10 +909,10 @@ Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** 
 - `typescript-best-practices`
 
 ### Subtasks
-- [ ] `package.json` + tsconfig + `build` script (tsc → `dist/`); stdio entry point
+- [ ] `package.json` (`"bin": {"workflow-mcp": "dist/index.js"}`) + tsconfig + `build`; stdio entry point
 - [ ] MCP server bootstrap (stdio); config read from process env (BFF URL + cookie)
 - [ ] Agent usage docs (`README.md` / `AGENTS.md`): tools, auth, flow, conflicts
-- [ ] Verify `node dist/index.js` starts a stdio MCP server
+- [ ] README: `npm install && npm run build && npm link`; verify the global `workflow-mcp` starts a stdio MCP server
 
 ## T29 — `workflow-mcp` auth: session cookie
 
@@ -957,18 +957,18 @@ End-to-end through `workflow-mcp` → BFF → backend: create a go feature via t
 - [ ] Happy path: create feature → create_tasks → rows + initial ready
 - [ ] Conflict path: existing task → whole batch rejected, failure list returned
 
-## T32 — `install.sh`: clone + build + register `workflow-mcp`
+## T32 — `install.sh`: register the linked `workflow-mcp`
 
 ### Description
 
-Update `agent-workflow/scripts/install.sh` to clone `workflow-mcp` (workspace sibling), build it locally (`npm ci && npm run build`), and **register it via a command**: `claude mcp add workflow-mcp --scope local --env WORKFLOW_BFF_URL=<default> --env WORKFLOW_SESSION_COOKIE=<placeholder> -- node ${WORKFLOW_MCP_LOCAL_PATH}/dist/index.js`. The `--env` values land in the gitignored local MCP config. **No npm publish.** (Fallback if `claude mcp add` is unavailable in the setup environment: write the equivalent `mcpServers` stdio entry into the local settings, per the figma-mcp `setup.sh` pattern.)
+Update `agent-workflow/scripts/install.sh` to **register the already-built + `npm link`-ed `workflow-mcp`** into the workspace's local MCP config via a command: `claude mcp add workflow-mcp --scope local --env WORKFLOW_BFF_URL=<default> --env WORKFLOW_SESSION_COOKIE=<placeholder> -- workflow-mcp`. install.sh **does not build** — building + `npm link` is the `workflow-mcp` repo's own concern (T28); install.sh **assumes the `workflow-mcp` bin is on PATH** and registers it. The `--env` values land in the gitignored local MCP config (`~/.claude.json`, project-scoped). (Fallback if `claude mcp add` is unavailable: write the equivalent `mcpServers` stdio entry, per the figma-mcp `setup.sh` pattern.)
 
 ### Required skills
 
 ### Subtasks
-- [ ] Clone (if absent) + `npm ci && npm run build`
-- [ ] Register via `claude mcp add` (local scope; `--env` BFF URL + cookie; `node …/dist/index.js`)
-- [ ] Idempotent re-run; document the cookie placeholder; fallback to JSON entry if no `claude` CLI
+- [ ] Register via `claude mcp add … -- workflow-mcp` (local scope; `--env` BFF URL + cookie)
+- [ ] Skip/warn gracefully if `workflow-mcp` is not on PATH (not built/linked) — do not build
+- [ ] Idempotent re-run (`claude mcp remove` then add); document the cookie placeholder; fallback to JSON entry if no `claude` CLI
 
 ## T33 — `create-tasks` skill (go mode)
 
