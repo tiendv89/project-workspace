@@ -1,7 +1,7 @@
 id: T25
 title: "Features API: ?name= exact-match filter"
 repo: workflow-backend
-status: reviewing
+status: review_passed
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/workflow-db-T25
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:26:43.586Z
+  last_updated_at: 2026-06-24T14:30:31.287Z
 pr:
   url: https://github.com/tiendv89/workflow-backend/pull/48
   status: open
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T14:26:43.586Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T14:30:31.287Z
