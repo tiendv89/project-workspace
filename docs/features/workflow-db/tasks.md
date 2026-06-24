@@ -95,8 +95,8 @@ Confirm the next filename sequence by listing `workflow-backend/migrations/` —
 **Verification**: the post-migration schema must match `database/workspace/v003/schema.dbml` for all altered tables (`workspace_features`, `workspace_tasks`). Run `goose up` and `goose down` against a scratch Postgres **seeded with at least one `owner='go'` row** — the down must succeed (purging the go row) and leave the legacy schema intact. Confirm the existing `workflow-backend` test suite passes.
 
 ### Required skills
-- `postgres-best-practices`
-- `backend-engineer`
+- postgres-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Inspect `workflow-backend/migrations/` for exact next filename (confirm `00015_*` is available)
@@ -127,8 +127,8 @@ After query changes, run `sqlc generate` from the adapter root and commit the re
 **Verification**: seed one `owner='go'` feature + tasks in the shared DB, run a full sync cycle, assert those rows are unchanged. Legacy (`owner IS NULL`) rows must still reconcile normally.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Locate all bulk-delete SQL queries in `database/queries/` that target `workspace_features` and `workspace_tasks` without owner filter
@@ -166,8 +166,8 @@ The completion broker currently drains completions from a single `broker:pending
 - TS orchestrator unit test: declares `owner='ts'`, still drives a legacy feature unchanged.
 
 ### Required skills
-- `go-best-practices`
-- `typescript-best-practices`
+- go-best-practices
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Locate exact `Store` interface and Redis adapter in `runtime/broker/internal/store/store.go:57-88`
@@ -209,7 +209,7 @@ Add `if (feature.owner === 'go') continue;` for explicitness in `runtime/orchest
 - A feature with no `owner` (legacy) is still acted upon unchanged.
 
 ### Required skills
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] 4a: Locate status.yaml parsing path; extract `owner` field into feature object type; document absent-owner = ts convention
@@ -248,8 +248,8 @@ Initialize the Go module for `workflow-orchestrator` and set up the database acc
 - Integration test (or `TestMain`): connect to a local Postgres via `DATABASE_URL`, run `SELECT 1`, assert success.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Initialize `go.mod` with module path and required dependencies
@@ -297,8 +297,8 @@ Implement the Go orchestrator's feature and task creation path, plus a CLI seed 
 - Unit tests: `CreateFeature`, `CreateTask`, `InitialAutoReady` each tested in isolation.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Define `GoFeatureSpec` and `GoTaskSpec` types
@@ -338,8 +338,8 @@ Implement `FindEligibleTasks` in the Go orchestrator — the query that identifi
 - Unit test with in-memory pgx mock or real test DB.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Write `FindEligibleTasks` using the eligibility index
@@ -380,8 +380,8 @@ Implement the `ClaimTask` guarded `UPDATE` — the DB-atomic equivalent of the g
 - DB error test: pool closed → returns `(false, err)`.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Write `ClaimTask` with guarded `UPDATE ... WHERE status = 'ready' RETURNING id`
@@ -427,8 +427,8 @@ Implement the guarded-`UPDATE` helpers for all v1 lifecycle transitions, and the
 - `AppendLog` inserts a row; duplicate sequence collision handled (wrap in transaction).
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Write `GuardedTransition` as the shared transition primitive
@@ -464,8 +464,8 @@ Called from `SetDone` (T9) — wrap both in a single `pgx.BeginTx` transaction.
 - Transaction test: if the `UPDATE` of `SetDone` rolls back, no dependents are advanced.
 
 ### Required skills
-- `go-best-practices`
-- `postgres-best-practices`
+- go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Write `AutoReadyDependents` with transactional `SetDone` + dependent advance
@@ -507,7 +507,7 @@ Implement the dispatch step: register the task handle with the broker (`owner='g
 - Unit test: mock broker + Redis client; assert both registration and stream entry.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Write `DispatchTask` — broker `/register` POST with `owner='go'`
@@ -541,7 +541,7 @@ Implement the reap loop: drain the go completion queue from the broker, resolve 
 - Unit test: mock broker returns one go completion; assert DB row updated, handle deleted.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Write `ReapCompleted` — `GET /list-completed?owner=go`
@@ -580,7 +580,7 @@ Implement the PR-merge poll — the mechanism that drives `in_review → done` f
 - Unit test: mock GitHub client returning `merged: true` / `merged: false`.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Write `internal/github/client.go` — `GetPR` using `GITHUB_TOKEN` from config
@@ -623,7 +623,7 @@ Wire all Go orchestrator components (T5–T13) into a single continuous poll cyc
 - Integration smoke test: start orchestrator, wait for one cycle, assert no fatal errors in logs.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Wire all components into `cmd/orchestrator/main.go`
@@ -661,8 +661,8 @@ Verify that go-owned features and tasks created by the Go orchestrator (T6) surf
 - All existing read-API tests still pass.
 
 ### Required skills
-- `go-best-practices`
-- `backend-engineer`
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Inspect `/features` and `/features/:fid/tasks` queries — confirm no `owner IS NULL` filter
@@ -814,7 +814,7 @@ The load-bearing integration test for the entire feature. Drives a seeded go fea
 Invoked with: `go test ./test/e2e/... -tags integration`; must complete in under 5 minutes.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Set up testcontainers-go (Postgres + Redis) in `TestMain`
@@ -840,9 +840,9 @@ Invoked with: `go test ./test/e2e/... -tags integration`; must complete in under
 Add the data-layer function that inserts a go feature's tasks in **one transaction, all-or-nothing** (technical-design §4.8). Inserts each task with `owner='go'`, `source_path=NULL`, and per-task initial `status` (`ready` if `depends_on=[]`, else `todo`); `depends_on` is stored as `task_name` slugs (resolved at runtime — forward/intra-batch references are fine). Validates every task first (non-empty unique `name`; `actor_type` defaults to `agent`, else ∈ `{agent,human,either}`; existing `task_name` = conflict) and **rolls back the whole batch on any failure**, returning a failure list `[{name, reason}]`.
 
 ### Required skills
-- `postgres-best-practices`
-- `go-best-practices`
-- `backend-engineer`
+- postgres-best-practices
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Add the sqlc query + `Reader`/writer method twinning `CreateWorkspaceFeature`
@@ -857,8 +857,8 @@ Add the data-layer function that inserts a go feature's tasks in **one transacti
 Extend `GET /api/workspaces/:wsId/features` with an additive **`?name=<slug>` exact-match filter** that returns the matching feature (including its UUID) or an empty result, org-scoped exactly like the unfiltered list. Backs the MCP `get_feature` tool (§4.8); the BFF proxies it unchanged.
 
 ### Required skills
-- `go-best-practices`
-- `backend-engineer`
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Add the `name` query param + query path (exact match on `feature_name`)
@@ -872,9 +872,9 @@ Extend `GET /api/workspaces/:wsId/features` with an additive **`?name=<slug>` ex
 Service + gin handler for `POST /api/workspaces/:workspaceId/features/:featureId/tasks` — a **BFF-identity** route, twin of `CreateFeature` (§4.8). Bulk array body; authorize via injected identity (workspace ∈ `AccessibleOrgIDs`, `organization_id` server-derived); assert feature `owner='go'`; call `CreateWorkspaceTasks` (T24) in one all-or-nothing transaction; respond with created tasks or `409`/`422` + the failure list `[{name, reason}]`.
 
 ### Required skills
-- `go-best-practices`
-- `backend-engineer`
-- `postgres-best-practices`
+- go-best-practices
+- backend-engineer
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Handler + service + request/response DTOs
@@ -889,8 +889,8 @@ Service + gin handler for `POST /api/workspaces/:workspaceId/features/:featureId
 Confirm the generic `/bff/workflow-backend/*` proxy already forwards `POST .../features/:id/tasks` **and** `GET .../features?name=` with `auth_required` + identity injection. **No code change expected** — the deliverable is a passthrough integration test proving both routes reach the backend with `X-User-Id`/`X-Org-Id` set. Workspace-membership enforcement is out of scope (org-scoping is the bar).
 
 ### Required skills
-- `go-best-practices`
-- `backend-engineer`
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Confirm the two routes are covered by the existing upstream config
@@ -906,7 +906,7 @@ Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** 
 **Human prerequisite:** the `workflow-mcp` GitHub repo must exist and `WORKFLOW_MCP_LOCAL_PATH` be set before this runs.
 
 ### Required skills
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] `package.json` (`"bin": {"workflow-mcp": "dist/index.js"}`) + tsconfig + `build`; stdio entry point
@@ -921,7 +921,7 @@ Scaffold the new `workflow-mcp` repo (§4.8): TypeScript, MCP TS SDK, **stdio** 
 Read the `session_id` cookie from the `mcpServers` `env`; send it as `Cookie: session_id=…` on every BFF call (the proxy authenticates on this cookie — no BFF auth change, §4.8). On a `401`, return clear "re-login and update the cookie" guidance.
 
 ### Required skills
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] BFF HTTP client that attaches `Cookie: session_id`
@@ -935,7 +935,7 @@ Read the `session_id` cookie from the `mcpServers` `env`; send it as `Cookie: se
 Implement exactly two MCP tools (§4.8): `get_feature` (by name → feature incl. UUID via the T25 `?name=` filter, or not-found) and `create_tasks` (bulk → created tasks, or the failure list `[{name, reason}]`). Both call the BFF with the authed identity. **No `create_feature`, no `list_features`** in this slice.
 
 ### Required skills
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] `get_feature(workspace_id, name)` → feature/UUID or not-found
@@ -950,7 +950,7 @@ Implement exactly two MCP tools (§4.8): `get_feature` (by name → feature incl
 End-to-end through `workflow-mcp` → BFF → backend: create a go feature via the **existing** `CreateFeature` endpoint, then `get_feature` → `create_tasks`; assert all rows + initial `ready` + that the orchestrator's eligibility scan picks up no-dependency tasks. A batch containing an already-existing task → **whole batch rejected with the failure list** (nothing created).
 
 ### Required skills
-- `typescript-best-practices`
+- typescript-best-practices
 
 ### Subtasks
 - [ ] Spin up backend + BFF (or fakes) with a seeded session
@@ -1004,7 +1004,7 @@ Update the `tech-lead` skill so a go feature's Phase-2 output is `tasks.md` only
 Remove `internal/orchestrator/create.go` + `cmd/seed` from the `workflow-orchestrator` production path: delete them or move them behind a **test-only build** (fixtures used solely by the E2E harness); assert no production code references them; add a README/doc note that **the backend API is the creation path** (§4.8). The orchestrator is execution-only.
 
 ### Required skills
-- `go-best-practices`
+- go-best-practices
 
 ### Subtasks
 - [ ] Delete or test-only-gate `create.go` + `cmd/seed`
