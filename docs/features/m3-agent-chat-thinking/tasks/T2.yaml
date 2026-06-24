@@ -1,8 +1,10 @@
 id: T2
-title: "digital-factory-ui: live thinking area + session-only Show thinking collapse toggle"
+title: "digital-factory-ui: live thinking area + session-only Show thinking
+  collapse toggle"
 repo: digital-factory-ui
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-chat-thinking-T2
@@ -18,4 +20,9 @@ log:
   - action: created
     by: tech_lead
     at: 2026-06-24T22:00:27+0700
-    note: Task created from approved technical design (§4.2); depends on T1 (agent.reasoning event contract).
+    note: Task created from approved technical design (§4.2); depends on T1
+      (agent.reasoning event contract).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:47:45.948Z
+    note: Task activated — dependency T1 merged and marked done.
