@@ -1,0 +1,67 @@
+feature_id: m3-agent-chat-thinking
+title: M3 Agent Chat Thinking
+
+feature_status: ready_for_implementation
+current_stage: implementation
+next_action: Agents claim ready tasks (T1) via start-implementation; T2 readies when T1 is done.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T14:32:18Z
+    review_comment: Product spec approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T14:32:18Z
+        review_comment: Product spec approved.
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T14:52:23Z
+    review_comment: Technical design approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T14:52:23Z
+        review_comment: Technical design approved.
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T15:03:18Z
+    review_comment: Task breakdown approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T15:03:18Z
+        review_comment: Task breakdown approved.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - stage: product_spec
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-24T14:32:18Z
+    note: Product spec approved; feature advanced to in_tdd.
+  - stage: technical_design
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-24T14:52:23Z
+    note: Technical design approved; ready for task breakdown.
+  - stage: tasks
+    action: approved
+    actor: pentative@gmail.com
+    at: 2026-06-24T15:03:18Z
+    note: Task breakdown approved; feature ready_for_implementation. T1 activated to ready.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
