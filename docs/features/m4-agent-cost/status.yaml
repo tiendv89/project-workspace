@@ -1,17 +1,21 @@
 feature_id: m4-agent-cost
 title: Agent Cost Tracking — Token Usage and Cost Visibility
 
-feature_status: in_design
-current_stage: product_spec
-next_action: Draft and submit the product spec for approval.
+feature_status: in_tdd
+current_stage: technical_design
+next_action: Tech lead produces technical-design.md (Phase 1) for review.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-06-24T11:31:47Z
+    review_comment: Product spec approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-06-24T11:31:47Z
+        review_comment: Product spec approved.
   technical_design:
     review_status: draft
     reviewed_by: null
@@ -31,7 +35,12 @@ stages:
     review_comment: null
     review_history: []
 
-history: []
+history:
+  - at: 2026-06-24T11:31:47Z
+    actor: pentative@gmail.com
+    action: approve
+    stage: product_spec
+    note: Product spec approved; feature advanced to in_tdd.
 
 revalidation:
   product_spec_required: false
