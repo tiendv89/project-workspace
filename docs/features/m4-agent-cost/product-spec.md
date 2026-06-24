@@ -91,12 +91,19 @@ the moment M4 introduces any kind of cap or credit enforcement.
   and date for usage reports. The schema carries a `source_type` discriminator
   (`chat_turn` | `task_run` | future values) and a nullable `task_id` so runtime wiring is
   additive — no migration needed.
+- **G8 — Quota guard in `hermes-agent`.** Before invoking the Claude API for a new turn,
+  `hermes-agent` calls `user-service` to check the user's current quota state. If either
+  the daily or weekly cap is reached, the turn is **rejected before any tokens are
+  consumed**: the agent posts a system message to the thread explaining which quota is
+  exhausted and when it resets, and the input composer remains enabled so the user can send
+  their message again after the reset.
 
 ## Non-goals
 
-- **NG1 — No billing, caps, or enforcement.** Spend caps, auto-pause, credit deduction, and
-  tier enforcement are M4's core deliverables and are out of scope here. Quota is tracked
-  and surfaced; it is not enforced in this feature.
+- **NG1 — No billing tiers, auto-pause, or credit deduction.** Tier-driven caps, auto-pause
+  at a spend threshold, credit purchase, and credit deduction from a wallet are M4's core
+  deliverables and are out of scope here. The quota guard (G8) enforces the fixed system
+  cap at the `hermes-agent` layer only; it does not touch billing state.
 - **NG2 — No USD display to users.** USD is an internal accounting unit only; it must not
   appear anywhere in the UI. Users see credits exclusively.
 - **NG3 — No BYO key or model-gateway managed mode.** Per-key or per-org cost allocation
@@ -134,6 +141,17 @@ the moment M4 introduces any kind of cap or credit enforcement.
 2. The quota resets automatically — daily at midnight UTC, weekly on Monday — with no user
    action required.
 
+### Hitting the daily quota limit
+
+1. A user sends `@agent` when their daily quota is already exhausted.
+2. `hermes-agent` calls the quota check endpoint **before** calling the Claude API.
+3. The check returns `{ allowed: false, reason: 'daily_exceeded', resets_at: <timestamp> }`.
+4. No Claude API call is made; zero tokens are consumed.
+5. The agent posts a system message to the thread:
+   *"You've reached your daily credit limit. Your quota resets at midnight UTC (in 3h 42m)."*
+6. The message composer stays enabled — the user can send a message again after the reset.
+7. The same flow applies when the weekly quota is exhausted, with an appropriate reset time.
+
 ### Future: billing dashboard consumes the API
 
 M4's billing dashboard will call `GET /users/:id/cost` (via `workflow-bff` → `user-service`)
@@ -144,7 +162,12 @@ what M4 consumes — no rework needed.
 
 ### In scope
 
-**Cost capture (hermes-agent)**
+**Cost capture and quota guard (hermes-agent)**
+- **Pre-turn quota check (G8):** before invoking the Claude API, call
+  `GET /internal/users/:id/quota/check` on `user-service` (via `workflow-bff`).
+  - If `allowed: false` → post a system message to the thread with the reason and reset
+    time; return without calling the Claude API. No tokens consumed.
+  - If `allowed: true` → proceed with generation.
 - After every agent turn completion or stop, extract the `usage` block from the Claude API
   response and emit a cost event to `workflow-bff`.
 - Event payload: `session_id`, `turn_id`, `user_id`, `model_id`, `input_tokens`,
@@ -163,6 +186,10 @@ what M4 consumes — no rework needed.
 - `user_usage_quota` table: per-user daily and weekly credit usage and cap, with
   `daily_reset_at` and `weekly_reset_at` timestamps. Incremented on every `turn_cost`
   insert; reset on schedule.
+- A `GET /internal/users/:id/quota/check` endpoint: returns
+  `{ allowed: bool, reason?: 'daily_exceeded' | 'weekly_exceeded', resets_at?: timestamp }`.
+  Applies reset logic before answering (if `daily_reset_at` is in the past, zero the daily
+  counter first). This is the gate called by `hermes-agent` before every turn.
 - A `POST /internal/turn-costs` endpoint on `user-service` to receive cost events from
   `workflow-bff`. Calculates credits, writes `turn_cost`, increments quota.
 - A `GET /internal/users/:id/cost` endpoint returning per-turn credits, session totals,
@@ -175,6 +202,8 @@ what M4 consumes — no rework needed.
   turn_count, quota: { daily_used, daily_limit, weekly_used, weekly_limit,
   daily_reset_at, weekly_reset_at }, turns: [{turn_id, credits_used, model_id,
   tokens, stopped}] }`.
+- `GET /sessions/:id/quota/check` — proxy the quota check to `user-service`; called by
+  `hermes-agent` before each turn. Returns the same `{ allowed, reason, resets_at }` shape.
 - Both endpoints require workspace-scoped auth (existing session auth).
 
 **Cost display (digital-factory-ui)**
@@ -188,7 +217,7 @@ what M4 consumes — no rework needed.
 ### Out of scope (tracked separately)
 
 - Agent-runtime (task-execution) cost wiring — follow-on, same schema, different producer.
-- Quota enforcement (auto-pause, hard cap) — M4 proper.
+- Billing-tier-driven quota caps and auto-pause — M4 proper.
 - Billing-plan-driven quota caps — M4 proper.
 - Cross-session cost dashboard, cost export, invoice download — M4 proper.
 - BYO key / gateway-managed cost allocation.
@@ -253,6 +282,9 @@ None — all scoping decisions are locked.
 
 ## Success Criteria
 
+- When a user's daily or weekly quota is exhausted, `hermes-agent` rejects the turn before
+  calling the Claude API; a system message appears in the thread with the quota reason and
+  reset time. Zero tokens are consumed on a rejected turn.
 - Every completed or stopped agent chat turn produces a `turn_cost` record in `user-service`
   with correct token counts, a non-zero `credits_used`, and a `cost_usd` (internal only).
 - The agent message card shows `credits_used` immediately after the turn completes (or stops).
