@@ -2,7 +2,7 @@ id: T8
 title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
   platform-role guard"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T4
@@ -11,11 +11,12 @@ blocked_context: null
 branch: feature/m4-agent-cost-T8
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: 2026-06-24T23:50:04+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T19:50:17.972Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: tech_lead
@@ -25,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T19:43:48.499Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:50:17.972Z
+    note: Claimed via git-based claim protocol.
