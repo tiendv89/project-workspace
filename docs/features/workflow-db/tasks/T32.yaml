@@ -1,5 +1,5 @@
 id: T32
-title: "install.sh: clone + build + register workflow-mcp (mcpServers entry)"
+title: "install.sh: clone + build + register workflow-mcp (claude mcp add)"
 repo: workflow
 status: todo
 depends_on: [T28]
