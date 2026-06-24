@@ -1,7 +1,7 @@
 id: T28
 title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/workflow-db-T28
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:18:56+0000
+  last_updated_at: 2026-06-24T14:25:27.004Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/batu4404/workflow-mcp/pull/1
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/601
   status: open
