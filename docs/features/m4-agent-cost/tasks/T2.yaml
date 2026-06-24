@@ -1,7 +1,7 @@
 id: T2
 title: "user-service: plan resolution + lazy quota + internal cost/quota APIs"
 repo: user-service
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m4-agent-cost-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T18:24:27.830Z
+  last_updated_at: 2026-06-24T18:25:38.558Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/16
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/620
   status: open
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-24T18:24:27.830Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:25:38.558Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
