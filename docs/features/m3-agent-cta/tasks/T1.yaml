@@ -1,7 +1,7 @@
 id: T1
 title: "Hermes agent: suggest_next_actions tool + DB migration"
 repo: workflow-backend
-status: review_incomplete
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -76,3 +76,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-06-23T19:36:45.238Z
+  - action: retried
+    by: pye@swellnetwork.io
+    at: 2026-06-24T10:08:18+0700
+    note: Human reset from review_incomplete to in_review to allow reviewer dispatch to retry.
