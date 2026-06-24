@@ -1,7 +1,7 @@
 id: T1
 title: hermes-agent — cancel endpoint + Task tracking + CancelledError handler
 repo: hermes-agent
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/m3-stop-agent-chat-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T03:07:14.873Z
+  last_updated_at: 2026-06-24T03:20:32.249Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/21
   status: open
@@ -78,10 +78,13 @@ log:
   - action: reviewer_complete
     by: tiendv.52@gmail.com
     at: 2026-06-24T03:18:37+0000
-    note: >-
-      Reviewer requested changes. Two 🔴 race conditions: (1) chat.py 409 guard
-      atomicity broken by await gap (lines 78-137); (2) old thread finally removes
-      new turn ActiveRun (agent_dispatch.py 125-126, 345-346). Two 🟡 issues:
-      on_delta no _stopped guard (bus_translator.py); triggered_by default ""
-      authz bypass (agent_dispatch.py:79). Review comment:
-      https://github.com/tiendv89/hermes-agent/pull/21#issuecomment-4785560103
+    note: 'Reviewer requested changes. Two 🔴 race conditions: (1) chat.py 409 guard
+      atomicity broken by await gap (lines 78-137); (2) old thread finally
+      removes new turn ActiveRun (agent_dispatch.py 125-126, 345-346). Two 🟡
+      issues: on_delta no _stopped guard (bus_translator.py); triggered_by
+      default "" authz bypass (agent_dispatch.py:79). Review comment:
+      https://github.com/tiendv89/hermes-agent/pull/21#issuecomment-4785560103'
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:20:32.249Z
+    note: Fix agent claimed.
