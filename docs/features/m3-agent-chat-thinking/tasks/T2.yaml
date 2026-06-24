@@ -32,3 +32,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:49:10.723Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:49:19.723Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: live thinking area + session-only Show thinking
+      collapse toggle m3-agent-chat-thinking"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
