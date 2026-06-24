@@ -4,54 +4,69 @@ title: Workflow State Database — Agent Write Path and Relational Storage
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: >-
-  Teams: execute Wave 1 tasks (T1, T3, T4, T17b — all status: ready).
-  Feature advances to in_implementation on first task claim. Wave 2 tasks
-  (T2, T5, T16) unlock as their Wave 1 deps complete.
+  Wave-1 creation tasks ready (T24, T25, T28, T34, T35, T36). Human prerequisite:
+  create the workflow-mcp GitHub repo + set WORKFLOW_MCP_LOCAL_PATH before T28–T31.
+  Downstream tasks unlock as their deps complete.
 
 stages:
   product_spec:
     review_status: approved
-    reviewed_by: tiendv.52@gmai.com
-    reviewed_at: 2026-06-05T17:27:18Z
-    review_comment: "Approved — parallel-orchestrator coexistence model on a nullable
-      `owner` field (Go/Postgres = non-null, legacy TS/git = null; TS unchanged);
-      net-new-in-Go, no import/cutover; broker partitioned by owner as the one
-      shared surface; MCP descoped to a downstream feature; workspace-data-backend
-      is the read side (FE read API + YAML→DB adapter), so workflow-db ships no read
-      API; PostgreSQL locked. Open items #2/#4/#7/#8 deferred to technical design."
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-06-24T08:42:57Z
+    review_comment: >-
+      Approved. Adds the task-creation model: one authenticated write API in
+      workflow-backend, two clients (workflow-mcp MCP + create-tasks skill),
+      orchestrator execution-only, definition/state single-writer boundary, bulk
+      all-or-nothing creation, authoring-in-git/state-in-DB. Broader write/update
+      API + non-interactive auth scoped to workflow-db-mcp.
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
         reviewed_at: 2026-06-05T17:27:18Z
         comment: Product spec approved.
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-06-24T08:42:57Z
+        comment: Product spec re-approved after the task-creation revamp.
   technical_design:
     review_status: approved
-    reviewed_by: tiendv.52@gmai.com
-    reviewed_at: 2026-06-07T16:39:32Z
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-06-24T08:59:47Z
     review_comment: >-
-      Approved. v1 scoped to human-merge slice (Go orchestrator write path,
-      atomic claim, PR-merge poll). Reviewer cycle, drift daemon, handoff
-      trigger deferred to go-orchestrator-parity; MCP deferred to
-      workflow-db-mcp. v003 schema snapshot published at design time.
-      Proceed to Phase 2 task breakdown (T1–T18).
+      Approved. Adds §4.8 task creation: bulk all-or-nothing write API in
+      workflow-backend (+ ?name= feature filter), workflow-mcp (stdio, cookie auth,
+      get_feature + create_tasks), create-tasks skill, tech-lead drops the
+      materialization block, approve-feature go-mode guide, orchestrator
+      create.go/seed demoted. Dual-writer definition/state boundary. Proceed to
+      append tasks T24–T36.
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
         reviewed_at: 2026-06-07T16:39:32Z
         comment: Technical design approved.
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-06-24T08:59:47Z
+        comment: Technical design re-approved after the task-creation revamp.
   tasks:
     review_status: approved
-    reviewed_by: tiendv.52@gmai.com
-    reviewed_at: 2026-06-07T17:04:37Z
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-06-24T09:16:10Z
     review_comment: >-
-      Approved. 19 tasks across 5 workstreams (S/A/G/R/K), 6 execution waves.
-      Wave 1 (T1, T3, T4, T17b) seeded ready. Dependency graph matches
-      technical-design §6. One-repo rule verified. Proceed to implementation.
+      Approved. Added Workstream C (T24–T36, §4.8): task-creation API, ?name= filter,
+      workflow-mcp (scaffold/auth/tools/E2E), install.sh, create-tasks skill, tech-lead
+      no-block, orchestrator demote, approve-feature go-mode guide. Dependency-ordered;
+      one repo per task; YAMLs validated. No-dependency tasks (T24, T25, T28, T34, T35,
+      T36) activated to ready.
     review_history:
       - review_status: approved
         reviewed_by: tiendv.52@gmai.com
         reviewed_at: 2026-06-07T17:04:37Z
         comment: Tasks stage approved — 19 tasks, Wave 1 ready for execution.
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-06-24T09:16:10Z
+        comment: Tasks re-approved — Workstream C (T24–T36) added and activated.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -92,6 +107,42 @@ history:
     note: >-
       tasks approved; feature advanced to ready_for_implementation.
       19 tasks seeded; Wave 1 (T1, T3, T4, T17b) ready for execution.
+  - at: 2026-06-24T15:12:19+0700
+    actor: batu4404@gmail.com
+    action: scope_changed
+    stage: product_spec
+    note: >-
+      Reopened to close Gap A (how an approved go feature's task definitions reach
+      the DB). Adds a task-creation write API in workflow-backend, a new workflow-mcp
+      MCP server, and a create-tasks workflow skill; the Go orchestrator no longer
+      creates tasks (execution-only). Revamping product_spec, then technical_design,
+      then appending tasks T24–T35. All three upstream stages marked for revalidation;
+      existing artifacts (T1–T23, orchestrator code) preserved.
+  - at: 2026-06-24T08:42:57Z
+    actor: batu4404@gmail.com
+    action: stage_approved
+    stage: product_spec
+    note: >-
+      product_spec re-approved after the task-creation revamp; feature advanced to
+      in_tdd / technical_design. Adds the task-creation API + workflow-mcp + create-tasks
+      skill; orchestrator stays execution-only.
+  - at: 2026-06-24T08:59:47Z
+    actor: batu4404@gmail.com
+    action: stage_approved
+    stage: technical_design
+    note: >-
+      technical_design re-approved after the task-creation revamp; feature advanced
+      to tasks. §4.8 (creation API + workflow-mcp + create-tasks skill + approve-feature
+      go-mode guide) added; tasks T24–T36 to follow.
+  - at: 2026-06-24T09:16:10Z
+    actor: batu4404@gmail.com
+    action: stage_approved
+    stage: tasks
+    note: >-
+      tasks re-approved; feature advanced to ready_for_implementation. Workstream C
+      (T24–T36) added; no-dependency tasks T24, T25, T28, T34, T35, T36 activated to
+      ready. workflow-mcp registered in workspace.yaml (GitHub repo to be created by
+      the human).
 
 revalidation:
   product_spec_required: false

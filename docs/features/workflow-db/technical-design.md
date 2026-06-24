@@ -4,7 +4,7 @@
 - Feature ID: `workflow-db`
 - Title: Workflow State Database — Agent Write Path and Relational Storage
 - Status: **draft** — Phase 1 design, pending human approval before task breakdown.
-- Product spec: `docs/features/workflow-db/product-spec.md` (approved 2026-06-05)
+- Product spec: `docs/features/workflow-db/product-spec.md` (approved 2026-06-24)
 
 > **Provenance.** RAG and GitNexus MCPs were unavailable in this session; this design is grounded by direct reads of the implementation repos checked out as workspace siblings (`agent-workflow`, `workflow-backend`, `workspace-github-adapter`) with `file:line` citations throughout. No Figma section: the product spec contains no Figma links and this feature ships no new frontend UI.
 
@@ -152,7 +152,7 @@ The YAML→DB sync (`internal/adapter/db/adapter.go`) must treat the DB as autho
 
 ### 4.3 Go orchestrator write path + atomic claim (repo: `workflow-orchestrator` — new)
 - New Go service in its **own dedicated repo** (`workflow-orchestrator`, now created + registered), with its own pgx access layer to the shared schema (sqlc against the migrations owned by `workflow-backend`, or a small shared query package). It speaks the broker/dispatch protocol over Redis/HTTP and re-declares the ABI types in Go (the ABI is TypeScript).
-- **Create**: a go-owned feature is `INSERT`ed into `workspace_features` with `owner='go'`, `source_path = NULL`, `feature_name = <slug>` (the surrogate `feature_id` UUID auto-generates), and the correct `workspace_id` + `organization_id` (org scoping is mandatory — `workspaces.organization_id` is `NOT NULL`). Its tasks go into `workspace_tasks` with `owner='go'`, `feature_id` = the feature's UUID, `feature_name`/`task_name` = the slugs (e.g. `T1`), and an auto-generated `task_id` UUID.
+- **The orchestrator does not create features or tasks** — creation is the authenticated backend API (§4.8). The orchestrator's write path is execution only: claim, status transitions, log, and runtime auto-ready over rows that already exist (`owner='go'`).
 - **Atomic claim** (`ready → in_progress`) — keyed on the surrogate UUID (`(workspace_id, task_id)` is unique):
   ```sql
   UPDATE workspace_tasks
@@ -194,19 +194,49 @@ This is the **owner-awareness task (T4)**; each loop above is a declared subtask
 
 > **State-write ownership (verified, load-bearing).** The **orchestrator** performs *all* management-repo state writes via its own code (`claim.ts`, `mutate-yaml.ts`, `append-log.ts`, `handle-merged.ts`, `unblock-deps.ts`). The **executor** writes `result.json` + POSTs the broker callback (`reap-loop.ts:131`); in the runtime it skips management-repo writes via the `AGENT_RUNTIME` guard — **with one exception**: claude `start-implementation`'s `started`-log step (Hard Rule #3) is **not** guarded and commits a log entry to the git task YAML, which §4.7 owner-gates for go. Consequence: the Go orchestrator reimplements the write path against the DB (tasks T5–T14), the executor is otherwise owner-agnostic (it reads its briefing from the git narrative, which exists for go features), and "owner-aware skills" is **mostly** the authoring skills in §4.7 plus that single `started`-log owner-gate.
 
-### 4.7 Owner-aware workflow skills — design only, not implemented in this design (repos: management-repo / `workflow` skills)
-A go feature must be *created* in the go shape: `status.yaml` carrying `owner: go`, narrative in `tasks.md`, and **no `tasks/*.yaml` in git** (state lives in the DB). The authoring skills must therefore become owner-aware. Executor-run skills already skip management-repo writes **in the runtime** via the `AGENT_RUNTIME` guard, so most need no owner change — the one exception is claude `start-implementation`'s `started`-log step (not guarded), called out below. **Default rule baked into every skill: an absent `owner` field ⇒ `ts`** (preserves every existing feature). The concrete edits are tracked as Phase 2 tasks **T16** (`init-feature`) and **T17** (`tech-lead`) in §6 — they are *not* a pre-Phase-2 prerequisite. The Go orchestrator can be built and tested end-to-end via a seed/fixture (T6) without them; T16/T17 are what make the human-authoring journey real and depend on T4a (marker convention) + T6 (materializer contract). Skill trees: `claude/workflow_skills/` (authoring + interactive) and `hermes/workflow_skills/` (leaner executor runtime) — both must stay consistent.
+### 4.7 Authoring + creation skills (repo: `workflow` = agent-workflow)
+A go feature is created in the go shape: `status.yaml` carrying `owner: go`, narrative in `tasks.md`, and **no `tasks/*.yaml` in git** (state lives in the DB). The authoring skills are owner-aware; an **absent `owner` ⇒ `ts`** (preserves every existing feature). Executor-run skills already skip management-repo writes in the runtime via the `AGENT_RUNTIME` guard, so most need no owner change — the exception is claude `start-implementation`'s `started`-log step (not guarded), gated on `owner !== 'go'`.
 
-| Skill | Tree(s) | Change for a go feature (absent `owner` ⇒ `ts` everywhere) |
-|---|---|---|
-| `init-feature` | **claude only** | **Change** — explicitly **ask `go` vs `ts` (never assume)**. For `go`: write `owner: go` into `status.yaml`, create `tasks.md`, and create **no** `tasks/*.yaml`. |
-| `tech-lead` | **claude only** | **Change** — for a `go` feature emit `tasks.md` narrative only (no git `tasks/*.yaml`) + the materialization input (`workspace_tasks`, `owner='go'`). |
-| `start-implementation` | **claude + hermes** | **claude: change** — its `started`-log git write (Hard Rule #3) is **not** `AGENT_RUNTIME`-guarded, so gate it on `owner !== 'go'`; a go task (no git YAML) skips it and the orchestrator/DB records the started entry. **hermes: no functional change** — already writes **zero** management-repo state (stops before push; wrapper owns the rest), so already go-safe; add an explicit owner note for parity. |
-| `pr-create` | claude (hermes copy has **no `SKILL.md`** — anomaly to resolve) | **No change** — already `AGENT_RUNTIME`-guarded to skip all management-repo writes in the runtime. |
-| `respond-to-review`, `review-pr` | claude / hermes | Reviewer path — **out of v1** (owned by `go-orchestrator-parity`). |
-| `list-features`, `resume-feature` | claude | Read go state from the DB / read-API — **forward work**, not required for the v1 human-merge slice. |
+| Skill | Change for a go feature (absent `owner` ⇒ `ts`) |
+|---|---|
+| `init-feature` (claude) | Ask `go` vs `ts` explicitly (never assume). For `go`: write `owner: go`, create `tasks.md`, create **no** `tasks/*.yaml`. |
+| `tech-lead` (claude) | Emit `tasks.md` narrative **only** — no git `tasks/*.yaml` and **no `## Materialization (go)` JSON block**. The `tasks.md` index table (`ID \| Wave \| Title \| Repo \| Depends on`) is the parseable source the `create-tasks` skill reads; `actor_type` defaults to `agent`. (Task T34.) |
+| `create-tasks` (claude, **new**) | The local counterpart of the MCP: read the approved `tasks.md` and materialize a go feature's tasks into the DB through the creation API — see §4.8. (Task T33.) |
+| `start-implementation` (claude + hermes) | claude: gate the `started`-log git write (Hard Rule #3) on `owner !== 'go'` (a go task has no git YAML; the started entry is in the DB). hermes: already go-safe (writes no management-repo state). |
+| `approve-feature` (claude) | **Owner-aware at the `tasks` stage**: a go feature has no git `tasks/*.yaml` to activate, so skip YAML activation and instead **emit a guide to run `/create-tasks <feature>`** (materialize the approved tasks into the DB) and set `next_action` accordingly. ts unchanged (still activates its YAMLs). (Task T36.) |
+| `pr-create` (claude) | No change — already `AGENT_RUNTIME`-guarded to skip management-repo writes in the runtime. |
 
-**Open item — feature materialization (Gap A):** *how* an approved go feature's task definitions reach the DB. Two viable mechanisms for Phase 2 to choose: (a) `tech-lead`/`init-feature` emit a definition that a small **materializer** (CLI or orchestrator `create` command — task T6) inserts; (b) the orchestrator create path (T6) is driven by a seed/fixture for v1 testing while the human-authoring trigger lands with the skills. The v1 e2e test (T18) may seed the DB directly; the skill-driven authoring path is required for real human use. The **agent/human-facing write & update API + MCP** for this (credential-clean materialization, task-definition updates, and manual-intervention transitions like `blocked→ready`/`cancelled`) is tracked as the deferred feature **`workflow-db-mcp`** — note that the Go orchestrator's *execution-state* writes are in-process (B1) and need no API; only these non-runtime writes do.
+Task definitions live in `tasks.md` (git, human-reviewed); live task **state** is created in and owned by the DB. The mechanism that turns the approved `tasks.md` into DB rows — and the MCP that fronts it — is §4.8.
+
+### 4.8 Task creation — write API, MCP, and skill (repos: `workflow-backend`, `workflow-bff`, `workflow-mcp`, `workflow`)
+Creating a go feature's tasks is a separate concern from execution. The orchestrator (§4.3) never creates — it only drives tasks that already exist. Creation is an **authenticated write API in `workflow-backend`**, reached **through `workflow-bff`**, with two clients: a **`workflow-mcp`** MCP server (chat/IDE agents) and a **`create-tasks`** workflow skill (a human in the editor). No client holds DB credentials.
+
+**Dual-writer boundary (definition vs state).** `workspace_tasks` now has two writers — the creation API and the orchestrator — coordinated by a **per-task phase boundary**:
+- The **creation API owns the definition** (`task_name`, `title`, `repo`, `depends_on`, `actor_type`, `owner='go'`, `source_path=NULL`) and the **initial status** (`ready` if `depends_on=[]`, else `todo`) — but only while `status ∈ {todo, ready}` (before the orchestrator claims it).
+- The **orchestrator owns the state** (post-claim `status`, `execution`, `pr`, log) and **runtime auto-ready**; it never edits the definition.
+- A create/edit targeting a task whose `status ∉ {todo, ready}` is a conflict (the orchestrator has taken over). The orchestrator's existing eligibility scan (`owner='go' AND status='ready'`, §4.3) picks up created rows with **no orchestrator change**.
+
+**Backend endpoint** (`workflow-backend`) — a BFF-identity route, twin of the existing `CreateFeature`:
+`POST /api/workspaces/:workspaceId/features/:featureId/tasks`, body `{ "tasks": [ {name,title,repo,depends_on,actor_type?}, ... ] }`. **One transaction, all-or-nothing** (bulk — a feature can have 30+ tasks in one call):
+1. Authorize via injected identity (`X-User-Id`/`X-Org-Id`): load workspace, assert it is in the caller's `AccessibleOrgIDs` (org scoping; `organization_id` derived server-side); load feature, assert `owner='go'`.
+2. Validate every task: non-empty unique `name`; `actor_type` optional, defaults to `agent` (if present ∈ `{agent,human,either}`); `depends_on` stored as task_name slugs, resolved at runtime (forward/intra-batch refs fine). An existing `task_name` is a conflict.
+3. **Reject the whole batch if any task fails** — create nothing, roll back, return the failure list `[{name, reason}]`. Only if all pass → insert all + commit.
+4. Initial status per created task: `ready` if `depends_on=[]`, else `todo`.
+
+Feature creation is **not** part of this endpoint — features come from the existing `CreateFeature` flow. A **`GET /api/workspaces/:wsId/features?name=<slug>`** exact-match filter is added so clients resolve a feature's UUID by slug.
+
+**`workflow-mcp`** (new repo, **TypeScript**, MCP TS SDK, **stdio**):
+- A thin client over the BFF API — **no DB credentials**. Cloned from GitHub as a workspace repo (not npm); `install.sh` builds it (`npm ci && npm run build`) and registers an `mcpServers` stdio entry (`command: node`, `args: ["${WORKFLOW_MCP_LOCAL_PATH}/dist/index.js"]`) plus an `env` block carrying `WORKFLOW_BFF_URL` (default + override for local testing) and the `session_id` cookie. That entry lives in a **gitignored** local settings file (`.claude/settings.local.json` `mcpServers`) since the cookie is a secret.
+- Tools (exactly two): `get_feature` (by name → feature incl. UUID, or not-found; uses the `?name=` filter) and `create_tasks` (bulk → created tasks, or the failure list). **No `create_feature`, no `list_features`** in scope.
+- Auth: authenticates **as the user** by reusing a browser-login `session_id` cookie, sent as `Cookie: session_id` on every BFF call — the proxy authenticates on that cookie today, so **no BFF auth change**. On `401` it returns clear re-login guidance.
+
+**`create-tasks` skill** (`workflow`, claude): resolves the feature from session context (asks + confirms if ambiguous); precondition `owner: go` + tasks approved; resolves `WORKSPACE_ID` from `.env`; resolves the feature UUID via the MCP `get_feature`; parses `tasks.md`'s index table (actor_type defaults to `agent`); creates in one bulk `create_tasks` call; on rejection shows each failed task + reason and asks **stop / retry / skip-failing-and-retry-rest**; writes nothing to git.
+
+**Credential boundary.** Only `workflow-backend` holds DB write creds. The MCP and skill authenticate as the user through the BFF; the orchestrator holds its own in-process creds for execution. A non-interactive credential (PAT / device-code) and the broader write/update surface (FSM transitions, edits, `cancelled`, feature creation) are the deferred **`workflow-db-mcp`**. `hermes-agent`'s current direct-`workspace_tasks`-insert path is superseded by this API; rewiring it is a tracked follow-up (until then, a known third-writer risk).
+
+**When to run (lifecycle).** Task creation happens **after the `tasks` stage is approved** (feature → `ready_for_implementation`). For a go feature, `approve-feature` is owner-aware (§4.7): it does not activate git task YAMLs (there are none) and instead guides the operator to run `/create-tasks <feature>` (or a chat agent to call the MCP `create_tasks`). That inserts the approved tasks; the backend's initial auto-ready marks no-dependency tasks `ready`, and the orchestrator's eligibility scan picks them up.
+
+**Alternatives rejected:** orchestrator-owns-creation (conflates execution with authoring; needs DB-creation deps); per-task best-effort multi-create (partial-batch writes — a half-materialized feature is worse than a clean fail); 30 single-task calls (too slow for large features); MCP embedded in the BFF/hermes (couples a reusable MCP into a proxy/chat agent); column-boundary always-editable definition (races runtime auto-ready, needs locking).
 
 ### Why this design
 - Serves the primary goal (a Go orchestrator writing directly to the DB) with the **least disruption to the running legacy path**: reuse the same schema + read API + executor/dispatcher, and touch the TS path only additively (`owner='ts'`). This is a deliberate scope choice, not a forced one — any of these may change later as Go takes over more of the workload.
@@ -226,7 +256,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 - Broker owner-partitioning is independent of the schema and can proceed in parallel.
 - The Go orchestrator dispatch+reap loop depends on **both** the write path/claim (schema) **and** the partitioned broker.
 - **TS orchestrator owner-awareness (T4)** depends only on the `owner: go` `status.yaml` marker convention — not on the DB schema — so it can land independently and early (testable with a hand-authored `owner: go` status.yaml). See §4.6.
-- **Authoring skills (T16/T17)** depend on the marker convention (T4a) and the materialization contract (T6). The Go orchestrator can be built and tested end-to-end via a seed/fixture (T6) **without** the skills; the skills are what make the human-authoring journey real. See §4.7.
+- **Task-creation path (§4.8).** The backend creation API (T26) depends on the DB layer (T24) and the `?name=` filter (T25); the `workflow-mcp` tools (T30) depend on the API plus the scaffold/auth (T28/T29); the `create-tasks` skill (T33) depends on the MCP tools (T30) and the MCP being wired into the workspace (T32). The `tech-lead` change (T34) is independent. See §4.8 / §6.
 
 **External / cross-repo**
 - Migrations are owned by `workflow-backend` (the schema's single home) and consumed by the sync adapter (`workspace-github-adapter`) and the Go orchestrator (`workflow-orchestrator`); the read API lives in `workflow-backend` too. The `owner` migration (in `workflow-backend`) must be applied to the shared DB before the sync-scoping change (`workspace-github-adapter`) and the Go orchestrator run. **This is a cross-repo release-ordering dependency**, not a code dependency.
@@ -238,7 +268,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 - **Go orchestrator location — RESOLVED: a new dedicated repo `workflow-orchestrator`** (created on GitHub + registered in `workspace.yaml`). Rationale: it is the successor that will *replace* the TS orchestrator, so it should not live inside `agent-workflow` (which holds the TS orchestrator being retired). The ABI is TypeScript (no Go type reuse from co-location) and the broker/dispatch are reached over Redis/HTTP (language-agnostic), so co-location buys nothing; a clean repo gives independent module/CI/release and a clean retirement path. (Alternatives `workflow`/`workflow-backend`/`workspace-github-adapter` rejected — each conflates the successor with a system it must outlive or with the read/sync services.)
 - **Status-transition validation trigger** — include as DB-central enforcement now, or stage it. Recommended: stage after the atomic claim is proven.
 - **Org scoping (`organization_id`)** — already exists (`workspaces.organization_id NOT NULL`). The Go orchestrator must populate it on every write. Wiring `HandleMetadata.TenantID` → `organization_id` end-to-end, and any per-org isolation beyond workspace scoping, is forward work (flagged, not designed here).
-- **Feature materialization mechanism (Gap A)** — *how* an approved go feature's task definitions are inserted into the DB (a materializer CLI, an orchestrator `create` command, or a test seed for v1). Not resolved here; Phase 2 decides (§4.7). The v1 e2e test may seed directly, so this does not block the Go orchestrator tasks.
+- **Feature materialization — RESOLVED (§4.8):** an approved go feature's tasks reach the DB through the authenticated bulk creation API in `workflow-backend`, driven by the `workflow-mcp` MCP and the `create-tasks` skill. The orchestrator does not create; its `create.go`/`cmd/seed` are demoted to test-only (T35).
 
 **Resolved (v003)**: `owner` is **denormalized onto `workspace_tasks`** (not join-to-feature), so the Go orchestrator's eligibility scan (`owner='go' AND status='ready'`) hits one index with no join. The writer keeps `tasks.owner` consistent with its feature's `owner`. Recorded in `database/workspace/v003`.
 
@@ -265,7 +295,7 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 
 **Workstream G — Go orchestrator** (each critical path a separate task)  `[workflow-orchestrator (new repo)]`
 - **T5** — DB access layer: pgx/sqlc setup, config, connection to the shared schema — *blocked on T1*
-- **T6** — Feature/task creation (+ materializer/seed): `INSERT` go feature + tasks (`owner='go'`, `source_path NULL`, valid `workspace_id`+`organization_id`); expose a seed/CLI for tests — *blocked on T5*
+- **T6** — Feature/task creation (+ materializer/seed) in the orchestrator — **superseded**: creation moved to the backend API (§4.8, T24–T26); the orchestrator's `create.go`/`cmd/seed` are removed from the production path (T35), kept only as test fixtures.
 - **T7** — Eligibility scan: query `owner='go'` tasks that are `ready` with all `depends_on` `done` — *blocked on T5*
 - **T8** — Atomic claim: guarded `UPDATE … WHERE status='ready'`; `0-rows` loser path — *blocked on T5*
 - **T9** — Status transitions + activity log: guarded `UPDATE` for `in_progress→in_review` and `→blocked`; `INSERT` into `workspace_activity_events` — *blocked on T5*
@@ -278,19 +308,33 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 **Workstream R — read side**
 - **T15** — Read API: verify go-owned rows surface unchanged via existing endpoints; optional `owner` in DTO  `[workflow-backend]` — *blocked on T1 (DTO), T6 (rows to verify)*
 
-**Workstream K — owner-aware skills** (design in §4.7; implemented in Phase 2 as tracked tasks T16/T17 — repo `workflow` = `agent-workflow`, which hosts both `claude/workflow_skills/` and `hermes/workflow_skills/`)
+**Workstream K — owner-aware skills** (§4.7) — repo `workflow` = `agent-workflow` (hosts `claude/workflow_skills/` and `hermes/workflow_skills/`). The creation-related skill work (`create-tasks` T33, `tech-lead` no-block T34) is in Workstream C.
 - **T16** — `init-feature` (claude): explicitly ask `go` vs `ts`; for `go` set `owner: go` and create **no** `tasks/*.yaml`  `[workflow]` — *blocked on T4a (marker convention)*
-- **T17** — `tech-lead` (claude): for a `go` feature emit `tasks.md` only (no git task YAMLs) + the materialization input  `[workflow]` — *blocked on T4a, T6 (materializer contract)*
+- **T17** — `tech-lead` (claude): emit `tasks.md` only for a go feature  `[workflow]` — **superseded by T34** (tech-lead now emits **no** materialization block; the `tasks.md` index table is the source — see §4.7/§4.8).
 - **T17b** — `start-implementation` (claude): owner-gate Hard Rule #3's `started`-log git write — skip it for `owner='go'`; absent/`ts` unchanged. hermes `start-implementation` verified go-safe (writes no management-repo state) — parity note only.  `[workflow]` — *no blockers (reads `status.yaml` owner)*
+
+**Workstream C — task creation (API + MCP + skill)** (§4.8) — numbered in dependency order
+- **T24** — DB layer `CreateWorkspaceTasks` (bulk, one transaction, all-or-nothing): insert all go tasks, per-task initial status by `depends_on`, validate all + roll back on any failure, return failure list `[{name, reason}]`  `[workflow-backend]` — *no blockers*
+- **T25** — `GET /api/workspaces/:wsId/features?name=<slug>` exact-match filter (additive)  `[workflow-backend]` — *no blockers*
+- **T26** — Service + handler `POST .../features/:id/tasks` (bulk, all-or-nothing, BFF-identity org-scope, feature `owner='go'`)  `[workflow-backend]` — *blocked on T24*
+- **T27** — `workflow-bff`: confirm the generic proxy forwards the create + `?name=` routes with identity injection (passthrough test; no code expected)  `[workflow-bff]` — *blocked on T26, T25*
+- **T28** — `workflow-mcp` scaffold (TS, MCP TS SDK, stdio; `npm run build`; config from `mcpServers` env; `workspace.yaml` registration)  `[workflow-mcp]` — *blocked on the new GitHub repo*
+- **T29** — `workflow-mcp` auth: read `session_id` cookie from `mcpServers` env; send `Cookie: session_id`; `401` re-auth guidance  `[workflow-mcp]` — *blocked on T28, T27*
+- **T30** — `workflow-mcp` tools: `get_feature` (by name) + `create_tasks` (bulk); map the failure list back to the client  `[workflow-mcp]` — *blocked on T28, T29, T26, T25*
+- **T31** — `workflow-mcp` E2E: existing `CreateFeature` → `get_feature` → `create_tasks`; assert all rows + initial `ready` + orchestrator picks up; existing-task batch → whole batch rejected with failure list  `[workflow-mcp]` — *blocked on T30*
+- **T32** — `install.sh`: clone + build `workflow-mcp` + write the `mcpServers` stdio entry (`command`/`args` + `env`)  `[workflow]` — *blocked on T28*
+- **T33** — `create-tasks` skill (go mode): detect+confirm feature → parse `tasks.md` index table → resolve feature via MCP `get_feature` → one bulk `create_tasks`; on rejection ask stop/retry/skip  `[workflow]` — *blocked on T30, T32*
+- **T34** — `tech-lead` skill: remove the `## Materialization (go)` JSON block; the index table is the create-tasks source (actor_type defaults `agent`)  `[workflow]` — *no blockers*
+- **T35** — `workflow-orchestrator`: remove `internal/orchestrator/create.go` + `cmd/seed` from the production path (delete or test-only build); doc note that the API is the creation path  `[workflow-orchestrator]` — *no blockers*
+- **T36** — `approve-feature` skill: owner-aware `tasks`-stage approval — for a go feature skip git-YAML activation and emit the guide to run `/create-tasks <feature>`; set `next_action`. ts unchanged.  `[workflow]` — *no blockers* (guide references T33's skill)
 
 **Integration gate**
 - **T18** — E2E coexistence test: drive a seeded go feature to `done` via a **human-merged** impl PR, in parallel with a legacy feature; assert TS never drains a go completion, both surface via the read API, and sync never deletes go rows  `[workflow-orchestrator]` — *blocked on T2, T4, T14, T15*
 
 **Parallelism**
 - T1, T3, T4 start immediately (T4 needs only the marker convention 4a).
-- Once T1 lands: T2 and T5 begin. Once T5 lands: T6 / T7 / T8 / T9 run in parallel.
-- T16 / T17 (skills) run in parallel with the G-workstream once 4a (marker) and the T6 materializer contract are fixed.
-- T18 is the final gate.
+- Once T1 lands: T2 and T5 begin. Once T5 lands: T6 / T7 / T8 / T9 run in parallel. T18 gates the orchestrator workstream.
+- Task-creation workstream (§4.8): T24, T25, T34, T35, T36 start now. T26←T24; T27←T26,T25; T28 gated on the new repo; T29←T28,T27; T30←T28,T29,T26,T25; T31←T30; T32←T28; T33←T30,T32.
 
 ---
 
@@ -298,12 +342,13 @@ A go feature must be *created* in the go shape: `status.yaml` carrying `owner: g
 
 | Repo (`workspace.yaml` id) | Change | Tasks |
 |---|---|---|
-| `workflow-backend` (schema home) | `owner` migration + relaxed `source_path` (in `migrations/`); verify go-owned rows surface via existing read API; optional `owner` DTO field | T1, T15 |
+| `workflow-backend` (schema home) | `owner` migration + relaxed `source_path`; verify go-owned rows surface via the read API; optional `owner` DTO field. **Task-creation API:** `CreateWorkspaceTasks` bulk all-or-nothing endpoint + `?name=` feature filter | T1, T15, T24, T25, T26 |
 | `workspace-github-adapter` | Scope YAML→DB sync upserts/deletes to `owner IS NULL`; regen owner-aware sqlc queries | T2 |
-| `workflow` (`agent-workflow`) | Broker owner-partitioning **+ TS declares `owner='ts'`** (T3); **TS feature-loop `owner` guards** — `lifecycle-manager`, `review-cycle`, `notification-watcher` (T4) | T3, T4 |
-| `workflow-orchestrator` (new repo — created + registered) | New Go orchestrator, broken per critical path: DB layer, creation/materializer, eligibility, atomic claim, transitions+log, auto-ready, dispatch, reap, PR-merge poll, loop wiring; coexistence integration test | T5–T14, T18 |
-| `workflow` skills (canonical source; repo id confirmed in Phase 2) | Owner-aware authoring skills — `init-feature` (ask go/ts), `tech-lead` (no git task YAMLs for go) — **design only here, implemented in Phase 2 (§4.7)** | T16, T17 |
-| `management-repo` | Feature docs / status, **and the schema-version snapshot `database/workspace/v003/{changelog.md, schema.dbml}`** (companion to T1's migration). The `workflow-orchestrator` repo is **already registered** in `workspace.yaml`. | n/a (docs/config) |
+| `workflow` (`agent-workflow`) | Broker owner-partitioning + TS declares `owner='ts'` (T3); TS feature-loop `owner` guards (T4); `start-implementation` owner-gate (T17b); `init-feature` go/ts (T16); **`tech-lead` no-materialization-block (T34), `create-tasks` skill (T33), `install.sh` MCP registration (T32), `approve-feature` go-mode guide (T36)** | T3, T4, T16, T17b, T32, T33, T34, T36 |
+| `workflow-bff` | Confirm the generic proxy forwards the task-create + `?name=` routes with identity injection (passthrough test; no code expected) | T27 |
+| `workflow-mcp` (**new repo** — human creates + registers) | TypeScript MCP server (stdio): scaffold + build, cookie auth, `get_feature` + `create_tasks` tools, E2E | T28–T31 |
+| `workflow-orchestrator` | Go orchestrator critical paths (DB layer, eligibility, claim, transitions+log, auto-ready, dispatch, reap, PR-merge poll, loop) + coexistence test; **remove `create.go`/`cmd/seed` from the production path (T35)** | T5–T14, T18, T35 |
+| `management-repo` | Feature docs / status, **and the schema-version snapshot `database/workspace/v003/{changelog.md, schema.dbml}`** (companion to T1's migration). `workflow-orchestrator` is registered in `workspace.yaml`; **`workflow-mcp` to be registered** when its repo is created. | n/a (docs/config) |
 
 One-repo rule satisfied (each task touches a single repo). The **dispatcher and executors are not modified** (owner-agnostic). The TS orchestrator takes only **additive** changes: `owner='ts'` on broker calls (T3) and `owner !== "go"` skip-guards on three feature-level loops (T4) — it is otherwise unchanged for legacy features.
 
@@ -316,12 +361,17 @@ One-repo rule satisfied (each task touches a single repo). The **dispatcher and 
 - T2: adapter tests proving a sync cycle **does not** create, update, or delete `owner='go'` rows while still reconciling legacy rows normally.
 - T3: broker tests — a `go`-owner callback lands only in the `go` queue and a `ts`-owner callback only in the `ts` queue; each `list-completed` returns only its owner's completions; absent-owner degrades to the legacy queue; registry/nonce validation still shared. Plus a TS-orchestrator test that it declares `owner='ts'` and still drives legacy features unchanged.
 - T4 (owner guard): a feature whose `status.yaml` carries `owner: go` is **skipped** by `lifecycle-manager`, `review-cycle`, and `notification-watcher` (no branch created, no drift action, no Slack post) — one assertion per loop; a feature with no `owner` (legacy) is still acted upon unchanged.
-- T6: a created go feature/tasks carry a valid `organization_id`/`workspace_id` and `source_path = NULL`.
 - T8 (claim): concurrency test — N racing claimers, exactly one wins `ready→in_progress` (the `0-rows` loser path); the guarded `UPDATE` rejects an illegal precondition.
 - T9/T12 (transitions + reap): completion routed back to the correct DB row and the right status written; the blocked path writes `blocked_reason`.
 - T13 (merge poll): a merged impl PR drives `in_review→done` and triggers auto-ready of dependents.
-- T16/T17 (skills): `init-feature` refuses to assume — it asks `go`/`ts`, and for `go` writes `owner: go` and creates **no** `tasks/*.yaml`; `tech-lead` emits `tasks.md` only for a go feature (no git task YAMLs).
+- T16/T34 (skills): `init-feature` asks `go`/`ts` and for `go` writes `owner: go` + no `tasks/*.yaml`; `tech-lead` emits `tasks.md` only for a go feature — **no `## Materialization (go)` block** (the index table is the source).
 - T18: the load-bearing coexistence test — go feature and legacy feature driven concurrently (the go feature reaches `done` via a **human-merged** impl PR — no reviewer cycle in v1); **assert the TS orchestrator never drains a go completion** and the sync never deletes go rows.
+- **T24/T26 (creation API):** an all-valid bulk create inserts every row in one transaction with correct initial status; a batch with any invalid/existing task creates **nothing** and returns the failure list `[{name, reason}]`; a task past `ready` cannot be redefined (conflict); a caller whose `AccessibleOrgIDs` excludes the workspace's org is rejected.
+- **T25 (`?name=` filter):** returns the matching feature (incl. UUID) or empty; org-scoped like the unfiltered list.
+- **T27 (BFF):** the create + `?name=` routes reach the backend with `X-User-Id`/`X-Org-Id` injected (no code change).
+- **T30/T31 (`workflow-mcp`):** `get_feature` resolves by name (and reports not-found); `create_tasks` bulk-creates or returns the failure list; the cookie is read from the `mcpServers` env and sent as `Cookie: session_id`; a `401` yields re-auth guidance.
+- **T33 (`create-tasks` skill):** parses the `tasks.md` index table, resolves the feature via `get_feature`, creates in one bulk call, and on rejection surfaces each failure + reason with stop/retry/skip.
+- **T36 (`approve-feature`):** approving the `tasks` stage of a go feature activates **no** git YAMLs and surfaces the "run `/create-tasks`" guide (+ sets `next_action`); a ts feature still auto-activates its YAMLs unchanged.
 
 **Migration / config impact**
 - One additive migration applied to the shared Postgres before the Go orchestrator starts. `DATABASE_URL` for the Go orchestrator points at the same DB as the adapter/read-API.
@@ -334,7 +384,8 @@ One-repo rule satisfied (each task touches a single repo). The **dispatcher and 
 
 **Deferred scope (explicitly out of v1)**
 - **Autonomous parity in Go — tracked as the dedicated follow-up feature `go-orchestrator-parity`.** The reviewer cycle (`in_review→reviewing`, `reviewing→review_passed`/`change_requested`/`review_incomplete`, `change_requested→in_progress`, and retry/escalation), the drift daemon (base-branch rebase), and the handoff trigger (feature-level `done` + feature-branch PRs). v1 ships the human-merge slice instead (§3-E); this feature layers autonomous review on top of v1's proven write-path primitives.
-- HTTP write API + MCP server for agent/external clients — tracked as the dedicated follow-up feature **`workflow-db-mcp`**.
+- **Broader** write/update API + MCP for external clients — status/FSM transitions, `blocked→ready`, `cancelled`, task-definition edits, feature creation, and a non-interactive auth credential (PAT / device-code) — tracked as **`workflow-db-mcp`**. (The task-**creation** slice is in scope here — §4.8.)
+- `hermes-agent` rewire off its direct `workspace_tasks` insert onto the creation API — tracked follow-up (a known third-writer risk until done).
 - Per-org isolation beyond the existing `workspaces.organization_id` scoping (the Go orchestrator must populate `organization_id`, but tenant-isolation hardening and `HandleMetadata.TenantID` wiring are forward work).
 - Migrating existing git features into the DB (spec: net-new-in-Go only).
 
@@ -342,10 +393,10 @@ One-repo rule satisfied (each task touches a single repo). The **dispatcher and 
 
 ## Spec open questions — resolution map
 - **#1 Database** → PostgreSQL (decided in spec).
-- **#2 API surface** → in-process pgx; no HTTP write API in v1 (§3-B, §4.3). The agent/human-facing write & update API + MCP is deferred to **`workflow-db-mcp`**.
+- **#2 API surface** → execution writes are in-process pgx (§4.3); task **creation** is an authenticated HTTP write API in `workflow-backend`, fronted by `workflow-mcp` + the `create-tasks` skill (§4.8). The broader write/update surface is deferred to **`workflow-db-mcp`**.
 - **#3 Agent write path** → Go orchestrator writes directly to Postgres; executor never touches the DB (§4.3).
 - **#4 Claim mechanism** → conditional guarded `UPDATE` on `status` (§3-C, §4.3); optional FSM trigger deferred.
-- **#5 Auth** → moot for v1: with no write API (B1) the Go orchestrator holds DB credentials directly (credential-isolation pattern); there is no API to authenticate. API auth (service / per-org tokens) is designed in **`workflow-db-mcp`**.
+- **#5 Auth** → execution writes need no API auth (the orchestrator holds DB creds in-process). The **creation** API authenticates the *user* via the existing BFF (reused `session_id` cookie) + org-scoping (§4.8); a non-interactive credential (PAT / device-code) is deferred to **`workflow-db-mcp`**.
 - **#6 Deployment** → the Go orchestrator points at the **same shared Postgres** as the adapter/read-API via `DATABASE_URL` (§8); local Docker Compose for dev, hosted Postgres for prod — consistent with the existing services.
 - **#7 Broker partitioning** → owner-namespaced completion queues declared symmetrically; shared dispatch stream; TS takes a small additive `owner='ts'` change (§3-D, §4.4).
 - **#8 Shared DB & schema ownership** → one shared Postgres + one schema; write authority partitioned by `owner`; migrations owned by **`workflow-backend`** (a single, clear schema home — coupling resolved) (§4).
