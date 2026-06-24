@@ -32,3 +32,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:02:36.526Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:02:45.310Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "BFF: verify proxy forwards task-create + ?name= routes (passthrough
+      test) workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
