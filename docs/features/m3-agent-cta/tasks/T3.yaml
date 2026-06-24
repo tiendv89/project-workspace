@@ -1,7 +1,7 @@
 id: T3
 title: "Frontend: CTA card components + integration"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
   - T2
@@ -11,7 +11,7 @@ branch: feature/m3-agent-cta-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T03:33:26.970Z
+  last_updated_at: 2026-06-24T03:35:01.800Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/147
   status: open
@@ -47,3 +47,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/147"
     at: 2026-06-24T03:33:26.970Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:35:01.800Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
