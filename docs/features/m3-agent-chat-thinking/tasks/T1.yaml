@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:13:55.265Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:14:08.443Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "hermes-agent: emit ephemeral agent.reasoning SSE event (translator +
+      callback wiring) m3-agent-chat-thinking"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
