@@ -1,7 +1,7 @@
 feature_id: m3-stop-agent-chat
 title: m3-stop-agent-chat
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 stages:
   product_spec:
     review_status: approved
@@ -39,6 +39,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/593
 history: []
 revalidation:
   product_spec_required: false
@@ -48,3 +49,11 @@ revalidation:
 feature_branch: feature/m3-stop-agent-chat
 feature_branch_base_sha: 754e9240c296ad6aff3e8f963d1b40a5cc00eda7
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/580
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/593
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/22
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/150
+    status: open
