@@ -1,7 +1,7 @@
 id: T34
 title: "tech-lead skill: drop the Materialization (go) JSON block"
 repo: workflow
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,11 +9,13 @@ branch: feature/workflow-db-T34
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T11:09:13.098Z
+  last_updated_at: 2026-06-24T21:13:22+0700
 pr:
   url: null
   status: null
-workspace_pr: null
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/602
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
@@ -28,3 +30,9 @@ log:
     by: batu4404@gmail.com
     at: 2026-06-24T11:09:13.098Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:13:22+0700
+    note: >-
+      Human reset from in_progress — executor never started, pr.url is null.
+      Recorded workspace_pr #602. Resetting to ready per unblock-target rule.
