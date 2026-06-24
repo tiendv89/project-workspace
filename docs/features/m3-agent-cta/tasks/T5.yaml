@@ -2,7 +2,7 @@ id: T5
 title: "Frontend: remove WorkspaceCapabilities gating — show all CTA starters by
   default"
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,10 +10,10 @@ branch: feature/m3-agent-cta-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T05:00:08+0000
+  last_updated_at: 2026-06-24T05:07:50.757Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/151
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/595
   status: open
