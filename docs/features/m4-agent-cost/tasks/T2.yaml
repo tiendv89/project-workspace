@@ -1,8 +1,9 @@
 id: T2
 title: "user-service: plan resolution + lazy quota + internal cost/quota APIs"
 repo: user-service
-status: todo
-depends_on: [T1]
+status: ready
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T2
@@ -18,3 +19,7 @@ log:
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T17:34:07.375Z
+    note: Task activated — dependency T1 merged and marked done.
