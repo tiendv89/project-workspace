@@ -11,7 +11,7 @@ branch: feature/m4-agent-cost-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T19:45:21.288Z
+  last_updated_at: 2026-06-24T19:51:02+0000
 pr:
   url: null
   status: null
@@ -39,3 +39,7 @@ log:
     rag_query: "hermes-agent: pre-turn quota guard + post-turn cost emission +
       stopped-turn tally m4-agent-cost"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:51:02+0000
+    note: executor work phase begun.
