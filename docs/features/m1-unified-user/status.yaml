@@ -1,7 +1,7 @@
 feature_id: m1-unified-user
 title: m1-unified-user
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 stages:
   product_spec:
     review_status: approved
@@ -65,7 +65,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/589
 impl_feature_prs:
   - repo: user-service
     url: https://github.com/tiendv89/user-service/pull/14
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/146
-    status: open
+    status: merged
