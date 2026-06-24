@@ -78,3 +78,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m4-agent-cost
 feature_branch_base_sha: a12a349dff729327f2cc7c03f92565eac83fc274
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/618
