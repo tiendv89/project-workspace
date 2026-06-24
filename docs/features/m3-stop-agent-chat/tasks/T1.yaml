@@ -1,26 +1,110 @@
 id: T1
-title: "hermes-agent — cancel endpoint + Task tracking + CancelledError handler"
+title: hermes-agent — cancel endpoint + Task tracking + CancelledError handler
 repo: hermes-agent
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_context: null
 branch: feature/m3-stop-agent-chat-T1
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: "2026-06-24T01:03:46+0700"
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T04:03:00.855Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/21
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/581
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-06-24T01:00:30+0700"
-    note: >-
-      Task created during tech-lead Phase 2 breakdown.
-      External prerequisites: v4 T2 + T3 from m3-agent-chat-v4 must be merged
-      into hermes-agent before this task is advanced to ready.
+    at: 2026-06-24T01:00:30+0700
+    note: "Task created during tech-lead Phase 2 breakdown. External prerequisites:
+      v4 T2 + T3 from m3-agent-chat-v4 must be merged into hermes-agent before
+      this task is advanced to ready."
   - action: ready
     by: pentative@gmail.com
-    at: "2026-06-23T18:03:46Z"
-    note: "Task activated on tasks-stage approval — dependencies met."
+    at: 2026-06-23T18:03:46Z
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:06:12.834Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:06:21.592Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: hermes-agent — cancel endpoint + Task tracking + CancelledError
+      handler m3-stop-agent-chat
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:16:00+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/21"
+    at: 2026-06-23T18:32:36.669Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:33:47.263Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-23T18:43:52.272Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T18:48:42.646Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/21"
+    at: 2026-06-23T18:58:42.617Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-23T19:00:45.793Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: retried
+    by: pye@swellnetwork.io
+    at: 2026-06-24T10:05:17+0700
+    note: Human reset from reviewing to in_review.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:07:14.873Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:18:37+0000
+    note: 'Reviewer requested changes. Two 🔴 race conditions: (1) chat.py 409 guard
+      atomicity broken by await gap (lines 78-137); (2) old thread finally
+      removes new turn ActiveRun (agent_dispatch.py 125-126, 345-346). Two 🟡
+      issues: on_delta no _stopped guard (bus_translator.py); triggered_by
+      default "" authz bypass (agent_dispatch.py:79). Review comment:
+      https://github.com/tiendv89/hermes-agent/pull/21#issuecomment-4785560103'
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:20:32.249Z
+    note: Fix agent claimed.
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T03:20:47.180Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T03:22:05.343Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/21"
+    at: 2026-06-24T03:25:39.795Z
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/21"
+    at: 2026-06-24T03:35:21.528Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T04:03:00.855Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
