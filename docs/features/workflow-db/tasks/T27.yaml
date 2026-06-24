@@ -1,20 +1,62 @@
 id: T27
 title: "BFF: verify proxy forwards task-create + ?name= routes (passthrough test)"
 repo: workflow-bff
-status: todo
-depends_on: [T26, T25]
+status: done
+depends_on:
+  - T26
+  - T25
 blocked_reason: null
-branch: workflow-db/T27
+blocked_context: null
+branch: feature/workflow-db-T27
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:01:58+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T15:23:06.698Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-bff/pull/5
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/607
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Blocked on T26, T25.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Blocked on T26, T25.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:01:26.176Z
+    note: Task activated — dependency T26 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:02:36.526Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:02:45.310Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "BFF: verify proxy forwards task-create + ?name= routes (passthrough
+      test) workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:05:28+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-bff/pull/5"
+    at: 2026-06-24T15:17:20.068Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:18:30.066Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T15:21:59.842Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:23:06.698Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

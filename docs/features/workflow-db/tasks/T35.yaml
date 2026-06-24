@@ -1,25 +1,79 @@
 id: T35
 title: "orchestrator: remove create.go + cmd/seed from the production path"
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T35
+blocked_context: null
+branch: feature/workflow-db-T35
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T14:39:47.742Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/18
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/603
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Supersedes the old T6
-      orchestrator creation path. No blockers.
+    note: Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Supersedes the old T6 orchestrator creation path. No blockers.
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:09:40.731Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:09:48.888Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "orchestrator: remove create.go + cmd/seed from the production path
+      workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: dispatch_dlq_after_5_deliveries
+    at: 2026-06-24T11:13:37.221Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:15:50+0700
+    note: Human reset from blocked
+      (executor_failed:dispatch_dlq_after_5_deliveries). pr.url is null so
+      resetting to ready per unblock-target rule.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:18:14.858Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:18:20.559Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "orchestrator: remove create.go + cmd/seed from the production path
+      workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/18"
+    at: 2026-06-24T14:33:23.466Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:34:39.757Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T14:38:48.394Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:39:47.742Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
