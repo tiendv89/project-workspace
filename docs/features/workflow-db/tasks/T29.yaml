@@ -1,7 +1,7 @@
 id: T29
 title: "workflow-mcp auth: session_id cookie from mcpServers env"
 repo: workflow-mcp
-status: reviewing
+status: review_passed
 depends_on:
   - T28
   - T27
@@ -11,7 +11,7 @@ branch: feature/workflow-db-T29
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:32:12.997Z
+  last_updated_at: 2026-06-24T15:36:02.064Z
 pr:
   url: https://github.com/batu4404/workflow-mcp/pull/2
   status: open
@@ -51,3 +51,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T15:32:12.997Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T15:36:02.064Z
