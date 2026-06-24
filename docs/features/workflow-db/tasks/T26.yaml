@@ -10,7 +10,7 @@ branch: feature/workflow-db-T26
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T14:24:44.773Z
+  last_updated_at: 2026-06-24T14:29:36+0000
 pr:
   url: null
   status: null
@@ -39,3 +39,7 @@ log:
     rag_query: "Task-create endpoint: POST .../features/:id/tasks (bulk,
       all-or-nothing) workflow-db"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:29:36+0000
+    note: executor work phase begun.
