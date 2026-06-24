@@ -51,3 +51,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T14:11:34.768Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:11:39.091Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "Features API: ?name= exact-match filter workflow-db"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
