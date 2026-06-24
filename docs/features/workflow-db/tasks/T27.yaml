@@ -1,7 +1,7 @@
 id: T27
 title: "BFF: verify proxy forwards task-create + ?name= routes (passthrough test)"
 repo: workflow-bff
-status: review_passed
+status: done
 depends_on:
   - T26
   - T25
@@ -11,10 +11,10 @@ branch: feature/workflow-db-T27
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T15:21:59.842Z
+  last_updated_at: 2026-06-24T15:23:06.698Z
 pr:
   url: https://github.com/tiendv89/workflow-bff/pull/5
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/607
   status: open
@@ -56,3 +56,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-06-24T15:21:59.842Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T15:23:06.698Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
