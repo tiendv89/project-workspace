@@ -2,26 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: Staking Portfolio Dashboard
+- Title: In-App Governance Voting
 
 ## Problem
 
-Users who stake assets across multiple pools on the Voyager platform have no single view to monitor their combined staking positions. They must navigate between individual pool pages to check balances, pending rewards, and APY changes. This fragmented experience makes it difficult to manage a diversified staking strategy and increases the risk that users miss time-sensitive opportunities (e.g. a pool's APY dropping significantly) or fail to claim rewards before expiry.
+Voyager users who hold governance tokens are currently required to leave the app and visit a third-party governance portal (e.g. Snapshot or Tally) to participate in protocol votes. This context-switching causes low voter participation — most users never complete the flow. Governance decisions that affect staking parameters, fee structures, and supported assets are therefore made by a small, technically sophisticated minority, undermining the decentralisation promise of the protocol.
 
-The `voyager-data-pipeline` already aggregates on-chain staking data, but neither `voyager-interface` (web) nor `voyager-mobile` exposes a unified portfolio summary view. The data exists — the presentation layer is missing.
+The `voyager-backend` already indexes on-chain proposal data via `voyager-data-pipeline`, but there is no UI in `voyager-interface` or `voyager-mobile` to browse proposals or cast votes, and no integration with the wallet signing flow.
 
 ## Goals
 
-- Provide a unified Staking Portfolio Dashboard in `voyager-interface` (web) showing all active staking positions, total staked value, aggregate pending rewards, and per-pool APY
-- Mirror the dashboard as a summary screen in `voyager-mobile`
-- Source data from `voyager-backend` via a new `/portfolio/staking` endpoint backed by `voyager-data-pipeline`
-- Allow users to claim all pending rewards in a single transaction from the dashboard
-- Show 7-day APY trend sparklines per pool so users can spot declining yields quickly
+- Add a Governance section to `voyager-interface` (web) and `voyager-mobile` listing all active, pending, and closed proposals
+- Show each proposal's title, description, voting deadline, current vote tallies, and the user's current voting power
+- Allow users to cast votes (For / Against / Abstain) directly in-app via wallet signature, without leaving Voyager
+- Send a push notification via `voyager-notification-service` when a new proposal is published or when a vote the user participated in is about to close (48-hour reminder)
+- Surface personalised voting power based on the user's staked balance, sourced from `voyager-user-service`
 
 ## Non-goals
 
-- Cross-chain portfolio aggregation beyond networks already supported by `voyager-data-pipeline`
-- Tax reporting or cost-basis tracking
-- Automated restaking / compounding logic (separate feature)
-- Historical performance charts beyond the 7-day sparkline
-- Support for non-staking positions (liquidity pools, lending) in this view
+- Proposal creation or on-chain submission (read + vote only for v1)
+- Delegation of voting power to other addresses
+- Support for governance systems outside the protocols already tracked by `voyager-data-pipeline`
+- Discussion threads or comments on proposals
+- Vote history export or analytics
