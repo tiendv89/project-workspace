@@ -1,7 +1,7 @@
 id: T6
-title: 'digital-factory-ui: chat credit badge + session header quota indicator'
+title: "digital-factory-ui: chat credit badge + session header quota indicator"
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T4
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m4-agent-cost-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-25T03:35:14+0000
+  last_updated_at: 2026-06-25T03:37:25.964Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/156
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/624
   status: open
@@ -35,7 +35,8 @@ log:
     at: 2026-06-24T19:47:06.095Z
     rag_context_injected: false
     rag_summary: query_returned_no_chunks
-    rag_query: 'digital-factory-ui: chat credit badge + session header quota indicator m4-agent-cost'
+    rag_query: "digital-factory-ui: chat credit badge + session header quota
+      indicator m4-agent-cost"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: ready
     by: pye@swellnetwork.io
@@ -50,7 +51,8 @@ log:
     at: 2026-06-25T03:25:10.719Z
     rag_context_injected: false
     rag_summary: query_returned_no_chunks
-    rag_query: 'digital-factory-ui: chat credit badge + session header quota indicator m4-agent-cost'
+    rag_query: "digital-factory-ui: chat credit badge + session header quota
+      indicator m4-agent-cost"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: started
     by: tiendv.52@gmail.com
