@@ -2,26 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: Portfolio P&L Breakdown & Transfer History
+- Title: Trading Competition Leaderboard
 
 ## Problem
 
-The existing `PortfolioPage` in `voyager-interface` renders a `PortfolioTab` that surfaces aggregate `totalPnL` and `volume` figures, but provides no breakdown of how those numbers are composed. Users cannot tell which positions drove gains or losses, how fees affected their P&L, or how their portfolio value has changed over time. The `PortfolioChart` interface and `getTransferHistory` method already exist in `src/client/base-client.ts` but are unused in the UI — meaning the underlying data is available but never shown.
+`voyager-backend` contains a fully implemented competition domain — `LeaderboardRefreshHandler`, `RankParticipants` (supporting both absolute P&L and percent-return ranking modes), `GetLeaderboard`, and `GetLeaderboardEntriesByWallet` in `internal/domain/competition/` — but there is no UI in `voyager-interface` (web) or `voyager-mobile` that exposes it to users. Competitions exist in the backend but are invisible to participants, who have no way to check their current rank, see who they are competing against, or understand how rankings are calculated.
 
-Without this breakdown, users cannot make informed decisions about rebalancing or closing positions, and have no audit trail of fund movements in or out of the platform.
+Without a visible leaderboard, the competition system provides no social or competitive incentive, which limits its effectiveness as a retention and engagement driver.
 
 ## Goals
 
-- Extend `PortfolioTab` in `voyager-interface` to display a per-position P&L breakdown table showing: asset, entry price, current price, unrealised P&L (USD and %), realised P&L, and fees paid
-- Add a Portfolio Chart section to `PortfolioPage` using the existing `PortfolioChart` interface from `base-client.ts` showing total portfolio value over selectable time ranges (24h, 7d, 30d, 90d)
-- Add a Transfer History tab to `PortfolioPage` powered by `BaseExchangeClient.getTransferHistory`, showing deposits, withdrawals, and internal transfers with timestamps, amounts, and status
-- All three additions must work within the existing `usePortfolio` data-fetching hook — extend it rather than adding a parallel fetch layer
-- Make the new sections responsive and consistent with the existing `PortfolioPage` layout
+- Add a Competitions page to `voyager-interface` (web) listing active and past competitions, each showing its name, duration, ranking mode (absolute P&L vs. percent return), prize structure, and number of participants
+- Display the leaderboard for each competition sourced from `Service.GetLeaderboard` in `voyager-backend`, showing rank, anonymised wallet (hash already enforced by `TestGetLeaderboard_walletHashNotExposed`), P&L, and percent return for the top 100 participants
+- Highlight the current user's own rank and stats via `GetLeaderboardEntriesByWallet`, even if they fall outside the top 100
+- Refresh leaderboard data every 5 minutes on the client to reflect the periodic `LeaderboardRefreshHandler` updates from `voyager-backend`
+- Send a push notification via `voyager-notification-service` when a user enters the top 10 of a competition they are participating in
 
 ## Non-goals
 
-- Tax lot tracking or cost-basis calculation methods (FIFO/LIFO)
-- CSV export of transfer history or P&L (separate feature)
-- Changes to `base-client.ts` API contracts — consume existing methods only
-- Portfolio comparison against benchmarks (e.g. BTC, ETH index)
-- Mobile (`voyager-mobile`) — web only for v1
+- Competition creation or administration — backend-only for v1, no admin UI
+- Real-time leaderboard streaming — polling every 5 minutes is sufficient
+- Prize distribution or on-chain reward settlement (separate feature)
+- Mobile (`voyager-mobile`) leaderboard UI — web only for v1
+- Exposing raw wallet addresses — hashed display only, consistent with existing backend privacy guarantees
