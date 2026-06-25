@@ -1,7 +1,7 @@
 feature_id: m4-agent-cost
 title: Agent Cost Tracking — Token Usage and Cost Visibility
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Tasks approved. Wave 1 task T1 is ready — run start-implementation
   on T1 (user-service migrations & seeds). T2–T8 unlock as dependencies
   complete.
@@ -84,13 +84,13 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/629
 impl_feature_prs:
   - repo: user-service
     url: https://github.com/tiendv89/user-service/pull/18
-    status: open
+    status: merged
   - repo: workflow-bff
     url: https://github.com/tiendv89/workflow-bff/pull/8
-    status: open
+    status: merged
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/28
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/157
-    status: open
+    status: merged
