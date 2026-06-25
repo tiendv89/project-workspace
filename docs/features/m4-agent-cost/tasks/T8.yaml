@@ -12,7 +12,7 @@ branch: feature/m4-agent-cost-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-25T03:40:46.757Z
+  last_updated_at: 2026-06-25T03:41:52.800Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/155
   status: open
@@ -69,3 +69,9 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/155"
     at: 2026-06-25T03:40:46.757Z
+conflict_state: resolving
+rebase_log:
+  - at: 2026-06-25T03:41:52.800Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/m4-agent-cost.
