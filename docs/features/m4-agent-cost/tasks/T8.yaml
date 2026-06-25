@@ -52,3 +52,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-25T03:28:03.741Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:28:10.542Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
+      platform-role guard m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
