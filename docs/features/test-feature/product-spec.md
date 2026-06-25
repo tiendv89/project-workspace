@@ -2,26 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: AI Agent Onboarding Experience
+- Title: Portfolio P&L Breakdown & Transfer History
 
 ## Problem
 
-Voyager's AI agent — accessible via `useAgentChat` and `useAgentSSE` in `voyager-mobile` — is one of the platform's most differentiated features, but new users discover it by accident (if at all). After completing `SignInV2`, users land on the main dashboard with no guided introduction to the agent. The agent session creation flow (`agentStore.createSession`) and the trade approval gate (`useTradeApprovalGate`) are invisible to first-time users who have never interacted with the agent before.
+The existing `PortfolioPage` in `voyager-interface` renders a `PortfolioTab` that surfaces aggregate `totalPnL` and `volume` figures, but provides no breakdown of how those numbers are composed. Users cannot tell which positions drove gains or losses, how fees affected their P&L, or how their portfolio value has changed over time. The `PortfolioChart` interface and `getTransferHistory` method already exist in `src/client/base-client.ts` but are unused in the UI — meaning the underlying data is available but never shown.
 
-Activation data shows that users who complete at least one agent-assisted trade in their first session have significantly higher 30-day retention, but the majority of new users never open the agent chat at all.
+Without this breakdown, users cannot make informed decisions about rebalancing or closing positions, and have no audit trail of fund movements in or out of the platform.
 
 ## Goals
 
-- Add a first-time onboarding flow in `voyager-mobile` that triggers automatically after `SignInV2` completes for new accounts (no prior agent sessions in `agentStore.activeSessions`)
-- Walk the user through three guided steps: (1) what the AI agent does, (2) connecting their first wallet via the existing `AuthProvider` flow, (3) making their first agent-assisted action (deposit or portfolio scan)
-- On completion of the onboarding flow, create an initial agent session via `agentStore.createSession` and open the agent chat with a pre-populated welcome prompt
-- Track onboarding funnel completion steps in `voyager-backend` analytics so product can measure drop-off at each step
-- Allow users to skip onboarding and access it again later from the Settings screen
+- Extend `PortfolioTab` in `voyager-interface` to display a per-position P&L breakdown table showing: asset, entry price, current price, unrealised P&L (USD and %), realised P&L, and fees paid
+- Add a Portfolio Chart section to `PortfolioPage` using the existing `PortfolioChart` interface from `base-client.ts` showing total portfolio value over selectable time ranges (24h, 7d, 30d, 90d)
+- Add a Transfer History tab to `PortfolioPage` powered by `BaseExchangeClient.getTransferHistory`, showing deposits, withdrawals, and internal transfers with timestamps, amounts, and status
+- All three additions must work within the existing `usePortfolio` data-fetching hook — extend it rather than adding a parallel fetch layer
+- Make the new sections responsive and consistent with the existing `PortfolioPage` layout
 
 ## Non-goals
 
-- Onboarding for `voyager-interface` (web) — mobile only for v1
-- Changes to the `SignInV2` authentication flow itself
-- Modifying `useAgentSSE` or the underlying agent streaming protocol
-- In-app tutorial overlays or coach marks beyond the three onboarding steps
-- A/B testing of onboarding variants — single flow for v1
+- Tax lot tracking or cost-basis calculation methods (FIFO/LIFO)
+- CSV export of transfer history or P&L (separate feature)
+- Changes to `base-client.ts` API contracts — consume existing methods only
+- Portfolio comparison against benchmarks (e.g. BTC, ETH index)
+- Mobile (`voyager-mobile`) — web only for v1
