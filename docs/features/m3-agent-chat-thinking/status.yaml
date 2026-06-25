@@ -1,7 +1,7 @@
 feature_id: m3-agent-chat-thinking
 title: M3 Agent Chat Thinking
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Agents claim ready tasks (T1) via start-implementation; T2 readies
   when T1 is done.
 stages:
@@ -71,7 +71,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/616
 impl_feature_prs:
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/26
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/153
-    status: open
+    status: merged
