@@ -2,7 +2,7 @@ id: T8
 title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
   platform-role guard"
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T3
   - T4
@@ -12,7 +12,7 @@ branch: feature/m4-agent-cost-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-25T03:46:35.186Z
+  last_updated_at: 2026-06-25T03:53:32.583Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/155
   status: open
@@ -77,6 +77,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-25T03:46:35.186Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-25T03:53:32.583Z
 conflict_state: resolved
 rebase_log:
   - at: 2026-06-25T03:41:52.800Z
