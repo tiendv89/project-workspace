@@ -2,26 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: Trading Competition Leaderboard
+- Title: Shareable Trade Cards
 
 ## Problem
 
-`voyager-backend` contains a fully implemented competition domain — `LeaderboardRefreshHandler`, `RankParticipants` (supporting both absolute P&L and percent-return ranking modes), `GetLeaderboard`, and `GetLeaderboardEntriesByWallet` in `internal/domain/competition/` — but there is no UI in `voyager-interface` (web) or `voyager-mobile` that exposes it to users. Competitions exist in the backend but are invisible to participants, who have no way to check their current rank, see who they are competing against, or understand how rankings are calculated.
+When users close a profitable trade on Voyager, there is no way to celebrate or share that moment. Competing platforms (e.g. Hyperliquid, dYdX) allow traders to generate a visual "trade card" — a branded image showing the asset, direction, P&L, and percentage return — that can be shared on social media. This drives organic word-of-mouth growth and strengthens brand identity.
 
-Without a visible leaderboard, the competition system provides no social or competitive incentive, which limits its effectiveness as a retention and engagement driver.
+`voyager-interface` already has access to the full trade record via `BaseExchangeClient.getTradeHistory` and `getOrderHistory`, so the underlying data is available. There is no UI component today that formats a completed trade into a shareable visual format.
 
 ## Goals
 
-- Add a Competitions page to `voyager-interface` (web) listing active and past competitions, each showing its name, duration, ranking mode (absolute P&L vs. percent return), prize structure, and number of participants
-- Display the leaderboard for each competition sourced from `Service.GetLeaderboard` in `voyager-backend`, showing rank, anonymised wallet (hash already enforced by `TestGetLeaderboard_walletHashNotExposed`), P&L, and percent return for the top 100 participants
-- Highlight the current user's own rank and stats via `GetLeaderboardEntriesByWallet`, even if they fall outside the top 100
-- Refresh leaderboard data every 5 minutes on the client to reflect the periodic `LeaderboardRefreshHandler` updates from `voyager-backend`
-- Send a push notification via `voyager-notification-service` when a user enters the top 10 of a competition they are participating in
+- After a trade is closed, show a "Share Trade" button in the trade history view within `voyager-interface`
+- Clicking the button generates a branded trade card image (PNG) containing: asset pair, long/short direction, entry price, exit price, realised P&L (USD), percent return, and the Voyager logo
+- Allow the user to download the PNG or copy a shareable link that opens a public-facing trade card page on `voyager-landing`
+- The public trade card page on `voyager-landing` must be accessible without login and display the same trade details, with a CTA to sign up for Voyager
+- Trade card data must be fetched from `voyager-backend` via a new public endpoint that returns anonymised trade details (no wallet address exposed — consistent with competition leaderboard privacy rules)
 
 ## Non-goals
 
-- Competition creation or administration — backend-only for v1, no admin UI
-- Real-time leaderboard streaming — polling every 5 minutes is sufficient
-- Prize distribution or on-chain reward settlement (separate feature)
-- Mobile (`voyager-mobile`) leaderboard UI — web only for v1
-- Exposing raw wallet addresses — hashed display only, consistent with existing backend privacy guarantees
+- Automated social media posting (Twitter/X, Telegram) — copy link only for v1
+- Trade cards for open/unrealised positions — closed trades only
+- Video or animated trade cards
+- Trade card customisation (colours, layouts, avatars) — fixed Voyager branding for v1
+- Mobile (`voyager-mobile`) share flow — web only for v1
