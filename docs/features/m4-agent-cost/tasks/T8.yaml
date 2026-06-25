@@ -2,7 +2,7 @@ id: T8
 title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
   platform-role guard"
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T3
   - T4
@@ -44,3 +44,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-06-24T19:55:22+0000
     note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-25T10:25:17+0700
+    note: Reset to ready by human.
