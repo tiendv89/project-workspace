@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: chat credit badge + session header quota indicator"
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on:
   - T4
 blocked_reason: null
@@ -38,3 +38,7 @@ log:
     rag_query: "digital-factory-ui: chat credit badge + session header quota
       indicator m4-agent-cost"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-25T10:23:55+0700
+    note: Reset to ready by human.
