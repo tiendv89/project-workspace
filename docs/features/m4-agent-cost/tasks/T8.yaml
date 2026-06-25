@@ -2,7 +2,7 @@ id: T8
 title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
   platform-role guard"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T4
@@ -12,7 +12,7 @@ branch: feature/m4-agent-cost-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-24T19:55:22+0000
+  last_updated_at: 2026-06-25T03:28:03.741Z
 pr:
   url: null
   status: null
@@ -48,3 +48,7 @@ log:
     by: pye@swellnetwork.io
     at: 2026-06-25T10:25:17+0700
     note: Reset to ready by human.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:28:03.741Z
+    note: Claimed via git-based claim protocol.
