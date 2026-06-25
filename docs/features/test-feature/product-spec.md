@@ -2,25 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: User Notification Preferences
+- Title: Staking Portfolio Dashboard
 
 ## Problem
 
-Users currently receive all notifications from the Voyager platform without any ability to customize which alerts they want. This leads to notification fatigue — users are bombarded with irrelevant updates (e.g. minor price movements, routine staking rewards) and end up ignoring or disabling all notifications entirely, causing them to miss critical events like liquidation warnings or large portfolio swings.
+Users who stake assets across multiple pools on the Voyager platform have no single view to monitor their combined staking positions. They must navigate between individual pool pages to check balances, pending rewards, and APY changes. This fragmented experience makes it difficult to manage a diversified staking strategy and increases the risk that users miss time-sensitive opportunities (e.g. a pool's APY dropping significantly) or fail to claim rewards before expiry.
 
-There is no UI surface in the Voyager interface or mobile app where users can opt in or out of specific notification categories. The `voyager-notification-service` sends all event types to all subscribed users indiscriminately.
+The `voyager-data-pipeline` already aggregates on-chain staking data, but neither `voyager-interface` (web) nor `voyager-mobile` exposes a unified portfolio summary view. The data exists — the presentation layer is missing.
 
 ## Goals
 
-- Allow users to configure their notification preferences per category (e.g. staking rewards, price alerts, liquidation warnings, governance votes)
-- Persist preferences in `voyager-user-service` against the user's profile
-- Respect preferences in `voyager-notification-service` before dispatching any notification
-- Expose a preferences UI in `voyager-interface` (web) and `voyager-mobile` (iOS/Android)
-- Default new users to receiving only high-priority notifications (liquidation warnings, security alerts)
+- Provide a unified Staking Portfolio Dashboard in `voyager-interface` (web) showing all active staking positions, total staked value, aggregate pending rewards, and per-pool APY
+- Mirror the dashboard as a summary screen in `voyager-mobile`
+- Source data from `voyager-backend` via a new `/portfolio/staking` endpoint backed by `voyager-data-pipeline`
+- Allow users to claim all pending rewards in a single transaction from the dashboard
+- Show 7-day APY trend sparklines per pool so users can spot declining yields quickly
 
 ## Non-goals
 
-- Per-asset or per-pool granularity within a category (v2 scope)
-- Push notification channel selection (email vs. push vs. SMS) — channel management is handled by a separate feature
-- Retroactive suppression of already-delivered notifications
-- Admin override of user preferences
+- Cross-chain portfolio aggregation beyond networks already supported by `voyager-data-pipeline`
+- Tax reporting or cost-basis tracking
+- Automated restaking / compounding logic (separate feature)
+- Historical performance charts beyond the 7-day sparkline
+- Support for non-staking positions (liquidity pools, lending) in this view
