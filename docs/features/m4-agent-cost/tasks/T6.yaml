@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: chat credit badge + session header quota indicator"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T4
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/m4-agent-cost-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-06-25T03:37:32.089Z
+  last_updated_at: 2026-06-25T03:38:49.702Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/156
   status: open
@@ -63,3 +63,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/156"
     at: 2026-06-25T03:37:32.089Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:38:49.702Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
