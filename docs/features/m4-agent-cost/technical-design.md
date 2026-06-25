@@ -44,7 +44,7 @@ Four existing repos are involved — no new repo is introduced.
 ## 2. Problem Framing
 
 ### What must change
-1. **`user-service`** becomes the system of record: 7 billing/quota tables (`billing_plan`, `user_plan_assignment`, `org_plan_assignment`, `model_pricing`, `credit_config`, `turn_cost`, `user_usage_quota`) plus 2 platform-role tables (`platform_role`, `platform_role_assignment`), a plan-resolution function, lazy quota reset, internal cost/quota APIs, admin plan-management APIs, a `RequirePlatformRole` guard, and exposure of the caller's platform roles in the identity payload.
+1. **`user-service`** becomes the system of record: billing/quota tables (`billing_plan`, `org_plan_assignment`, `model_pricing`, `credit_config`, `turn_cost`, `user_usage_quota`) plus 2 platform-role tables (`platform_role`, `platform_role_assignment`), a plan-resolution function, lazy quota reset, internal cost/quota APIs, admin plan-management APIs, a `RequirePlatformRole` guard, and exposure of the caller's platform roles in the identity payload. *(As-built: plans are org-only — `user_plan_assignment` was dropped; see §9.)*
 2. **`hermes-agent`** gains a **pre-turn quota guard** (reject before any tokens are spent) and **post-turn cost emission**, including a partial count for stopped turns.
 3. **`workflow-bff`** exposes the cost/quota API surface the UI and hermes use, proxying to `user-service`.
 4. **`digital-factory-ui`** shows per-message credit badges, a session header credit/quota indicator, a Settings → Usage page, **and the plan/assignment admin pages under the existing `/admin/` tree** (Plans/Users/Orgs).
@@ -292,6 +292,44 @@ All affected repo ids already exist in `workspace.yaml` — no new repo is regis
 
 **Deployment / handoff**
 - Admin plan pages ship as part of the normal `digital-factory-ui` deployment, gated by the existing `/admin/` layout guard — no separate app or deployment, and no new identity integration.
+
+---
+
+## 9. As-Built (implementation notes)
+
+The feature shipped with several deliberate changes from the design above. Where this section conflicts with §1–§8, **this section is authoritative**.
+
+### 9.1 Plans are org-only (no individual plans)
+`user_plan_assignment` was **removed entirely** (table, store, service methods, admin `POST/DELETE /admin/users/:id/plan`, and the per-user plan UI). A user's plan resolves **org plan → free**; there is no individual tier. `ResolvePlan(userID, orgID)` only consults `org_plan_assignment` then falls back to `free`. Decision D's individual→org→free is reduced to org→free; Decision F (platform roles) is unchanged. The admin **Users** page is a read-only list (plans are managed per org); the **Orgs** page assigns plans.
+
+### 9.2 Usage is tracked per (user, org)
+`user_usage_quota` is keyed by **`(user_id, org_id)`** (unique), with `org_id` a real FK to `organizations(id) ON DELETE CASCADE`. Each org the user belongs to has its own daily/weekly counters. `org_plan_assignment.org_id` is likewise an FK with cascade. Lazy reset (Decision C) is unchanged. Caps `0` = unlimited.
+
+### 9.3 No BFF cost handlers — browser uses one endpoint; hermes goes direct
+Decision A2 was **reversed**. The BFF owns **no** cost/quota handlers:
+- **Browser/UI** calls **`GET /api/me/usage`** (optional `?org=<id>`) on user-service, reached through the **generic `/bff/user-service/*` proxy** (which injects identity); served by `handler.MeUsage` behind `RequireBFFIdentity`. Response: `{sections:[{org_id, org_slug, org_name, role, plan_name, plan_display_name, daily/weekly used+cap+reset}]}`. The Usage page renders **only the active org** (matched on the org switcher's `selectedOrgSlug`). `/api/me/quota` and `/api/me/cost` were **removed**; the per-message credit badge and the session-cost header were **removed**.
+- **hermes-agent** calls user-service **`/internal/*` directly** (`GET /internal/users/:id/quota/check?org_id=`, `POST /internal/turn-costs`) via `src/services/cost_client.py` (renamed from `bff_client.py`) using **`USER_SERVICE_URL` / `USER_SERVICE_TOKEN`** — **not** `WORKFLOW_BFF_URL`, and not through the BFF. org_id is threaded from the request identity (`X-Org-Id`) through `schedule_agent_turn → _run_agent_turn → check_quota/emit_turn_cost`.
+
+### 9.4 Credit math + pricing
+`credits_used = cost_usd × credit_config.usd_to_credits`, with `usd_to_credits = 10000` (1 credit = $0.0001). `model_pricing` rates are the provider **list price + ~5%** margin (billing rate, not raw cost), seeded for the ids `hermes/model_catalog.py` emits: `claude-opus-4-8`, `claude-sonnet-4-6`, `claude-haiku-4-5`, `deepseek-v4-flash`, `deepseek-v4-pro`. **`turn_cost` has no FK to `model_pricing`** — a turn for an unpriced model still records (cost 0, logged for backfill) instead of failing.
+
+### 9.5 hermes session ids are UUIDs
+hermes migration `005_session_id_uuid.sql` converted `sessions.id` (+ FK columns) from `"sess_<hex>"` TEXT to native **UUID** (legacy rows cleared), so the id is valid for user-service's UUID-typed `turn_cost.session_id`. `_new_session_id()` returns `str(uuid4())`; ORM uses `UUID(as_uuid=False)` so Python still sees strings. (The two hermes store modules `store.py`/`store_v4.py` were also merged into one `store.py`.)
+
+### 9.6 Platform-admin bootstrap + session roles
+- First admins are bootstrapped from config: `platform_admin.emails` (env `PLATFORM_ADMIN_EMAILS`) grants `platform_admin` on **startup** (for existing users) and **on login** (for OAuth-created users), self-granted.
+- `UpsertIdentity` now returns **`platform_roles`** so the BFF caches them in the session (`session.PlatformRoles`); the BFF/admin guards and the platform-admin org-delete read this. (Users must re-login after being promoted for their session to carry the role.)
+
+### 9.7 Org deletion cascade (workspaces + agent chat) — BFF-orchestrated
+Deleting an org cascades across all three services, orchestrated by the **BFF** (workflow-backend and user-service stay unaware of hermes):
+1. BFF → workflow-backend `DELETE /internal/workspaces?organization_id=` → deletes the org's workspaces (features/tasks cascade in its DB) and **returns the deleted workspace IDs**.
+2. BFF → hermes `DELETE /api/v1/internal/workspaces/{id}/sessions` (service-token) per workspace → deletes **all** that workspace's agent chat (all users + channels). Best-effort; never blocks the delete.
+3. BFF forwards the org delete to user-service (members/invitations/plan/quota cascade in its DB).
+
+Two entry points: **self-serve** `DELETE /bff/user-service/api/orgs/:id` (`orgHandler.Delete`) and **platform-admin** `DELETE /bff/user-service/admin/orgs/:id` (`orgHandler.AdminDelete`, which verifies `platform_admin` from the session **before** any destructive action; user-service re-checks live). New config: `hermes_agent.internal_url` on the **BFF** (empty disables chat cleanup).
+
+### 9.8 Admin pages live in the shell
+The `/admin/*` pages moved under the `(shell)` route group, inheriting the topbar (breadcrumb + search + avatar) and the left nav rail (which gained a platform-admin-only **Admin** icon above Settings). Pages: Plans, Users (read-only), Orgs.
 
 ---
 
