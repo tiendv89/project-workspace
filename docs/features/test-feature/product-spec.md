@@ -2,29 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: Self-Serve Price & Portfolio Alert Management
+- Title: AI Agent Onboarding Experience
 
 ## Problem
 
-The `faro-alert-engine` already supports typed alert conditions (including threshold-cross-below/above evaluation via `CreateAlertFromConditionType` and `MapConditionType`) and can list a user's active alerts via `ListAlerts` / `ListByUserID`. However, users have no way to create, edit, or delete their own alerts from `voyager-interface` (web) or `voyager-mobile`. Alert configuration today requires direct API access or admin intervention, meaning only technical users benefit from the alert system.
+Voyager's AI agent — accessible via `useAgentChat` and `useAgentSSE` in `voyager-mobile` — is one of the platform's most differentiated features, but new users discover it by accident (if at all). After completing `SignInV2`, users land on the main dashboard with no guided introduction to the agent. The agent session creation flow (`agentStore.createSession`) and the trade approval gate (`useTradeApprovalGate`) are invisible to first-time users who have never interacted with the agent before.
 
-As a result, non-technical users — the majority of the platform's audience — never receive proactive notifications about price movements or portfolio threshold breaches that would help them act before losses occur.
+Activation data shows that users who complete at least one agent-assisted trade in their first session have significantly higher 30-day retention, but the majority of new users never open the agent chat at all.
 
 ## Goals
 
-- Add an Alerts management page to `voyager-interface` (web) and `voyager-mobile` where users can:
-  - Create new alerts by selecting an asset, condition type (price above / price below / portfolio value change %), and threshold value
-  - View all their active and triggered alerts, including last-fired time and current status
-  - Edit alert thresholds and notification frequency on existing alerts
-  - Delete alerts they no longer need
-- Wire the UI to `faro-alert-engine`'s existing `CreateAlertFromConditionType`, `ListAlerts`, and alert update/delete endpoints
-- Default new alerts to a "once per day" notification frequency to prevent alert fatigue
-- Show a badge count of unacknowledged triggered alerts in the main navigation of `voyager-interface` and `voyager-mobile`
+- Add a first-time onboarding flow in `voyager-mobile` that triggers automatically after `SignInV2` completes for new accounts (no prior agent sessions in `agentStore.activeSessions`)
+- Walk the user through three guided steps: (1) what the AI agent does, (2) connecting their first wallet via the existing `AuthProvider` flow, (3) making their first agent-assisted action (deposit or portfolio scan)
+- On completion of the onboarding flow, create an initial agent session via `agentStore.createSession` and open the agent chat with a pre-populated welcome prompt
+- Track onboarding funnel completion steps in `voyager-backend` analytics so product can measure drop-off at each step
+- Allow users to skip onboarding and access it again later from the Settings screen
 
 ## Non-goals
 
-- Creating new alert condition types beyond what `faro-alert-engine` already supports via `MapConditionType`
-- Alert sharing or team-level alerts
-- Webhook or email delivery channels — push notification via `voyager-notification-service` only for v1
-- Bulk alert import/export
-- Alert history or audit log beyond the last-fired timestamp already stored by `faro-alert-engine`
+- Onboarding for `voyager-interface` (web) — mobile only for v1
+- Changes to the `SignInV2` authentication flow itself
+- Modifying `useAgentSSE` or the underlying agent streaming protocol
+- In-app tutorial overlays or coach marks beyond the three onboarding steps
+- A/B testing of onboarding variants — single flow for v1
