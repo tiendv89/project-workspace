@@ -180,7 +180,7 @@ revalidation:
 feature_branch: feature/workflow-db
 feature_branch_base_sha: bc7c11dc389de1fb03e4496a41735a53eb675ddb
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/472
-handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/501
+handoff_pr_url: null
 impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/34
