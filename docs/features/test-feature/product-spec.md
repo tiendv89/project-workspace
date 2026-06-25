@@ -2,26 +2,26 @@
 
 ## Feature
 - Feature ID: `test-feature`
-- Title: Shareable Trade Cards
+- Title: Subscription Plan Management
 
 ## Problem
 
-When users close a profitable trade on Voyager, there is no way to celebrate or share that moment. Competing platforms (e.g. Hyperliquid, dYdX) allow traders to generate a visual "trade card" — a branded image showing the asset, direction, P&L, and percentage return — that can be shared on social media. This drives organic word-of-mouth growth and strengthens brand identity.
+`voyager-user-service` already manages subscription-linked credits via `AddCreditsForSubscriptionGrant` and `CapCreditsForSubscriptionExpiry` in `CreditService`, and the `UserCreditRepository` tracks credit balances per user. However, users have no visibility into what subscription plan they are on, what benefits it includes, how many credits they have remaining, or when their plan renews or expires.
 
-`voyager-interface` already has access to the full trade record via `BaseExchangeClient.getTradeHistory` and `getOrderHistory`, so the underlying data is available. There is no UI component today that formats a completed trade into a shareable visual format.
+Users currently receive credits silently in the background with no UI to understand the value they are getting, compare plans, or upgrade. This creates a poor monetisation experience and high churn risk — users don't perceive value they can't see.
 
 ## Goals
 
-- After a trade is closed, show a "Share Trade" button in the trade history view within `voyager-interface`
-- Clicking the button generates a branded trade card image (PNG) containing: asset pair, long/short direction, entry price, exit price, realised P&L (USD), percent return, and the Voyager logo
-- Allow the user to download the PNG or copy a shareable link that opens a public-facing trade card page on `voyager-landing`
-- The public trade card page on `voyager-landing` must be accessible without login and display the same trade details, with a CTA to sign up for Voyager
-- Trade card data must be fetched from `voyager-backend` via a new public endpoint that returns anonymised trade details (no wallet address exposed — consistent with competition leaderboard privacy rules)
+- Add a Subscription page to `voyager-interface` (web) and `voyager-mobile` showing the user's current plan tier, credit balance (sourced from `CreditService` via `voyager-user-service`), renewal date, and a breakdown of what their plan includes (e.g. AI agent queries per month, alert slots, API rate limits)
+- Display available plan tiers with a feature comparison table so users can evaluate upgrading
+- Allow users to upgrade or downgrade their plan from within the app, triggering the appropriate `AdjustUserCreditsWithHistory` and subscription grant/expiry flows in `voyager-user-service`
+- Show a low-credit warning banner in `voyager-interface` and `voyager-mobile` when the user's credit balance falls below 20% of their plan allowance
+- Notify users via `voyager-notification-service` 7 days before their subscription expires and when a plan change is confirmed
 
 ## Non-goals
 
-- Automated social media posting (Twitter/X, Telegram) — copy link only for v1
-- Trade cards for open/unrealised positions — closed trades only
-- Video or animated trade cards
-- Trade card customisation (colours, layouts, avatars) — fixed Voyager branding for v1
-- Mobile (`voyager-mobile`) share flow — web only for v1
+- Payment processing or billing UI — Stripe or equivalent is handled out-of-band; this feature covers only the in-app plan display and credit tracking
+- Free-tier sign-up flow changes
+- Admin plan management console (separate feature)
+- Annual vs. monthly billing toggle — monthly only for v1
+- Credit gifting or transfer between users
