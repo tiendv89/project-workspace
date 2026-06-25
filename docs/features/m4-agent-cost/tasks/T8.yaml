@@ -1,20 +1,93 @@
 id: T8
-title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ + platform-role guard"
+title: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
+  platform-role guard"
 repo: digital-factory-ui
-status: todo
-depends_on: [T3, T4]
+status: done
+depends_on:
+  - T3
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T8
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: 2026-06-24T23:50:04+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-25T03:54:43.589Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/155
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/626
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:43:48.499Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:50:17.972Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:50:25.929Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
+      platform-role guard m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:55:22+0000
+    note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-06-25T10:25:17+0700
+    note: Reset to ready by human.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:28:03.741Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:28:10.542Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "digital-factory-ui: admin Plans/Users/Orgs pages under /admin/ +
+      platform-role guard m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:38:35+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/155"
+    at: 2026-06-25T03:40:46.757Z
+  - action: rebase_completed
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:45:22.120Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:46:35.186Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-25T03:53:32.583Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-25T03:54:43.589Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolved
+rebase_log:
+  - at: 2026-06-25T03:41:52.800Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/m4-agent-cost.

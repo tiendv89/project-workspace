@@ -1,20 +1,61 @@
 id: T5
-title: "hermes-agent: pre-turn quota guard + post-turn cost emission + stopped-turn tally"
+title: "hermes-agent: pre-turn quota guard + post-turn cost emission +
+  stopped-turn tally"
 repo: hermes-agent
-status: todo
-depends_on: [T4]
+status: done
+depends_on:
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T5
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: 2026-06-24T23:50:04+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T20:19:24.447Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/27
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/623
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:43:48.494Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:45:21.288Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:45:29.968Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "hermes-agent: pre-turn quota guard + post-turn cost emission +
+      stopped-turn tally m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:51:02+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/27"
+    at: 2026-06-24T20:06:24.103Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T20:08:20.544Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T20:17:41.086Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T20:19:24.447Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

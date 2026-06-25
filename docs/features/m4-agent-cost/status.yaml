@@ -1,12 +1,10 @@
 feature_id: m4-agent-cost
 title: Agent Cost Tracking — Token Usage and Cost Visibility
-
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: >-
-  Tasks approved. Wave 1 task T1 is ready — run start-implementation on T1
-  (user-service migrations & seeds). T2–T8 unlock as dependencies complete.
-
+feature_status: done
+current_stage: done
+next_action: Tasks approved. Wave 1 task T1 is ready — run start-implementation
+  on T1 (user-service migrations & seeds). T2–T8 unlock as dependencies
+  complete.
 stages:
   product_spec:
     review_status: approved
@@ -22,39 +20,39 @@ stages:
     review_status: approved
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-24T16:47:05Z
-    review_comment: >-
-      Technical design approved. Admin plan management folded into digital-factory-ui's
-      existing /admin/ tree (no standalone app); admin authorization resolved via Decision F
-      (role-general platform_role / platform_role_assignment tables, M4 uses platform_admin only).
+    review_comment: Technical design approved. Admin plan management folded into
+      digital-factory-ui's existing /admin/ tree (no standalone app); admin
+      authorization resolved via Decision F (role-general platform_role /
+      platform_role_assignment tables, M4 uses platform_admin only).
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
         reviewed_at: 2026-06-24T16:47:05Z
-        review_comment: >-
-          Technical design approved. Admin plan management folded into digital-factory-ui's
-          existing /admin/ tree (no standalone app); admin authorization resolved via Decision F
-          (role-general platform_role / platform_role_assignment tables, M4 uses platform_admin only).
+        review_comment: Technical design approved. Admin plan management folded into
+          digital-factory-ui's existing /admin/ tree (no standalone app); admin
+          authorization resolved via Decision F (role-general platform_role /
+          platform_role_assignment tables, M4 uses platform_admin only).
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
     reviewed_at: 2026-06-24T17:01:50Z
-    review_comment: >-
-      Task breakdown approved. 8 tasks across user-service, workflow-bff, hermes-agent,
-      and digital-factory-ui (4 waves). Wave 1 (T1) activated to ready.
+    review_comment: Task breakdown approved. 8 tasks across user-service,
+      workflow-bff, hermes-agent, and digital-factory-ui (4 waves). Wave 1 (T1)
+      activated to ready.
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
         reviewed_at: 2026-06-24T17:01:50Z
-        review_comment: >-
-          Task breakdown approved. 8 tasks across user-service, workflow-bff, hermes-agent,
-          and digital-factory-ui (4 waves). Wave 1 (T1) activated to ready.
+        review_comment: Task breakdown approved. 8 tasks across user-service,
+          workflow-bff, hermes-agent, and digital-factory-ui (4 waves). Wave 1
+          (T1) activated to ready.
   handoff:
     review_status: draft
     reviewed_by: null
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/629
 history:
   - at: 2026-06-24T11:31:47Z
     actor: pentative@gmail.com
@@ -65,20 +63,34 @@ history:
     actor: pentative@gmail.com
     action: approve
     stage: technical_design
-    note: >-
-      Technical design approved; feature advanced to task planning (Phase 2).
-      Admin UI folded into digital-factory-ui /admin/ tree; D1 resolved via Decision F
-      (platform-role tables).
+    note: Technical design approved; feature advanced to task planning (Phase 2).
+      Admin UI folded into digital-factory-ui /admin/ tree; D1 resolved via
+      Decision F (platform-role tables).
   - at: 2026-06-24T17:01:50Z
     actor: pentative@gmail.com
     action: approve
     stage: tasks
-    note: >-
-      Task breakdown approved; feature advanced to ready_for_implementation.
-      8 tasks (4 waves). Wave 1 task T1 activated to ready.
-
+    note: Task breakdown approved; feature advanced to ready_for_implementation. 8
+      tasks (4 waves). Wave 1 task T1 activated to ready.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m4-agent-cost
+feature_branch_base_sha: a12a349dff729327f2cc7c03f92565eac83fc274
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/618
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/629
+impl_feature_prs:
+  - repo: user-service
+    url: https://github.com/tiendv89/user-service/pull/18
+    status: merged
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/8
+    status: merged
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/28
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/157
+    status: merged

@@ -1,6 +1,6 @@
-// user-service v002
+// user-service v003
 // Identity and tenancy layer — owns the Kitelabs platform's user, organization,
-// and session model. Federated login (Google + GitHub) lands here; downstream
+// and session model. As of v003 also owns billing/quota and platform roles (m4-agent-cost). Federated login (Google + GitHub) lands here; downstream
 // services validate sessions against this database via user-service's
 // /internal/sessions/validate endpoint.
 //
@@ -22,6 +22,18 @@
 //   - users.username added (nullable, unique case-insensitive)
 //   - users.email is now unique (case-insensitive); dedup migration removes duplicate rows
 //   - username backfilled from display_name for existing users on migration
+//
+// v003 changes (m4-agent-cost — billing, quota, platform roles):
+//   - Billing: billing_plan, org_plan_assignment, model_pricing, credit_config.
+//     Plans are ORG-LEVEL ONLY — there is no individual/per-user plan assignment.
+//     A user's plan resolves: org plan → free.
+//   - Cost ledger: turn_cost (append-only; no FK to model_pricing so unpriced
+//     models still record at cost 0). credits_used = cost_usd × credit_config.usd_to_credits.
+//   - Quota: user_usage_quota is keyed by (user_id, org_id) — usage is tracked
+//     SEPARATELY PER ORG the user belongs to. Lazy reset (daily UTC midnight,
+//     weekly Monday). org_id FK ON DELETE CASCADE.
+//   - Platform roles: platform_role + platform_role_assignment (M4 ships
+//     'platform_admin' only). Distinct from org-level memberships.role.
 
 // ─────────────────────────────────────────────
 // IDENTITY
@@ -135,5 +147,115 @@ Table sessions {
 
   indexes {
     expiry
+  }
+}
+
+// ─────────────────────────────────────────────
+// BILLING / QUOTA (m4-agent-cost)
+// ─────────────────────────────────────────────
+// Plans are ORG-LEVEL ONLY (no per-user plan). A user's caps come from their
+// org's plan, resolved org → free. Usage is tracked PER (user, org).
+
+Table billing_plan {
+  id                 uuid          [primary key, default: `gen_random_uuid()`]
+  name               text          [not null, unique, note: "Slug: 'free' | 'pro' | 'max'"]
+  display_name       text          [not null]
+  daily_credits_cap  numeric(12,2) [not null, note: '0 = unlimited']
+  weekly_credits_cap numeric(12,2) [not null, note: '0 = unlimited']
+  created_at         timestamptz   [not null, default: `now()`]
+  updated_at         timestamptz   [not null, default: `now()`]
+}
+
+Table org_plan_assignment {
+  id          uuid        [primary key, default: `gen_random_uuid()`]
+  org_id      uuid        [not null, unique, ref: > organizations.id, note: 'ON DELETE CASCADE; at most one plan per org']
+  plan_id     uuid        [not null, ref: > billing_plan.id]
+  assigned_by uuid        [not null, ref: > users.id]
+  assigned_at timestamptz [not null, default: `now()`]
+  expires_at  timestamptz
+}
+
+Table model_pricing {
+  model_id                  text        [primary key, note: 'Matches hermes model_catalog ids; billing rate = provider list price +5%']
+  input_cost_per_mtok       numeric     [not null]
+  output_cost_per_mtok      numeric     [not null]
+  cache_read_cost_per_mtok  numeric     [not null]
+  cache_write_cost_per_mtok numeric     [not null]
+  effective_from            timestamptz [not null]
+  effective_to              timestamptz
+}
+
+Table credit_config {
+  id             integer [primary key, default: 1, note: 'Single row (CHECK id = 1)']
+  usd_to_credits numeric [not null, note: '10000 ⇒ 1 credit = $0.0001']
+}
+
+// Append-only cost ledger; never mutated after insert. session_id/turn_id are the
+// hermes-agent session/run ids (UUIDs) — no FK (cross-DB). No FK to model_pricing,
+// so a turn for an unpriced model still records (at cost 0, logged for backfill).
+Table turn_cost {
+  id                 uuid          [primary key, default: `gen_random_uuid()`]
+  user_id            uuid          [not null, ref: > users.id]
+  session_id         uuid          [not null]
+  turn_id            uuid          [not null]
+  source_type        text          [not null, note: "e.g. 'agent_chat'"]
+  source_label       text          [not null]
+  task_id            uuid
+  model_id           text          [not null]
+  input_tokens       integer       [not null, default: 0]
+  output_tokens      integer       [not null, default: 0]
+  cache_read_tokens  integer       [not null, default: 0]
+  cache_write_tokens integer       [not null, default: 0]
+  cost_usd           numeric(12,8) [not null]
+  credits_used       numeric(12,2) [not null]
+  stopped            boolean       [not null, default: false]
+  created_at         timestamptz   [not null, default: `now()`]
+
+  indexes {
+    (user_id, created_at)
+    (source_type, created_at)
+  }
+}
+
+// One row per (user, org). Caps are NOT stored here — read live from the resolved
+// billing_plan. Counters reset lazily on access (daily UTC midnight, weekly Monday).
+Table user_usage_quota {
+  id                  uuid          [primary key, default: `gen_random_uuid()`]
+  user_id             uuid          [not null, ref: > users.id]
+  org_id              uuid          [not null, ref: > organizations.id, note: 'ON DELETE CASCADE']
+  plan_id             uuid          [not null, ref: > billing_plan.id]
+  daily_credits_used  numeric(12,2) [not null, default: 0]
+  daily_reset_at      timestamptz   [not null]
+  weekly_credits_used numeric(12,2) [not null, default: 0]
+  weekly_reset_at     timestamptz   [not null]
+  updated_at          timestamptz   [not null, default: `now()`]
+
+  indexes {
+    (user_id, org_id) [unique]
+  }
+}
+
+// ─────────────────────────────────────────────
+// PLATFORM ROLES (m4-agent-cost)
+// ─────────────────────────────────────────────
+// Platform-scoped (internal) roles, distinct from org-level memberships.role.
+
+Table platform_role {
+  key          text        [primary key, note: "M4 ships 'platform_admin' only"]
+  display_name text        [not null]
+  description  text        [not null, default: '']
+  created_at   timestamptz [not null, default: `now()`]
+}
+
+Table platform_role_assignment {
+  id         uuid        [primary key, default: `gen_random_uuid()`]
+  user_id    uuid        [not null, ref: > users.id]
+  role_key   text        [not null, ref: > platform_role.key]
+  granted_by uuid        [not null, ref: > users.id]
+  granted_at timestamptz [not null, default: `now()`]
+
+  indexes {
+    (user_id, role_key) [unique]
+    user_id
   }
 }

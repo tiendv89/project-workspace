@@ -1,20 +1,92 @@
 id: T4
 title: "workflow-bff: cost/quota gateway handlers + forward platform_roles"
 repo: workflow-bff
-status: todo
-depends_on: [T2]
+status: done
+depends_on:
+  - T2
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-agent-cost-T4
 execution:
   actor_type: agent
-  last_updated_by: tech_lead
-  last_updated_at: 2026-06-24T23:50:04+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T19:43:48.417Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-bff/pull/6
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/622
+  status: open
 log:
   - action: created
     by: tech_lead
     at: 2026-06-24T23:50:04+0700
     note: Task created from approved task breakdown.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:25:38.634Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:28:46.198Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:28:55.139Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "workflow-bff: cost/quota gateway handlers + forward platform_roles
+      m4-agent-cost"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:31:18+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-bff/pull/6"
+    at: 2026-06-24T18:54:33.726Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T18:55:46.903Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T19:01:48.481Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:02:51.119Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-bff/pull/6"
+    at: 2026-06-24T19:10:07.876Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:11:50.302Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-06-24T19:18:27.328Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:19:29.794Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-bff/pull/6"
+    at: 2026-06-24T19:28:08.012Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:29:22.436Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T19:42:16.027Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T19:43:48.417Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
