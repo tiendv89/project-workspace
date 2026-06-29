@@ -1,27 +1,117 @@
 id: T28
-title: "workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)"
+title: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio)
 repo: workflow-mcp
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T28
+blocked_context: null
+branch: feature/workflow-db-T28
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-06-24T16:16:10+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-24T14:35:54.782Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/batu4404/workflow-mcp/pull/1
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/601
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-06-24T16:01:58+0700
-    note: >-
-      Created in the workflow-db task-creation revamp (Workstream C, §4.8). Human prerequisite:
-      the workflow-mcp GitHub repo must exist and WORKFLOW_MCP_LOCAL_PATH be set before this runs.
+    note: "Created in the workflow-db task-creation revamp (Workstream C, §4.8).
+      Human prerequisite: the workflow-mcp GitHub repo must exist and
+      WORKFLOW_MCP_LOCAL_PATH be set before this runs."
   - action: ready
     by: batu4404@gmail.com
     at: 2026-06-24T16:16:10+0700
-    note: >-
-      Task activated on tasks-stage approval — no task dependencies. Note: blocks at execution
-      until the workflow-mcp GitHub repo exists and WORKFLOW_MCP_LOCAL_PATH is set.
+    note: "Task activated on tasks-stage approval — no task dependencies. Note:
+      blocks at execution until the workflow-mcp GitHub repo exists and
+      WORKFLOW_MCP_LOCAL_PATH is set."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:08:21.619Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T11:08:30.150Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: dispatch_dlq_after_5_deliveries
+    at: 2026-06-24T11:11:28.464Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:03:22+0700
+    note: Human reset from blocked
+      (executor_failed:dispatch_dlq_after_5_deliveries). pr.url is null so
+      resetting to ready per unblock-target rule.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:08:29.746Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:08:33.745Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: tiendv.52@gmail.com
+    note: >
+      repo_materialization_failed: Error: Command failed: git clone
+      "git@github.com:batu4404/workflow-mcp.git" "/workspace/impl"
+
+      Cloning into '/workspace/impl'...
+
+      ERROR: Repository not found.
+
+      fatal: Could not read from remote repository.
+
+
+      Please make sure you have the correct access rights
+
+      and the repository exists.
+    at: 2026-06-24T14:10:33.660Z
+  - action: ready
+    by: batu4404@gmail.com
+    at: 2026-06-24T21:14:38+0700
+    note: "Human reset from blocked (repo_materialization_failed: workflow-mcp repo
+      not found). Note: will block again until github.com/batu4404/workflow-mcp
+      is created and WORKFLOW_MCP_LOCAL_PATH is set in .env."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:16:37.528Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:16:41.750Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-mcp scaffold (TypeScript, MCP TS SDK, stdio) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:18:56+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/batu4404/workflow-mcp/pull/1"
+    at: 2026-06-24T14:25:32.975Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:27:56.103Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-24T14:34:52.486Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-24T14:35:54.782Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

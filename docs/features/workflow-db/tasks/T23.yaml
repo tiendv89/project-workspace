@@ -1,0 +1,72 @@
+id: T23
+title: Move owner + FK migrations to workflow-backend (pure migration)
+repo: workflow-backend
+status: done
+depends_on:
+  - T22
+blocked_reason: null
+blocked_context: null
+branch: feature/workflow-db-T23
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-09T09:47:10.031Z
+pr:
+  url: https://github.com/tiendv89/workflow-backend/pull/35
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/511
+  status: open
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T12:10:28+0700
+    note: Pure migration task spawned from T22 per the migration ownership rule. T22
+      introduced owner discriminator columns and an FK fix directly in
+      workflow-orchestrator/db/migrations/ — these must be the single source of
+      truth in workflow-backend instead. This task adds them as proper goose
+      migrations there and removes the migration files from
+      workflow-orchestrator.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:17:28.510Z
+    note: Task activated — dependency T22 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:19:10.752Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:19:19.535Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Move owner + FK migrations to workflow-backend (pure migration) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T06:24:58+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/35"
+    at: 2026-06-09T06:43:10.479Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:01:09.905Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T16:37:10+0700
+    note: Human reset reviewing → in_review; reviewer did not complete this cycle.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:39:11.226Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-09T09:45:39.929Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-09T09:47:10.031Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

@@ -1,22 +1,89 @@
 id: T13
-title: "PR-merge poll"
+title: PR-merge poll
 repo: workflow-orchestrator
-status: todo
-depends_on: [T9, T6]
+status: done
+depends_on:
+  - T9
+  - T6
 blocked_reason: null
-branch: workflow-db/T13
+blocked_context: null
+branch: feature/workflow-db-T13
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T08:47:00.778Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/8
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/489
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T9 (SetDone transition) and T6 (go tasks must exist in the
-      DB with pr.url set before the poll has rows to inspect).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T9
+      (SetDone transition) and T6 (go tasks must exist in the DB with pr.url set
+      before the poll has rows to inspect).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:34:28.523Z
+    note: Task activated — dependency T9 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:39:11.202Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:39:18.850Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: PR-merge poll workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T05:46:49+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/8"
+    at: 2026-06-08T05:59:36.962Z
+  - action: review_blocked
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T15:38:46+0700
+    note: 'Human review-cycle reset. The review counter is derived by counting
+      reviewer_started log entries; repeated reviewer stalls had inflated it to
+      "cycle 3 of 3" (one stalled dispatch from escalating to blocked). Per
+      explicit human decision, the prior review-cycle log entries have been
+      stripped so the next reviewer dispatch counts as cycle 1 of 3. Removed
+      entries (preserved here for audit): reviewer_started cycle 1
+      (2026-06-08T06:01:38Z, stalled, no verdict); human review_blocked recovery
+      (2026-06-08T13:48:52+0700); rebase_completed (2026-06-08T07:30:57Z);
+      reviewer_started cycle 2 (2026-06-08T07:33:59Z); reviewer_complete
+      REQUEST_CHANGES (2026-06-08T07:42:57Z); fix_started
+      (2026-06-08T07:44:17Z); run_completed for the cycle-2 fix
+      (2026-06-08T07:51:02Z); reviewer_started cycle 3 (2026-06-08T07:52:34Z).
+      PR workflow-orchestrator#8 retains ALL code (initial implementation plus
+      the cycle-2 fix); only the management-repo cycle history is reset. Status
+      reset reviewing -> in_review so a fresh reviewer re-evaluates the current
+      PR state as cycle 1. Branch rebase state (conflict_state, rebase_log) is
+      retained below.'
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T08:40:51.869Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T08:45:31.792Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T08:47:00.778Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolved
+rebase_log:
+  - at: 2026-06-08T07:21:18.538Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/workflow-db.

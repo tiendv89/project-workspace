@@ -1,22 +1,103 @@
 id: T11
-title: "Dispatch"
+title: Dispatch
 repo: workflow-orchestrator
-status: todo
-depends_on: [T5, T3]
+status: done
+depends_on:
+  - T5
+  - T3
 blocked_reason: null
-branch: workflow-db/T11
+blocked_context: null
+branch: feature/workflow-db-T11
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T07:46:25.609Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/5
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/485
+  status: open
 log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
-    note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      Blocked on T5 (DB access layer) and T3 (broker owner-partitioning
-      must be deployed before dispatching with owner='go' is safe).
+    note: Task created during workflow-db Phase 2 task breakdown. Blocked on T5 (DB
+      access layer) and T3 (broker owner-partitioning must be deployed before
+      dispatching with owner='go' is safe).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:46:41.097Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:58:33.587Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:58:42.980Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: Dispatch workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:11:48+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/5"
+    at: 2026-06-08T04:22:26.930Z
+  - action: reviewer_complete
+    by: pentative@gmail.com
+    note: Reviewer requested changes (cycle 1).
+    at: 2026-06-08T04:30:55.390Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T04:42:36.049Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/5"
+    at: 2026-06-08T05:29:54.719Z
+  - action: change_requested
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:20:32+0700
+    note: Human reviewer requested changes on PR
+      https://github.com/tiendv89/workflow-orchestrator/pull/5.
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T06:22:51.830Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T13:44:31+0700
+    note: "Human recovery. The fix agent (fix_started 2026-06-08T06:22:51Z) crashed
+      before logging completion, leaving a dead in_progress claim. Human
+      verified the fix commit DID land on PR workflow-orchestrator#5 (\"fix:
+      remove per-call Redis client leak in Dispatcher\") addressing the
+      reviewer's REQUEST_CHANGES. Resetting in_progress -> in_review so the
+      reviewer can re-evaluate the pushed fix. PR #5 remains open (unmerged)."
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer escalated after cycle 3 — reviewer confidence exhausted.
+    at: 2026-06-08T07:26:31.937Z
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T14:38:39+0700
+    note: Human reset review cycle count to 0 (removed reviewer_started entries) and
+      restored in_review for fresh reviewer dispatch.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:39:43.215Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T07:44:30.403Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T07:46:25.609Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

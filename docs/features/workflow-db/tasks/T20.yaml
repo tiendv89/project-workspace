@@ -1,0 +1,65 @@
+id: T20
+title: Persist actor_type and de-dup MaterializeFeature via shared DBTX
+repo: workflow-orchestrator
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/workflow-db-T20
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T18:39:11.264Z
+pr:
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/13
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/503
+  status: open
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: "Created during the workflow-db post-implementation review (see
+      docs/features/workflow-db/post-implementation-review.md). Remediates the
+      🟡 finding on T6: GoTaskSpec.ActorType is parsed but never persisted to
+      the task execution JSONB (violates the execution.actor_type rule), and
+      MaterializeFeature duplicates CreateFeature/CreateTask inline because they
+      take *pgxpool.Pool rather than a tx — the copies have already drifted."
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: No dependencies (fixes already-merged T6 code) — seeded ready.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:18:53.157Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:19:01.702Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Persist actor_type and de-dup MaterializeFeature via shared DBTX
+      workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:29:46+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/13"
+    at: 2026-06-08T18:32:27.012Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:34:06.610Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T18:37:45.830Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:39:11.264Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

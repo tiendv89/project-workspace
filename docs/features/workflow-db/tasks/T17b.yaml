@@ -1,22 +1,89 @@
 id: T17b
-title: "start-implementation owner-gate (claude + hermes)"
+title: start-implementation owner-gate (claude + hermes)
 repo: workflow
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
-branch: workflow-db/T17b
+blocked_context: null
+branch: feature/workflow-db-T17b
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmai.com
-  last_updated_at: 2026-06-07T16:44:52Z
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T03:25:48.501Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/258
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/476
+  status: merged
 log:
   - action: created
     by: tiendv.52@gmai.com
     at: 2026-06-07T16:44:52Z
+    note: Task created during workflow-db Phase 2 task breakdown. No blockers —
+      reads status.yaml owner field only; eligible for Wave 1 execution
+      alongside T1, T3, T4.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-07T17:34:13.072Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-07T17:34:23.163Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: start-implementation owner-gate (claude + hermes) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T09:42:37+0700
+    note: Human recovery. Executor crashed mid-run without writing a result and
+      produced no implementation PR (pr.url is null). Reset in_progress -> ready
+      so the task can be re-claimed. Workspace claim PR project-workspace#476
+      left open; the next executor reuses branch feature/workflow-db-T17b.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:06:54.700Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:06:58.978Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: start-implementation owner-gate (claude + hermes) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:10:24+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/258"
+    at: 2026-06-08T03:12:33.562Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:14:50.896Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T03:20:33.007Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T03:25:48.501Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-06-08T03:26:00.086Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Base branch was modified. Review and try the merge
+      again.","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
+  - action: done
+    by: matthew@swellnetwork.io
+    at: 2026-06-08T10:31:46+0700
     note: >-
-      Task created during workflow-db Phase 2 task breakdown.
-      No blockers — reads status.yaml owner field only; eligible for
-      Wave 1 execution alongside T1, T3, T4.
+      Manual recovery of the failed workspace PR merge. The 405 "Base branch was
+      modified" was transient; PR project-workspace#476 re-checked as
+      mergeable/clean and squash-merged into feature/workflow-db. workspace_pr.status
+      set to merged. Auto-ready check: no task depends_on T17b and no other todo
+      task has all deps done, so nothing was readied.

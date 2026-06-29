@@ -29,6 +29,10 @@ Technical design: `docs/features/workflow-db/technical-design.md` (approved 2026
 | T17 | 4 | `tech-lead` owner-aware | `workflow` | T4, T6 |
 | T14 | 5 | Orchestration loop | `workflow-orchestrator` | T7, T8, T9, T10, T11, T12, T13 |
 | T18 | 6 | E2E coexistence test | `workflow-orchestrator` | T2, T4, T14, T15 |
+| T19 | 7 | Align Go broker client to the real broker/dispatcher ABI | `workflow-orchestrator` | — |
+| T20 | 7 | Persist `actor_type`; de-dup `MaterializeFeature` via shared `DBTX` | `workflow-orchestrator` | — |
+| T21 | 7 | Orchestrator runtime hardening (builder image, poll backoff, healthz) | `workflow-orchestrator` | — |
+| T22 | 7 | Replace E2E mock broker with the real broker + real migrations | `workflow-orchestrator` | T19 |
 | T24 | 1 | DB layer: `CreateWorkspaceTasks` (bulk, all-or-nothing) | `workflow-backend` | — |
 | T25 | 1 | Features API: `?name=` exact-match filter | `workflow-backend` | — |
 | T28 | 1 | `workflow-mcp` scaffold (TS, stdio) | `workflow-mcp` | — |
@@ -36,12 +40,14 @@ Technical design: `docs/features/workflow-db/technical-design.md` (approved 2026
 | T35 | 1 | Orchestrator: remove `create.go` + `cmd/seed` | `workflow-orchestrator` | — |
 | T36 | 1 | `approve-feature`: go-mode create-tasks guide | `workflow` | — |
 | T26 | 2 | Task-create endpoint (bulk, all-or-nothing) | `workflow-backend` | T24 |
-| T32 | 2 | `install.sh`: clone+build+register `workflow-mcp` | `workflow` | T28 |
+| T32 | 2 | `install.sh`: register linked `workflow-mcp` | `workflow` | T28 |
 | T27 | 3 | BFF: verify proxy + passthrough test | `workflow-bff` | T26, T25 |
 | T29 | 4 | `workflow-mcp` auth (session cookie) | `workflow-mcp` | T28, T27 |
 | T30 | 5 | `workflow-mcp` tools: `get_feature` + `create_tasks` | `workflow-mcp` | T28, T29, T26, T25 |
 | T31 | 6 | `workflow-mcp` E2E | `workflow-mcp` | T30 |
 | T33 | 6 | `create-tasks` skill (go mode) | `workflow` | T30, T32 |
+
+> **Wave 7 — post-implementation remediation.** Added 2026-06-09 after the local review of all 19 merged PRs (see `post-implementation-review.md`). T19 fixes the two 🔴 broker-ABI defects (T11/T12); T20/T21/T22 fix the 🟡 findings on T6/T14/T18. The feature was rolled `in_handoff → in_implementation` and the 5 handoff PRs are held open until these land.
 
 ---
 
@@ -833,6 +839,178 @@ Invoked with: `go test ./test/e2e/... -tags integration`; must complete in under
 
 ---
 
+## T19 — Align Go broker client to the real broker/dispatcher ABI
+
+### Description
+
+**Remediates the two 🔴 findings on T11 (dispatch) and T12 (reap).** See `post-implementation-review.md` → "🔴 Root cause — the Go broker client was built to a guessed protocol" for the full evidence. The Go orchestrator's broker client in `workflow-orchestrator` does not match the real contract in `agent-workflow/runtime/{broker,dispatcher,abi}`, so the claim → dispatch → executor → reap → `in_review` path does not function end-to-end. This is v1 (human-merge) scope, not deferred.
+
+The authoritative contract lives in `agent-workflow`:
+- Dispatcher consumer: `runtime/dispatcher/src/consumer.ts:347-349` (reads a single stream field `job`, `JSON.parse` → `DispatchJob`).
+- ABI: `runtime/abi/src/types.ts` (`DispatchJob` shape, required `nonce`).
+- Broker store: `runtime/broker/internal/store/store.go:18-23` (`HandleMetadata` snake_case JSON tags).
+
+**Changes (all in `workflow-orchestrator`):**
+
+1. **`internal/orchestrator/dispatch.go` — `enqueueJob`**: marshal a full `DispatchJob` to JSON and `XADD` it under the single field key `job` (not flat fields). Populate every required `DispatchJob` field per `abi/src/types.ts` — `kind`, `nonce`, repo/branch/base-branch fields, `mgmt_repo_url`, `callback_url`, `enqueued_at`, etc. — sourced from config + the task row.
+2. **`internal/orchestrator/dispatch.go` — `registerHandle`**: generate a single-use `nonce`, send it on `POST /register`, and carry the same nonce into the enqueued `DispatchJob` so the executor's `/callback` validates.
+3. **`internal/orchestrator/dispatch.go` — `handleMetadata`**: change JSON tags to snake_case (`feature_id`, `task_id`, `tenant_id`, `started_at`, `kind`) to match `store.HandleMetadata`. (Values already correctly carry the slugs `feature_name`/`task_name`.)
+4. **`internal/orchestrator/reap.go` — `dbLookupTaskBySlug`**: add `AND owner = 'go'` to the slow-path lookup so a completion can never resolve onto a legacy (`owner IS NULL`) row sharing a slug. Confirm the completion-metadata struct decodes the broker's snake_case keys (shared with change 3) so the slow path works after an orchestrator restart (empty in-memory `HandleStore`).
+
+### Required skills
+- `go-best-practices`
+- `typescript-best-practices`
+
+### Subtasks
+- [ ] `enqueueJob` XADDs a single `job` field containing a full `DispatchJob` JSON
+- [ ] All required `DispatchJob` fields populated per `abi/src/types.ts`
+- [ ] `registerHandle` generates + sends a single-use `nonce`; same nonce in the job
+- [ ] `handleMetadata` JSON tags are snake_case matching `store.HandleMetadata`
+- [ ] Reap slow-path lookup scoped to `owner = 'go'`
+- [ ] Reap decodes broker snake_case completion metadata (restart / fast-path-empty case)
+- [ ] Tests assert the real wire shape: a parseable `job` `DispatchJob`, a non-empty `nonce` on `/register`, and snake_case metadata round-trip
+- [ ] (Recommended) an integration check against the real broker binary — or defer to T22
+
+### Acceptance criteria
+- A dispatched go task produces a stream entry the real dispatcher parses without `dispatch_parse_error`.
+- A `/register` includes a nonce the broker accepts on `/callback`.
+- The broker stores non-empty `feature_id`/`task_id`; reap resolves the completion to the correct go row and writes `in_review` via the guarded transition.
+- No completion can resolve onto an `owner IS NULL` row.
+- `go build ./...`, `go vet ./...`, and the unit suite pass; lint clean.
+
+---
+
+## T20 — Persist `actor_type`; de-dup `MaterializeFeature` via shared `DBTX`
+
+### Description
+
+**Remediates the 🟡 finding on T6.** See `post-implementation-review.md` → "T6 (#2)". Two issues in `internal/orchestrator/create.go`:
+
+1. `GoTaskSpec.ActorType` is parsed from the fixture but never persisted — `InsertTask` writes no `execution`/`actor_type`. The workspace task-structure rule requires `execution.actor_type`. Persist it into the task `execution` JSONB on insert (e.g. `{"actor_type": "<value>"}`).
+2. `MaterializeFeature` (`create.go:189-270`) duplicates the bodies of `CreateFeature`/`CreateTask`/`InitialAutoReady` inline because those helpers take `*pgxpool.Pool` and cannot join the tx — the two copies have already drifted (that is how the `actor_type` gap arose). Refactor the create helpers to accept a `queries.DBTX` (or `*queries.Queries`) so `MaterializeFeature` composes them inside its transaction instead of re-implementing them.
+
+### Required skills
+- `go-best-practices`
+
+### Subtasks
+- [ ] `InsertTask` persists `actor_type` into the `execution` JSONB
+- [ ] Create helpers accept a `DBTX`/`*queries.Queries` so they compose inside a tx
+- [ ] `MaterializeFeature` calls the shared helpers (no duplicated insert bodies)
+- [ ] Test asserts a materialized task row carries the expected `execution.actor_type`
+- [ ] Existing T6 integration tests still pass
+
+### Acceptance criteria
+- A materialized go task row has `execution.actor_type` set from the fixture.
+- `MaterializeFeature` contains no duplicated copy of the create-helper logic.
+- Feature + all tasks + auto-ready remain in a single transaction.
+- `go build ./...`, `go vet ./...`, unit suite pass; lint clean.
+
+---
+
+## T21 — Orchestrator runtime hardening (builder image, poll backoff, healthz)
+
+### Description
+
+**Remediates the 🟡 findings on T14.** See `post-implementation-review.md` → "T14 (#10)".
+
+1. **Builder image / `go.mod` consistency** — pin the Dockerfile builder image to a tag consistent with `go.mod`'s `go` directive (currently builder `golang:1.24-alpine` vs `go.mod` `1.25.7`, which forces a toolchain re-download and fails an offline `CGO_ENABLED=0` build). Either pin a matching `1.25.x` image or lower the `go.mod` directive. Verify `docker build` succeeds with no network during the build step.
+2. **Poll backoff/jitter** — `cmd/orchestrator/main.go` poll loop uses a fixed `time.Ticker` with no jitter/backoff. Add jitter and a backoff on errors (especially around GitHub poll rate limits).
+3. **Non-fatal healthz** — `serveHealthz` calls `log.Fatal` on `ListenAndServe` error, killing the whole orchestrator on a port-bind failure. Log the error without exiting the process.
+
+### Required skills
+- `go-best-practices`
+
+### Subtasks
+- [ ] Builder image pinned consistent with `go.mod`; `docker build` succeeds offline
+- [ ] Poll loop has jitter + error backoff
+- [ ] `serveHealthz` does not `log.Fatal` (logs and continues)
+- [ ] Test or documented manual verification for the build + backoff behaviour
+
+### Acceptance criteria
+- `docker build` succeeds with no errors and no build-time toolchain download.
+- The poll loop applies jitter/backoff (no fixed thundering-herd interval).
+- A healthz bind failure does not terminate the orchestrator process.
+- `go build ./...`, `go vet ./...`, unit suite pass; lint clean.
+
+---
+
+## T22 — Replace E2E mock broker with the real broker + real migrations
+
+### Description
+
+**Remediates the 🟡 finding on T18.** See `post-implementation-review.md` → "T18 (#11)". The coexistence test asserts all six invariants but runs A2/A3 (the load-bearing isolation guarantees) against a test-local `mockBroker` that re-implements partition-by-owner, with the "TS" side a directly-seeded DB row — which is exactly why the T11/T12 protocol defects went undetected. It also applies a checked-in `db/schema/schema.sql` snapshot instead of the real goose migrations.
+
+**Depends on T19** — there is no point exercising the real broker until the Go client conforms to the ABI.
+
+**Changes (`workflow-orchestrator`, `test/e2e/coexistence_test.go`):**
+1. Replace `mockBroker` with a **faithful in-process broker** implementing the real ABI (POST /register, POST /callback, POST /list-completed, POST /ack with nonce validation and per-owner queue partitioning) so A2/A3 are proven against real protocol behaviour.
+2. Replace the migration-iteration loop in both `TestMain` functions with a single **idempotent schema snapshot** (`db/testdata/schema.sql`) that represents the combined final state of all migrations (00001–00016 equivalent).
+3. Commit the two migration source files as **artifact files** for T23 (`db/testdata/migration-a-owner.sql`, `db/testdata/migration-b-fk-fix.sql`) so T23 can port the exact SQL to workflow-backend without DDL being hardcoded in tasks.md.
+4. Keep all six invariant assertions (A1–A6); ensure CI provides Docker/`DATABASE_URL` so the gate cannot silently no-op green.
+
+### Required skills
+- `go-best-practices`
+
+### Subtasks
+- [x] E2E uses faithful in-process broker (not `mockBroker`) for A2/A3
+- [x] Go completion flows through broker callback with a valid nonce (nonce validation is real)
+- [x] `TestMain` applies idempotent schema snapshot (`db/testdata/schema.sql`) in both packages
+- [x] `db/migrations/` removed; replaced by `db/testdata/schema.sql` + artifact files
+- [x] Migration artifact files committed (`migration-a-owner.sql`, `migration-b-fk-fix.sql`) for T23
+- [x] CI provides Docker/`DATABASE_URL`; suite does not no-op when absent
+- [x] All six invariants (A1–A6) still asserted and passing
+
+### Acceptance criteria
+- A2/A3 are proven against a protocol-faithful broker with real nonce validation and per-owner queues.
+- Both `TestMain` functions apply a single idempotent snapshot; `db/migrations/` no longer exists.
+- Migration source files for T23 are in `db/testdata/`; T23's task YAML `migration_artifact` field points to them.
+- The suite fails (not silently passes) when its dependencies are unavailable.
+- CI is green end-to-end.
+
+---
+
+## T23 — Move owner + FK migrations to workflow-backend (pure migration)
+
+### Description
+
+**Pure migration task spawned from T22.** Per the migration ownership rule (see `CLAUDE.md`), migrations must live only in **workflow-backend**. T22 squashed its migration files into a test-only snapshot (`db/testdata/schema.sql`) and committed the exact goose SQL as artifact files:
+
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` — owner discriminator columns
+- `workflow-orchestrator/db/testdata/migration-b-fk-fix.sql` — FK target correction
+
+The agent must **not** hardcode DDL from memory. Read the SQL verbatim from the two artifact files above (the `migration_artifact` field in T23.yaml records their paths).
+
+This task:
+1. Reads the two artifact files from `workflow-orchestrator/db/testdata/`.
+2. Adds them as properly sequenced goose files in `workflow-backend/migrations/`.
+3. Deletes both artifact files from `workflow-orchestrator/db/testdata/`.
+4. Verifies CI passes in both repos.
+
+### Migration source
+
+Do not write DDL by hand. Obtain the exact SQL from:
+
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` (on the T22 merged branch)
+- `workflow-orchestrator/db/testdata/migration-b-fk-fix.sql` (on the T22 merged branch)
+
+The goose markers (`-- +goose Up` / `-- +goose Down`) are already present in those files.
+
+### Required skills
+- `postgres-best-practices`
+
+### Subtasks
+- [ ] Check workflow-backend's current highest migration number and assign the next two in sequence
+- [ ] Add Migration A (from `migration-a-owner.sql`) as a goose file in workflow-backend
+- [ ] Add Migration B (from `migration-b-fk-fix.sql`) as a goose file in workflow-backend
+- [ ] Delete `db/testdata/migration-a-owner.sql` from workflow-orchestrator
+- [ ] Delete `db/testdata/migration-b-fk-fix.sql` from workflow-orchestrator
+- [ ] CI passes in workflow-backend (migrations apply cleanly)
+- [ ] CI passes in workflow-orchestrator (no references to deleted files)
+
+### Acceptance criteria
+- workflow-backend contains both migrations as properly sequenced goose files with correct `-- +goose Up/Down` markers.
+- `workflow-orchestrator/db/testdata/migration-a-owner.sql` and `migration-b-fk-fix.sql` are deleted.
+- Both repos' CI is green.
 ## T24 — DB layer: `CreateWorkspaceTasks` (bulk, all-or-nothing)
 
 ### Description

@@ -1,0 +1,66 @@
+id: T21
+title: Orchestrator runtime hardening (builder image, poll backoff, non-fatal healthz)
+repo: workflow-orchestrator
+status: done
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/workflow-db-T21
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-06-08T18:44:40.171Z
+pr:
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/15
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/504
+  status: open
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: "Created during the workflow-db post-implementation review (see
+      docs/features/workflow-db/post-implementation-review.md). Remediates the
+      🟡 findings on T14: the Dockerfile shipped a non-existent
+      golang:1.25-alpine base (build criterion failed; the post-merge fix now
+      mismatches go.mod 1.25.7), the poll loop has no jitter/backoff, and
+      serveHealthz calls log.Fatal on bind error which kills the whole
+      orchestrator."
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-06-09T01:13:35+0700
+    note: No dependencies (fixes already-merged T14 code) — seeded ready.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:20:40.404Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:20:49.065Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Orchestrator runtime hardening (builder image, poll backoff,
+      non-fatal healthz) workflow-db
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:25:21+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/15"
+    at: 2026-06-08T18:36:08.702Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:37:33.113Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-06-08T18:43:13.159Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-06-08T18:44:40.171Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
