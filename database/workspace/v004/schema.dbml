@@ -76,7 +76,7 @@ Table workspace_features {
   current_stage  text
   next_action    text
   stages         jsonb       [note: 'Full parsed stages object from status.yaml']
-  source_path    text        [note: 'v003: relaxed to NULLABLE. Set for legacy (owner IS NULL) rows, e.g. docs/features/x/status.yaml; NULL for owner=go (DB-native, no YAML origin).']
+  source_path    text        [note: 'v003: relaxed to NULLABLE. Set for legacy (owner IS NULL) rows; NULL for owner=go (DB-native, no YAML origin).']
   source_hash    text
   owner          text        [note: 'v003: NULL/absent = legacy git/YAML (TS orchestrator + adapter sync); "go" = DB-native (Go orchestrator). No backfill — existing rows stay NULL.']
   init_pr_url    text        [note: '(00017) URL of the initialization PR created for this feature. Nullable until a PR is provisioned.']
