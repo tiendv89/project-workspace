@@ -1,12 +1,11 @@
 feature_id: workflow-db
 title: Workflow State Database — Agent Write Path and Relational Storage
-feature_status: in_handoff
+feature_status: done
 current_stage: handoff
-next_action: "Two tracks in flight: (1) Wave-7 remediation T19–T22 (fix the
-  broker-ABI review findings; handoff PR #501 and the 4 impl feature-branch PRs
-  are held OPEN until these land); (2) task-creation work T24–T36 (creation API
-  + workflow-mcp) — no-dependency tasks ready. Human prerequisite: create the
-  workflow-mcp GitHub repo + set WORKFLOW_MCP_LOCAL_PATH before T28–T31."
+next_action: >-
+  Handoff approved. Feature is done. Merge the handoff PR
+  (https://github.com/tiendv89/project-workspace/pull/627) and the impl
+  feature-branch PRs to close out the feature.
 stages:
   product_spec:
     review_status: approved
@@ -66,11 +65,25 @@ stages:
         reviewed_at: 2026-06-24T09:16:10Z
         comment: Tasks re-approved — Workstream C (T24–T36) added and activated.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-06-29T17:50:24+0700
+    review_comment: >-
+      Handoff approved. All 36 tasks completed and reviewed: Wave-1–6 core
+      (T1–T23), Wave-7 broker-ABI remediation (T19–T22), and Workstream-C
+      task-creation API + workflow-mcp (T24–T36). Feature ships the Go
+      orchestrator write path, relational DB storage, task-creation API,
+      workflow-mcp MCP server, and create-tasks skill as designed.
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-06-29T17:50:24+0700
+        comment: >-
+          Handoff approved. All 36 tasks completed and reviewed: Wave-1–6 core
+          (T1–T23), Wave-7 broker-ABI remediation (T19–T22), and Workstream-C
+          task-creation API + workflow-mcp (T24–T36). Feature ships the Go
+          orchestrator write path, relational DB storage, task-creation API,
+          workflow-mcp MCP server, and create-tasks skill as designed.
     pr_url: https://github.com/tiendv89/project-workspace/pull/627
 history:
   - at: 2026-06-05T17:27:18Z
@@ -160,6 +173,14 @@ history:
       T19–T22; handoff PR #501 and the 4 impl feature-branch PRs held open)
       alongside the revamped design and tasks T24–T36. T1–T18 stay done in their
       task YAMLs; T24–T36 were added by the revamp."
+  - at: 2026-06-29T17:50:24+0700
+    actor: batu4404@gmail.com
+    action: stage_approved
+    stage: handoff
+    note: >-
+      Handoff approved; feature advanced to done. All 36 tasks completed
+      (T1–T23 core + Wave-7 remediation, T24–T36 Workstream-C task-creation).
+      Merge handoff PR #627 and impl feature-branch PRs to close out.
 revalidation:
   product_spec_required: false
   technical_design_required: false
