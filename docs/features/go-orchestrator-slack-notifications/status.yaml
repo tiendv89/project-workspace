@@ -1,0 +1,51 @@
+feature_id: go-orchestrator-slack-notifications
+title: Go Orchestrator Slack Notifications (bot-token, threaded)
+
+feature_status: in_design
+current_stage: product_spec
+next_action: >-
+  Review and approve product-spec.md. Depends on go-orchestrator-autonomy (consumes its
+  // TODO(slack) notification points). Implements a bot-token threaded Slack notifier in the Go
+  orchestrator (webhooks cannot thread). Implement after go-orchestrator-autonomy lands the seams.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-07-01T10:37:34+0700
+    actor: batu4404@gmail.com
+    action: created
+    stage: product_spec
+    note: >-
+      Feature created to hold the Go orchestrator Slack notification scope, split out of
+      go-orchestrator-autonomy to keep that feature focused. Bot-token threaded notifier; depends on
+      go-orchestrator-autonomy's // TODO(slack) seams.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
