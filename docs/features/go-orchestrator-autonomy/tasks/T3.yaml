@@ -1,7 +1,7 @@
 id: T3
 title: Orchestrator README/AGENTS — state-machine reference
 repo: workflow-orchestrator
-status: reviewing
+status: review_incomplete
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -51,3 +51,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T08:40:12.002Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: batu4404@gmail.com
+    at: 2026-07-01T22:07:33+0700
+    note: >-
+      Task was stuck in reviewing — reviewer_started was logged at 08:40:12.002Z
+      but PR #19 (tiendv89/workflow-orchestrator) has zero GitHub reviews and
+      zero comments, indicating the reviewer exited without posting a valid
+      result. Transitioning to review_incomplete (cycle 1 of MAX_REVIEW_INCOMPLETES)
+      so the orchestrator re-dispatches a fresh reviewer on the next poll cycle.
