@@ -1,7 +1,7 @@
 id: T4
 title: hermes-agent — admin/models API + platform-admin gate + catalog-backed dispatch
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
   - T3
@@ -10,11 +10,11 @@ blocked_context: null
 branch: feature/m4-admin-control-model-config-T4
 execution:
   actor_type: agent
-  last_updated_at: 2026-07-01T11:32:55.914Z
+  last_updated_at: 2026-07-01T11:34:01.097Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/30
-  status: open
+  status: merged
 workspace_pr:
   status: open
   url: https://github.com/tiendv89/project-workspace/pull/648
@@ -55,3 +55,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-01T11:32:55.914Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T11:34:01.097Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
