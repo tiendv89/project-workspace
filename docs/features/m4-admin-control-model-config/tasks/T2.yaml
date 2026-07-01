@@ -1,29 +1,29 @@
 id: T2
-title: "user-service — model_pricing versioning migration"
+title: user-service — model_pricing versioning migration
 repo: user-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
-branch: ""
-
+branch: feature/m4-admin-control-model-config-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T10:05:56.528Z
 pr:
   url: ""
   status: not_created
-
 workspace_pr: null
-
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-07-01T16:26:06+0700"
+    at: 2026-07-01T16:26:06+0700
     note: Task created from approved technical design (tech-lead Phase 2).
   - action: ready
     by: pentative@gmail.com
-    at: "2026-07-01T16:30:49+0700"
+    at: 2026-07-01T16:30:49+0700
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:05:56.528Z
+    note: Claimed via git-based claim protocol.
