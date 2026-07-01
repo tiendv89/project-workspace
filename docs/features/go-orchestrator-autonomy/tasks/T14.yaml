@@ -1,7 +1,7 @@
 id: T14
 title: Soft-claim throttle (derived in-flight) + cycle ordering
 repo: workflow-orchestrator
-status: in_progress
+status: in_review
 depends_on:
   - T6
   - T7
@@ -12,10 +12,10 @@ branch: feature/go-orchestrator-autonomy-T14
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T19:08:59.855Z
+  last_updated_at: 2026-07-01T19:25:09.557Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/26
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/654
   status: open
