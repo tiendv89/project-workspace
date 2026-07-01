@@ -1,7 +1,7 @@
 id: T15
 title: E2E autonomous-run test (parallel with a legacy TS feature)
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on:
   - T6
   - T7
@@ -14,11 +14,12 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T15
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T19:55:26.639Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
@@ -29,3 +30,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T19:53:59.189Z
     note: Task activated — dependency T14 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T19:55:26.639Z
+    note: Claimed via git-based claim protocol.
