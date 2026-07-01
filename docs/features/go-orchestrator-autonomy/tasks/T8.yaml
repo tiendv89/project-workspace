@@ -2,7 +2,7 @@ id: T8
 title: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
   terminal guard
 repo: workflow-orchestrator
-status: reviewing
+status: change_requested
 depends_on:
   - T5
 blocked_reason: null
@@ -11,7 +11,7 @@ branch: feature/go-orchestrator-autonomy-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T16:45:43.527Z
+  last_updated_at: 2026-07-01T16:56:34.491Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/23
   status: open
@@ -71,3 +71,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T16:45:43.527Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T16:56:34.491Z
