@@ -1,7 +1,7 @@
 id: T15
 title: E2E autonomous-run test (parallel with a legacy TS feature)
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on:
   - T6
   - T7
@@ -14,11 +14,14 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T15
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T20:40:56.778Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/27
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/655
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
@@ -29,3 +32,49 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T19:53:59.189Z
     note: Task activated — dependency T14 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T19:55:26.639Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T19:55:34.512Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: E2E autonomous-run test (parallel with a legacy TS feature)
+      go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/27"
+    at: 2026-07-01T20:10:16.285Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T20:11:29.223Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T20:18:56.286Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T20:19:57.662Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/27"
+    at: 2026-07-01T20:34:51.894Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T20:36:02.634Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T20:39:49.217Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T20:40:56.778Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
