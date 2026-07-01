@@ -1,28 +1,60 @@
 id: T1
 title: Schema migration — workspace_tasks columns + handoffs/handoff_prs + indexes
 repo: workflow-backend
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-autonomy-T1
-
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T08:56:24.160Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/workflow-backend/pull/51
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/633
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-01T14:54:39+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: []."
   - action: ready
     by: batu4404@gmail.com
-    at: 2026-07-01T07:59:02Z
+    at: 2026-07-01 07:59:02+00:00
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01 08:18:34.878000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01 08:18:43.309000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Schema migration — workspace_tasks columns + handoffs/handoff_prs +
+      indexes go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:24:39+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/51"
+    at: 2026-07-01T08:49:20.420Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:50:23.327Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T08:55:20.618Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:56:24.160Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
