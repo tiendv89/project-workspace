@@ -1,7 +1,7 @@
 id: T4
 title: Unblock API endpoint
 repo: workflow-backend
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -54,3 +54,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T09:40:20.183Z
     note: Fix agent claimed.
+  - action: run_completed
+    by: batu4404@gmail.com
+    at: 2026-07-01T22:12:46+0700
+    note: >-
+      Recovering a stuck fix run: the fix agent pushed 3 commits to PR #52
+      (tiendv89/workflow-backend), the last (c1599159) at 2026-07-01T10:11:30Z,
+      addressing the reviewer's only REQUEST_CHANGES finding — a missing
+      integration test for UnblockTask counter reset — but the process died
+      before writing the in_progress -> in_review transition back to this
+      task file. Verified the fix commit adds TestUnblockTask_CounterReset in
+      reader_integration_test.go covering rebase_failed and non-rebase_failed
+      cases as the review requested. PR #52 is open and mergeable. Transitioning
+      to in_review so the orchestrator dispatches a fresh reviewer cycle.
