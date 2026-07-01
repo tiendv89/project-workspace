@@ -2,7 +2,7 @@ id: T8
 title: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
   terminal guard
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on:
   - T5
 blocked_reason: null
@@ -10,11 +10,12 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T8
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T09:37:33.438Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
@@ -25,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T09:33:27.439Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:37:33.438Z
+    note: Claimed via git-based claim protocol.
