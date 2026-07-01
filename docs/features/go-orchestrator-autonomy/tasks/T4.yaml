@@ -1,7 +1,7 @@
 id: T4
 title: Unblock API endpoint
 repo: workflow-backend
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,11 +9,14 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T4
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T15:22:23.434Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-backend/pull/52
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/636
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
@@ -24,3 +27,54 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T08:56:24.290Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:57:40.120Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:57:47.985Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Unblock API endpoint go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/52"
+    at: 2026-07-01T09:28:00.244Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:29:04.313Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T09:35:06.522Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:40:20.183Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: batu4404@gmail.com
+    at: 2026-07-01T22:12:46+0700
+    note: "Recovering a stuck fix run: the fix agent pushed 3 commits to PR #52
+      (tiendv89/workflow-backend), the last (c1599159) at 2026-07-01T10:11:30Z,
+      addressing the reviewer's only REQUEST_CHANGES finding — a missing
+      integration test for UnblockTask counter reset — but the process died
+      before writing the in_progress -> in_review transition back to this task
+      file. Verified the fix commit adds TestUnblockTask_CounterReset in
+      reader_integration_test.go covering rebase_failed and non-rebase_failed
+      cases as the review requested. PR #52 is open and mergeable. Transitioning
+      to in_review so the orchestrator dispatches a fresh reviewer cycle."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:14:39.237Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T15:21:15.064Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:22:23.434Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

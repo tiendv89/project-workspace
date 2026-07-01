@@ -1,24 +1,67 @@
 id: T11
 title: unblock_task MCP tool
 repo: workflow-mcp
-status: todo
-depends_on: [T4]
+status: done
+depends_on:
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-autonomy-T11
-
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
-
+  last_updated_at: 2026-07-01T23:56:37+0700
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/batu4404/workflow-mcp/pull/6
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/652
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-01T14:54:39+0700
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T4]."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:22:23.564Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:25:14.973Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:25:22.867Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: unblock_task MCP tool go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/batu4404/workflow-mcp/pull/6"
+    at: 2026-07-01T15:36:04.546Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:37:17.232Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: batu4404@gmail.com
+    at: 2026-07-01T23:56:37+0700
     note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T4].
+      Recovering stuck task state: GitHub shows an APPROVE review was posted
+      on PR #6 (batu4404/workflow-mcp) at 2026-07-01T16:48:50Z ("All subtasks
+      implemented. Tests/build/lint pass. APPROVE."), and the human merged
+      PR #6 directly at 2026-07-01T16:49:07Z — but the task file was never
+      updated past reviewer_started. Recording the verdict here for the
+      audit trail before closing out.
+  - action: done
+    by: batu4404@gmail.com
+    at: 2026-07-01T23:56:37+0700
+    note: >-
+      Impl PR #6 (batu4404/workflow-mcp) merged by the human
+      (merge_commit_sha 451e24f6c1db03c3c565d32d5dc96ad5095fda61). Marking
+      done per merged-PR-is-ground-truth; human will review/test the merged
+      change separately. workspace_pr #652 to be merged into
+      feature/go-orchestrator-autonomy in the same operation.
