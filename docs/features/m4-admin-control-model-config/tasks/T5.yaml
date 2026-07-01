@@ -1,17 +1,17 @@
 id: T5
 title: digital-factory-ui — admin Models page
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T3
   - T4
 blocked_reason: null
 blocked_context: null
-branch: ""
+branch: feature/m4-admin-control-model-config-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T11:35:18.709Z
 pr:
   url: ""
   status: not_created
@@ -25,3 +25,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T11:34:01.159Z
     note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T11:35:18.709Z
+    note: Claimed via git-based claim protocol.
