@@ -1,43 +1,44 @@
 id: T3
 title: user-service — admin/pricing API + internal platform-roles/check
 repo: user-service
-status: in_progress
+status: in_review
 depends_on:
-- T2
+  - T2
 blocked_reason: null
 blocked_context: null
 branch: feature/m4-admin-control-model-config-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T10:37:13+0000
+  last_updated_at: 2026-07-01T10:53:58.802Z
 pr:
-  url: ''
-  status: not_created
+  url: https://github.com/tiendv89/user-service/pull/20
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/646
   status: open
 log:
-- action: created
-  by: pentative@gmail.com
-  at: 2026-07-01T16:26:06+0700
-  note: Task created from approved technical design (tech-lead Phase 2).
-- action: ready
-  by: tiendv.52@gmail.com
-  at: 2026-07-01 10:32:24.765000+00:00
-  note: Task activated — dependency T2 merged and marked done.
-- action: claimed
-  by: tiendv.52@gmail.com
-  at: 2026-07-01 10:33:54.779000+00:00
-  note: Claimed via git-based claim protocol.
-- action: rag_pre_flight
-  by: tiendv.52@gmail.com
-  at: 2026-07-01 10:34:04.407000+00:00
-  rag_context_injected: false
-  rag_summary: query_returned_no_chunks
-  rag_query: user-service — admin/pricing API + internal platform-roles/check m4-admin-control-model-config
-  note: Runtime pre-flight RAG fetch — written before executor spawn.
-- action: started
-  by: tiendv.52@gmail.com
-  at: 2026-07-01T10:37:13+0000
-  note: executor work phase begun.
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-01T16:26:06+0700
+    note: Task created from approved technical design (tech-lead Phase 2).
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-01 10:32:24.765000+00:00
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01 10:33:54.779000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01 10:34:04.407000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: user-service — admin/pricing API + internal platform-roles/check
+      m4-admin-control-model-config
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:37:13+0000
+    note: executor work phase begun.
