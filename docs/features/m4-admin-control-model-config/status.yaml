@@ -1,0 +1,66 @@
+feature_id: m4-admin-control-model-config
+title: Admin-Configurable Model Catalog & Pricing
+
+feature_status: ready_for_implementation
+current_stage: tasks
+next_action: Wave 1 tasks T1, T2 are ready — run start-implementation. T3 unblocks after T2; T4 after T1/T3; T5 after T3/T4.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-07-01T15:44:12+0700"
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-07-01T15:44:12+0700"
+        review_comment: null
+  technical_design:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-07-01T16:24:17+0700"
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-07-01T16:24:17+0700"
+        review_comment: null
+  tasks:
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: "2026-07-01T16:30:49+0700"
+    review_comment: null
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: "2026-07-01T16:30:49+0700"
+        review_comment: null
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: "2026-07-01T15:44:12+0700"
+    by: pentative@gmail.com
+    event: product_spec_approved
+    note: Product spec approved; feature advances to technical_design stage.
+  - at: "2026-07-01T16:24:17+0700"
+    by: pentative@gmail.com
+    event: technical_design_approved
+    note: Technical design approved; feature advances to tasks stage (tech-lead Phase 2).
+  - at: "2026-07-01T16:30:49+0700"
+    by: pentative@gmail.com
+    event: tasks_approved
+    note: >-
+      Tasks approved; feature_status advanced to ready_for_implementation.
+      Wave 1 tasks T1, T2 activated to ready (empty depends_on).
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
