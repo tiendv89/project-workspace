@@ -1,7 +1,7 @@
 id: T6
 title: Error/stuck recovery — reconciler, DLQ-failed reap, redis, max-turns
 repo: workflow-orchestrator
-status: ready
+status: done
 depends_on:
   - T5
 blocked_reason: null
@@ -9,11 +9,14 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T6
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T10:47:55.852Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/22
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/638
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
@@ -24,3 +27,59 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T09:33:27.436Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:34:42.059Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:34:50.151Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Error/stuck recovery — reconciler, DLQ-failed reap, redis, max-turns
+      go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/22"
+    at: 2026-07-01T10:04:53.954Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:08:40.690Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T10:17:40.965Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:18:58.523Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/22"
+    at: 2026-07-01T10:27:22.978Z
+  - action: rebase_completed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:38:52.011Z
+    note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:40:01.332Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T10:46:40.504Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:47:55.852Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+conflict_state: resolved
+rebase_log:
+  - at: 2026-07-01T10:28:41.534Z
+    action: rebase_started
+    by: tiendv.52@gmail.com
+    note: Rebase claimed; targeting origin/feature/go-orchestrator-autonomy.
