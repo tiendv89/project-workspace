@@ -83,3 +83,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/go-orchestrator-autonomy
 feature_branch_base_sha: e7feaa00ded48312baf6e57fe9cc800013928a54
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/632
