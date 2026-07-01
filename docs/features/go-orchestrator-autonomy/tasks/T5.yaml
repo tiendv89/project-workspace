@@ -1,7 +1,7 @@
 id: T5
 title: Orchestrator DB foundation — mirror schema.sql + sqlc models
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T1
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/go-orchestrator-autonomy-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T09:24:12.642Z
+  last_updated_at: 2026-07-01T09:25:41.855Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/20
   status: open
@@ -48,3 +48,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/workflow-orchestrator/pull/20"
     at: 2026-07-01T09:24:12.642Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:25:41.855Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
