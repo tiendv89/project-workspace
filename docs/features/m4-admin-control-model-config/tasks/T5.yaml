@@ -1,7 +1,7 @@
 id: T5
 title: digital-factory-ui — admin Models page
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T3
   - T4
@@ -11,7 +11,7 @@ branch: feature/m4-admin-control-model-config-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T11:51:42.856Z
+  last_updated_at: 2026-07-01T11:56:34.251Z
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/158
   status: open
@@ -51,3 +51,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T11:51:42.856Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T11:56:34.251Z
