@@ -1,41 +1,45 @@
-id: T4
-title: hermes-agent — admin/models API + platform-admin gate + catalog-backed dispatch
-repo: hermes-agent
-status: in_progress
-depends_on:
-  - T1
-  - T3
-blocked_reason: null
 blocked_context: null
+blocked_reason: null
 branch: feature/m4-admin-control-model-config-T4
+depends_on:
+- T1
+- T3
 execution:
   actor_type: agent
+  last_updated_at: 2026-07-01T11:06:41+0000
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T11:03:23.580Z
-pr:
-  url: ""
-  status: not_created
-workspace_pr:
-  url: https://github.com/tiendv89/project-workspace/pull/648
-  status: open
+id: T4
 log:
-  - action: created
-    by: pentative@gmail.com
-    at: 2026-07-01T16:26:06+0700
-    note: Task created from approved technical design (tech-lead Phase 2).
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-01T11:02:08.005Z
-    note: Task activated — dependency T3 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-01T11:03:23.580Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-01T11:03:31.362Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: hermes-agent — admin/models API + platform-admin gate +
-      catalog-backed dispatch m4-admin-control-model-config
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  at: 2026-07-01T16:26:06+0700
+  by: pentative@gmail.com
+  note: Task created from approved technical design (tech-lead Phase 2).
+- action: ready
+  at: 2026-07-01 11:02:08.005000+00:00
+  by: tiendv.52@gmail.com
+  note: Task activated — dependency T3 merged and marked done.
+- action: claimed
+  at: 2026-07-01 11:03:23.580000+00:00
+  by: tiendv.52@gmail.com
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  at: 2026-07-01 11:03:31.362000+00:00
+  by: tiendv.52@gmail.com
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+  rag_context_injected: false
+  rag_query: hermes-agent — admin/models API + platform-admin gate + catalog-backed
+    dispatch m4-admin-control-model-config
+  rag_summary: query_returned_no_chunks
+- action: started
+  at: 2026-07-01T11:06:41+0000
+  by: tiendv.52@gmail.com
+  note: executor work phase begun.
+pr:
+  status: not_created
+  url: ''
+repo: hermes-agent
+status: in_progress
+title: hermes-agent — admin/models API + platform-admin gate + catalog-backed dispatch
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/648
