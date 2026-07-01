@@ -1,7 +1,7 @@
 id: T2
 title: Adapter owner-scope — stop clobbering go feature_status
 repo: workspace-github-adapter
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/go-orchestrator-autonomy-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T08:53:54.709Z
+  last_updated_at: 2026-07-01T08:54:53.333Z
 pr:
   url: https://github.com/tiendv89/workspace-github-adapter/pull/31
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/634
   status: open
@@ -55,3 +55,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-01T08:53:54.709Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T08:54:53.333Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
