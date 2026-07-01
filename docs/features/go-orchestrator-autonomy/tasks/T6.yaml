@@ -1,7 +1,7 @@
 id: T6
 title: Error/stuck recovery — reconciler, DLQ-failed reap, redis, max-turns
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T5
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/go-orchestrator-autonomy-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T10:38:52.011Z
+  last_updated_at: 2026-07-01T10:40:01.332Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/22
   status: open
@@ -65,6 +65,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T10:38:52.011Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T10:40:01.332Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-01T10:28:41.534Z
