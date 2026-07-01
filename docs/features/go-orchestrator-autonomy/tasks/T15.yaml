@@ -1,7 +1,7 @@
 id: T15
 title: E2E autonomous-run test (parallel with a legacy TS feature)
 repo: workflow-orchestrator
-status: review_passed
+status: done
 depends_on:
   - T6
   - T7
@@ -15,10 +15,10 @@ branch: feature/go-orchestrator-autonomy-T15
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T20:39:49.217Z
+  last_updated_at: 2026-07-01T20:40:56.778Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/27
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/655
   status: open
@@ -74,3 +74,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-01T20:39:49.217Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T20:40:56.778Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
