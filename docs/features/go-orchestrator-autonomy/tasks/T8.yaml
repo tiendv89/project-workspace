@@ -2,7 +2,7 @@ id: T8
 title: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
   terminal guard
 repo: workflow-orchestrator
-status: in_review
+status: reviewing
 depends_on:
   - T5
 blocked_reason: null
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T8
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T23:43:13+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T16:45:43.527Z
 pr:
   url: https://github.com/tiendv89/workflow-orchestrator/pull/23
   status: open
@@ -47,24 +47,27 @@ log:
   - action: run_completed
     by: batu4404@gmail.com
     at: 2026-07-01T23:43:13+0700
-    note: >-
-      Recovering a stuck implementation run: the executor completed the work
+    note: "Recovering a stuck implementation run: the executor completed the work
       and opened PR #23 (tiendv89/workflow-orchestrator) as a draft, but died
       before marking it ready and updating task state. By the time this was
-      investigated, PR #23 had also gone mergeable:false — the base branch
-      had advanced (T3/T6/T9 merged). Rebased once onto that state; while
-      resolving, T7's PR #24 merged into the base mid-rebase (a live race),
-      requiring a second rebase pass to reconcile with T7's verdict-routing
-      additions in reap.go. Also found and fixed a real bug in T8's own code
-      surfaced during the merge: DispatchRebase generated a nonce, persisted
-      it via SetResolving, then dispatched via a separate DispatchWithKind
-      helper that generated its OWN internal nonce — the nonce sent to the
-      broker would not have matched the one persisted in the DB, breaking
-      executor /callback validation. Fixed by routing DispatchRebase through
-      T7's existing DispatchWithNonce (already generic over kind) instead,
-      and removed the redundant DispatchWithKind path. Also deduped a
-      hand-written ListPRPollTasks against the already-existing sqlc
+      investigated, PR #23 had also gone mergeable:false — the base branch had
+      advanced (T3/T6/T9 merged). Rebased once onto that state; while resolving,
+      T7's PR #24 merged into the base mid-rebase (a live race), requiring a
+      second rebase pass to reconcile with T7's verdict-routing additions in
+      reap.go. Also found and fixed a real bug in T8's own code surfaced during
+      the merge: DispatchRebase generated a nonce, persisted it via
+      SetResolving, then dispatched via a separate DispatchWithKind helper that
+      generated its OWN internal nonce — the nonce sent to the broker would not
+      have matched the one persisted in the DB, breaking executor /callback
+      validation. Fixed by routing DispatchRebase through T7's existing
+      DispatchWithNonce (already generic over kind) instead, and removed the
+      redundant DispatchWithKind path. Also deduped a hand-written
+      ListPRPollTasks against the already-existing sqlc
       ListMergeablePRTasksForOwner (same pattern as T7's FindReviewableTasks
       dedup against T9). go build/test/lint all pass clean; PR #23 is now
       mergeable:true (mergeable_state:unstable, pending CI — not a conflict).
-      Transitioning to in_review so the orchestrator dispatches a reviewer.
+      Transitioning to in_review so the orchestrator dispatches a reviewer."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T16:45:43.527Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
