@@ -31,3 +31,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T15:25:14.973Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T15:25:22.867Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: unblock_task MCP tool go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
