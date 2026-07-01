@@ -32,3 +32,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T09:37:33.438Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:37:41.268Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
+      terminal guard go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
