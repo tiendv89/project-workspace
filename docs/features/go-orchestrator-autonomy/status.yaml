@@ -1,12 +1,12 @@
 feature_id: go-orchestrator-autonomy
 title: Go Orchestrator — Autonomous Parity (reviewer cycle, handoff, error recovery, unblock)
 
-feature_status: in_tdd
-current_stage: tasks
+feature_status: ready_for_implementation
+current_stage: handoff
 next_action: >-
-  Technical design approved. Run tech-lead again for Phase 2 task breakdown (this is a ts feature —
-  Phase 2 produces tasks.md + tasks/T<n>.yaml), then approve the tasks stage to move the feature to
-  ready_for_implementation.
+  Tasks stage approved; feature advanced to ready_for_implementation. Wave-1 tasks (T1, T2, T3) are
+  now ready. Open the management-repo PR to merge this feature branch into main, then teams execute
+  tasks via start-implementation. Handoffs are recorded under handoffs/ and approved last.
 
 stages:
   product_spec:
@@ -30,11 +30,15 @@ stages:
         reviewed_at: 2026-07-01T14:33:29+0700
         comment: Approved.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-07-01T14:59:02+0700
+    review_comment: Approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-07-01T14:59:02+0700
+        comment: Approved.
   handoff:
     review_status: draft
     reviewed_by: null
@@ -66,6 +70,14 @@ history:
     note: >-
       Technical design approved; advancing to task planning (current_stage=tasks, feature stays
       in_tdd). Next: run tech-lead Phase 2 to produce the task breakdown, then approve the tasks stage.
+  - at: 2026-07-01T14:59:02+0700
+    actor: batu4404@gmail.com
+    action: approved
+    stage: tasks
+    note: >-
+      Tasks stage approved (ts feature, 15 tasks, topologically numbered). Feature advanced to
+      ready_for_implementation; current_stage=handoff. Wave-1 tasks with no dependencies (T1, T2, T3)
+      activated todo -> ready. Teams may now execute via start-implementation.
 
 revalidation:
   product_spec_required: false
