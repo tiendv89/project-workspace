@@ -2,7 +2,7 @@ id: T12
 title: Feature lifecycle — in_implementation, handoff trigger, handoff-PR
   rebase, finalize
 repo: workflow-orchestrator
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T8
@@ -11,11 +11,12 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T12
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T17:45:53.645Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
@@ -26,3 +27,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-01T17:44:25.364Z
     note: Task activated — dependency T8 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T17:45:53.645Z
+    note: Claimed via git-based claim protocol.
