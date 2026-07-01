@@ -1,7 +1,7 @@
 id: T3
 title: user-service — admin/pricing API + internal platform-roles/check
 repo: user-service
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m4-admin-control-model-config-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-01T11:01:02.617Z
+  last_updated_at: 2026-07-01T11:02:07.954Z
 pr:
   url: https://github.com/tiendv89/user-service/pull/20
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/646
   status: open
@@ -54,3 +54,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-01T11:01:02.617Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T11:02:07.954Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
