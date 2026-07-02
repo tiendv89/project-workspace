@@ -1,7 +1,7 @@
 feature_id: go-orchestrator-autonomy
 title: Go Orchestrator — Autonomous Parity (reviewer cycle, handoff, error
   recovery, unblock)
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Tasks stage approved; feature advanced to ready_for_implementation.
   Wave-1 tasks (T1, T2, T3) are now ready. Open the management-repo PR to merge
@@ -44,6 +44,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/659
 history:
   - at: 2026-07-01T10:37:34+0700
     actor: batu4404@gmail.com
@@ -84,3 +85,23 @@ revalidation:
 feature_branch: feature/go-orchestrator-autonomy
 feature_branch_base_sha: e7feaa00ded48312baf6e57fe9cc800013928a54
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/632
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/659
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/53
+    status: open
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/10
+    status: open
+  - repo: workflow-mcp
+    url: https://github.com/batu4404/workflow-mcp/pull/8
+    status: open
+  - repo: workflow-orchestrator
+    url: https://github.com/tiendv89/workflow-orchestrator/pull/28
+    status: open
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/277
+    status: open
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/32
+    status: open
