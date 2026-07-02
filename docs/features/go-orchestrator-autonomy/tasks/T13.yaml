@@ -1,7 +1,7 @@
 id: T13
 title: unblock-task agent skill
 repo: workflow
-status: ready
+status: todo
 depends_on: [T11]
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ branch: feature/go-orchestrator-autonomy-T13
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-02T00:00:37+0700
+  last_updated_at: 2026-07-01T14:54:39+0700
 
 pr:
   url: null
@@ -22,7 +22,3 @@ log:
     at: 2026-07-01T14:54:39+0700
     note: >-
       Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T11].
-  - action: ready
-    by: batu4404@gmail.com
-    at: 2026-07-02T00:00:37+0700
-    note: Task activated — dependency T11 merged and marked done.
