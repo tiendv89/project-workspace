@@ -242,7 +242,14 @@ migration task. All new columns are additive/nullable-or-defaulted → backward 
 | `rebase_attempts` | int | `0` | rebase-failure count (per-conflict-episode) |
 | `conflict_state` | text | `'none'` | `none` \| `conflicted` \| `resolving` \| `resolved` |
 | `blocked_from_status` | text | null | status held at `→blocked` (cause-aware unblock target) |
+| `blocked_details` | text | null | structured/free-text failure context set alongside `blocked_reason` (see §"Error/stuck recovery") |
 | `dispatch_kind` | text | null | (optional) `impl`\|`fix`\|`review`\|`rebase` — lets the reconciler rebuild the right job |
+
+> **Correction (post-implementation):** the original version of this table omitted `blocked_details`,
+> even though the "Error/stuck recovery" prose above and T6's implementation both required it. Migration
+> `00021_go_orchestrator_autonomy.sql` (T1) shipped without it, which broke every orchestrator poll
+> query (`column blocked_details does not exist`). Fixed by a follow-up migration,
+> `00022_workspace_tasks_add_blocked_details.sql`, in `workflow-backend`.
 
 ### New table — `handoffs` (one row per feature handoff)
 | Column | Type | Notes |
