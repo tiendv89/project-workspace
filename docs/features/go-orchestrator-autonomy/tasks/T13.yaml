@@ -1,7 +1,7 @@
 id: T13
 title: unblock-task agent skill
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T11
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/go-orchestrator-autonomy-T13
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-02T01:35:40.547Z
+  last_updated_at: 2026-07-02T01:36:41.397Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/276
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/658
   status: open
@@ -65,3 +65,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-02T01:35:40.547Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-02T01:36:41.397Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
