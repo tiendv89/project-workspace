@@ -1,7 +1,7 @@
 feature_id: m4-admin-control-model-config
 title: Admin-Configurable Model Catalog & Pricing
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Wave 1 tasks T1, T2 are ready — run start-implementation. T3
   unblocks after T2; T4 after T1/T3; T5 after T3/T4.
 stages:
@@ -69,10 +69,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/650
 impl_feature_prs:
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/31
-    status: open
+    status: merged
   - repo: user-service
     url: https://github.com/tiendv89/user-service/pull/21
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/159
-    status: open
+    status: merged
