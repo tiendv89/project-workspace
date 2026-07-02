@@ -1,7 +1,7 @@
 id: T13
 title: unblock-task agent skill
 repo: workflow
-status: in_review
+status: reviewing
 depends_on:
   - T11
 blocked_reason: null
@@ -9,8 +9,8 @@ blocked_context: null
 branch: feature/go-orchestrator-autonomy-T13
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-02T08:29:11+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-02T01:31:30.714Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/276
   status: open
@@ -53,9 +53,11 @@ log:
   - action: review_blocked
     by: batu4404@gmail.com
     at: 2026-07-02T08:29:11+0700
-    note: >-
-      Reviewer dispatch (cycle 1) never posted a review — checked both PR #658
-      and impl PR agent-workflow#276, zero reviews on either — and the task
-      sat in reviewing for ~40 minutes with no reviewer_complete entry.
-      Recovering manually: reset to in_review so a fresh reviewer can be
-      dispatched.
+    note: "Reviewer dispatch (cycle 1) never posted a review — checked both PR #658
+      and impl PR agent-workflow#276, zero reviews on either — and the task sat
+      in reviewing for ~40 minutes with no reviewer_complete entry. Recovering
+      manually: reset to in_review so a fresh reviewer can be dispatched."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-02T01:31:30.714Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
