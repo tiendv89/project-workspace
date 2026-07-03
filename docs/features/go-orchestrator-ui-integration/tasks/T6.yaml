@@ -1,7 +1,7 @@
 id: T6
 title: Backup /create-tasks (hermes-internal, step-d only) + guard-error relay
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on:
   - T5
 blocked_reason: null
@@ -9,11 +9,12 @@ blocked_context: null
 branch: feature/go-orchestrator-ui-integration-T6
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-03T11:12:24+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T06:17:42.078Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: batu4404@gmail.com
@@ -26,3 +27,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T06:16:14.953Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:17:42.078Z
+    note: Claimed via git-based claim protocol.
