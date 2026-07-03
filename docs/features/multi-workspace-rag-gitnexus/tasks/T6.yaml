@@ -1,7 +1,7 @@
 id: T6
 title: workflow — multi-workspace compose templates + init-agent skill
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T3
@@ -10,11 +10,12 @@ blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-T6
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-03T14:37:19+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T08:41:01.812Z
 pr:
   url: null
   status: null
+workspace_pr: null
 log:
   - action: created
     by: pentative@gmail.com
@@ -27,3 +28,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T08:39:21.688Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:41:01.812Z
+    note: Claimed via git-based claim protocol.
