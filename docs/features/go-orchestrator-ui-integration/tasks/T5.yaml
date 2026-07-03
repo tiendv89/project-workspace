@@ -36,3 +36,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T05:39:45.918Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T05:39:54.074Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Tasks-stage approve orchestration — resumable a->b->c->d (incl.
+      ensure-docs-on-base + PR merge) go-orchestrator-ui-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
