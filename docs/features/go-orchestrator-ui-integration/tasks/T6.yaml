@@ -33,3 +33,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T06:17:42.078Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:17:49.911Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Backup /create-tasks (hermes-internal, step-d only) + guard-error
+      relay go-orchestrator-ui-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
