@@ -2,7 +2,7 @@ id: T5
 title: Tasks-stage approve orchestration — resumable a->b->c->d (incl.
   ensure-docs-on-base + PR merge)
 repo: hermes-agent
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T3
@@ -13,10 +13,10 @@ branch: feature/go-orchestrator-ui-integration-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T05:39:45.918Z
+  last_updated_at: 2026-07-03T06:06:44.562Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/35
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/666
   status: open
