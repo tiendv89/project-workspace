@@ -1,7 +1,7 @@
 id: T6
 title: workflow — multi-workspace compose templates + init-agent skill
 repo: workflow
-status: in_progress
+status: in_review
 depends_on:
   - T1
   - T3
@@ -11,10 +11,10 @@ branch: feature/multi-workspace-rag-gitnexus-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T08:45:30+0000
+  last_updated_at: 2026-07-03T09:02:17.139Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/agent-workflow/pull/278
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/676
   status: open
