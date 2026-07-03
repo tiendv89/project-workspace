@@ -1,0 +1,53 @@
+# owner: TBD — backlog item. Decide go vs ts before this feature leaves in_design.
+# (Absent owner is only a read-time default; do not treat it as a committed choice here.)
+
+feature_id: go-orchestrator-status-ui
+title: Digital Factory UI — surface go-orchestrator features/tasks and go-specific statuses
+
+feature_status: in_design
+current_stage: product_spec
+next_action: >-
+  Backlog. Product spec is a stub capturing the known problem and open questions. Groom it (resolve
+  owner and the open questions) before drafting a technical design.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-07-03T09:01:00+0700
+    actor: batu4404@gmail.com
+    action: created
+    stage: product_spec
+    note: >-
+      Backlog stub split out of go-orchestrator-ui-integration. Captures the digital-factory-ui gap for
+      go-owned features/tasks (no owner distinction, go-specific statuses unrendered). Spec is a stub
+      of problem + open questions only; owner (go vs ts) and scope to be groomed later.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
