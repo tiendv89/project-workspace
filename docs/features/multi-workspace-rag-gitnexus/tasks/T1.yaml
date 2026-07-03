@@ -1,28 +1,60 @@
 id: T1
 title: rag-service — indexer multi-workspace + namespaced point IDs
 repo: rag-service
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-T1
-
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-03T14:37:19+0700
-
+  last_updated_at: 2026-07-03T08:39:21.628Z
+  last_updated_by: tiendv.52@gmail.com
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/rag-service/pull/15
+  status: merged
+workspace_pr:
+  status: open
+  url: https://github.com/tiendv89/project-workspace/pull/672
 log:
   - action: created
-    by: pentative@gmail.com
     at: 2026-07-03T14:37:19+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].
-  - action: ready
     by: pentative@gmail.com
-    at: 2026-07-03T07:43:21Z
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: []."
+  - action: ready
+    at: 2026-07-03 07:43:21+00:00
+    by: pentative@gmail.com
     note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    at: 2026-07-03 08:09:49.983000+00:00
+    by: tiendv.52@gmail.com
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    at: 2026-07-03 08:09:58.766000+00:00
+    by: tiendv.52@gmail.com
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+    rag_context_injected: false
+    rag_query: rag-service — indexer multi-workspace + namespaced point IDs
+      multi-workspace-rag-gitnexus
+    rag_summary: query_returned_no_chunks
+  - action: started
+    at: 2026-07-03T08:12:03+0000
+    by: tiendv.52@gmail.com
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/rag-service/pull/15"
+    at: 2026-07-03T08:30:36.998Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:31:55.857Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-03T08:38:05.202Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:39:21.628Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
