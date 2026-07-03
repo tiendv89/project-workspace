@@ -1,7 +1,7 @@
 id: T2
 title: rag-service — RAG server connection-scoped workspace resolution
 repo: rag-service
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/multi-workspace-rag-gitnexus-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T08:32:42.890Z
+  last_updated_at: 2026-07-03T08:37:44.253Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/16
   status: open
@@ -46,3 +46,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/rag-service/pull/16"
     at: 2026-07-03T08:32:42.890Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:37:44.253Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
