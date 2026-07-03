@@ -1,10 +1,8 @@
 feature_id: multi-workspace-rag-gitnexus
 title: Multi-workspace support for RAG and GitNexus
-
 feature_status: ready_for_implementation
 current_stage: tasks
 next_action: Teams execute ready tasks (T1, T2, T3) in their real implementation repos.
-
 stages:
   product_spec:
     review_status: approved
@@ -42,7 +40,6 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
   - at: 2026-06-24T10:34:38Z
     actor: pentative@gmail.com
@@ -58,12 +55,12 @@ history:
     actor: pentative@gmail.com
     action: approve
     stage: tasks
-    note: >-
-      Task breakdown approved; feature advanced to ready_for_implementation.
-      T1, T2, T3 activated to ready (no blockers).
-
+    note: Task breakdown approved; feature advanced to ready_for_implementation. T1,
+      T2, T3 activated to ready (no blockers).
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/multi-workspace-rag-gitnexus
+feature_branch_base_sha: 50eb26bfa3be006c80b521206a8ee034425e497a
