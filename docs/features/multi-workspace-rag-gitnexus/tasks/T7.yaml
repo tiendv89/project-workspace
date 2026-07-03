@@ -1,7 +1,7 @@
 id: T7
 title: hermes-agent — connection-scoped endpoints + GitNexus scoping
 repo: hermes-agent
-status: reviewing
+status: in_review
 depends_on:
   - T2
   - T4
@@ -53,3 +53,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T09:30:33.116Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reset
+    by: pye@swellnetwork.io
+    at: 2026-07-03T18:07:37+0700
+    note: >-
+      Manual human override: status reset from reviewing back to in_review.
+      Note this is not a transition in the standard automated table
+      (reviewing only advances to review_passed, change_requested, or
+      review_incomplete) — done at explicit human request outside the
+      normal orchestrator flow.
