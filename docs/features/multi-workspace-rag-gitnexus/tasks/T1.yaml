@@ -1,7 +1,7 @@
 id: T1
 title: rag-service — indexer multi-workspace + namespaced point IDs
 repo: rag-service
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -22,3 +22,7 @@ log:
     at: 2026-07-03T14:37:19+0700
     note: >-
       Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-03T07:43:21Z
+    note: Task activated on tasks-stage approval — dependencies met.
