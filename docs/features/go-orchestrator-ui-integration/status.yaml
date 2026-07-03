@@ -1,0 +1,96 @@
+# Tracked with the ts flow (per-task YAML state in tasks/). The go orchestrator this feature builds
+# is still in development, so this feature itself is not owner: go.
+
+feature_id: go-orchestrator-ui-integration
+title: Go orchestrator — Hermes tasks-stage approve pipeline (merge docs PR + create tasks via API)
+
+feature_status: ready_for_implementation
+current_stage: handoff
+next_action: >-
+  Tasks stage approved; feature advanced to ready_for_implementation. Wave-1 tasks with no dependencies
+  (T1, T2, T3) activated todo -> ready. Teams may now execute via start-implementation. Open the
+  management-repo PR to merge this feature branch into main; handoffs recorded under handoffs/ and
+  approved last.
+
+stages:
+  product_spec:
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-07-03T09:53:00+0700
+    review_comment: Approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-07-03T09:53:00+0700
+        comment: Approved.
+  technical_design:
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-07-03T11:09:39+0700
+    review_comment: Approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-07-03T11:09:39+0700
+        comment: Approved.
+  tasks:
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-07-03T11:32:12+0700
+    review_comment: Approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-07-03T11:32:12+0700
+        comment: Approved.
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-07-03T08:56:10+0700
+    actor: batu4404@gmail.com
+    action: created
+    stage: product_spec
+    note: >-
+      Feature created (tracked ts; the go orchestrator it builds is still in development). Fixes the
+      go-orchestrator tasks last-mile: hermes-agent's
+      write_tasks currently writes go task rows straight to Postgres during breakdown, bypassing
+      the human tasks-stage approval, the docs PR merge, and the validating workflow-backend API.
+      Target: write_tasks produces tasks.md only; the tasks-stage approve command does promote ->
+      merge docs PR -> update DB status -> create tasks via API; plus a precondition-checked backup
+      /create-tasks command. UI board/status gaps split into a separate follow-up feature.
+  - at: 2026-07-03T09:53:00+0700
+    actor: batu4404@gmail.com
+    action: approved
+    stage: product_spec
+    note: >-
+      Product spec approved; feature advanced to in_tdd (current_stage=technical_design). Next: run
+      tech-lead Phase 1 to produce the technical design and resolve the open TD questions recorded in
+      the spec, then submit for approval.
+  - at: 2026-07-03T11:09:39+0700
+    actor: batu4404@gmail.com
+    action: approved
+    stage: technical_design
+    note: >-
+      Technical design approved (Q1 shared-token direct call; Q2 discover-by-branch, content-keyed
+      merge check, notify on 0/>1; Q3 resumable approve a->b->c->d, /create-tasks is create-only; Q4
+      server-side guard in workflow-backend + hermes error relay). Advancing to task planning
+      (current_stage=tasks, feature stays in_tdd). Next: run tech-lead Phase 2 for the task breakdown.
+  - at: 2026-07-03T11:32:12+0700
+    actor: batu4404@gmail.com
+    action: approved
+    stage: tasks
+    note: >-
+      Tasks stage approved (ts feature, 7 tasks). Feature advanced to ready_for_implementation;
+      current_stage=handoff. Wave-1 tasks with no dependencies (T1, T2, T3) activated todo -> ready.
+      Teams may now execute via start-implementation.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false
