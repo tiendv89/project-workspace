@@ -1,7 +1,7 @@
 id: T7
 title: hermes-agent — connection-scoped endpoints + GitNexus scoping
 repo: hermes-agent
-status: in_progress
+status: in_review
 depends_on:
   - T2
   - T4
@@ -11,7 +11,7 @@ branch: feature/multi-workspace-rag-gitnexus-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T11:16:49.195Z
+  last_updated_at: 2026-07-03T11:21:09.731Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/39
   status: open
