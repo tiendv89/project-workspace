@@ -1,26 +1,31 @@
 id: T5
-title: Tasks-stage approve orchestration — resumable a->b->c->d (incl. ensure-docs-on-base + PR merge)
+title: Tasks-stage approve orchestration — resumable a->b->c->d (incl.
+  ensure-docs-on-base + PR merge)
 repo: hermes-agent
-status: todo
-depends_on: [T2, T3, T4]
+status: ready
+depends_on:
+  - T2
+  - T3
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-ui-integration-T5
-
 execution:
   actor_type: agent
   last_updated_by: batu4404@gmail.com
   last_updated_at: 2026-07-03T11:12:24+0700
-
 pr:
   url: null
   status: null
-
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-03T11:12:24+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T2, T3, T4] —
-      needs the breakdown DB-write removed (T2) to avoid double-create, the guard reason codes (T3),
-      and the task-creation client (T4). Owns step b's ensure-docs-on-base + PR-merge logic.
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T2, T3, T4] — needs the breakdown DB-write removed (T2) to
+      avoid double-create, the guard reason codes (T3), and the task-creation
+      client (T4). Owns step b's ensure-docs-on-base + PR-merge logic."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T05:29:43.341Z
+    note: Task activated — dependency T4 merged and marked done.
