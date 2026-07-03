@@ -1,14 +1,14 @@
 id: T1
 title: rag-service — indexer multi-workspace + namespaced point IDs
 repo: rag-service
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-T1
 execution:
   actor_type: agent
-  last_updated_at: 2026-07-03T08:30:36.998Z
+  last_updated_at: 2026-07-03T08:31:55.857Z
   last_updated_by: tiendv.52@gmail.com
 pr:
   url: https://github.com/tiendv89/rag-service/pull/15
@@ -46,3 +46,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/rag-service/pull/15"
     at: 2026-07-03T08:30:36.998Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:31:55.857Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
