@@ -1,7 +1,7 @@
 id: T7
 title: hermes-agent — connection-scoped endpoints + GitNexus scoping
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on:
   - T2
   - T4
@@ -11,7 +11,7 @@ branch: feature/multi-workspace-rag-gitnexus-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T09:30:33.116Z
+  last_updated_at: 2026-07-03T11:08:59.880Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/39
   status: open
@@ -56,9 +56,11 @@ log:
   - action: reset
     by: pye@swellnetwork.io
     at: 2026-07-03T18:07:37+0700
-    note: >-
-      Manual human override: status reset from reviewing back to in_review.
-      Note this is not a transition in the standard automated table
-      (reviewing only advances to review_passed, change_requested, or
-      review_incomplete) — done at explicit human request outside the
-      normal orchestrator flow.
+    note: "Manual human override: status reset from reviewing back to in_review.
+      Note this is not a transition in the standard automated table (reviewing
+      only advances to review_passed, change_requested, or review_incomplete) —
+      done at explicit human request outside the normal orchestrator flow."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T11:08:59.880Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
