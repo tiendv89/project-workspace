@@ -1,7 +1,7 @@
 id: T4
 title: git-nexus — server per-workspace subprocess routing + /ws/<id>/sse
 repo: git-nexus
-status: in_review
+status: reviewing
 depends_on:
   - T3
 blocked_reason: null
@@ -10,7 +10,7 @@ branch: feature/multi-workspace-rag-gitnexus-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T08:51:44.337Z
+  last_updated_at: 2026-07-03T08:53:20.838Z
 pr:
   url: https://github.com/tiendv89/git-nexus/pull/5
   status: open
@@ -48,3 +48,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/git-nexus/pull/5"
     at: 2026-07-03T08:51:44.337Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:53:20.838Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
