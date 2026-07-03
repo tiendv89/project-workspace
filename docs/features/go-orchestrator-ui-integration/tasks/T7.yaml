@@ -1,7 +1,7 @@
 id: T7
 title: End-to-end verification (approve pipeline + backup path)
 repo: hermes-agent
-status: in_review
+status: reviewing
 depends_on:
   - T5
   - T6
@@ -11,7 +11,7 @@ branch: feature/go-orchestrator-ui-integration-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T07:03:17.943Z
+  last_updated_at: 2026-07-03T07:04:29.937Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/37
   status: open
@@ -45,3 +45,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/37"
     at: 2026-07-03T07:03:17.943Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T07:04:29.937Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
