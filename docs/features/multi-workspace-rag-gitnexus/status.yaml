@@ -1,7 +1,7 @@
 feature_id: multi-workspace-rag-gitnexus
 title: Multi-workspace support for RAG and GitNexus
-feature_status: ready_for_implementation
-current_stage: tasks
+feature_status: in_handoff
+current_stage: handoff
 next_action: Teams execute ready tasks (T1, T2, T3) in their real implementation repos.
 stages:
   product_spec:
@@ -40,6 +40,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/680
 history:
   - at: 2026-06-24T10:34:38Z
     actor: pentative@gmail.com
@@ -65,3 +66,17 @@ revalidation:
 feature_branch: feature/multi-workspace-rag-gitnexus
 feature_branch_base_sha: 50eb26bfa3be006c80b521206a8ee034425e497a
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/671
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/680
+impl_feature_prs:
+  - repo: rag-service
+    url: https://github.com/tiendv89/rag-service/pull/17
+    status: open
+  - repo: git-nexus
+    url: https://github.com/tiendv89/git-nexus/pull/6
+    status: open
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/280
+    status: open
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/40
+    status: open
