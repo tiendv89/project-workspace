@@ -1,8 +1,8 @@
 feature_id: workspace-data-backend
 title: Workspace Data Backend — GitHub Sync and Read API
-feature_status: ready_for_implementation
-current_stage: tasks
-next_action: T7 approved and set ready for claim and implementation.
+feature_status: done
+current_stage: handoff
+next_action: Feature complete. All tasks (T1-T7) done; handoff and implementation PRs merged.
 stages:
   product_spec:
     review_status: approved
@@ -88,11 +88,20 @@ stages:
         at: 2026-05-18T16:45:00+0700
         comment: T7 approved and set to ready.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-07-03T17:57:22+0700
+    review_comment: >-
+      Handoff approved. All tasks (T1-T7) done; handoff PR #251 and
+      implementation PRs (workspace-github-adapter #4, workflow-backend #3,
+      workflow #173) confirmed merged on GitHub. Feature marked done.
+    review_history:
+      - status: approved
+        by: pentative@gmail.com
+        at: 2026-07-03T17:57:22+0700
+        comment: >-
+          Handoff approved. All tasks done and all PRs confirmed merged.
+          Feature marked done.
     pr_url: https://github.com/tiendv89/project-workspace/pull/251
 history:
   - action: created
@@ -165,6 +174,14 @@ history:
     note: Added T7 for the missing GitHub webhook handler, branch routing,
       task-branch asynq queue, worker drain, and queue clearing. T7 remains todo
       until task review is approved.
+  - stage: handoff
+    action: approved
+    by: pentative@gmail.com
+    at: 2026-07-03T17:57:22+0700
+    note: >-
+      Handoff approved by human. All 7 tasks confirmed done; handoff PR #251
+      and all three implementation PRs confirmed merged on GitHub. Feature
+      marked done.
 revalidation:
   product_spec_required: false
   technical_design_required: false
@@ -177,12 +194,12 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/251
 impl_feature_prs:
   - repo: workspace-github-adapter
     url: https://github.com/tiendv89/workspace-github-adapter/pull/4
-    status: open
+    status: merged
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/3
-    status: open
+    status: merged
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/173
-    status: open
+    status: merged
 drift_detected: false
 drift_reason: null
