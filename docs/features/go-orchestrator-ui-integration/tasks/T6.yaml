@@ -1,7 +1,7 @@
 id: T6
 title: Backup /create-tasks (hermes-internal, step-d only) + guard-error relay
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T5
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/go-orchestrator-ui-integration-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T06:41:42.981Z
+  last_updated_at: 2026-07-03T06:42:48.606Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/36
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/667
   status: open
@@ -53,3 +53,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-03T06:41:42.981Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:42:48.606Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
