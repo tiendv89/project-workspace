@@ -1,0 +1,26 @@
+id: T6
+title: workflow — multi-workspace compose templates + init-agent skill
+repo: workflow
+status: todo
+depends_on: [T1, T3]
+blocked_reason: null
+blocked_context: null
+branch: feature/multi-workspace-rag-gitnexus-T6
+
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-07-03T14:37:19+0700
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-03T14:37:19+0700
+    note: >-
+      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T1, T3] —
+      needs the RAG and GitNexus indexer config shapes (WORKSPACES_DIR, per-workspace HOME) final
+      before deployment templates are wired up.
