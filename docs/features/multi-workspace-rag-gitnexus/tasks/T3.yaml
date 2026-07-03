@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T08:13:22.011Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:13:30.956Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: git-nexus — indexer per-workspace HOME/clone/registry + config
+      multi-workspace-rag-gitnexus
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
