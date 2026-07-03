@@ -64,3 +64,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/multi-workspace-rag-gitnexus
 feature_branch_base_sha: 50eb26bfa3be006c80b521206a8ee034425e497a
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/671
