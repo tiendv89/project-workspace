@@ -30,3 +30,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-03T04:42:23.643Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T04:42:32.156Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Thread user_id + org_id into tool execution context
+      go-orchestrator-ui-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
