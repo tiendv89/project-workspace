@@ -3,14 +3,14 @@ title: workflow-backend service client (bulk create, service-to-service)
 repo: hermes-agent
 status: in_progress
 depends_on:
-  - T1
+- T1
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-ui-integration-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-03T05:05:21.402Z
+  last_updated_at: 2026-07-03T05:12:07+0000
 pr:
   url: null
   status: null
@@ -18,25 +18,27 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/665
   status: open
 log:
-  - action: created
-    by: batu4404@gmail.com
-    at: 2026-07-03T11:12:24+0700
-    note: "Task created from the approved task breakdown (tech-lead Phase 2).
-      depends_on: [T1] — identity must reach the tool context to set
-      X-User-Id/X-Org-Id headers."
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-03T05:03:42.504Z
-    note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-03T05:05:21.402Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-03T05:05:29.628Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: workflow-backend service client (bulk create, service-to-service)
-      go-orchestrator-ui-integration
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: batu4404@gmail.com
+  at: 2026-07-03T11:12:24+0700
+  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
+    [T1] — identity must reach the tool context to set X-User-Id/X-Org-Id headers.'
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-07-03 05:03:42.504000+00:00
+  note: Task activated — dependency T1 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-03 05:05:21.402000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-03 05:05:29.628000+00:00
+  rag_context_injected: false
+  rag_summary: query_returned_no_chunks
+  rag_query: workflow-backend service client (bulk create, service-to-service) go-orchestrator-ui-integration
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-03T05:12:07+0000
+  note: Executor work phase begun.
