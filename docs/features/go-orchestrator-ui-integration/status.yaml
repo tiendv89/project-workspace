@@ -1,7 +1,7 @@
 feature_id: go-orchestrator-ui-integration
 title: Go orchestrator — Hermes tasks-stage approve pipeline (merge docs PR +
   create tasks via API)
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Tasks stage approved; feature advanced to ready_for_implementation.
   Wave-1 tasks with no dependencies (T1, T2, T3) activated todo -> ready. Teams
@@ -45,6 +45,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/669
 history:
   - at: 2026-07-03T08:56:10+0700
     actor: batu4404@gmail.com
@@ -93,3 +94,11 @@ revalidation:
 feature_branch: feature/go-orchestrator-ui-integration
 feature_branch_base_sha: 760611a24326a9686ee7140e5bcd82d2d6203610
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/661
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/669
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/38
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/56
+    status: open
