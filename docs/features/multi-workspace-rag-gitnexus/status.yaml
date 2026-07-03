@@ -2,8 +2,8 @@ feature_id: multi-workspace-rag-gitnexus
 title: Multi-workspace support for RAG and GitNexus
 
 feature_status: in_tdd
-current_stage: technical_design
-next_action: Tech lead produces technical-design.md (Phase 1) for review.
+current_stage: tasks
+next_action: Tech lead produces task breakdown (Phase 2) under docs/features/multi-workspace-rag-gitnexus/tasks/.
 
 stages:
   product_spec:
@@ -17,11 +17,15 @@ stages:
         reviewed_at: 2026-06-24T10:34:38Z
         review_comment: Product spec approved.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: pentative@gmail.com
+    reviewed_at: 2026-07-03T14:19:40+0700
+    review_comment: Technical design approved.
+    review_history:
+      - review_status: approved
+        reviewed_by: pentative@gmail.com
+        reviewed_at: 2026-07-03T14:19:40+0700
+        review_comment: Technical design approved.
   tasks:
     review_status: draft
     reviewed_by: null
@@ -41,6 +45,11 @@ history:
     action: approve
     stage: product_spec
     note: Product spec approved; feature advanced to in_tdd.
+  - at: 2026-07-03T14:19:40+0700
+    actor: pentative@gmail.com
+    action: approve
+    stage: technical_design
+    note: Technical design approved; advanced to task planning (Phase 2).
 
 revalidation:
   product_spec_required: false
