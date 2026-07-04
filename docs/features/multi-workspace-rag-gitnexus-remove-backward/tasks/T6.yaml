@@ -1,7 +1,7 @@
 id: T6
 title: hermes-agent — connection-scope the RAG tool; close GitNexus fallback gap
 repo: hermes-agent
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -42,3 +42,18 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T08:29:05+0000
     note: executor work phase begun.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:37:37+0700
+    note: >-
+      Manual human intervention: task was in_progress with no valid direct
+      transition to ready. Routed through blocked as the valid intermediate
+      state per the task status transition rules.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:37:37+0700
+    note: >-
+      Unblocked by human. pr.url was null, so target status is ready per the
+      unblock target rule. Prior in_progress work (if any) is not preserved
+      by this reset; the next claimant should re-check branch state before
+      resuming.
