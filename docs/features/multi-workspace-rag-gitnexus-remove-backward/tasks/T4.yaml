@@ -1,0 +1,26 @@
+id: T4
+title: "git-nexus — server: remove legacy /sse route, eager legacy subprocess, DEFAULT_WORKSPACE_ID, legacy health fields"
+repo: git-nexus
+status: todo
+depends_on: [T5, T6]
+blocked_reason: null
+blocked_context: null
+branch: feature/multi-workspace-rag-gitnexus-remove-backward-T4
+
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-07-04T14:49:56+0700
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-04T14:49:56+0700
+    note: >-
+      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T5, T6] —
+      same reasoning as T2; hermes-agent's gitnexus.py must close its empty-workspace_id
+      fallthrough (T6) before the legacy route it falls through to is deleted.

@@ -1,25 +1,62 @@
 id: T4
 title: git-nexus — server per-workspace subprocess routing + /ws/<id>/sse
 repo: git-nexus
-status: todo
-depends_on: [T3]
+status: done
+depends_on:
+  - T3
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-T4
-
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-03T14:37:19+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T09:01:37.200Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/git-nexus/pull/5
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/675
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-03T14:37:19+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T3] —
-      needs the per-workspace HOME/registry layout frozen before server routing is added.
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T3] — needs the per-workspace HOME/registry layout frozen
+      before server routing is added."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 08:34:06.186000+00:00
+    note: Task activated — dependency T3 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 08:35:49.804000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 08:35:57.963000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: git-nexus — server per-workspace subprocess routing + /ws/<id>/sse
+      multi-workspace-rag-gitnexus
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:38:20+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/git-nexus/pull/5"
+    at: 2026-07-03T08:51:44.337Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T08:53:20.838Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-03T09:00:20.355Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:01:37.200Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

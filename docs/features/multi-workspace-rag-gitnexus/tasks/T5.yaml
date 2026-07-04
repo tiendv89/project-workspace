@@ -1,25 +1,63 @@
 id: T5
 title: workflow — executor connection-scoped MCP endpoint binding
 repo: workflow
-status: todo
-depends_on: [T2, T4]
+status: done
+depends_on:
+  - T2
+  - T4
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-T5
-
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-03T14:37:19+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T09:23:54.028Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/agent-workflow/pull/279
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/677
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-03T14:37:19+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T2, T4] —
-      needs both RAG and GitNexus servers to accept /ws/<id>/sse before the executor can bind to it.
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T2, T4] — needs both RAG and GitNexus servers to accept
+      /ws/<id>/sse before the executor can bind to it."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:01:37.267Z
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:03:29.661Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:03:37.764Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow — executor connection-scoped MCP endpoint binding
+      multi-workspace-rag-gitnexus
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:06:09+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/279"
+    at: 2026-07-03T09:14:47.741Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:16:07.075Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-03T09:22:40.949Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T09:23:54.028Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
