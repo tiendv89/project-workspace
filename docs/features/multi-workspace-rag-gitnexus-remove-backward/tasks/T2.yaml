@@ -1,11 +1,11 @@
 id: T2
 title: "rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID"
 repo: rag-service
-status: blocked
+status: in_review
 depends_on:
   - T5
   - T6
-blocked_reason: executor_failed:dispatch_dlq_after_5_deliveries
+blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-remove-backward-T2
 execution:
@@ -75,3 +75,11 @@ log:
     by: tiendv.52@gmail.com
     note: dispatch_dlq_after_5_deliveries
     at: 2026-07-04T09:26:16.645Z
+  - action: in_review
+    by: pye@swellnetwork.io
+    at: 2026-07-04T17:40:44+0700
+    note: >-
+      Human resolved block. pr.url was already set (rag-service PR #20, open),
+      so per the unblock target rule the task resumes at in_review rather than
+      ready — the PR already exists and should not be re-claimed for
+      implementation. blocked_reason cleared.
