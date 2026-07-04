@@ -1,0 +1,28 @@
+id: T5
+title: "workflow — executor: remove buildMcpSseUrl legacy fallback"
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/multi-workspace-rag-gitnexus-remove-backward-T5
+
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-07-04T14:49:56+0700
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-04T14:49:56+0700
+    note: >-
+      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-04T07:54:31Z
+    note: Task activated on tasks-stage approval — dependencies met.
