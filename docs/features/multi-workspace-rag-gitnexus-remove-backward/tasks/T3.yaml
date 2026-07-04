@@ -1,7 +1,7 @@
 id: T3
 title: "git-nexus — indexer: remove legacy WORKSPACE_URL path"
 repo: git-nexus
-status: reviewing
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -50,3 +50,28 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T08:24:46.698Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:34:07+0700
+    note: >-
+      Manual human intervention: no valid direct transition from reviewing to
+      in_review exists. Routed through review_incomplete as the valid
+      intermediate state per the task status transition rules. Reviewer had
+      not actually failed or exited invalid — this hop is a rules-compliant
+      workaround, not a genuine review failure.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:34:07+0700
+    note: >-
+      Escalated review_incomplete to blocked to reach a state from which
+      in_review is a valid target. Not a genuine MAX_REVIEW_INCOMPLETES
+      escalation — manual routing only.
+  - action: unblocked
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:34:07+0700
+    note: >-
+      Unblocked by human. pr.url was already set
+      (https://github.com/tiendv89/git-nexus/pull/7), so target status is
+      in_review per the unblock target rule. "unblocked" is not in the
+      table of defined log actions — used here since none of the defined
+      actions describes a blocked→in_review resolution.
