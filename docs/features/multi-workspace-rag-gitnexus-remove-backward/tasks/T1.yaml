@@ -1,7 +1,7 @@
 id: T1
 title: "rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path"
 repo: rag-service
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:45:13+0000
+  last_updated_at: 2026-07-04T08:55:27.126Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/rag-service/pull/19
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/683
   status: open
