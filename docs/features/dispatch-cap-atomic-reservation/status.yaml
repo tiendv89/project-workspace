@@ -1,0 +1,55 @@
+feature_id: dispatch-cap-atomic-reservation
+title: Atomic concurrency-cap reservation for the dispatcher
+
+feature_status: in_implementation
+current_stage: tasks
+next_action: >-
+  Implement T1 in the workflow repo and open a PR. product-spec.md and
+  technical-design.md are drafted from a live production incident and were
+  authorized for immediate implementation by the human in-conversation
+  (2026-07-04) as an expedited hotfix; they still need formal sign-off via
+  approve-feature retroactively.
+
+stages:
+  product_spec:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  technical_design:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  tasks:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+  handoff:
+    review_status: draft
+    reviewed_by: null
+    reviewed_at: null
+    review_comment: null
+    review_history: []
+
+history:
+  - at: 2026-07-04T15:40:10+0700
+    by: matthew@swellnetwork.io
+    action: expedited_hotfix_authorized
+    note: >-
+      Feature created directly from a live production incident diagnosis
+      (agent-031352 VM, charting-layer feature, dispatch cap overshoot and
+      self-deadlock). Human explicitly authorized proceeding straight to
+      implementation and PR without waiting for the normal stage-by-stage
+      approval cycle. product-spec.md and technical-design.md still require
+      retroactive formal approval via approve-feature.
+
+revalidation:
+  product_spec_required: false
+  technical_design_required: false
+  tasks_required: false
+  deployment_checklist_required: false

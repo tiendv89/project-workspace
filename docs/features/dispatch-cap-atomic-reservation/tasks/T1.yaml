@@ -1,0 +1,36 @@
+id: T1
+title: "Atomic dispatch:active reservation replacing the registry-size cap check"
+repo: workflow
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_context: null
+branch: feature/dispatch-cap-atomic-reservation-T1
+
+execution:
+  actor_type: agent
+  last_updated_by: matthew@swellnetwork.io
+  last_updated_at: 2026-07-04T15:40:10+0700
+
+pr:
+  url: ""
+  status: not_created
+
+workspace_pr: null
+
+log:
+  - action: created
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T15:40:10+0700
+    note: >-
+      Created directly from a live production incident diagnosis
+      (agent-031352 VM, charting-layer feature T3-T6): dispatch cap
+      overshoot (4 running against max_concurrent=3) and a self-deadlock
+      where sibling tasks registering up front blocked all spawning. See
+      product-spec.md and technical-design.md.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T15:40:10+0700
+    note: >-
+      Human authorized proceeding directly to implementation in-conversation
+      as an expedited hotfix, bypassing the normal per-stage approval wait.
