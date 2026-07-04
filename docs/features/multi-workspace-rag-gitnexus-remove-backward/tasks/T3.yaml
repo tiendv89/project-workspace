@@ -1,7 +1,7 @@
 id: T3
-title: 'git-nexus — indexer: remove legacy WORKSPACE_URL path'
+title: "git-nexus — indexer: remove legacy WORKSPACE_URL path"
 repo: git-nexus
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:18:59+0000
+  last_updated_at: 2026-07-04T08:22:34.444Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/git-nexus/pull/7
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/684
   status: open
@@ -20,7 +20,8 @@ log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-04T14:49:56+0700
-    note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].'
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: []."
   - action: ready
     by: pentative@gmail.com
     at: 2026-07-04T07:54:31.000Z
@@ -34,7 +35,8 @@ log:
     at: 2026-07-04T08:14:53.991Z
     rag_context_injected: false
     rag_summary: query_returned_no_chunks
-    rag_query: 'git-nexus — indexer: remove legacy WORKSPACE_URL path multi-workspace-rag-gitnexus-remove-backward'
+    rag_query: "git-nexus — indexer: remove legacy WORKSPACE_URL path
+      multi-workspace-rag-gitnexus-remove-backward"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
   - action: started
     by: tiendv.52@gmail.com
