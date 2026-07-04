@@ -2,7 +2,7 @@ id: T7
 title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
   + init-agent docs"
 repo: workflow
-status: in_review
+status: reviewing
 depends_on:
   - T2
   - T4
@@ -12,7 +12,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T12:20:09.026Z
+  last_updated_at: 2026-07-04T12:46:00.530Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/283
   status: open
@@ -95,31 +95,32 @@ log:
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-07-04T19:41:18+0700
-    note: >-
-      Human unblock — dispatch_dlq_after_5_deliveries is an orchestrator
+    note: Human unblock — dispatch_dlq_after_5_deliveries is an orchestrator
       infrastructure failure, not a code problem. pr.url is null so target is
-      ready per the unblock target rule. A prior executor run had already
-      pushed a complete, correct implementation commit (e457c7c) to the
-      workflow repo task branch before the dispatch failure; human is
-      resuming and verifying that work directly rather than re-dispatching.
+      ready per the unblock target rule. A prior executor run had already pushed
+      a complete, correct implementation commit (e457c7c) to the workflow repo
+      task branch before the dispatch failure; human is resuming and verifying
+      that work directly rather than re-dispatching.
   - action: claimed
     by: pye@swellnetwork.io
     at: 2026-07-04T19:41:53+0700
-    note: >-
-      Claimed for manual implementation via git-based claim protocol.
-      Verified the prior executor's commit e457c7c on
-      feature/multi-workspace-rag-gitnexus-remove-backward-T7 in the
-      workflow repo matches all subtasks (DEFAULT_WORKSPACE_ID removed from
-      both compose templates and init-agent/SKILL.md, no stray references
-      remain). Confirmed T2/T4 already removed server-side
-      DEFAULT_WORKSPACE_ID handling on their feature branches. Ran
-      runtime/orchestrator full test suite after building runtime/abi with
-      npm (matching CI) — 56/56 files, 939/939 tests pass, typecheck clean.
+    note: Claimed for manual implementation via git-based claim protocol. Verified
+      the prior executor's commit e457c7c on
+      feature/multi-workspace-rag-gitnexus-remove-backward-T7 in the workflow
+      repo matches all subtasks (DEFAULT_WORKSPACE_ID removed from both compose
+      templates and init-agent/SKILL.md, no stray references remain). Confirmed
+      T2/T4 already removed server-side DEFAULT_WORKSPACE_ID handling on their
+      feature branches. Ran runtime/orchestrator full test suite after building
+      runtime/abi with npm (matching CI) — 56/56 files, 939/939 tests pass,
+      typecheck clean.
   - action: work_phase_complete
     by: pye@swellnetwork.io
     at: 2026-07-04T19:43:25+0700
-    note: >-
-      Implementation verified complete and correct. PR #283 (opened by the
-      prior executor run before the DLQ failure) already targets the
-      feature branch, is a draft, and is mergeable-clean — reused rather
-      than duplicated. Status moved to in_review with pr.url set to #283.
+    note: "Implementation verified complete and correct. PR #283 (opened by the
+      prior executor run before the DLQ failure) already targets the feature
+      branch, is a draft, and is mergeable-clean — reused rather than
+      duplicated. Status moved to in_review with pr.url set to #283."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T12:46:00.530Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
