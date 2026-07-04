@@ -35,3 +35,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T10:51:51.105Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T10:52:00.529Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose
+      templates + init-agent docs multi-workspace-rag-gitnexus-remove-backward"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
