@@ -2,7 +2,7 @@ id: T4
 title: "git-nexus — server: remove legacy /sse route, eager legacy subprocess,
   DEFAULT_WORKSPACE_ID, legacy health fields"
 repo: git-nexus
-status: review_incomplete
+status: in_review
 depends_on:
   - T5
   - T6
@@ -76,3 +76,12 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-07-04T09:32:46.976Z
+  - action: in_review
+    by: pye@swellnetwork.io
+    at: 2026-07-04T17:46:05+0700
+    note: >-
+      Manual override at explicit human request: status forced from
+      review_incomplete to in_review. This does not follow a defined
+      transition in the task status transition table (only
+      review_incomplete -> reviewing or review_incomplete -> blocked are
+      defined); confirmed with the user before applying.
