@@ -2,7 +2,7 @@ id: T7
 title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
   + init-agent docs"
 repo: workflow
-status: in_review
+status: done
 depends_on:
   - T2
   - T4
@@ -12,10 +12,10 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T12:57:42.285Z
+  last_updated_at: 2026-07-04T13:17:43.802Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/283
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/690
   status: open
@@ -143,12 +143,15 @@ log:
   - action: work_phase_complete
     by: pye@swellnetwork.io
     at: 2026-07-04T20:11:57+0700
-    note: >-
-      Manual override — human requested reset from reviewing to in_review.
-      This deviates from the documented transition table (reviewing only
-      transitions to review_passed, change_requested, or review_incomplete);
-      reviewing → in_review is not a listed valid transition. A reviewer
-      dispatch claim for cycle 3 of 3 was in place at the time of this
-      override; if that reviewer run is still active it may race with this
-      status change. pr.url (#283) and workspace_pr.url (#690) remain
-      untouched. Human takes responsibility for this deviation.
+    note: Manual override — human requested reset from reviewing to in_review. This
+      deviates from the documented transition table (reviewing only transitions
+      to review_passed, change_requested, or review_incomplete); reviewing →
+      in_review is not a listed valid transition. A reviewer dispatch claim for
+      cycle 3 of 3 was in place at the time of this override; if that reviewer
+      run is still active it may race with this status change. pr.url (#283) and
+      workspace_pr.url (#690) remain untouched. Human takes responsibility for
+      this deviation.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T13:17:43.802Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
