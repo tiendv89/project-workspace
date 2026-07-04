@@ -1,7 +1,7 @@
 id: T5
 title: "workflow — executor: remove buildMcpSseUrl legacy fallback"
 repo: workflow
-status: in_review
+status: done
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,10 +9,10 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:26:50.440Z
+  last_updated_at: 2026-07-04T08:50:32.752Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/282
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/685
   status: open
@@ -49,25 +49,26 @@ log:
   - action: review_blocked
     by: pye@swellnetwork.io
     at: 2026-07-04T15:35:58+0700
-    note: >-
-      Manual human intervention: no valid direct transition from reviewing to
+    note: "Manual human intervention: no valid direct transition from reviewing to
       in_review exists. Routed through review_incomplete as the valid
-      intermediate state per the task status transition rules. Reviewer had
-      not actually failed or exited invalid — this hop is a rules-compliant
-      workaround, not a genuine review failure.
+      intermediate state per the task status transition rules. Reviewer had not
+      actually failed or exited invalid — this hop is a rules-compliant
+      workaround, not a genuine review failure."
   - action: blocked
     by: pye@swellnetwork.io
     at: 2026-07-04T15:35:58+0700
-    note: >-
-      Escalated review_incomplete to blocked to reach a state from which
+    note: Escalated review_incomplete to blocked to reach a state from which
       in_review is a valid target. Not a genuine MAX_REVIEW_INCOMPLETES
       escalation — manual routing only.
   - action: unblocked
     by: pye@swellnetwork.io
     at: 2026-07-04T15:35:58+0700
-    note: >-
-      Unblocked by human. pr.url was already set
-      (https://github.com/tiendv89/agent-workflow/pull/282), so target status
-      is in_review per the unblock target rule. "unblocked" is not in the
-      table of defined log actions — used here since none of the defined
-      actions describes a blocked→in_review resolution.
+    note: Unblocked by human. pr.url was already set
+      (https://github.com/tiendv89/agent-workflow/pull/282), so target status is
+      in_review per the unblock target rule. "unblocked" is not in the table of
+      defined log actions — used here since none of the defined actions
+      describes a blocked→in_review resolution.
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T08:50:32.752Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
