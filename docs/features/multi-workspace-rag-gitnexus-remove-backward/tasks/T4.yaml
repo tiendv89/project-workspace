@@ -2,7 +2,7 @@ id: T4
 title: "git-nexus — server: remove legacy /sse route, eager legacy subprocess,
   DEFAULT_WORKSPACE_ID, legacy health fields"
 repo: git-nexus
-status: ready
+status: done
 depends_on:
   - T5
   - T6
@@ -11,11 +11,14 @@ blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-remove-backward-T4
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-04T14:49:56+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-04T10:48:13.628Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/git-nexus/pull/8
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/689
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
@@ -28,3 +31,60 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T09:08:34.805Z
     note: Task activated — dependency T6 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:11:46.832Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:11:55.609Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: "git-nexus — server: remove legacy /sse route, eager legacy
+      subprocess, DEFAULT_WORKSPACE_ID, legacy health fields
+      multi-workspace-rag-gitnexus-remove-backward"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:14:52+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/git-nexus/pull/8"
+    at: 2026-07-04T09:19:54.524Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:21:01.552Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-04T09:24:27.244Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:25:32.700Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-04T09:28:44.724Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:29:50.778Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-04T09:32:46.976Z
+  - action: in_review
+    by: pye@swellnetwork.io
+    at: 2026-07-04T17:46:05+0700
+    note: "Manual override at explicit human request: status forced from
+      review_incomplete to in_review. This does not follow a defined transition
+      in the task status transition table (only review_incomplete -> reviewing
+      or review_incomplete -> blocked are defined); confirmed with the user
+      before applying."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T10:48:13.628Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
