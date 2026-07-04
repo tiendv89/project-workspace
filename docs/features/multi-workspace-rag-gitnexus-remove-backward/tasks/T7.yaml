@@ -2,7 +2,7 @@ id: T7
 title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
   + init-agent docs"
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T2
   - T4
@@ -12,7 +12,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T10:51:51.105Z
+  last_updated_at: 2026-07-04T11:21:48.704Z
 pr:
   url: null
   status: null
@@ -38,8 +38,11 @@ log:
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-07-04T18:17:28+0700
-    note: >-
-      Manual override — human requested reset from in_progress to ready.
-      This deviates from the documented in_progress → ready transition
-      (not normally valid); an open workspace PR (#690) and prior claim
-      remain in place and were not cleared.
+    note: Manual override — human requested reset from in_progress to ready. This
+      deviates from the documented in_progress → ready transition (not normally
+      valid); an open workspace PR (#690) and prior claim remain in place and
+      were not cleared.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T11:21:48.704Z
+    note: Claimed via git-based claim protocol.
