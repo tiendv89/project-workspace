@@ -1,7 +1,7 @@
 id: T1
 title: "Atomic dispatch:active reservation replacing the registry-size cap check"
 repo: workflow
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ branch: feature/dispatch-cap-atomic-reservation-T1
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-07-04T18:51:11+0700
+  last_updated_at: 2026-07-04T18:52:56+0700
 
 pr:
   url: ""
@@ -52,3 +52,11 @@ log:
       still draft — proceeding is a continuation of the earlier
       expedited_hotfix_authorized decision, not a formal approve-feature
       approval.
+  - action: claimed
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T18:52:56+0700
+    note: >-
+      Claim commit for interactive implementation in this session. Target
+      repo: workflow (agent-workflow), runtime/dispatcher. Implementing per
+      technical-design.md Option B (dispatch:active sorted-set Lua
+      reservation).
