@@ -54,6 +54,14 @@ history:
       in-progress claim and T1 branch (management repo) were removed. No
       code changes were made in the workflow repo. Feature docs remain for
       when this is picked back up.
+  - at: 2026-07-04T15:50:15+0700
+    by: matthew@swellnetwork.io
+    action: workspace_pr_opened
+    note: >-
+      Opened draft PR https://github.com/tiendv89/project-workspace/pull/687
+      (feature/dispatch-cap-atomic-reservation -> main) so the incident
+      write-up (product-spec, technical-design, tasks.md) lands on main.
+      Not a handoff PR — T1 is still todo/on hold, no implementation yet.
 
 revalidation:
   product_spec_required: false
