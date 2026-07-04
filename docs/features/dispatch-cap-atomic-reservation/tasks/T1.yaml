@@ -1,7 +1,7 @@
 id: T1
 title: "Atomic dispatch:active reservation replacing the registry-size cap check"
 repo: workflow
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,11 +10,11 @@ branch: feature/dispatch-cap-atomic-reservation-T1
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-07-04T18:52:56+0700
+  last_updated_at: 2026-07-04T19:11:37+0700
 
 pr:
-  url: ""
-  status: not_created
+  url: "https://github.com/tiendv89/agent-workflow/pull/284"
+  status: open
 
 workspace_pr: null
 
@@ -60,3 +60,21 @@ log:
       repo: workflow (agent-workflow), runtime/dispatcher. Implementing per
       technical-design.md Option B (dispatch:active sorted-set Lua
       reservation).
+  - action: work_phase_complete
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T19:11:37+0700
+    note: >-
+      Implemented per technical-design.md Option B in runtime/dispatcher
+      (consumer.ts, reaper.ts, config.ts/index.ts) on
+      feature/dispatch-cap-atomic-reservation-T1 (workflow repo). Full test
+      suite green (66/66, vitest), tsc --noEmit clean, no lint step exists
+      for this package. Opened draft PR
+      https://github.com/tiendv89/agent-workflow/pull/284 against main
+      (workflow repo has no feature/dispatch-cap-atomic-reservation branch,
+      so this task's PR targets main directly per base_branch resolution).
+      Flagged one design note to the reviewer in the PR body: _releaseSlot
+      is a plain ZREM keyed only by handle (as specified in the technical
+      design, not a deviation) — a narrow, self-correcting, single-slot race
+      exists if two reservations for the same handle overlap (e.g.
+      dispatcher-crash XAUTOCLAIM redelivery racing a slow spawn); worth a
+      conscious accept/follow-up decision, not a blocker.
