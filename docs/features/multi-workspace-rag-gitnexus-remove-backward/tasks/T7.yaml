@@ -1,18 +1,18 @@
 id: T7
-title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
-  + init-agent docs"
+title: 'workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates +
+  init-agent docs'
 repo: workflow
 status: in_progress
 depends_on:
-  - T2
-  - T4
+- T2
+- T4
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T11:21:48.704Z
+  last_updated_at: 2026-07-04T11:24:19+0000
 pr:
   url: null
   status: null
@@ -20,42 +20,41 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/690
   status: open
 log:
-  - action: created
-    by: pentative@gmail.com
-    at: 2026-07-04T14:49:56+0700
-    note: "Task created from the approved task breakdown (tech-lead Phase 2).
-      depends_on: [T2, T4] — removing DEFAULT_WORKSPACE_ID from deployment
-      templates before the servers stop honoring it would strand any deployment
-      still relying on the default route."
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T10:50:10.979Z
-    note: Task activated — dependency T2 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T10:51:51.105Z
-    note: Claimed via git-based claim protocol.
-  - action: ready
-    by: pye@swellnetwork.io
-    at: 2026-07-04T18:17:28+0700
-    note: Manual override — human requested reset from in_progress to ready. This
-      deviates from the documented in_progress → ready transition (not normally
-      valid); an open workspace PR (#690) and prior claim remain in place and
-      were not cleared.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T11:21:48.704Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T11:21:54.432Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      docs/features/multi-workspace-rag-gitnexus/technical-design.md,
-      docs/features/multi-workspace-rag-gitnexus-remove-backward/product-spec.m\
-      d,
-      docs/features/multi-workspace-rag-gitnexus-remove-backward/technical-desi\
-      gn.md"
-    rag_query: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose
-      templates + init-agent docs multi-workspace-rag-gitnexus-remove-backward"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: pentative@gmail.com
+  at: 2026-07-04T14:49:56+0700
+  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
+    [T2, T4] — removing DEFAULT_WORKSPACE_ID from deployment templates before the
+    servers stop honoring it would strand any deployment still relying on the default
+    route.'
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 10:50:10.979000+00:00
+  note: Task activated — dependency T2 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 10:51:51.105000+00:00
+  note: Claimed via git-based claim protocol.
+- action: ready
+  by: pye@swellnetwork.io
+  at: 2026-07-04T18:17:28+0700
+  note: Manual override — human requested reset from in_progress to ready. This deviates
+    from the documented in_progress → ready transition (not normally valid); an open
+    workspace PR (#690) and prior claim remain in place and were not cleared.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 11:21:48.704000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 11:21:54.432000+00:00
+  rag_context_injected: true
+  rag_summary: 'Retrieved 5 chunks: docs/features/multi-workspace-rag-gitnexus/technical-design.md,
+    docs/features/multi-workspace-rag-gitnexus-remove-backward/product-spec.md, docs/features/multi-workspace-rag-gitnexus-remove-backward/technical-design.md'
+  rag_query: 'workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
+    + init-agent docs multi-workspace-rag-gitnexus-remove-backward'
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-04T11:24:19+0000
+  note: executor work phase begun.
