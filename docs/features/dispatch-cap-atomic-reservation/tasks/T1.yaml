@@ -1,7 +1,7 @@
 id: T1
 title: "Atomic dispatch:active reservation replacing the registry-size cap check"
 repo: workflow
-status: ready
+status: todo
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -34,3 +34,10 @@ log:
     note: >-
       Human authorized proceeding directly to implementation in-conversation
       as an expedited hotfix, bypassing the normal per-stage approval wait.
+  - action: retried
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T15:46:23+0700
+    note: >-
+      Held — human asked not to work on this right now. Reverted to todo and
+      removed the in-progress claim/branch; not ready for implementation
+      until explicitly resumed.
