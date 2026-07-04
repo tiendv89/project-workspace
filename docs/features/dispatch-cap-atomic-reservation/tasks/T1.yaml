@@ -1,7 +1,7 @@
 id: T1
 title: "Atomic dispatch:active reservation replacing the registry-size cap check"
 repo: workflow
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -10,7 +10,7 @@ branch: feature/dispatch-cap-atomic-reservation-T1
 execution:
   actor_type: agent
   last_updated_by: matthew@swellnetwork.io
-  last_updated_at: 2026-07-04T15:40:10+0700
+  last_updated_at: 2026-07-04T18:51:11+0700
 
 pr:
   url: ""
@@ -41,3 +41,14 @@ log:
       Held — human asked not to work on this right now. Reverted to todo and
       removed the in-progress claim/branch; not ready for implementation
       until explicitly resumed.
+  - action: ready
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T18:51:11+0700
+    note: >-
+      Explicitly resumed by human while waiting for the live
+      unified-session-history dispatch-cap incident to self-heal via TTL
+      expiry. Re-created feature/dispatch-cap-atomic-reservation-T1 from
+      origin/main (prior branch was deleted on hold). Tasks stage review is
+      still draft — proceeding is a continuation of the earlier
+      expedited_hotfix_authorized decision, not a formal approve-feature
+      approval.

@@ -4,10 +4,10 @@ title: Atomic concurrency-cap reservation for the dispatcher
 feature_status: in_tdd
 current_stage: tasks
 next_action: >-
-  On hold — human asked to stop work on this for now. T1 reverted to todo;
-  no implementation branch. product-spec.md and technical-design.md are
-  drafted from a live production incident but still need formal review via
-  approve-feature before any task is marked ready again.
+  Resumed — T1 set back to ready on feature/dispatch-cap-atomic-reservation-T1,
+  re-created from origin/main. start-implementation invoked. tasks stage
+  review is still draft; product-spec.md and technical-design.md still need
+  formal retroactive review via approve-feature.
 
 stages:
   product_spec:
@@ -62,6 +62,15 @@ history:
       (feature/dispatch-cap-atomic-reservation -> main) so the incident
       write-up (product-spec, technical-design, tasks.md) lands on main.
       Not a handoff PR — T1 is still todo/on hold, no implementation yet.
+  - at: 2026-07-04T18:51:11+0700
+    by: matthew@swellnetwork.io
+    action: resumed
+    note: >-
+      Human explicitly asked to resume T1 while waiting for a live recurrence
+      of this same incident class (unified-session-history T3/T4/T5/T10
+      stuck on the dispatch cap) to self-heal via broker registration TTL
+      expiry. T1 set back to ready; re-created
+      feature/dispatch-cap-atomic-reservation-T1 from origin/main.
 
 revalidation:
   product_spec_required: false
