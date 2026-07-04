@@ -2,7 +2,7 @@ id: T4
 title: "git-nexus — server: remove legacy /sse route, eager legacy subprocess,
   DEFAULT_WORKSPACE_ID, legacy health fields"
 repo: git-nexus
-status: reviewing
+status: review_incomplete
 depends_on:
   - T5
   - T6
@@ -12,7 +12,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T09:29:50.778Z
+  last_updated_at: 2026-07-04T09:32:46.976Z
 pr:
   url: https://github.com/tiendv89/git-nexus/pull/8
   status: open
@@ -72,3 +72,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T09:29:50.778Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-04T09:32:46.976Z
