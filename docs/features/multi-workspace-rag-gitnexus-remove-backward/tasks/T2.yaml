@@ -59,3 +59,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T09:22:17.465Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T09:22:21.466Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: fetch failed"
+    rag_query: "rag-service — RAG server: remove default /sse route +
+      DEFAULT_WORKSPACE_ID multi-workspace-rag-gitnexus-remove-backward"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
