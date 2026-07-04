@@ -2,11 +2,11 @@ id: T7
 title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
   + init-agent docs"
 repo: workflow
-status: blocked
+status: ready
 depends_on:
   - T2
   - T4
-blocked_reason: executor_failed:dispatch_dlq_after_5_deliveries
+blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
@@ -92,3 +92,13 @@ log:
     by: tiendv.52@gmail.com
     note: dispatch_dlq_after_5_deliveries
     at: 2026-07-04T12:20:09.026Z
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-04T19:41:18+0700
+    note: >-
+      Human unblock — dispatch_dlq_after_5_deliveries is an orchestrator
+      infrastructure failure, not a code problem. pr.url is null so target is
+      ready per the unblock target rule. A prior executor run had already
+      pushed a complete, correct implementation commit (e457c7c) to the
+      workflow repo task branch before the dispatch failure; human is
+      resuming and verifying that work directly rather than re-dispatching.
