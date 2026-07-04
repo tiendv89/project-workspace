@@ -2,7 +2,7 @@ id: T7
 title: 'workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates +
   init-agent docs'
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
 - T2
 - T4
@@ -58,3 +58,14 @@ log:
   by: tiendv.52@gmail.com
   at: 2026-07-04T11:24:19+0000
   note: executor work phase begun.
+- action: ready
+  by: pye@swellnetwork.io
+  at: 2026-07-04T19:15:26+0700
+  note: >-
+    Manual override (second occurrence) — human requested reset from
+    in_progress to ready despite an executor appearing to be actively
+    mid-implementation (rag_pre_flight + started logged at
+    2026-07-04T11:24:19Z). This deviates from the documented
+    in_progress → ready transition. The orchestrator may re-claim and
+    dispatch a new executor run over this one; the previously running
+    executor's work, if any was committed, remains on the task branch.
