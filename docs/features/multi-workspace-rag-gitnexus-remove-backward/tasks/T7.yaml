@@ -2,7 +2,7 @@ id: T7
 title: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose templates
   + init-agent docs"
 repo: workflow
-status: review_incomplete
+status: reviewing
 depends_on:
   - T2
   - T4
@@ -12,7 +12,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T12:49:01.055Z
+  last_updated_at: 2026-07-04T12:50:04.958Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/283
   status: open
@@ -128,3 +128,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-07-04T12:49:01.055Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T12:50:04.958Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
