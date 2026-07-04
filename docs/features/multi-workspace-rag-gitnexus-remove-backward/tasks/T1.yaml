@@ -1,7 +1,7 @@
 id: T1
-title: 'rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path'
+title: "rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path"
 repo: rag-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:16:53+0000
+  last_updated_at: 2026-07-04T08:34:07.695Z
 pr:
   url: null
   status: null
@@ -17,43 +17,45 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/683
   status: open
 log:
-- action: created
-  by: pentative@gmail.com
-  at: 2026-07-04T14:49:56+0700
-  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
-    [].'
-- action: ready
-  by: pentative@gmail.com
-  at: 2026-07-04 07:54:31+00:00
-  note: Task activated on tasks-stage approval — dependencies met.
-- action: claimed
-  by: tiendv.52@gmail.com
-  at: 2026-07-04 08:12:52.368000+00:00
-  note: Claimed via git-based claim protocol.
-- action: rag_pre_flight
-  by: tiendv.52@gmail.com
-  at: 2026-07-04 08:13:00.941000+00:00
-  rag_context_injected: false
-  rag_summary: query_returned_no_chunks
-  rag_query: 'rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path
-    multi-workspace-rag-gitnexus-remove-backward'
-  note: Runtime pre-flight RAG fetch — written before executor spawn.
-- action: started
-  by: tiendv.52@gmail.com
-  at: 2026-07-04T08:16:53+0000
-  note: executor work phase begun.
-- action: blocked
-  by: pye@swellnetwork.io
-  at: 2026-07-04T15:32:01+0700
-  note: >-
-    Manual human intervention: task was in_progress with no valid direct
-    transition to ready. Routed through blocked as the valid intermediate
-    state per the task status transition rules.
-- action: ready
-  by: pye@swellnetwork.io
-  at: 2026-07-04T15:32:01+0700
-  note: >-
-    Unblocked by human. pr.url was null, so target status is ready per the
-    unblock target rule. Prior in_progress work (if any) is not preserved by
-    this reset; the next claimant should re-check branch state before
-    resuming.
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-04T14:49:56+0700
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: []."
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-04 07:54:31+00:00
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-04 08:12:52.368000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-04 08:13:00.941000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: "rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path
+      multi-workspace-rag-gitnexus-remove-backward"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T08:16:53+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:32:01+0700
+    note: "Manual human intervention: task was in_progress with no valid direct
+      transition to ready. Routed through blocked as the valid intermediate
+      state per the task status transition rules."
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-04T15:32:01+0700
+    note: Unblocked by human. pr.url was null, so target status is ready per the
+      unblock target rule. Prior in_progress work (if any) is not preserved by
+      this reset; the next claimant should re-check branch state before
+      resuming.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T08:34:07.695Z
+    note: Claimed via git-based claim protocol.
