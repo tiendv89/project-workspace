@@ -1,39 +1,62 @@
 feature_id: dispatch-cap-atomic-reservation
 title: Atomic concurrency-cap reservation for the dispatcher
 
-feature_status: in_tdd
-current_stage: tasks
-next_action: >-
-  Resumed — T1 set back to ready on feature/dispatch-cap-atomic-reservation-T1,
-  re-created from origin/main. start-implementation invoked. tasks stage
-  review is still draft; product-spec.md and technical-design.md still need
-  formal retroactive review via approve-feature.
+feature_status: done
+current_stage: done
+next_action: Feature complete.
 
 stages:
   product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-07-04T19:36:31+0700
+    review_comment: >-
+      Retroactive approval. Written from a live production incident
+      diagnosis and already acted on under expedited_hotfix_authorized;
+      content confirmed accurate against the shipped fix.
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-07-04T19:36:31+0700
+        comment: Retroactive approval — see review_comment.
   technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-07-04T19:36:31+0700
+    review_comment: >-
+      Retroactive approval. Option B (dispatch:active sorted-set Lua
+      reservation) was implemented exactly as designed and confirmed during
+      /review-pr against agent-workflow PR #284.
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-07-04T19:36:31+0700
+        comment: Retroactive approval — see review_comment.
   tasks:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-07-04T19:36:31+0700
+    review_comment: >-
+      Retroactive approval. T1 (the feature's only task) is already done —
+      no tasks remain to activate.
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-07-04T19:36:31+0700
+        comment: Retroactive approval — see review_comment.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
+    review_status: approved
+    reviewed_by: matthew@swellnetwork.io
+    reviewed_at: 2026-07-04T19:36:31+0700
+    review_comment: >-
+      T1 implementation (agent-workflow PR #284) reviewed and squash-merged
+      to main; production dispatch-cap incident resolved. No other tasks in
+      this feature. Feature closed out.
+    review_history:
+      - status: approved
+        by: matthew@swellnetwork.io
+        at: 2026-07-04T19:36:31+0700
+        comment: Retroactive approval — see review_comment.
 
 history:
   - at: 2026-07-04T15:40:10+0700
@@ -71,6 +94,38 @@ history:
       stuck on the dispatch cap) to self-heal via broker registration TTL
       expiry. T1 set back to ready; re-created
       feature/dispatch-cap-atomic-reservation-T1 from origin/main.
+  - at: 2026-07-04T19:26:25+0700
+    by: matthew@swellnetwork.io
+    action: t1_merged
+    note: >-
+      T1 reviewed via /review-pr (APPROVE, zbotdev reviewer account, 2
+      non-blocking nits) and squash-merged into agent-workflow main at
+      a649314b2fbabc575d56a75d99d1a4c4eff6a555, resolving the production
+      dispatch-cap incident. T1.yaml moved to done.
+  - stage: product_spec
+    action: approved
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T19:36:31+0700
+  - stage: technical_design
+    action: approved
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T19:36:31+0700
+  - stage: tasks
+    action: approved
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T19:36:31+0700
+  - stage: handoff
+    action: approved
+    by: matthew@swellnetwork.io
+    at: 2026-07-04T19:36:31+0700
+  - at: 2026-07-04T19:36:31+0700
+    by: matthew@swellnetwork.io
+    action: feature_done
+    note: >-
+      All stages retroactively approved (product_spec, technical_design,
+      tasks, handoff) in one closeout pass after T1 — the feature's only
+      task — was implemented, reviewed, and merged. feature_status set to
+      done.
 
 revalidation:
   product_spec_required: false
