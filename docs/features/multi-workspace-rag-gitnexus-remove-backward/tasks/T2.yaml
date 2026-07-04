@@ -1,7 +1,7 @@
 id: T2
 title: 'rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID'
 repo: rag-service
-status: in_progress
+status: ready
 depends_on:
 - T5
 - T6
@@ -46,3 +46,12 @@ log:
   by: tiendv.52@gmail.com
   at: 2026-07-04T09:15:43+0000
   note: executor work phase begun.
+- action: ready
+  by: pye@swellnetwork.io
+  at: 2026-07-04T16:21:07+0700
+  note: >-
+    Manual override at explicit human request: status forced from in_progress
+    to ready. This does not follow a defined transition in the task status
+    transition table (no in_progress -> ready path exists); confirmed with the
+    user before applying. No blocked_reason set because the task was not
+    actually blocked.
