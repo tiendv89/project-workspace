@@ -1,5 +1,5 @@
 id: T1
-title: "rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path"
+title: 'rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path'
 repo: rag-service
 status: in_progress
 depends_on: []
@@ -9,7 +9,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:12:52.368Z
+  last_updated_at: 2026-07-04T08:16:53+0000
 pr:
   url: null
   status: null
@@ -17,24 +17,28 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/683
   status: open
 log:
-  - action: created
-    by: pentative@gmail.com
-    at: 2026-07-04T14:49:56+0700
-    note: "Task created from the approved task breakdown (tech-lead Phase 2).
-      depends_on: []."
-  - action: ready
-    by: pentative@gmail.com
-    at: 2026-07-04T07:54:31Z
-    note: Task activated on tasks-stage approval — dependencies met.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T08:12:52.368Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T08:13:00.941Z
-    rag_context_injected: false
-    rag_summary: query_returned_no_chunks
-    rag_query: "rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path
-      multi-workspace-rag-gitnexus-remove-backward"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: pentative@gmail.com
+  at: 2026-07-04T14:49:56+0700
+  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
+    [].'
+- action: ready
+  by: pentative@gmail.com
+  at: 2026-07-04 07:54:31+00:00
+  note: Task activated on tasks-stage approval — dependencies met.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 08:12:52.368000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 08:13:00.941000+00:00
+  rag_context_injected: false
+  rag_summary: query_returned_no_chunks
+  rag_query: 'rag-service — indexer: remove legacy WORKSPACE_URL/WORKSPACE_ID path
+    multi-workspace-rag-gitnexus-remove-backward'
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-04T08:16:53+0000
+  note: executor work phase begun.
