@@ -46,3 +46,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-04T11:21:48.704Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T11:21:54.432Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/multi-workspace-rag-gitnexus/technical-design.md,
+      docs/features/multi-workspace-rag-gitnexus-remove-backward/product-spec.m\
+      d,
+      docs/features/multi-workspace-rag-gitnexus-remove-backward/technical-desi\
+      gn.md"
+    rag_query: "workflow — deployment: drop DEFAULT_WORKSPACE_ID from compose
+      templates + init-agent docs multi-workspace-rag-gitnexus-remove-backward"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
