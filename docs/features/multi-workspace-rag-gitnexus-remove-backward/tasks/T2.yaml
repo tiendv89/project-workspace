@@ -1,7 +1,7 @@
 id: T2
 title: "rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID"
 repo: rag-service
-status: in_review
+status: reviewing
 depends_on:
   - T5
   - T6
@@ -11,7 +11,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T09:26:16.645Z
+  last_updated_at: 2026-07-04T10:43:31.369Z
 pr:
   url: https://github.com/tiendv89/rag-service/pull/20
   status: open
@@ -78,8 +78,11 @@ log:
   - action: in_review
     by: pye@swellnetwork.io
     at: 2026-07-04T17:40:44+0700
-    note: >-
-      Human resolved block. pr.url was already set (rag-service PR #20, open),
+    note: "Human resolved block. pr.url was already set (rag-service PR #20, open),
       so per the unblock target rule the task resumes at in_review rather than
       ready — the PR already exists and should not be re-claimed for
-      implementation. blocked_reason cleared.
+      implementation. blocked_reason cleared."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T10:43:31.369Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
