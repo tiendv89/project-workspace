@@ -1,7 +1,7 @@
 feature_id: multi-workspace-rag-gitnexus-remove-backward
 title: Remove backward-compatible single-workspace paths from RAG/GitNexus
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Teams execute ready tasks (T1, T3, T5, T6) in their real
   implementation repos. T2, T4, T7 remain todo until their dependencies land.
 stages:
@@ -85,13 +85,13 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/692
 impl_feature_prs:
   - repo: rag-service
     url: https://github.com/tiendv89/rag-service/pull/21
-    status: open
+    status: merged
   - repo: git-nexus
     url: https://github.com/tiendv89/git-nexus/pull/9
-    status: open
+    status: merged
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/285
-    status: open
+    status: merged
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/42
-    status: open
+    status: merged
