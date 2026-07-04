@@ -1,7 +1,7 @@
 id: T5
 title: "workflow — executor: remove buildMcpSseUrl legacy fallback"
 repo: workflow
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_context: null
@@ -9,7 +9,7 @@ branch: feature/multi-workspace-rag-gitnexus-remove-backward-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T08:25:16.589Z
+  last_updated_at: 2026-07-04T08:26:50.440Z
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/282
   status: open
@@ -42,3 +42,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/agent-workflow/pull/282"
     at: 2026-07-04T08:25:16.589Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-04T08:26:50.440Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
