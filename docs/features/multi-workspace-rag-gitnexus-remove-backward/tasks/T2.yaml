@@ -1,17 +1,17 @@
 id: T2
-title: "rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID"
+title: 'rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID'
 repo: rag-service
 status: in_progress
 depends_on:
-  - T5
-  - T6
+- T5
+- T6
 blocked_reason: null
 blocked_context: null
 branch: feature/multi-workspace-rag-gitnexus-remove-backward-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-04T09:10:04.672Z
+  last_updated_at: 2026-07-04T09:15:43+0000
 pr:
   url: null
   status: null
@@ -19,27 +19,30 @@ workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/688
   status: open
 log:
-  - action: created
-    by: pentative@gmail.com
-    at: 2026-07-04T14:49:56+0700
-    note: "Task created from the approved task breakdown (tech-lead Phase 2).
-      depends_on: [T5, T6] — the workflow executor and hermes-agent's RAG tool
-      must stop relying on the plain /sse route before it is deleted;
-      hermes-agent's rag.py is today that route's only caller, not just a
-      fallback."
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T09:08:34.801Z
-    note: Task activated — dependency T6 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T09:10:04.672Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-04T09:10:12.833Z
-    rag_context_injected: false
-    rag_summary: "tool_call_failed: fetch failed"
-    rag_query: "rag-service — RAG server: remove default /sse route +
-      DEFAULT_WORKSPACE_ID multi-workspace-rag-gitnexus-remove-backward"
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: created
+  by: pentative@gmail.com
+  at: 2026-07-04T14:49:56+0700
+  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
+    [T5, T6] — the workflow executor and hermes-agent''s RAG tool must stop relying
+    on the plain /sse route before it is deleted; hermes-agent''s rag.py is today
+    that route''s only caller, not just a fallback.'
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 09:08:34.801000+00:00
+  note: Task activated — dependency T6 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 09:10:04.672000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-04 09:10:12.833000+00:00
+  rag_context_injected: false
+  rag_summary: 'tool_call_failed: fetch failed'
+  rag_query: 'rag-service — RAG server: remove default /sse route + DEFAULT_WORKSPACE_ID
+    multi-workspace-rag-gitnexus-remove-backward'
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-04T09:15:43+0000
+  note: executor work phase begun.
