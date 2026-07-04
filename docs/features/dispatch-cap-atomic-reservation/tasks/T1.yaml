@@ -67,6 +67,29 @@ log:
       the same handle overlap (e.g. dispatcher-crash XAUTOCLAIM redelivery
       racing a slow spawn); worth a conscious accept/follow-up decision, not a
       blocker."
+  - action: reviewer_complete
+    by: zbotdev (reviewer agent)
+    at: 2026-07-04T19:20:46+0700
+    note: >-
+      APPROVE posted via /review-pr against PR #284 @ a719e68, using the
+      dedicated zbotdev reviewer GitHub account (avoids the self-review
+      restriction since the PR was opened as tiendv89). Verified locally:
+      runtime/dispatcher full suite 66/66 passing, tsc --noEmit clean, no
+      lint step configured for this package, no CI check-runs configured on
+      the repo. All T1 subtasks and test-plan items confirmed implemented by
+      tracing every _processEntry exit path by hand. Two non-blocking nits
+      posted inline: (1) _getRegistrySize() is now dead code — zero callers
+      left in the repo, only stale test spies; (2) confirmed the same-handle
+      ZADD-idempotency/bare-ZREM race the author flagged is real but requires
+      multiple dispatcher processes, which technical-design.md's Non-goals
+      explicitly scopes out for this single-instance deployment —
+      recommended a follow-up using the existing _releaseSpawnLock
+      compare-and-delete idiom if multi-dispatcher support is ever added.
+      Squash-merged into main afterward
+      (a649314b2fbabc575d56a75d99d1a4c4eff6a555) with explicit human
+      confirmation in the interactive session, ahead of the automated
+      pr-merge loop's close-out below. Review:
+      https://github.com/tiendv89/agent-workflow/pull/284#pullrequestreview-4629582661
   - action: done
     by: tiendv.52@gmail.com
     at: 2026-07-04T12:27:08.715Z
