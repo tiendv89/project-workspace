@@ -63,3 +63,4 @@ stages:
 title: agent-general-chat
 feature_branch: feature/agent-general-chat
 feature_branch_base_sha: 9f46cc2fc2a2f9edfbd13dd668b02a1787457002
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/697
