@@ -1,9 +1,9 @@
 id: T4
 title: User-facing API (feed, read state, preferences)
 repo: notification-service
-status: todo
+status: ready
 depends_on:
-- T2
+  - T2
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -17,7 +17,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:05:48.741Z
+    note: Task activated — dependency T2 merged and marked done.
