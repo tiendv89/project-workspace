@@ -1,6 +1,6 @@
-current_stage: handoff
+current_stage: done
 feature_id: agent-general-chat
-feature_status: in_handoff
+feature_status: done
 history:
   - action: stage_approved
     at: 2026-07-05T07:30:57+0000
@@ -69,10 +69,10 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/716
 impl_feature_prs:
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/51
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/166
-    status: open
+    status: merged
 drift_detected: true
 drift_reason: File overlap on docs/features/agent-general-chat/tasks.md,
   workspace.yaml with 4 new base commits
