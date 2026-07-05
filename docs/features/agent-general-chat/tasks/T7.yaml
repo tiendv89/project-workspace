@@ -1,10 +1,10 @@
 id: T7
-title: 'digital-factory-ui: DM member picker + Direct Messages section wired to /dms'
+title: "digital-factory-ui: DM member picker + Direct Messages section wired to /dms"
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T1
-- T5
+  - T1
+  - T5
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -18,7 +18,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:01:30.047Z
+    note: Task activated — dependency T5 merged and marked done.
