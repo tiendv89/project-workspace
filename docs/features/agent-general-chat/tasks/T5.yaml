@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: new Chat nav entry + Slack-style sidebar shell"
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,13 +11,13 @@ branch: feature/agent-general-chat-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T13:00:03.021Z
+  last_updated_at: 2026-07-05T13:01:29.964Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/162
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/709
   status: open
@@ -92,3 +92,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-05T13:00:03.021Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:01:29.964Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
