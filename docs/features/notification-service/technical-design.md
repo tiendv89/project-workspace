@@ -116,15 +116,118 @@ notification-service/
   go.mod / go.sum
 ```
 
-**Data model** (new Postgres DB, `notification_db`):
-- `notifications` — `id`, `workspace_id`, `user_id` (recipient), `category`
-  (`mention` | `channel_message` | `dm` | `spec_approved` | `design_approved` |
-  `tasks_approved` | `task_done`), `source_type` (`message` | `feature` | `task`), `source_id`,
-  `feature_id` (nullable), `task_id` (nullable), `summary` (short text for the feed row),
-  `link` (deep link back to the thread/feature/task), `actor_user_id` (who caused it, nullable
-  for system events), `read_at` (nullable), `created_at`.
-- `notification_preferences` — `user_id`, `workspace_id`, `category`, `enabled` (bool, default
-  true) — one row per (user, workspace, category); absence of a row means default-on.
+**Data model** (new Postgres DB, `notification_db`). Follows the same conventions as
+`user-service`'s `migrations/00001_initial_identity_schema.sql`: `pressly/goose/v3` numbered SQL
+migrations under `database/migrations/`, `gen_random_uuid()` PKs (via `pgcrypto`, already the
+assumed extension given `user-service` uses UUID PKs), `timestamptz` for all timestamps, plain
+SQL (no ORM).
+
+- **`notifications`** — one row per fanned-out notification, per recipient.
+  - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+  - `workspace_id UUID NOT NULL`
+  - `user_id UUID NOT NULL` — recipient
+  - `category TEXT NOT NULL` — `mention` | `channel_message` | `dm` | `spec_approved` |
+    `design_approved` | `tasks_approved` | `task_done` (`CHECK` constraint, not an enum type, to
+    keep future category additions migration-free)
+  - `source_type TEXT NOT NULL` — `message` | `feature` | `task` (`CHECK` constraint)
+  - `source_id TEXT NOT NULL` — id of the message/feature/task in its owning system (hermes-agent
+    session/message id is not a UUID in all cases, so this is `TEXT`, not `UUID`)
+  - `feature_id TEXT NULL` — feature identifier (matches the feature-id string used across
+    `workflow-backend`/`agent-workflow`, not a UUID)
+  - `task_id TEXT NULL`
+  - `summary TEXT NOT NULL` — short feed-row text
+  - `link TEXT NOT NULL` — deep link back to the thread/feature/task
+  - `actor_user_id UUID NULL` — who caused it; null for system-generated events (e.g. approvals
+    triggered by CI rather than a human)
+  - `read_at TIMESTAMPTZ NULL`
+  - `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
+  - Indexes: `(workspace_id, user_id, created_at DESC)` for the main feed query;
+    `(workspace_id, user_id, category, created_at DESC)` for the Mentions/DMs tab filters;
+    partial index `(user_id, workspace_id) WHERE read_at IS NULL` for the unread-count query.
+
+- **`notification_preferences`** — per-user category on/off; absence of a row means default-on.
+  - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+  - `user_id UUID NOT NULL`
+  - `workspace_id UUID NOT NULL`
+  - `category TEXT NOT NULL` — same `CHECK` constraint as `notifications.category`
+  - `enabled BOOLEAN NOT NULL DEFAULT true`
+  - `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`
+  - `UNIQUE (user_id, workspace_id, category)` — one row per (user, workspace, category); the
+    preference-gate lookup in `POST /internal/notifications` is a single indexed point read on
+    this uniqueness key, defaulting to enabled when no row exists.
+
+### Migrations (`database/migrations/`, goose)
+
+```
+00001_create_notifications.sql
+00002_create_notification_preferences.sql
+```
+
+`00001_create_notifications.sql`:
+```sql
+-- +goose Up
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE notifications (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    workspace_id   UUID NOT NULL,
+    user_id        UUID NOT NULL,
+    category       TEXT NOT NULL CHECK (category IN (
+                       'mention', 'channel_message', 'dm',
+                       'spec_approved', 'design_approved', 'tasks_approved', 'task_done'
+                   )),
+    source_type    TEXT NOT NULL CHECK (source_type IN ('message', 'feature', 'task')),
+    source_id      TEXT NOT NULL,
+    feature_id     TEXT NULL,
+    task_id        TEXT NULL,
+    summary        TEXT NOT NULL,
+    link           TEXT NOT NULL,
+    actor_user_id  UUID NULL,
+    read_at        TIMESTAMPTZ NULL,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_notifications_feed
+    ON notifications (workspace_id, user_id, created_at DESC);
+
+CREATE INDEX idx_notifications_feed_category
+    ON notifications (workspace_id, user_id, category, created_at DESC);
+
+CREATE INDEX idx_notifications_unread
+    ON notifications (user_id, workspace_id)
+    WHERE read_at IS NULL;
+
+-- +goose Down
+DROP TABLE IF EXISTS notifications;
+```
+
+`00002_create_notification_preferences.sql`:
+```sql
+-- +goose Up
+CREATE TABLE notification_preferences (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id      UUID NOT NULL,
+    workspace_id UUID NOT NULL,
+    category     TEXT NOT NULL CHECK (category IN (
+                     'mention', 'channel_message', 'dm',
+                     'spec_approved', 'design_approved', 'tasks_approved', 'task_done'
+                 )),
+    enabled      BOOLEAN NOT NULL DEFAULT true,
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (user_id, workspace_id, category)
+);
+
+-- +goose Down
+DROP TABLE IF EXISTS notification_preferences;
+```
+
+Note: `workspace_id`, `user_id`, and `actor_user_id` are UUIDs matching `user-service`'s /
+`workflow-backend`'s existing identifiers, but this DB holds **no foreign keys** across service
+boundaries — `notification-service` does not share a Postgres instance with `user-service` or
+`workflow-backend`, so referential integrity to `users`/`workspaces` is enforced at the
+application layer (the producer-facing API validates `workspace_id`/`user_id` shape, not
+existence — matching the loosely-coupled, service-per-database pattern already used between
+`workflow-backend` and `user-service` today).
 
 **Producer-facing API** (service-token auth, called by `hermes-agent` and `agent-workflow`):
 - `POST /internal/notifications` — `{workspace_id, user_id, category, source_type, source_id,
