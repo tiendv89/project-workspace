@@ -1,9 +1,10 @@
 id: T1
 title: Read-only GitHub PR context tool + shared client
 repo: hermes-agent
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/m3-agent-review-pr-skill-T1
 execution:
@@ -42,3 +43,18 @@ log:
   by: tiendv.52@gmail.com
   at: 2026-07-05T05:47:10+0000
   note: executor work phase begun.
+- action: blocked
+  by: pentative@gmail.com
+  at: 2026-07-05T13:58:09+0700
+  note: >-
+    Human-directed reset requested (in_progress has no valid direct path to
+    ready). Transitioning via blocked as the sanctioned intermediate state.
+    hermes-agent local checkout unavailable to verify/commit in-progress
+    work — see blocked_suggestion.
+- action: ready
+  by: pentative@gmail.com
+  at: 2026-07-05T13:58:09+0700
+  note: >-
+    Human resolved the block and reset T1 to ready (pr.url was null, so
+    ready is the correct unblock target per the unblock target rule).
+    Task is available for re-claim.
