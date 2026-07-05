@@ -35,7 +35,15 @@ Notification-adjacent logic today is scattered across four repos with no shared 
   `schemas/status.yaml.example`). Today this pipeline's only sink is Slack.
 - **`user-service`** (Go, Gin, pgx, goose, per `m1-identity-and-workspaces`) is the identity
   system of record — `users`, `organizations`, `workspace_memberships` — but owns no
-  notification or preference data today.
+  notification or preference data today. It already stores each user's email
+  (`internal/users/users.go:Store.FindByEmail`) and exposes an internal user-lookup surface
+  (`internal/handler/workspace.go:Handler.ListUsersByIDs`) that a service-token caller can use
+  to resolve `user_id → email` — this is the natural source of truth for the email channel
+  rather than duplicating email addresses into a new store.
+- No email-sending infrastructure (SMTP client, transactional-email provider integration,
+  templates) exists in any indexed repo today — `workflow-backend` and `user-service` were
+  searched for mailer/SMTP/SendGrid/SES code and none was found. Email delivery is new
+  infrastructure for this feature, not a reuse of an existing sender.
 
 There is no single service a producer (hermes-agent, the orchestrator) can call to say "notify
 user X about event Y," no per-user preference store, and no unified read API for an Activity UI.
@@ -56,6 +64,12 @@ user X about event Y," no per-user preference store, and no unified read API for
   must be registered in `workspace.yaml` under that name before task work can target it.
 - Producers (`hermes-agent`, `agent-workflow`) must be decoupled from the notification service's
   schema — they call a small, stable HTTP API, not the DB directly.
+- Email delivery must not block or fail the producer's fire-and-forget call — email send is
+  best-effort and asynchronous relative to the `POST /internal/notifications` response; a
+  provider outage must not cause producers to see errors or retries pile up.
+- Email provider credentials (API key / SMTP creds) are resolved from `notification-service`'s
+  own `.env`, per the workspace's existing environment-resolution convention — not hardcoded,
+  not shared with other services.
 
 ## Options Considered
 
@@ -93,6 +107,26 @@ user X about event Y," no per-user preference store, and no unified read API for
 read state a single, coherent owner without overloading either the identity DB or the workspace
 audit-log DB with a concern neither currently owns.
 
+### Email delivery channel — options considered
+
+#### Option D — SMTP relay (e.g. company Google Workspace / generic SMTP)
+- Pros: no new third-party account; works with an existing company mail domain if one exists.
+- Cons: no delivery/bounce visibility, weaker deliverability reputation management, more manual
+  setup (DKIM/SPF) than a transactional provider; no indexed evidence any SMTP relay is already
+  configured anywhere in the workspace.
+
+#### Option E (chosen) — Transactional email API provider (e.g. SendGrid/SES/Postmark; provider
+name left to implementation — the design only requires an HTTP-API transactional sender)
+- Pros: simple HTTP API call from Go (no SMTP client/connection pooling to manage), built-in
+  delivery/bounce/complaint tracking, better default deliverability, matches the "call an HTTP
+  API with a token from `.env`" pattern this workspace already uses for other integrations
+  (GitHub token for `pr-create`, Slack bot token for `go-orchestrator-slack-notifications`).
+- Cons: adds a third-party account/credential to provision and monitor.
+
+**Chosen: Option E.** The specific provider is an implementation/ops choice (SES, SendGrid, or
+Postmark are all viable); the design commits only to the shape — an `EmailSenderPort` interface
+with one HTTP-API-based adapter — so swapping providers later is a one-adapter change.
+
 ## Chosen Design
 
 ### New repo: `notification-service`
@@ -103,11 +137,13 @@ template used by `user-service`:
 ```
 notification-service/
   cmd/server/main.go            # HTTP entrypoint (cobra: api, migration subcommands)
-  configs/                      # viper config, env overrides
+  configs/                      # viper config, env overrides (incl. email provider API key)
   internal/
     httpapi/                    # gin routes
     notifications/              # domain: create, list, mark-read, fan-out-gate logic
-    preferences/                # per-user category on/off settings
+    preferences/                # per-user category + channel on/off settings
+    email/                      # EmailSenderPort + provider adapter, templates
+    userlookup/                 # thin client to user-service (resolve user_id -> email)
     serviceauth/                # service-token middleware for producer-facing endpoints
   database/
     schema.dbml
@@ -145,22 +181,42 @@ SQL (no ORM).
     `(workspace_id, user_id, category, created_at DESC)` for the Mentions/DMs tab filters;
     partial index `(user_id, workspace_id) WHERE read_at IS NULL` for the unread-count query.
 
-- **`notification_preferences`** — per-user category on/off; absence of a row means default-on.
+- **`notification_preferences`** — per-user category on/off; absence of a row means default-on
+  for the `in_app` channel and default-off for the `email` channel (per product-spec: email is
+  opt-in).
   - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
   - `user_id UUID NOT NULL`
   - `workspace_id UUID NOT NULL`
   - `category TEXT NOT NULL` — same `CHECK` constraint as `notifications.category`
-  - `enabled BOOLEAN NOT NULL DEFAULT true`
+  - `in_app_enabled BOOLEAN NOT NULL DEFAULT true`
+  - `email_enabled BOOLEAN NOT NULL DEFAULT false`
   - `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`
   - `UNIQUE (user_id, workspace_id, category)` — one row per (user, workspace, category); the
     preference-gate lookup in `POST /internal/notifications` is a single indexed point read on
-    this uniqueness key, defaulting to enabled when no row exists.
+    this uniqueness key, and now gates two independent booleans (in-app insert, email send)
+    rather than one.
+
+- **`email_deliveries`** — audit/status trail for outbound email attempts, decoupled from
+  `notifications` so an email provider outage never blocks or rolls back the in-app row.
+  - `id UUID PRIMARY KEY DEFAULT gen_random_uuid()`
+  - `notification_id UUID NOT NULL` — references `notifications.id` (app-layer reference; same
+    DB, so a real `FOREIGN KEY` is used here — unlike the cross-service identifiers below)
+  - `to_email TEXT NOT NULL` — snapshot of the resolved address at send time (so a later email
+    change in `user-service` doesn't retroactively alter delivery history)
+  - `status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','sent','failed'))`
+  - `provider_message_id TEXT NULL` — id returned by the transactional email provider
+  - `error TEXT NULL` — last error message, when `status = 'failed'`
+  - `attempts INT NOT NULL DEFAULT 0`
+  - `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
+  - `sent_at TIMESTAMPTZ NULL`
+  - Index: `(status) WHERE status IN ('pending','failed')` for a lightweight retry sweep.
 
 ### Migrations (`database/migrations/`, goose)
 
 ```
 00001_create_notifications.sql
 00002_create_notification_preferences.sql
+00003_create_email_deliveries.sql
 ```
 
 `00001_create_notifications.sql`:
@@ -205,20 +261,45 @@ DROP TABLE IF EXISTS notifications;
 ```sql
 -- +goose Up
 CREATE TABLE notification_preferences (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id      UUID NOT NULL,
-    workspace_id UUID NOT NULL,
-    category     TEXT NOT NULL CHECK (category IN (
-                     'mention', 'channel_message', 'dm',
-                     'spec_approved', 'design_approved', 'tasks_approved', 'task_done'
-                 )),
-    enabled      BOOLEAN NOT NULL DEFAULT true,
-    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id        UUID NOT NULL,
+    workspace_id   UUID NOT NULL,
+    category       TEXT NOT NULL CHECK (category IN (
+                       'mention', 'channel_message', 'dm',
+                       'spec_approved', 'design_approved', 'tasks_approved', 'task_done'
+                   )),
+    in_app_enabled BOOLEAN NOT NULL DEFAULT true,
+    email_enabled  BOOLEAN NOT NULL DEFAULT false,
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
     UNIQUE (user_id, workspace_id, category)
 );
 
 -- +goose Down
 DROP TABLE IF EXISTS notification_preferences;
+```
+
+`00003_create_email_deliveries.sql`:
+```sql
+-- +goose Up
+CREATE TABLE email_deliveries (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    notification_id     UUID NOT NULL REFERENCES notifications(id) ON DELETE CASCADE,
+    to_email            TEXT NOT NULL,
+    status              TEXT NOT NULL DEFAULT 'pending'
+                            CHECK (status IN ('pending', 'sent', 'failed')),
+    provider_message_id TEXT NULL,
+    error               TEXT NULL,
+    attempts            INT NOT NULL DEFAULT 0,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    sent_at             TIMESTAMPTZ NULL
+);
+
+CREATE INDEX idx_email_deliveries_retry
+    ON email_deliveries (status)
+    WHERE status IN ('pending', 'failed');
+
+-- +goose Down
+DROP TABLE IF EXISTS email_deliveries;
 ```
 
 Note: `workspace_id`, `user_id`, and `actor_user_id` are UUIDs matching `user-service`'s /
@@ -233,12 +314,40 @@ existence — matching the loosely-coupled, service-per-database pattern already
 - `POST /internal/notifications` — `{workspace_id, user_id, category, source_type, source_id,
   feature_id?, task_id?, summary, link, actor_user_id?}`. The service checks
   `notification_preferences` for that `(user_id, workspace_id, category)` before inserting —
-  if the user has the category disabled, the call is a no-op (200, not inserted). This is the
-  single preference-gate chokepoint referenced in the product spec's open question — gating
-  happens here, not in each producer.
+  if `in_app_enabled` is false, no `notifications` row is inserted; if `email_enabled` is true,
+  the service additionally resolves the recipient's email via `userlookup` (see below), inserts
+  an `email_deliveries` row, and enqueues the send. Both checks happen in this one call — this
+  is the single preference-gate chokepoint referenced in the product spec's open question;
+  gating happens here, not in each producer. Returns 200 whether or not anything was inserted
+  (no-op is not an error).
 - `POST /internal/notifications/bulk` — same shape, array body, for fan-out to N channel/thread
   members in one call (used by hermes-agent when a channel message needs to notify every member
   except the author).
+
+**Email sending** (`internal/email/`):
+- `EmailSenderPort` interface — `Send(ctx, to, subject, body) (providerMessageID string, err
+  error)` — one adapter implementation calling the chosen transactional provider's HTTP API
+  (see Option E above) with the API key from `.env`.
+- Sends are processed **asynchronously** relative to the producer's HTTP call: the producer-
+  facing endpoint inserts the `email_deliveries` row as `pending` and returns immediately; a
+  background worker (in-process goroutine loop, polling `email_deliveries WHERE status IN
+  ('pending','failed') LIMIT N` on an interval, using the retry index above) performs the actual
+  provider call and updates `status`/`provider_message_id`/`error`/`sent_at`. This satisfies the
+  "must not block the producer's fire-and-forget call" constraint without requiring a message
+  queue for v1.
+- Template: one plain-text/simple-HTML template per category (7 templates), rendered from the
+  same `summary`/`link`/`feature_id`/`task_id` fields already stored on the `notifications` row
+  — no separate template-data model.
+- Failures are retried up to a small fixed attempt cap (e.g. 5) via the same worker sweep, then
+  left `failed` for manual/ops inspection — no dead-letter queue or alerting in v1, matching the
+  product spec's non-goal of deep deliverability hardening.
+
+**`userlookup`** (`internal/userlookup/`):
+- Thin service-token HTTP client to `user-service`'s existing internal user-lookup surface
+  (`internal/handler/workspace.go:Handler.ListUsersByIDs` shape — resolve `user_id → email` by
+  ID). No email address is stored redundantly in `notification-service`'s own tables outside of
+  the point-in-time snapshot in `email_deliveries.to_email` (kept only as delivery-history
+  evidence, never used as a live source of truth for the next send).
 
 **User-facing API** (cookie/session auth via `workflow-bff`, matching the `user-service` /
 `workflow-backend` auth boundary pattern):
@@ -249,7 +358,9 @@ existence — matching the loosely-coupled, service-per-database pattern already
   `useWorkspaceUnreadCount`/`getUnreadMentions` nav-rail badge; the nav rail calls this endpoint
   in addition to (or as a superset of) the existing mention-only count.
 - `GET /api/notification-preferences` / `PUT /api/notification-preferences` — the per-user
-  settings screen (Mentions / Channel messages / DMs / Feature lifecycle approvals / Task done).
+  settings screen. Preferences are now two-dimensional (channel × category): each category row
+  in the UI shows an **In-app** toggle and an **Email** toggle (Mentions / Channel messages /
+  DMs / Feature lifecycle approvals / Task done × {In-app, Email}).
 
 ### Producer integration points
 
@@ -292,7 +403,8 @@ existence — matching the loosely-coupled, service-per-database pattern already
   `useNotificationPreferences` hooks (TanStack Query), following the same client/hook pattern as
   `src/services/workflow-backend/client.ts` / `useActivity`.
 - New **Notification Settings** section (Settings page) backed by
-  `GET/PUT /api/notification-preferences`.
+  `GET/PUT /api/notification-preferences` — a per-category row with independent In-app / Email
+  toggles.
 - Nav-rail unread badge switches to (or merges with) `GET /api/notifications/unread-count`.
 
 ## Dependency Analysis
@@ -309,6 +421,10 @@ existence — matching the loosely-coupled, service-per-database pattern already
   wired.
 - No changes required to `workflow-backend`'s existing `workspace_activity_events` /
   `ListActivity` — left untouched, per the "must not change Slack/audit behavior" constraint.
+- Email sending depends on `userlookup` reaching `user-service`'s internal API — if
+  `user-service` is unreachable, the affected `email_deliveries` row is retried (marked
+  `failed`, picked up by the next worker sweep) rather than blocking the in-app notification,
+  which is already inserted independently.
 
 ## Parallelization / Blocking Analysis
 
