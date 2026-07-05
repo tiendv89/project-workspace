@@ -1,7 +1,7 @@
 id: T7
 title: "digital-factory-ui: DM member picker + Direct Messages section wired to /dms"
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on:
   - T1
   - T5
@@ -9,11 +9,11 @@ blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/agent-general-chat
+branch: feature/agent-general-chat-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T13:03:42.908Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -26,3 +26,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T13:01:30.047Z
     note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:03:42.908Z
+    note: Claimed via git-based claim protocol.
