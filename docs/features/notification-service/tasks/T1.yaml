@@ -1,7 +1,7 @@
 id: T1
 title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go, Dockerfile)
 repo: notification-service
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -43,3 +43,11 @@ log:
   by: tiendv.52@gmail.com
   at: 2026-07-05T09:41:26+0000
   note: executor work phase begun.
+- action: retried
+  by: pye
+  at: 2026-07-05T16:51:32+0700
+  note: >-
+    Manual override: status forced from in_progress to ready at explicit
+    human request. This is not a rule-defined transition (in_progress has
+    no direct path to ready under the task status transition rules) —
+    recorded here for audit visibility.
