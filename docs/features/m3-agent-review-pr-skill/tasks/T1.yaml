@@ -1,7 +1,7 @@
 id: T1
 title: Read-only GitHub PR context tool + shared client
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,7 +10,7 @@ branch: feature/m3-agent-review-pr-skill-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T07:04:37+0000
+  last_updated_at: 2026-07-05T08:02:07.240Z
 pr:
   url: null
   status: null
@@ -79,15 +79,17 @@ log:
   - action: blocked
     by: pye@swellnetwork.io
     at: 2026-07-05T14:59:50+0700
-    note: >-
-      Human-directed reset requested (in_progress has no valid direct path to
-      ready). Transitioning via blocked as the sanctioned intermediate state.
-      No hermes-agent local checkout available in this session to verify or
-      commit in-progress work — see blocked_suggestion.
+    note: Human-directed reset requested (in_progress has no valid direct path to
+      ready). Transitioning via blocked as the sanctioned intermediate state. No
+      hermes-agent local checkout available in this session to verify or commit
+      in-progress work — see blocked_suggestion.
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-07-05T14:59:50+0700
-    note: >-
-      Human resolved the block and reset T1 to ready (pr.url was null, so
-      ready is the correct unblock target per the unblock target rule). Task
-      is available for re-claim.
+    note: Human resolved the block and reset T1 to ready (pr.url was null, so ready
+      is the correct unblock target per the unblock target rule). Task is
+      available for re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:02:07.240Z
+    note: Claimed via git-based claim protocol.
