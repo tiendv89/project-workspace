@@ -64,11 +64,17 @@ what's being discussed.
   gets a new `dm` value, reusing the existing thread member-set machinery from v4) plus the
   resident agent, so `@agent` still works inside a DM exactly as it does in a Team Chat thread.
   Only the two participants (never the whole workspace) can see a DM.
-- **G3 — One unified "Chat" hub in the left nav, Slack-style.** Replace the two separate
-  **Channels** and **Team Chat** nav-rail entries with a single **Chat** entry (new icon) that
-  opens a Slack-like sidebar with three sections: **Channels**, **Direct Messages**, **Threads**
-  (workspace Team Chat threads, unchanged behavior) — each with an unread/activity indicator.
-  Creating a Channel, starting a DM, or starting a Team Chat thread all happen from this one hub.
+- **G3 — One unified "Chat" hub in the left nav, Slack-style — a genuinely new section.**
+  This is **not** a rename or reskin of the existing `/channels` or Team Chat pages — it is a
+  **new top-level nav-rail section** (new route, e.g. `/chat`; new icon distinct from the
+  existing Hash icon) that stands entirely on its own. It opens a Slack-like sidebar with three
+  sub-sections: **Channels**, **Direct Messages**, **Threads** (workspace Team Chat threads,
+  unchanged behavior) — each with an unread/activity indicator. Creating a Channel, starting a
+  DM, or starting a Team Chat thread all happen from this one new hub. The existing **Channels**
+  and **Team Chat** nav-rail entries and their standalone list pages (`/channels`,
+  `/channels/[channelId]`, the T10 Team Chat list route) are **retired** once the new section
+  ships — their data and APIs are reused, but the entry points are consolidated into the new
+  `/chat` section, not left as parallel duplicate nav items.
 - **G4 — Smart in-chat board view.** Any channel, thread, or DM can render an inline, collapsible
   **Board panel** scoped automatically to whichever feature ID(s) have been mentioned/discussed
   in that conversation (reusing the existing board data layer — `use-sidebar-tasks.ts` /
