@@ -57,3 +57,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T09:53:00.838Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:53:05.538Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/408,
+      docs/features/feature-status-dashboard-v2/technical-design.md,
+      github.com/tiendv89/user-service/pull/1"
+    rag_query: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
+      Dockerfile) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
