@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: workflow_lookup_feature read-only cross-feature tool"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/agent-general-chat-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T07:50:50+0000
+  last_updated_at: 2026-07-05T08:17:26.745Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -48,6 +48,9 @@ log:
   - action: retried
     by: pye
     at: 2026-07-05T15:15:00+0700
-    note: >-
-      Manual forced override: status reset from in_progress to ready at
-      user's explicit request, outside the normal transition rules.
+    note: "Manual forced override: status reset from in_progress to ready at user's
+      explicit request, outside the normal transition rules."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:17:26.745Z
+    note: Claimed via git-based claim protocol.
