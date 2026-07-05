@@ -1,10 +1,11 @@
 id: T8
-title: 'digital-factory-ui: retire /channels + Team Chat standalone routes to redirects'
+title: "digital-factory-ui: retire /channels + Team Chat standalone routes to
+  redirects"
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T5
-- T7
+  - T5
+  - T7
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -18,7 +19,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:24:10.542Z
+    note: Task activated — dependency T7 merged and marked done.
