@@ -104,3 +104,4 @@ revalidation:
   deployment_checklist_required: false
 feature_branch: feature/m3-agent-review-pr-skill
 feature_branch_base_sha: 3d92e4bdadea6a060540de3a90ffe54cdb41a3b3
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/694
