@@ -1,72 +1,71 @@
 feature_id: m3-agent-review-pr-skill
 title: M3 Agent Review PR Skill
-
 feature_status: ready_for_implementation
 current_stage: handoff
-next_action: >-
-  Tasks approved; feature advanced to ready_for_implementation. Wave 1 task T1 (hermes-agent
-  read-only GitHub PR context tool) is ready — owning team may begin execution now. T2
-  auto-readies when T1 is done; T3 auto-readies when T1+T2 are done; T4 (optional
-  digital-factory-ui ReviewCard) auto-readies when T2 is done.
-
+next_action: Tasks approved; feature advanced to ready_for_implementation. Wave
+  1 task T1 (hermes-agent read-only GitHub PR context tool) is ready — owning
+  team may begin execution now. T2 auto-readies when T1 is done; T3 auto-readies
+  when T1+T2 are done; T4 (optional digital-factory-ui ReviewCard) auto-readies
+  when T2 is done.
 stages:
   product_spec:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-07-05T00:49:05+0700"
-    review_comment: >-
-      Approved. Scope: bring /review-pr's rigor (shared review_criteria.md rubric, real
-      GitHub review posting) into M3 Agent Chat via a new hermes-agent tool, decoupled from
-      orchestrator task state (no result.json, no cycle-limit escalation, no auto-merge).
-      Includes a broadened set of read-only GitHub context tools (G7: PR diff/metadata/
-      comments/review-history/CI-status, open-PR listing, commit history, ref comparison,
-      full-file-at-ref reads) and a verbatim snapshot of the source skill content in the
-      Appendix for the hermes-agent mirror. Open questions (credential path/scope, posting
-      identity, v1 container scope, rubric sync mechanism, CI-poll timeout) carried forward
-      into technical design.
+    reviewed_at: 2026-07-05T00:49:05+0700
+    review_comment: "Approved. Scope: bring /review-pr's rigor (shared
+      review_criteria.md rubric, real GitHub review posting) into M3 Agent Chat
+      via a new hermes-agent tool, decoupled from orchestrator task state (no
+      result.json, no cycle-limit escalation, no auto-merge). Includes a
+      broadened set of read-only GitHub context tools (G7: PR diff/metadata/
+      comments/review-history/CI-status, open-PR listing, commit history, ref
+      comparison, full-file-at-ref reads) and a verbatim snapshot of the source
+      skill content in the Appendix for the hermes-agent mirror. Open questions
+      (credential path/scope, posting identity, v1 container scope, rubric sync
+      mechanism, CI-poll timeout) carried forward into technical design."
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-07-05T00:49:05+0700"
+        reviewed_at: 2026-07-05T00:49:05+0700
         review_comment: Approved; proceed to technical design.
   technical_design:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-07-05T11:51:03+0700"
-    review_comment: >-
-      Approved. Chosen design: two new hermes-agent tools — github_pr_context (read-only,
-      action-enum selector matching the existing gitnexus.py/rag.py convention, satisfies G7)
-      and github_pr_review (write, two-call posting pattern + self-review 422 handling,
-      satisfies G3) — plus a rewrite of the already-bundled (but inert)
-      plugins/skills/technical_skills/review-pr/SKILL.md to sequence load_skill -> context
-      tool -> LLM reasoning against review_criteria.md -> posting tool, rather than a
-      monolithic Python handler (rubric judgment stays an LLM reasoning step). No
-      digital-factory-ui change required for v1 — the slash-command picker auto-derives from
-      tool registration. OQ1 (GITHUB_TOKEN scope) verified during design and cleared as a
-      blocker; OQ2 (posting identity) resolved to the existing shared bot token, no per-user
-      identity exists; OQ3 (container scope) resolved to all containers, no gating needed;
-      OQ4 (rubric sync) resolved to a manual re-copy + last-synced-marker discipline, no new
-      CI infra; OQ5 (CI-poll timeout) resolved to a bounded 60s poll. Proceed to task
-      breakdown.
+    reviewed_at: 2026-07-05T11:51:03+0700
+    review_comment: "Approved. Chosen design: two new hermes-agent tools —
+      github_pr_context (read-only, action-enum selector matching the existing
+      gitnexus.py/rag.py convention, satisfies G7) and github_pr_review (write,
+      two-call posting pattern + self-review 422 handling, satisfies G3) — plus
+      a rewrite of the already-bundled (but inert)
+      plugins/skills/technical_skills/review-pr/SKILL.md to sequence load_skill
+      -> context tool -> LLM reasoning against review_criteria.md -> posting
+      tool, rather than a monolithic Python handler (rubric judgment stays an
+      LLM reasoning step). No digital-factory-ui change required for v1 — the
+      slash-command picker auto-derives from tool registration. OQ1
+      (GITHUB_TOKEN scope) verified during design and cleared as a blocker; OQ2
+      (posting identity) resolved to the existing shared bot token, no per-user
+      identity exists; OQ3 (container scope) resolved to all containers, no
+      gating needed; OQ4 (rubric sync) resolved to a manual re-copy +
+      last-synced-marker discipline, no new CI infra; OQ5 (CI-poll timeout)
+      resolved to a bounded 60s poll. Proceed to task breakdown."
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-07-05T11:51:03+0700"
+        reviewed_at: 2026-07-05T11:51:03+0700
         review_comment: Approved; proceed to task breakdown.
   tasks:
     review_status: approved
     reviewed_by: pentative@gmail.com
-    reviewed_at: "2026-07-05T12:24:46+0700"
-    review_comment: >-
-      Approved. 4 tasks: T1 (hermes-agent github_pr_context read tool, G7, no deps), T2
-      (hermes-agent github_pr_review posting tool, G3, depends on T1), T3 (rewrite the
-      already-bundled review-pr SKILL.md to the new tool-call sequence, depends on T1+T2), T4
-      (optional digital-factory-ui ReviewCard rendering, fast-follow, depends on T2, not
-      required for acceptance criteria). Wave 1 (T1) activated to ready.
+    reviewed_at: 2026-07-05T12:24:46+0700
+    review_comment: "Approved. 4 tasks: T1 (hermes-agent github_pr_context read
+      tool, G7, no deps), T2 (hermes-agent github_pr_review posting tool, G3,
+      depends on T1), T3 (rewrite the already-bundled review-pr SKILL.md to the
+      new tool-call sequence, depends on T1+T2), T4 (optional digital-factory-ui
+      ReviewCard rendering, fast-follow, depends on T2, not required for
+      acceptance criteria). Wave 1 (T1) activated to ready."
     review_history:
       - review_status: approved
         reviewed_by: pentative@gmail.com
-        reviewed_at: "2026-07-05T12:24:46+0700"
+        reviewed_at: 2026-07-05T12:24:46+0700
         review_comment: Approved; Wave 1 (T1) activated to ready.
   handoff:
     review_status: draft
@@ -74,33 +73,34 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
 history:
-  - at: "2026-07-05T00:49:05+0700"
+  - at: 2026-07-05T00:49:05+0700
     actor: pentative@gmail.com
     action: approve_stage
     stage: product_spec
     from_status: in_design
     to_status: in_tdd
     note: Product spec approved; feature advanced to in_tdd.
-  - at: "2026-07-05T11:51:03+0700"
+  - at: 2026-07-05T11:51:03+0700
     actor: pentative@gmail.com
     action: approve_stage
     stage: technical_design
     from_status: in_tdd
     to_status: in_tdd
-    note: Technical design approved; advanced to task-planning stage (current_stage=tasks).
-  - at: "2026-07-05T12:24:46+0700"
+    note: Technical design approved; advanced to task-planning stage
+      (current_stage=tasks).
+  - at: 2026-07-05T12:24:46+0700
     actor: pentative@gmail.com
     action: approve_stage
     stage: tasks
     from_status: in_tdd
     to_status: ready_for_implementation
-    note: Task breakdown approved; feature advanced to ready_for_implementation. Wave 1 (T1)
-      activated to ready.
-
+    note: Task breakdown approved; feature advanced to ready_for_implementation.
+      Wave 1 (T1) activated to ready.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/m3-agent-review-pr-skill
+feature_branch_base_sha: 3d92e4bdadea6a060540de3a90ffe54cdb41a3b3
