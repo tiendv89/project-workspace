@@ -2,7 +2,7 @@ id: T1
 title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
   Dockerfile)
 repo: notification-service
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -12,7 +12,7 @@ branch: feature/notification-service-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T10:31:03.278Z
+  last_updated_at: 2026-07-05T10:32:38.675Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -99,3 +99,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/notification-service/pull/1"
     at: 2026-07-05T10:31:03.278Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:32:38.675Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
