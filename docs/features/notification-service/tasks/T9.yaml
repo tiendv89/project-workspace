@@ -32,3 +32,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T14:04:42.744Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:04:52.539Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: README.md,
+      github.com/tiendv89/project-workspace/pull/338,
+      docs/features/notification-service/technical-design.md"
+    rag_query: digital-factory-ui Notification Settings page (per-category
+      in-app/email toggles) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
