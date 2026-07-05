@@ -136,21 +136,42 @@ template used by `user-service`:
 
 ```
 notification-service/
-  cmd/server/main.go            # HTTP entrypoint (cobra: api, migration subcommands)
-  configs/                      # viper config, env overrides (incl. email provider API key)
+  cmd/
+    main.go                    # cobra root; registers `api`, `worker`, and `migration`
+                               # subcommands (migration subcommand matches workflow-backend's
+                               # cmd/migration pattern)
+    api/
+      api.go                   # `run()` for the api subcommand — Gin HTTP server, routes;
+                               # no email-sending loop lives here
+    worker/
+      worker.go                # `run()` for the worker subcommand — email ticker/claim loop
+                               # only; no HTTP server
+  configs/                     # viper config, env overrides — incl. email provider API key,
+                               # NOTIFY_EMAIL_ENABLED kill switch, worker poll interval/batch size
   internal/
-    httpapi/                    # gin routes
-    notifications/              # domain: create, list, mark-read, fan-out-gate logic
+    httpapi/                   # gin routes (used by cmd/api)
+    notifications/             # domain: create, list, mark-read, fan-out-gate logic
     preferences/                # per-user category + channel on/off settings
-    email/                      # EmailSenderPort + provider adapter, templates
+    email/                      # EmailSenderPort + provider adapter, templates, worker loop
+                                # logic (entrypoint called from cmd/worker; kept here so it's
+                                # testable independent of the cobra wiring)
     userlookup/                 # thin client to user-service (resolve user_id -> email)
     serviceauth/                # service-token middleware for producer-facing endpoints
   database/
     schema.dbml
     migrations/                 # pressly/goose/v3
-  Dockerfile
+  Dockerfile                    # single image; ENTRYPOINT arg selects `api` or `worker`
+                                # subcommand — two deployed processes, one image/binary
   go.mod / go.sum
 ```
+
+The worker is its own subcommand/process (`notification-service worker`), deployed as a second
+container alongside `notification-service api` — same binary, two entrypoints, following the
+`cmd/main.go` + cobra-subcommand shape already used by `workflow-backend`
+(`cmd/api/api.go`, `cmd/migration/migration.go`) rather than that repo's single-binary-does-
+everything style. The api process never runs the email loop; the worker process never serves
+HTTP — this keeps "email sending must not block the producer's call" true even under
+independent scaling of the two processes.
 
 **Data model** (new Postgres DB, `notification_db`). Follows the same conventions as
 `user-service`'s `migrations/00001_initial_identity_schema.sql`: `pressly/goose/v3` numbered SQL
