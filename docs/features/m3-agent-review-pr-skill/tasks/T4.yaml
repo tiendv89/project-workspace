@@ -1,0 +1,26 @@
+id: T4
+title: ReviewCard chat rendering (optional fast-follow)
+repo: digital-factory-ui
+status: todo
+depends_on: [T2]
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-review-pr-skill-T4
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: "2026-07-05T12:19:32+0700"
+    note: >-
+      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T2] —
+      needs T2's final github_pr_review output shape to render. Optional; not required for
+      G1-G7 acceptance criteria (technical-design.md §6).

@@ -1,0 +1,25 @@
+id: T3
+title: Rewrite bundled review-pr skill doc to the new tool-call sequence
+repo: hermes-agent
+status: todo
+depends_on: [T1, T2]
+blocked_reason: null
+blocked_context: null
+branch: feature/m3-agent-review-pr-skill-T3
+
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+
+pr:
+  url: null
+  status: null
+
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: "2026-07-05T12:19:32+0700"
+    note: >-
+      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T1, T2] —
+      final tool names/schemas from both must be settled before the skill doc can document them.
