@@ -32,3 +32,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T13:03:42.908Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:03:51.308Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/532,
+      github.com/tiendv89/project-workspace/pull/709"
+    rag_query: "digital-factory-ui: DM member picker + Direct Messages section wired
+      to /dms agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
