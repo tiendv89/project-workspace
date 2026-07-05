@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: new Chat nav entry + Slack-style sidebar shell"
 repo: digital-factory-ui
-status: change_requested
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/agent-general-chat-T5
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T11:46:55.646Z
+  last_updated_at: 2026-07-05T11:50:27.619Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -58,3 +58,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-07-05T11:46:55.646Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T11:50:27.619Z
+    note: Fix agent claimed.
