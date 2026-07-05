@@ -55,3 +55,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T08:15:46.253Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:15:49.976Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/m4-admin-control-model-config/technical-design.md"
+    rag_query: "hermes-agent: kind='dm' migration + create_dm/list store functions +
+      /dms routes agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
