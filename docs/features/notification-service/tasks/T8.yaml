@@ -1,9 +1,9 @@
 id: T8
 title: digital-factory-ui Activity panel (All/DMs/Mentions)
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T4
+  - T4
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -17,7 +17,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:00:45.971Z
+    note: Task activated — dependency T4 merged and marked done.
