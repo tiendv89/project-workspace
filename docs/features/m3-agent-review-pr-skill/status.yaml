@@ -1,7 +1,7 @@
 feature_id: m3-agent-review-pr-skill
 title: M3 Agent Review PR Skill
-feature_status: in_handoff
-current_stage: handoff
+feature_status: done
+current_stage: done
 next_action: Tasks approved; feature advanced to ready_for_implementation. Wave
   1 task T1 (hermes-agent read-only GitHub PR context tool) is ready — owning
   team may begin execution now. T2 auto-readies when T1 is done; T3 auto-readies
@@ -110,7 +110,7 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/708
 impl_feature_prs:
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/50
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/161
-    status: open
+    status: merged
