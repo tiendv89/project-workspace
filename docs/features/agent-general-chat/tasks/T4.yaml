@@ -1,11 +1,11 @@
 id: T4
-title: 'hermes-agent: metering-parity regression tests (G6)'
+title: "hermes-agent: metering-parity regression tests (G6)"
 repo: hermes-agent
-status: todo
+status: ready
 depends_on:
-- T1
-- T2
-- T3
+  - T1
+  - T2
+  - T3
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -19,7 +19,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:55:38.632Z
+    note: Task activated — dependency T2 merged and marked done.
