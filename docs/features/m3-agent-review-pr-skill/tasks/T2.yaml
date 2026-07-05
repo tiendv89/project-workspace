@@ -1,7 +1,7 @@
 id: T2
 title: PR review posting tool (two-call pattern + self-review handling)
 repo: hermes-agent
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m3-agent-review-pr-skill-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T08:23:36+0000
+  last_updated_at: 2026-07-05T08:33:40.710Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/46
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/701
   status: open
