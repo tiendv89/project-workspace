@@ -57,3 +57,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T09:31:25.807Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:31:29.885Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      github.com/tiendv89/hermes-agent/pull/15,
+      github.com/tiendv89/project-workspace/pull/698"
+    rag_query: "hermes-agent: dispatch gate — DM follows Channel bare-message rule
+      agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
