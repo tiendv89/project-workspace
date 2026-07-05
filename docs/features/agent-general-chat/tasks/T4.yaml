@@ -1,7 +1,7 @@
 id: T4
 title: "hermes-agent: metering-parity regression tests (G6)"
 repo: hermes-agent
-status: reviewing
+status: in_review
 depends_on:
   - T1
   - T2
@@ -54,3 +54,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T10:22:45.761Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: manual_override
+    by: pye@swellnetwork.io
+    at: 2026-07-05T18:19:59+0700
+    note: >-
+      Human override: status reset from reviewing to in_review. This is not a
+      documented transition in the task status transition rules — done at
+      explicit human request to invalidate the prior reviewer claim (cycle 1)
+      so the task can be re-dispatched to review cleanly.
