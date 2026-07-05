@@ -33,3 +33,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T09:58:17.911Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:58:27.222Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/693,
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/product-spec.md"
+    rag_query: Rewrite bundled review-pr skill doc to the new tool-call sequence
+      m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
