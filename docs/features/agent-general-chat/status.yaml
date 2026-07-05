@@ -73,3 +73,6 @@ impl_feature_prs:
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/166
     status: open
+drift_detected: true
+drift_reason: File overlap on docs/features/agent-general-chat/tasks.md,
+  workspace.yaml with 4 new base commits
