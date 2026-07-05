@@ -44,3 +44,7 @@ log:
     rag_query: "digital-factory-ui: retire /channels + Team Chat standalone routes
       to redirects agent-general-chat"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:30:22+0000
+    note: executor work phase begun.
