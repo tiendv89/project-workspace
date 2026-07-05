@@ -1,10 +1,9 @@
 id: T2
-title: DB schema + goose migrations (notifications, notification_preferences,
-  email_deliveries)
+title: DB schema + goose migrations (notifications, notification_preferences, email_deliveries)
 repo: notification-service
 status: in_progress
 depends_on:
-  - T1
+- T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -13,59 +12,59 @@ branch: feature/notification-service-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T12:47:45.479Z
+  last_updated_at: 2026-07-05T12:50:01+0000
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
+  url: ''
   status: not_created
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/711
   status: open
 log:
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T11:33:36.304Z
-    note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T11:35:29.123Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T11:35:38.276Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      docs/features/notification-service/technical-design.md,
-      docs/features/workflow-migrations-transfer/technical-design.md,
-      github.com/tiendv89/notification-service/pull/1"
-    rag_query: DB schema + goose migrations (notifications,
-      notification_preferences, email_deliveries) notification-service
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
-  - action: started
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T11:38:29+0000
-    note: executor work phase begun.
-  - action: manual_override
-    by: pye@swellnetwork.io
-    at: 2026-07-05T19:44:24+0700
-    note: "Human override: status reset from in_progress to ready. This is not a
-      documented transition in the task status transition rules — done at
-      explicit human request to invalidate the in-progress claim (no PR had been
-      created yet: pr.url was empty) so the task can be re-claimed cleanly."
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T12:47:45.479Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-05T12:47:49.773Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      docs/features/notification-service/technical-design.md,
-      docs/features/workflow-migrations-transfer/technical-design.md,
-      github.com/tiendv89/notification-service/pull/1"
-    rag_query: DB schema + goose migrations (notifications,
-      notification_preferences, email_deliveries) notification-service
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-07-05 11:33:36.304000+00:00
+  note: Task activated — dependency T1 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-05 11:35:29.123000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-05 11:35:38.276000+00:00
+  rag_context_injected: true
+  rag_summary: 'Retrieved 5 chunks: docs/features/notification-service/technical-design.md,
+    docs/features/workflow-migrations-transfer/technical-design.md, github.com/tiendv89/notification-service/pull/1'
+  rag_query: DB schema + goose migrations (notifications, notification_preferences,
+    email_deliveries) notification-service
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-05T11:38:29+0000
+  note: executor work phase begun.
+- action: manual_override
+  by: pye@swellnetwork.io
+  at: 2026-07-05T19:44:24+0700
+  note: 'Human override: status reset from in_progress to ready. This is not a documented
+    transition in the task status transition rules — done at explicit human request
+    to invalidate the in-progress claim (no PR had been created yet: pr.url was empty)
+    so the task can be re-claimed cleanly.'
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-05 12:47:45.479000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-05 12:47:49.773000+00:00
+  rag_context_injected: true
+  rag_summary: 'Retrieved 5 chunks: docs/features/notification-service/technical-design.md,
+    docs/features/workflow-migrations-transfer/technical-design.md, github.com/tiendv89/notification-service/pull/1'
+  rag_query: DB schema + goose migrations (notifications, notification_preferences,
+    email_deliveries) notification-service
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-05T12:50:01+0000
+  note: executor work phase begun.
