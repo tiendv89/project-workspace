@@ -31,3 +31,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T13:09:29.268Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:09:37.365Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: README.md,
+      docs/features/notification-service/technical-design.md,
+      docs/features/notification-service/technical-design.md"
+    rag_query: User-facing API (feed, read state, preferences) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
