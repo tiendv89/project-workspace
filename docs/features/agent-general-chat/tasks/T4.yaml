@@ -33,3 +33,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T10:01:53.062Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:02:03.216Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/623, docs/roadmap-milestone.md"
+    rag_query: "hermes-agent: metering-parity regression tests (G6) agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
