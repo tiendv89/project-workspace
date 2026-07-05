@@ -1,0 +1,26 @@
+id: T1
+title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go, Dockerfile)
+repo: notification-service
+status: ready
+depends_on: []
+blocked_reason: null
+blocked_suggestion: null
+blocked_details: null
+blocked_context: null
+branch: feature/notification-service
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+  suggested_next_step: null
+  requires_human_review: false
+execution_handle: null
+pr:
+  url: ''
+  status: not_created
+workspace_pr: null
+log:
+- action: ready
+  by: agent
+  at: 2026-07-05T09:37:22+0000
+  note: Task activated on tasks-stage approval — dependencies met.
