@@ -1,7 +1,7 @@
 id: T3
 title: Producer-facing API + preference gating (POST /internal/notifications, /bulk)
 repo: notification-service
-status: in_review
+status: reviewing
 depends_on:
   - T2
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/notification-service-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T14:23:32.893Z
+  last_updated_at: 2026-07-05T14:24:53.154Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -89,6 +89,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T14:23:32.893Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:24:53.154Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-05T14:07:18.278Z
