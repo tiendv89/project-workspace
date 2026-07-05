@@ -2,7 +2,7 @@ id: T1
 title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
   Dockerfile)
 repo: notification-service
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -68,3 +68,12 @@ log:
     rag_query: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
       Dockerfile) notification-service
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: pye
+    at: 2026-07-05T17:02:25+0700
+    note: >-
+      Manual override (2nd time): status forced from in_progress to ready
+      at explicit human request, immediately after the runtime re-claimed
+      the task via the normal ready→in_progress protocol. Not a
+      rule-defined transition — recorded for audit visibility. Runtime may
+      re-claim this again.
