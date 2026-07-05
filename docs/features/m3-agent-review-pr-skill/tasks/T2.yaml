@@ -1,7 +1,7 @@
 id: T2
 title: PR review posting tool (two-call pattern + self-review handling)
 repo: hermes-agent
-status: reviewing
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -82,3 +82,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T09:41:32.312Z
     note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: retried
+    by: pye@swellnetwork.io
+    at: 2026-07-05T16:48:36+0700
+    note: >-
+      Manual override: reset reviewing -> in_review at human request. This is
+      not a defined transition in the task status transition table (valid
+      exits from reviewing are review_passed, change_requested, or
+      review_incomplete) — recorded here for audit since it deviates from the
+      standard workflow, consistent with the prior override on this task.
