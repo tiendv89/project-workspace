@@ -1,28 +1,155 @@
 id: T1
 title: Read-only GitHub PR context tool + shared client
 repo: hermes-agent
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
+blocked_suggestion: null
 blocked_context: null
 branch: feature/m3-agent-review-pr-skill-T1
-
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T08:19:18.465Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/hermes-agent/pull/43
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/695
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
-    at: "2026-07-05T12:19:32+0700"
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [].
+    at: 2026-07-05T12:19:32+0700
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: []."
   - action: ready
     by: pentative@gmail.com
-    at: "2026-07-05T12:24:46+0700"
+    at: 2026-07-05T12:24:46+0700
     note: Task activated on tasks-stage approval — dependencies met (none).
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 05:44:01.514000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 05:44:10.594000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-chat-v3/product-spec.md,
+      github.com/tiendv89/workflow-backend/pull/38,
+      github.com/tiendv89/agent-workflow/pull/35"
+    rag_query: Read-only GitHub PR context tool + shared client m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T05:47:10+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: pentative@gmail.com
+    at: 2026-07-05T13:58:09+0700
+    note: Human-directed reset requested (in_progress has no valid direct path to
+      ready). Transitioning via blocked as the sanctioned intermediate state.
+      hermes-agent local checkout unavailable to verify/commit in-progress work
+      — see blocked_suggestion.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-05T13:58:09+0700
+    note: Human resolved the block and reset T1 to ready (pr.url was null, so ready
+      is the correct unblock target per the unblock target rule). Task is
+      available for re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:00:12.827Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:00:17.224Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/product-spec.md"
+    rag_query: Read-only GitHub PR context tool + shared client m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:04:37+0000
+    note: executor work phase begun.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-05T14:59:50+0700
+    note: Human-directed reset requested (in_progress has no valid direct path to
+      ready). Transitioning via blocked as the sanctioned intermediate state. No
+      hermes-agent local checkout available in this session to verify or commit
+      in-progress work — see blocked_suggestion.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-05T14:59:50+0700
+    note: Human resolved the block and reset T1 to ready (pr.url was null, so ready
+      is the correct unblock target per the unblock target rule). Task is
+      available for re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:02:07.240Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:02:11.306Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/product-spec.md"
+    rag_query: Read-only GitHub PR context tool + shared client m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-05T15:06:02+0700
+    note: "Human-directed reset requested (in_progress has no valid direct path to
+      ready). Transitioning via blocked as the sanctioned intermediate state. No
+      hermes-agent local checkout available in this session to verify or commit
+      in-progress work — see blocked_suggestion. Note: this is the third
+      claim/reset cycle for T1 within minutes, with no started work progressing
+      past rag_pre_flight — worth investigating why the executor isn't advancing
+      before re-claiming again."
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-05T15:06:02+0700
+    note: Human resolved the block and reset T1 to ready (pr.url was null, so ready
+      is the correct unblock target per the unblock target rule). Task is
+      available for re-claim.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:07:47.315Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:07:51.332Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-review-pr-skill/product-spec.md"
+    rag_query: Read-only GitHub PR context tool + shared client m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:08:35+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/43"
+    at: 2026-07-05T08:09:54.686Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:11:10.526Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/43"
+    at: 2026-07-05T08:14:41.854Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:19:18.465Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
