@@ -1,25 +1,78 @@
 id: T4
-title: 'hermes-agent: metering-parity regression tests (G6)'
+title: "hermes-agent: metering-parity regression tests (G6)"
 repo: hermes-agent
-status: todo
+status: done
 depends_on:
-- T1
-- T2
-- T3
+  - T1
+  - T2
+  - T3
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/agent-general-chat
+branch: feature/agent-general-chat-T4
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T12:49:43.768Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
-log: []
+  url: https://github.com/tiendv89/hermes-agent/pull/49
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/706
+  status: open
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:55:38.632Z
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:01:53.062Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:02:03.216Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/623, docs/roadmap-milestone.md"
+    rag_query: "hermes-agent: metering-parity regression tests (G6) agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:12:51+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/49"
+    at: 2026-07-05T10:21:04.880Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:22:45.761Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: manual_override
+    by: pye@swellnetwork.io
+    at: 2026-07-05T18:19:59+0700
+    note: "Human override: status reset from reviewing to in_review. This is not a
+      documented transition in the task status transition rules — done at
+      explicit human request to invalidate the prior reviewer claim (cycle 1) so
+      the task can be re-dispatched to review cleanly."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T11:22:28.325Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: manual_override
+    by: pye@swellnetwork.io
+    at: 2026-07-05T19:42:54+0700
+    note: "Human override: status reset from reviewing to in_review. This is not a
+      documented transition in the task status transition rules — done at
+      explicit human request to invalidate the prior reviewer claim (cycle 2) so
+      the task can be re-dispatched to review cleanly."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T12:49:43.768Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

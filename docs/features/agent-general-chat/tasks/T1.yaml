@@ -1,27 +1,88 @@
 id: T1
-title: 'hermes-agent: kind=''dm'' migration + create_dm/list store functions + /dms
-  routes'
+title: "hermes-agent: kind='dm' migration + create_dm/list store functions +
+  /dms routes"
 repo: hermes-agent
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/agent-general-chat
+branch: feature/agent-general-chat-T1
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T08:48:50.544Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/hermes-agent/pull/44
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/698
+  status: open
 log:
-- action: ready
-  by: agent
-  at: 2026-07-05T07:43:37+0000
-  note: Task activated on tasks-stage approval — dependencies met.
+  - action: ready
+    by: agent
+    at: 2026-07-05T07:43:37+0000
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:45:49.456Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:45:57.397Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/m4-admin-control-model-config/technical-design.md"
+    rag_query: "hermes-agent: kind='dm' migration + create_dm/list store functions +
+      /dms routes agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T07:49:02+0000
+    note: executor work phase begun.
+  - action: retried
+    by: pye
+    at: 2026-07-05T15:13:26+0700
+    note: "Manual forced override: status reset from in_progress to ready at user's
+      explicit request, outside the normal transition rules."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:15:46.253Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:15:49.976Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/agent-general-chat/technical-design.md,
+      docs/features/m4-admin-control-model-config/technical-design.md"
+    rag_query: "hermes-agent: kind='dm' migration + create_dm/list store functions +
+      /dms routes agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:22:57+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/44"
+    at: 2026-07-05T08:26:04.313Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:27:32.819Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-05T08:47:39.842Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:48:50.544Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

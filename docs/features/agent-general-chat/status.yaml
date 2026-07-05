@@ -1,22 +1,22 @@
-current_stage: handoff
+current_stage: done
 feature_id: agent-general-chat
-feature_status: ready_for_implementation
+feature_status: done
 history:
-- action: stage_approved
-  at: 2026-07-05T07:30:57+0000
-  by: agent
-  note: product_spec approved by agent.
-  stage: product_spec
-- action: stage_approved
-  at: 2026-07-05T07:41:21+0000
-  by: agent
-  note: technical_design approved by agent.
-  stage: technical_design
-- action: stage_approved
-  at: 2026-07-05T07:43:32+0000
-  by: agent
-  note: tasks approved by agent.
-  stage: tasks
+  - action: stage_approved
+    at: 2026-07-05T07:30:57+0000
+    by: agent
+    note: product_spec approved by agent.
+    stage: product_spec
+  - action: stage_approved
+    at: 2026-07-05T07:41:21+0000
+    by: agent
+    note: technical_design approved by agent.
+    stage: technical_design
+  - action: stage_approved
+    at: 2026-07-05T07:43:32+0000
+    by: agent
+    note: tasks approved by agent.
+    stage: tasks
 next_action: Tasks ready for implementation.
 revalidation:
   deployment_checklist_required: false
@@ -30,34 +30,49 @@ stages:
     review_status: draft
     reviewed_at: null
     reviewed_by: null
+    pr_url: https://github.com/tiendv89/project-workspace/pull/716
   product_spec:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T07:30:57+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T07:30:57+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T07:30:57+0000
     reviewed_by: agent
   tasks:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T07:43:32+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T07:43:32+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T07:43:32+0000
     reviewed_by: agent
   technical_design:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T07:41:21+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T07:41:21+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T07:41:21+0000
     reviewed_by: agent
 title: agent-general-chat
+feature_branch: feature/agent-general-chat
+feature_branch_base_sha: 9f46cc2fc2a2f9edfbd13dd668b02a1787457002
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/697
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/716
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/51
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/166
+    status: merged
+drift_detected: true
+drift_reason: File overlap on docs/features/agent-general-chat/tasks.md,
+  workspace.yaml with 4 new base commits

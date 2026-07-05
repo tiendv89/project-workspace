@@ -1,24 +1,66 @@
 id: T7
-title: 'digital-factory-ui: DM member picker + Direct Messages section wired to /dms'
+title: "digital-factory-ui: DM member picker + Direct Messages section wired to /dms"
 repo: digital-factory-ui
-status: todo
+status: done
 depends_on:
-- T1
-- T5
+  - T1
+  - T5
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/agent-general-chat
+branch: feature/agent-general-chat-T7
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T13:24:10.454Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
-log: []
+  url: https://github.com/tiendv89/digital-factory-ui/pull/164
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/712
+  status: open
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:01:30.047Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:03:42.908Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:03:51.308Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/agent-general-chat/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/532,
+      github.com/tiendv89/project-workspace/pull/709"
+    rag_query: "digital-factory-ui: DM member picker + Direct Messages section wired
+      to /dms agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:06:11+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/digital-factory-ui/pull/164"
+    at: 2026-07-05T13:16:34.482Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:18:03.138Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-05T13:22:48.379Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:24:10.454Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
