@@ -32,3 +32,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T08:20:52.743Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:21:00.814Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/693,
+      docs/features/m3-agent-review-pr-skill/technical-design.md"
+    rag_query: PR review posting tool (two-call pattern + self-review handling)
+      m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
