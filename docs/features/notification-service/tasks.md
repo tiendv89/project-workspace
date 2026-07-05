@@ -252,7 +252,7 @@ unread badge to use (or merge with) `GET /api/notifications/unread-count`.
 
 ### Required skills
 - typescript-best-practices
-- react-best-practices
+- nextjs-best-practices
 
 ### Subtasks
 - [ ] Add `src/services/notification-service/client.ts` (listNotifications, markRead, markAllRead, unreadCount)
@@ -276,7 +276,7 @@ and **Email** (default off, per product spec's opt-in requirement).
 
 ### Required skills
 - typescript-best-practices
-- react-best-practices
+- nextjs-best-practices
 
 ### Subtasks
 - [ ] Add `useNotificationPreferences` hook (TanStack Query) to `src/services/notification-service/client.ts`
