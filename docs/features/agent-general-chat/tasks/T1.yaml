@@ -2,7 +2,7 @@ id: T1
 title: 'hermes-agent: kind=''dm'' migration + create_dm/list store functions + /dms
   routes'
 repo: hermes-agent
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -20,4 +20,8 @@ pr:
   url: ''
   status: not_created
 workspace_pr: null
-log: []
+log:
+- action: ready
+  by: agent
+  at: 2026-07-05T07:43:37+0000
+  note: Task activated on tasks-stage approval — dependencies met.
