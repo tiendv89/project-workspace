@@ -1,9 +1,9 @@
 id: T5
-title: 'Email sending: Gmail/Workspace SMTP adapter + worker loop'
+title: "Email sending: Gmail/Workspace SMTP adapter + worker loop"
 repo: notification-service
-status: todo
+status: ready
 depends_on:
-- T3
+  - T3
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -17,7 +17,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:32:10.779Z
+    note: Task activated — dependency T3 merged and marked done.
