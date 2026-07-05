@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: in-chat read-only Board panel"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/agent-general-chat-T6
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T11:46:29.886Z
+  last_updated_at: 2026-07-05T12:54:24.921Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -56,9 +56,13 @@ log:
   - action: manual_override
     by: pye
     at: 2026-07-05T19:38:23+0700
-    note: >-
-      Human manually reverted status from reviewing to in_review at pye's request,
-      overriding the reviewer_started claim from cycle 1. This is not a standard
-      transition per the task status transition rules — the reviewing state's
-      dispatch guard is bypassed by this change, so a fresh reviewer may now be
-      dispatched against this task. Applied knowingly per explicit human instruction.
+    note: Human manually reverted status from reviewing to in_review at pye's
+      request, overriding the reviewer_started claim from cycle 1. This is not a
+      standard transition per the task status transition rules — the reviewing
+      state's dispatch guard is bypassed by this change, so a fresh reviewer may
+      now be dispatched against this task. Applied knowingly per explicit human
+      instruction.
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T12:54:24.921Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
