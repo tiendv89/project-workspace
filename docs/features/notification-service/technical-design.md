@@ -329,18 +329,57 @@ existence — matching the loosely-coupled, service-per-database pattern already
   error)` — one adapter implementation calling the chosen transactional provider's HTTP API
   (see Option E above) with the API key from `.env`.
 - Sends are processed **asynchronously** relative to the producer's HTTP call: the producer-
-  facing endpoint inserts the `email_deliveries` row as `pending` and returns immediately; a
-  background worker (in-process goroutine loop, polling `email_deliveries WHERE status IN
-  ('pending','failed') LIMIT N` on an interval, using the retry index above) performs the actual
-  provider call and updates `status`/`provider_message_id`/`error`/`sent_at`. This satisfies the
-  "must not block the producer's fire-and-forget call" constraint without requiring a message
-  queue for v1.
+  facing endpoint inserts the `email_deliveries` row as `pending` and returns immediately; an
+  **in-process worker loop** (same `notification-service` binary — not a separate deployable,
+  unlike `workspace-github-adapter`'s dual-binary pattern) performs the actual provider call and
+  updates `status`/`provider_message_id`/`error`/`sent_at`. This satisfies the "must not block
+  the producer's fire-and-forget call" constraint without requiring a message queue or a second
+  service for v1.
+
+#### Worker design (`internal/email/worker.go`)
+
+- **Lifecycle**: started as a goroutine from `cmd/server/main.go` alongside the Gin HTTP server
+  (same process, same `api` subcommand) — not a separate `cmd/worker/main.go` binary. If v1 load
+  ever requires horizontal scaling of the worker independent of the API, splitting it into its
+  own `cmd/worker/main.go` (mirroring `workspace-github-adapter`'s `adapter-worker`) is a
+  straightforward follow-up; the query pattern below is already safe for that.
+- **Trigger**: a `time.Ticker` polling every `EMAIL_WORKER_POLL_INTERVAL` (env-configurable,
+  default 5s) — no push/pubsub needed since email is not latency-critical.
+- **Claim query** — to be safe even if `notification-service` is ever run with >1 replica (so
+  the design doesn't silently break under horizontal scaling later), each tick claims a batch
+  with `SELECT ... FOR UPDATE SKIP LOCKED`, not a plain unlocked `SELECT`:
+  ```sql
+  SELECT id, notification_id, to_email, attempts
+  FROM email_deliveries
+  WHERE status IN ('pending', 'failed') AND attempts < 5
+  ORDER BY created_at
+  LIMIT 20
+  FOR UPDATE SKIP LOCKED;
+  ```
+  This runs inside a transaction; claimed rows are immediately marked with an `attempts + 1`
+  update before the provider call, so a crash mid-send does not cause an infinite same-row retry
+  loop within one tick.
+- **Send + update**: for each claimed row, call `EmailSenderPort.Send`; on success set
+  `status = 'sent'`, `provider_message_id`, `sent_at = now()`; on error set `status = 'failed'`,
+  `error = <message>` and leave `attempts` incremented (already done in the claim step) so the
+  next tick's `WHERE attempts < 5` naturally stops retrying once the cap is hit.
+- **Backoff**: none beyond the fixed poll interval for v1 — a failed row is simply eligible again
+  on the very next tick (bounded by the `attempts < 5` cap, so worst case is 5 sends across
+  ~5 × poll-interval seconds). Exponential backoff is a follow-up if provider rate-limiting
+  becomes an issue; not needed for v1's stated scope.
+- **Batch size** (`LIMIT 20`) and **poll interval** (5s) are both env-configurable constants, not
+  hardcoded, so ops can tune them without a code change.
+- **Terminal failure**: after `attempts` reaches 5, the row stays `failed` and is excluded from
+  future claims (`attempts < 5` no longer matches) — left for manual/ops inspection via direct
+  DB query. No dead-letter queue or alerting in v1, matching the product spec's non-goal of deep
+  deliverability hardening.
+- **Shutdown**: the worker goroutine listens on the same context/signal handling `main.go`
+  already uses to stop the HTTP server, so `SIGTERM` stops new ticks but lets an in-flight batch
+  finish before exit (no half-sent batches abandoned mid-transaction).
+
 - Template: one plain-text/simple-HTML template per category (7 templates), rendered from the
   same `summary`/`link`/`feature_id`/`task_id` fields already stored on the `notifications` row
   — no separate template-data model.
-- Failures are retried up to a small fixed attempt cap (e.g. 5) via the same worker sweep, then
-  left `failed` for manual/ops inspection — no dead-letter queue or alerting in v1, matching the
-  product spec's non-goal of deep deliverability hardening.
 
 **`userlookup`** (`internal/userlookup/`):
 - Thin service-token HTTP client to `user-service`'s existing internal user-lookup surface
