@@ -2,7 +2,7 @@ id: T1
 title: "hermes-agent: kind='dm' migration + create_dm/list store functions +
   /dms routes"
 repo: hermes-agent
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -46,3 +46,9 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T07:49:02+0000
     note: executor work phase begun.
+  - action: retried
+    by: pye
+    at: 2026-07-05T15:13:26+0700
+    note: >-
+      Manual forced override: status reset from in_progress to ready at
+      user's explicit request, outside the normal transition rules.
