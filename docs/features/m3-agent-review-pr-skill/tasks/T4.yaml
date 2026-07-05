@@ -1,46 +1,49 @@
 id: T4
 title: ReviewCard chat rendering (optional fast-follow)
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
-- T2
+  - T2
 blocked_reason: null
 blocked_context: null
 branch: feature/m3-agent-review-pr-skill-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T10:08:05+0000
+  last_updated_at: 2026-07-05T10:25:17.067Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/digital-factory-ui/pull/160
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/707
   status: open
 log:
-- action: created
-  by: pentative@gmail.com
-  at: 2026-07-05T12:19:32+0700
-  note: 'Task created from the approved task breakdown (tech-lead Phase 2). depends_on:
-    [T2] — needs T2''s final github_pr_review output shape to render. Optional; not
-    required for G1-G7 acceptance criteria (technical-design.md §6).'
-- action: ready
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 09:56:07.907000+00:00
-  note: Task activated — dependency T2 merged and marked done.
-- action: claimed
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 10:04:27.672000+00:00
-  note: Claimed via git-based claim protocol.
-- action: rag_pre_flight
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 10:04:36.677000+00:00
-  rag_context_injected: true
-  rag_summary: 'Retrieved 5 chunks: docs/features/m3-agent-review-pr-skill/technical-design.md,
-    docs/features/m3-agent-chat/handoffs/handoff.md, github.com/tiendv89/digital-factory-ui/pull/132'
-  rag_query: ReviewCard chat rendering (optional fast-follow) m3-agent-review-pr-skill
-  note: Runtime pre-flight RAG fetch — written before executor spawn.
-- action: started
-  by: tiendv.52@gmail.com
-  at: 2026-07-05T10:08:05+0000
-  note: executor work phase begun.
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-05T12:19:32+0700
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T2] — needs T2's final github_pr_review output shape to
+      render. Optional; not required for G1-G7 acceptance criteria
+      (technical-design.md §6)."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 09:56:07.907000+00:00
+    note: Task activated — dependency T2 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 10:04:27.672000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 10:04:36.677000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-chat/handoffs/handoff.md,
+      github.com/tiendv89/digital-factory-ui/pull/132"
+    rag_query: ReviewCard chat rendering (optional fast-follow) m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:08:05+0000
+    note: executor work phase begun.
