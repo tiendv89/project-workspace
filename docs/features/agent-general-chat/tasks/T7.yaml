@@ -1,7 +1,7 @@
 id: T7
 title: "digital-factory-ui: DM member picker + Direct Messages section wired to /dms"
 repo: digital-factory-ui
-status: in_review
+status: reviewing
 depends_on:
   - T1
   - T5
@@ -13,7 +13,7 @@ branch: feature/agent-general-chat-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T13:16:34.482Z
+  last_updated_at: 2026-07-05T13:18:03.138Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -52,3 +52,7 @@ log:
     note: "Implementation PR:
       https://github.com/tiendv89/digital-factory-ui/pull/164"
     at: 2026-07-05T13:16:34.482Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:18:03.138Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
