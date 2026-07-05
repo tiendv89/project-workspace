@@ -1,7 +1,7 @@
 id: T3
 title: Rewrite bundled review-pr skill doc to the new tool-call sequence
 repo: hermes-agent
-status: in_progress
+status: in_review
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/m3-agent-review-pr-skill-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T10:03:02+0000
+  last_updated_at: 2026-07-05T10:13:04.182Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/48
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/705
   status: open
