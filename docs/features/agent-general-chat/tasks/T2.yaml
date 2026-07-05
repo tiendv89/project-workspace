@@ -1,7 +1,7 @@
 id: T2
 title: "hermes-agent: dispatch gate — DM follows Channel bare-message rule"
 repo: hermes-agent
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -42,3 +42,17 @@ log:
     rag_query: "hermes-agent: dispatch gate — DM follows Channel bare-message rule
       agent-general-chat"
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-05T16:28:14+0700
+    note: >-
+      Claim by tiendv.52@gmail.com went stale — no work committed in
+      hermes-agent for this task. Marking blocked before resetting to
+      ready per the unblock target rule (pr.url is empty).
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-05T16:28:14+0700
+    note: >-
+      Human resolved the stale claim block. pr.url is empty, so status
+      resets to ready (not in_review) for re-claim via
+      start-implementation.
