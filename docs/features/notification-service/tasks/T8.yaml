@@ -1,7 +1,7 @@
 id: T8
 title: digital-factory-ui Activity panel (All/DMs/Mentions)
 repo: digital-factory-ui
-status: reviewing
+status: review_passed
 depends_on:
   - T4
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/notification-service-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T14:49:50.873Z
+  last_updated_at: 2026-07-05T14:55:25.902Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -75,6 +75,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T14:49:50.873Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-05T14:55:25.902Z
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-05T14:43:58.180Z
