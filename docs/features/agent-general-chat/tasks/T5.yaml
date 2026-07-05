@@ -1,7 +1,7 @@
 id: T5
 title: "digital-factory-ui: new Chat nav entry + Slack-style sidebar shell"
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -10,8 +10,8 @@ blocked_context: null
 branch: feature/agent-general-chat-T5
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T12:14:59.466Z
+  last_updated_by: pye@swellnetwork.io
+  last_updated_at: 2026-07-05T12:40:54.000Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
