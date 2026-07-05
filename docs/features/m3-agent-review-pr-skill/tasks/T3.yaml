@@ -1,7 +1,7 @@
 id: T3
 title: Rewrite bundled review-pr skill doc to the new tool-call sequence
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
   - T2
@@ -11,10 +11,10 @@ branch: feature/m3-agent-review-pr-skill-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T10:25:11.983Z
+  last_updated_at: 2026-07-05T10:26:51.928Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/48
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/705
   status: open
@@ -60,3 +60,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-05T10:25:11.983Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:26:51.928Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
