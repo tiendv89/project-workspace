@@ -1,7 +1,7 @@
 id: T6
 title: "digital-factory-ui: in-chat read-only Board panel"
 repo: digital-factory-ui
-status: reviewing
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -53,3 +53,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T11:46:29.886Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: manual_override
+    by: pye
+    at: 2026-07-05T19:38:23+0700
+    note: >-
+      Human manually reverted status from reviewing to in_review at pye's request,
+      overriding the reviewer_started claim from cycle 1. This is not a standard
+      transition per the task status transition rules — the reviewing state's
+      dispatch guard is bypassed by this change, so a fresh reviewer may now be
+      dispatched against this task. Applied knowingly per explicit human instruction.
