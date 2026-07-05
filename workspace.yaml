@@ -134,3 +134,9 @@ repos:
     local_path: env:HERMES_AGENT_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
+
+  - id: notification-service
+    github: git@github.com:tiendv89/notification-service.git
+    local_path: env:NOTIFICATION_SERVICE_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
