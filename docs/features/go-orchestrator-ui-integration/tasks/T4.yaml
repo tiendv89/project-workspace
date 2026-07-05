@@ -1,25 +1,68 @@
 id: T4
 title: workflow-backend service client (bulk create, service-to-service)
 repo: hermes-agent
-status: todo
-depends_on: [T1]
+status: done
+depends_on:
+  - T1
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-ui-integration-T4
-
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-03T11:12:24+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T05:29:43.281Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/hermes-agent/pull/34
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/665
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-03T11:12:24+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T1] — identity
-      must reach the tool context to set X-User-Id/X-Org-Id headers.
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T1] — identity must reach the tool context to set
+      X-User-Id/X-Org-Id headers."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 05:03:42.504000+00:00
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 05:05:21.402000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03 05:05:29.628000+00:00
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: workflow-backend service client (bulk create, service-to-service)
+      go-orchestrator-ui-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T05:12:07+0000
+    note: Executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/34"
+    at: 2026-07-03T05:21:52.827Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T05:23:02.011Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-03T05:28:36.692Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T05:29:43.281Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-07-03T05:29:54.068Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'

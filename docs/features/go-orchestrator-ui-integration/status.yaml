@@ -1,17 +1,13 @@
-# Tracked with the ts flow (per-task YAML state in tasks/). The go orchestrator this feature builds
-# is still in development, so this feature itself is not owner: go.
-
 feature_id: go-orchestrator-ui-integration
-title: Go orchestrator — Hermes tasks-stage approve pipeline (merge docs PR + create tasks via API)
-
-feature_status: ready_for_implementation
-current_stage: handoff
-next_action: >-
-  Tasks stage approved; feature advanced to ready_for_implementation. Wave-1 tasks with no dependencies
-  (T1, T2, T3) activated todo -> ready. Teams may now execute via start-implementation. Open the
-  management-repo PR to merge this feature branch into main; handoffs recorded under handoffs/ and
-  approved last.
-
+title: Go orchestrator — Hermes tasks-stage approve pipeline (merge docs PR +
+  create tasks via API)
+feature_status: done
+current_stage: done
+next_action: Tasks stage approved; feature advanced to ready_for_implementation.
+  Wave-1 tasks with no dependencies (T1, T2, T3) activated todo -> ready. Teams
+  may now execute via start-implementation. Open the management-repo PR to merge
+  this feature branch into main; handoffs recorded under handoffs/ and approved
+  last.
 stages:
   product_spec:
     review_status: approved
@@ -49,48 +45,65 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
-
+    pr_url: https://github.com/tiendv89/project-workspace/pull/669
 history:
   - at: 2026-07-03T08:56:10+0700
     actor: batu4404@gmail.com
     action: created
     stage: product_spec
-    note: >-
-      Feature created (tracked ts; the go orchestrator it builds is still in development). Fixes the
-      go-orchestrator tasks last-mile: hermes-agent's
-      write_tasks currently writes go task rows straight to Postgres during breakdown, bypassing
-      the human tasks-stage approval, the docs PR merge, and the validating workflow-backend API.
-      Target: write_tasks produces tasks.md only; the tasks-stage approve command does promote ->
-      merge docs PR -> update DB status -> create tasks via API; plus a precondition-checked backup
-      /create-tasks command. UI board/status gaps split into a separate follow-up feature.
+    note: "Feature created (tracked ts; the go orchestrator it builds is still in
+      development). Fixes the go-orchestrator tasks last-mile: hermes-agent's
+      write_tasks currently writes go task rows straight to Postgres during
+      breakdown, bypassing the human tasks-stage approval, the docs PR merge,
+      and the validating workflow-backend API. Target: write_tasks produces
+      tasks.md only; the tasks-stage approve command does promote -> merge docs
+      PR -> update DB status -> create tasks via API; plus a
+      precondition-checked backup /create-tasks command. UI board/status gaps
+      split into a separate follow-up feature."
   - at: 2026-07-03T09:53:00+0700
     actor: batu4404@gmail.com
     action: approved
     stage: product_spec
-    note: >-
-      Product spec approved; feature advanced to in_tdd (current_stage=technical_design). Next: run
-      tech-lead Phase 1 to produce the technical design and resolve the open TD questions recorded in
-      the spec, then submit for approval.
+    note: "Product spec approved; feature advanced to in_tdd
+      (current_stage=technical_design). Next: run tech-lead Phase 1 to produce
+      the technical design and resolve the open TD questions recorded in the
+      spec, then submit for approval."
   - at: 2026-07-03T11:09:39+0700
     actor: batu4404@gmail.com
     action: approved
     stage: technical_design
-    note: >-
-      Technical design approved (Q1 shared-token direct call; Q2 discover-by-branch, content-keyed
-      merge check, notify on 0/>1; Q3 resumable approve a->b->c->d, /create-tasks is create-only; Q4
-      server-side guard in workflow-backend + hermes error relay). Advancing to task planning
-      (current_stage=tasks, feature stays in_tdd). Next: run tech-lead Phase 2 for the task breakdown.
+    note: "Technical design approved (Q1 shared-token direct call; Q2
+      discover-by-branch, content-keyed merge check, notify on 0/>1; Q3
+      resumable approve a->b->c->d, /create-tasks is create-only; Q4 server-side
+      guard in workflow-backend + hermes error relay). Advancing to task
+      planning (current_stage=tasks, feature stays in_tdd). Next: run tech-lead
+      Phase 2 for the task breakdown."
   - at: 2026-07-03T11:32:12+0700
     actor: batu4404@gmail.com
     action: approved
     stage: tasks
-    note: >-
-      Tasks stage approved (ts feature, 7 tasks). Feature advanced to ready_for_implementation;
-      current_stage=handoff. Wave-1 tasks with no dependencies (T1, T2, T3) activated todo -> ready.
-      Teams may now execute via start-implementation.
-
+    note: Tasks stage approved (ts feature, 7 tasks). Feature advanced to
+      ready_for_implementation; current_stage=handoff. Wave-1 tasks with no
+      dependencies (T1, T2, T3) activated todo -> ready. Teams may now execute
+      via start-implementation.
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/go-orchestrator-ui-integration
+feature_branch_base_sha: 760611a24326a9686ee7140e5bcd82d2d6203610
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/661
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/669
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/38
+    status: merged
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/56
+    status: merged
+drift_detected: true
+drift_reason: File overlap on
+  docs/features/agent-general-chat/handoffs/.gitkeep,
+  docs/features/agent-general-chat/product-spec.md,
+  docs/features/agent-general-chat/status.yaml with 13 new base commits

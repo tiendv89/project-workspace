@@ -1,26 +1,59 @@
 id: T6
 title: Backup /create-tasks (hermes-internal, step-d only) + guard-error relay
 repo: hermes-agent
-status: todo
-depends_on: [T5]
+status: done
+depends_on:
+  - T5
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-ui-integration-T6
-
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-03T11:12:24+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-03T06:42:48.606Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/hermes-agent/pull/36
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/667
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-03T11:12:24+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T5] — reuses T5's
-      step-d create logic (T4-client call + T3 reason-code relay); sources feature_id from session
-      context, not the standalone skill's feature-resolution step.
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T5] — reuses T5's step-d create logic (T4-client call + T3
+      reason-code relay); sources feature_id from session context, not the
+      standalone skill's feature-resolution step."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:16:14.953Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:17:42.078Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:17:49.911Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Backup /create-tasks (hermes-internal, step-d only) + guard-error
+      relay go-orchestrator-ui-integration
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/36"
+    at: 2026-07-03T06:35:04.861Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:36:17.006Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-03T06:41:42.981Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-03T06:42:48.606Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
