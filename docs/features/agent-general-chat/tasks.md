@@ -137,7 +137,7 @@ Unread/activity indicator uses existing `is_active`/`last_active_at`/`message_co
 a client-side "last read message id" in `localStorage`.
 
 ### Required skills
-- react-best-practices
+- nextjs-best-practices
 - typescript-best-practices
 
 ### Subtasks
@@ -164,7 +164,7 @@ regex/heuristic); manual "pin to feature" override in the panel header. No write
 no drag/drop, no task mutation calls (NG3). Available in every session kind.
 
 ### Required skills
-- react-best-practices
+- nextjs-best-practices
 - typescript-best-practices
 
 ### Subtasks
@@ -187,7 +187,7 @@ sidebar. Selecting a member calls `POST /dms` (resolve-or-create) and navigates 
 session. Wire the Direct Messages section's list to `GET /dms`.
 
 ### Required skills
-- react-best-practices
+- nextjs-best-practices
 - typescript-best-practices
 
 ### Subtasks
@@ -209,7 +209,7 @@ breaking existing deep links), and retire the standalone Team Chat nav entry/lis
 same way. Remove the old duplicate nav-rail entries once redirects are confirmed working.
 
 ### Required skills
-- react-best-practices
+- nextjs-best-practices
 - typescript-best-practices
 
 ### Subtasks
