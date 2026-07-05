@@ -85,6 +85,13 @@ what's being discussed.
   explicit-`@agent` gate as Channels/Team Chat from v4. The new cross-feature lookup tool is
   strictly read-only; it never mutates lifecycle state, tasks, or documents. Channels remain
   admin-deletable/public; DMs and Team Chat threads remain member-managed as today.
+- **G6 — `@agent` usage is metered identically everywhere.** Triggering `@agent` in a DM, a
+  Channel, a workspace Team Chat thread, or the new cross-feature lookup path (G1) consumes
+  usage/credit for the triggering user under the **exact same accounting as an `@agent` trigger
+  in a feature thread** — same per-turn token/cost counters, same billing attribution, no free
+  or discounted path for general-chat surfaces. No new metering logic is introduced; the new
+  surfaces route through the existing per-turn usage accounting already applied to feature
+  threads and v4 Channels/Team Chat.
 
 ## Non-goals
 
