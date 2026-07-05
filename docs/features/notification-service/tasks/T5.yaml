@@ -31,3 +31,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T14:33:50.975Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:33:58.983Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/notification-service/technical-design.md,
+      docs/features/notification-service/technical-design.md,
+      docs/features/notification-service/technical-design.md"
+    rag_query: "Email sending: Gmail/Workspace SMTP adapter + worker loop
+      notification-service"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
