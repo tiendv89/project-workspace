@@ -1,7 +1,7 @@
 id: T3
 title: "hermes-agent: workflow_lookup_feature read-only cross-feature tool"
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,13 +11,13 @@ branch: feature/agent-general-chat-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T09:28:26.674Z
+  last_updated_at: 2026-07-05T09:29:42.354Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/45
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/699
   status: open
@@ -90,3 +90,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-05T09:28:26.674Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:29:42.354Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
