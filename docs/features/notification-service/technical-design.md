@@ -324,25 +324,41 @@ existence — matching the loosely-coupled, service-per-database pattern already
   members in one call (used by hermes-agent when a channel message needs to notify every member
   except the author).
 
-**Email sending** (`internal/email/`):
+**Email sending** (`internal/email/`, executed by the `cmd/worker` process):
 - `EmailSenderPort` interface — `Send(ctx, to, subject, body) (providerMessageID string, err
   error)` — one adapter implementation calling the chosen transactional provider's HTTP API
   (see Option E above) with the API key from `.env`.
+- **Global kill switch**: `NOTIFY_EMAIL_ENABLED` (bool, env/config flag, default `false`) is
+  read once at startup by both `cmd/api` and `cmd/worker`. When `false`:
+  - `cmd/api`'s producer-facing handler still honors the in-app `in_app_enabled` preference and
+    inserts `notifications` rows as normal, but skips the `email_enabled` check entirely and
+    never inserts an `email_deliveries` row — i.e. the flag overrides all per-user email
+    preferences workspace-wide, it does not merely pause the worker.
+  - `cmd/worker` still starts (so flipping the flag at runtime via a restart doesn't require a
+    deploy-topology change) but its ticker loop no-ops — no claim query is issued — so an
+    accidental leftover `pending` row from before the flag was flipped off is never picked up
+    silently once it's back on without an explicit review of aging rows.
+  - This is a single global flag (per notification-service deployment/workspace), separate from
+    and layered *above* the per-user, per-category `email_enabled` preference in
+    `notification_preferences` — the flag is an ops/product kill switch (e.g. "we haven't
+    finished vetting deliverability yet" or "disable email during an incident"), the preference
+    is the end-user's own choice. Effective email send = `NOTIFY_EMAIL_ENABLED AND
+    notification_preferences.email_enabled`.
 - Sends are processed **asynchronously** relative to the producer's HTTP call: the producer-
-  facing endpoint inserts the `email_deliveries` row as `pending` and returns immediately; an
-  **in-process worker loop** (same `notification-service` binary — not a separate deployable,
-  unlike `workspace-github-adapter`'s dual-binary pattern) performs the actual provider call and
-  updates `status`/`provider_message_id`/`error`/`sent_at`. This satisfies the "must not block
-  the producer's fire-and-forget call" constraint without requiring a message queue or a second
-  service for v1.
+  facing endpoint (in `cmd/api`) inserts the `email_deliveries` row as `pending` and returns
+  immediately; the separate `cmd/worker` process performs the actual provider call and updates
+  `status`/`provider_message_id`/`error`/`sent_at`. This satisfies the "must not block the
+  producer's fire-and-forget call" constraint without requiring a message queue for v1, and
+  keeps `cmd/api` free of any long-running loop.
 
-#### Worker design (`internal/email/worker.go`)
+#### Worker design (`internal/email/worker.go`, invoked from `cmd/worker/worker.go`)
 
-- **Lifecycle**: started as a goroutine from `cmd/server/main.go` alongside the Gin HTTP server
-  (same process, same `api` subcommand) — not a separate `cmd/worker/main.go` binary. If v1 load
-  ever requires horizontal scaling of the worker independent of the API, splitting it into its
-  own `cmd/worker/main.go` (mirroring `workspace-github-adapter`'s `adapter-worker`) is a
-  straightforward follow-up; the query pattern below is already safe for that.
+- **Lifecycle**: `cmd/worker/worker.go`'s `run()` starts the ticker loop and blocks — this is a
+  dedicated process/container (`notification-service worker`), distinct from `cmd/api/api.go`'s
+  `run()` (Gin HTTP server). Both are subcommands of the same `cmd/main.go` cobra root and ship
+  in the same Docker image, but run as two separate deployed processes (matching
+  `workspace-github-adapter`'s `adapter-service`/`adapter-worker` two-process shape, but as
+  cobra subcommands of one binary rather than two separately built binaries).
 - **Trigger**: a `time.Ticker` polling every `EMAIL_WORKER_POLL_INTERVAL` (env-configurable,
   default 5s) — no push/pubsub needed since email is not latency-critical.
 - **Claim query** — to be safe even if `notification-service` is ever run with >1 replica (so
@@ -373,9 +389,9 @@ existence — matching the loosely-coupled, service-per-database pattern already
   future claims (`attempts < 5` no longer matches) — left for manual/ops inspection via direct
   DB query. No dead-letter queue or alerting in v1, matching the product spec's non-goal of deep
   deliverability hardening.
-- **Shutdown**: the worker goroutine listens on the same context/signal handling `main.go`
-  already uses to stop the HTTP server, so `SIGTERM` stops new ticks but lets an in-flight batch
-  finish before exit (no half-sent batches abandoned mid-transaction).
+- **Shutdown**: `cmd/worker/worker.go` installs its own `SIGTERM`/context-cancellation handling
+  (independent of `cmd/api`'s server shutdown, since they are separate processes) so a stop
+  lets an in-flight batch finish before exit (no half-sent batches abandoned mid-transaction).
 
 - Template: one plain-text/simple-HTML template per category (7 templates), rendered from the
   same `summary`/`link`/`feature_id`/`task_id` fields already stored on the `notifications` row
