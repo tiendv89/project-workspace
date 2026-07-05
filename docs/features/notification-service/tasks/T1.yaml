@@ -1,26 +1,118 @@
 id: T1
-title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go, Dockerfile)
+title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
+  Dockerfile)
 repo: notification-service
-status: ready
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/notification-service
+branch: feature/notification-service-T1
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T11:33:36.143Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/notification-service/pull/1
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/704
+  status: open
 log:
-- action: ready
-  by: agent
-  at: 2026-07-05T09:37:22+0000
-  note: Task activated on tasks-stage approval — dependencies met.
+  - action: ready
+    by: agent
+    at: 2026-07-05T09:37:22+0000
+    note: Task activated on tasks-stage approval — dependencies met.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 09:39:06.130000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 09:39:14.588000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/408,
+      docs/features/feature-status-dashboard-v2/technical-design.md,
+      github.com/tiendv89/user-service/pull/1"
+    rag_query: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
+      Dockerfile) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:41:26+0000
+    note: executor work phase begun.
+  - action: retried
+    by: pye
+    at: 2026-07-05T16:51:32+0700
+    note: "Manual override: status forced from in_progress to ready at explicit
+      human request. This is not a rule-defined transition (in_progress has no
+      direct path to ready under the task status transition rules) — recorded
+      here for audit visibility."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:53:00.838Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:53:05.538Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/408,
+      docs/features/feature-status-dashboard-v2/technical-design.md,
+      github.com/tiendv89/user-service/pull/1"
+    rag_query: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
+      Dockerfile) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: retried
+    by: pye
+    at: 2026-07-05T17:02:25+0700
+    note: "Manual override (2nd time): status forced from in_progress to ready at
+      explicit human request, immediately after the runtime re-claimed the task
+      via the normal ready→in_progress protocol. Not a rule-defined transition —
+      recorded for audit visibility. Runtime may re-claim this again."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:06:42.762Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:06:47.736Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/408,
+      docs/features/feature-status-dashboard-v2/technical-design.md,
+      github.com/tiendv89/user-service/pull/1"
+    rag_query: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
+      Dockerfile) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:22:47+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/notification-service/pull/1"
+    at: 2026-07-05T10:31:03.278Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:32:38.675Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: retried
+    by: pye
+    at: 2026-07-05T18:31:25+0700
+    note: "Manual override: status forced from reviewing to in_review at explicit
+      human request. This is not a rule-defined transition (reviewing has no
+      direct path back to in_review under the task status transition rules) —
+      recorded here for audit visibility. The orchestrator's reviewing-status
+      duplicate-dispatch guard no longer applies to this task until it is
+      re-claimed."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T11:33:36.143Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
