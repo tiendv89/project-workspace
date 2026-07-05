@@ -1,7 +1,7 @@
 id: T2
 title: PR review posting tool (two-call pattern + self-review handling)
 repo: hermes-agent
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -9,11 +9,14 @@ blocked_context: null
 branch: feature/m3-agent-review-pr-skill-T2
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T09:56:07.814Z
 pr:
-  url: null
-  status: null
+  url: https://github.com/tiendv89/hermes-agent/pull/46
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/701
+  status: open
 log:
   - action: created
     by: pentative@gmail.com
@@ -25,3 +28,69 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T08:19:18.508Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:20:52.743Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:21:00.814Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/693,
+      docs/features/m3-agent-review-pr-skill/technical-design.md"
+    rag_query: PR review posting tool (two-call pattern + self-review handling)
+      m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:23:36+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/46"
+    at: 2026-07-05T08:33:46.483Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T08:35:00.171Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: retried
+    by: pye@swellnetwork.io
+    at: 2026-07-05T16:23:42+0700
+    note: "Manual override: reset reviewing -> in_review at human request. This is
+      not a defined transition in the task status transition table (valid exits
+      from reviewing are review_passed, change_requested, or review_incomplete)
+      — recorded here for audit since it deviates from the standard workflow."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:24:57.216Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-05T09:30:23.035Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:33:43.899Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/hermes-agent/pull/46"
+    at: 2026-07-05T09:37:37.738Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:41:32.312Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: retried
+    by: pye@swellnetwork.io
+    at: 2026-07-05T16:48:36+0700
+    note: "Manual override: reset reviewing -> in_review at human request. This is
+      not a defined transition in the task status transition table (valid exits
+      from reviewing are review_passed, change_requested, or review_incomplete)
+      — recorded here for audit since it deviates from the standard workflow,
+      consistent with the prior override on this task."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:56:07.814Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
