@@ -1,9 +1,9 @@
 id: T8
 title: digital-factory-ui Activity panel (All/DMs/Mentions)
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
-- T4
+  - T4
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -12,34 +12,36 @@ branch: feature/notification-service-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T14:05:51+0000
+  last_updated_at: 2026-07-05T14:25:18.740Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/168
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/717
   status: open
 log:
-- action: ready
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 14:00:45.971000+00:00
-  note: Task activated — dependency T4 merged and marked done.
-- action: claimed
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 14:02:37.677000+00:00
-  note: Claimed via git-based claim protocol.
-- action: rag_pre_flight
-  by: tiendv.52@gmail.com
-  at: 2026-07-05 14:02:46.586000+00:00
-  rag_context_injected: true
-  rag_summary: 'Retrieved 5 chunks: docs/features/notification-service/product-spec.md,
-    docs/features/notification-service/technical-design.md, github.com/tiendv89/project-workspace/pull/338'
-  rag_query: digital-factory-ui Activity panel (All/DMs/Mentions) notification-service
-  note: Runtime pre-flight RAG fetch — written before executor spawn.
-- action: started
-  by: tiendv.52@gmail.com
-  at: 2026-07-05T14:05:51+0000
-  note: executor work phase begun.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 14:00:45.971000+00:00
+    note: Task activated — dependency T4 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 14:02:37.677000+00:00
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05 14:02:46.586000+00:00
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/notification-service/product-spec.md,
+      docs/features/notification-service/technical-design.md,
+      github.com/tiendv89/project-workspace/pull/338"
+    rag_query: digital-factory-ui Activity panel (All/DMs/Mentions) notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:05:51+0000
+    note: executor work phase begun.
