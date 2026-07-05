@@ -2,7 +2,7 @@ id: T1
 title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
   Dockerfile)
 repo: notification-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -12,7 +12,7 @@ branch: feature/notification-service-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T09:53:00.838Z
+  last_updated_at: 2026-07-05T10:06:42.762Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -71,9 +71,11 @@ log:
   - action: retried
     by: pye
     at: 2026-07-05T17:02:25+0700
-    note: >-
-      Manual override (2nd time): status forced from in_progress to ready
-      at explicit human request, immediately after the runtime re-claimed
-      the task via the normal ready→in_progress protocol. Not a
-      rule-defined transition — recorded for audit visibility. Runtime may
-      re-claim this again.
+    note: "Manual override (2nd time): status forced from in_progress to ready at
+      explicit human request, immediately after the runtime re-claimed the task
+      via the normal ready→in_progress protocol. Not a rule-defined transition —
+      recorded for audit visibility. Runtime may re-claim this again."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:06:42.762Z
+    note: Claimed via git-based claim protocol.
