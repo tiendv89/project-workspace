@@ -1,7 +1,7 @@
 id: T4
 title: User-facing API (feed, read state, preferences)
 repo: notification-service
-status: review_passed
+status: done
 depends_on:
   - T2
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/notification-service-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T13:59:26.186Z
+  last_updated_at: 2026-07-05T14:00:45.882Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/notification-service/pull/4
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/714
   status: open
@@ -74,3 +74,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-05T13:59:26.186Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:00:45.882Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
