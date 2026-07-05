@@ -1,7 +1,7 @@
 id: T8
 title: digital-factory-ui Activity panel (All/DMs/Mentions)
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on:
   - T4
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/notification-service-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T14:55:25.902Z
+  last_updated_at: 2026-07-05T14:56:41.829Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/168
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/717
   status: open
@@ -79,6 +79,10 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-05T14:55:25.902Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T14:56:41.829Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-05T14:43:58.180Z
