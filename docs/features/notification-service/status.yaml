@@ -63,3 +63,4 @@ stages:
 title: notification-service
 feature_branch: feature/notification-service
 feature_branch_base_sha: c97b67161946d5ac5a2477aa9ac62356b37d9808
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/703
