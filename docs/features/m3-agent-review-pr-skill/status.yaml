@@ -1,6 +1,6 @@
 feature_id: m3-agent-review-pr-skill
 title: M3 Agent Review PR Skill
-feature_status: ready_for_implementation
+feature_status: in_handoff
 current_stage: handoff
 next_action: Tasks approved; feature advanced to ready_for_implementation. Wave
   1 task T1 (hermes-agent read-only GitHub PR context tool) is ready — owning
@@ -73,6 +73,7 @@ stages:
     reviewed_at: null
     review_comment: null
     review_history: []
+    pr_url: https://github.com/tiendv89/project-workspace/pull/708
 history:
   - at: 2026-07-05T00:49:05+0700
     actor: pentative@gmail.com
@@ -105,3 +106,11 @@ revalidation:
 feature_branch: feature/m3-agent-review-pr-skill
 feature_branch_base_sha: 3d92e4bdadea6a060540de3a90ffe54cdb41a3b3
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/694
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/708
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/50
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/161
+    status: open
