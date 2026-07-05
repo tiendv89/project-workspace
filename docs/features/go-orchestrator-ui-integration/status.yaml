@@ -102,3 +102,8 @@ impl_feature_prs:
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/56
     status: open
+drift_detected: true
+drift_reason: File overlap on
+  docs/features/agent-general-chat/handoffs/.gitkeep,
+  docs/features/agent-general-chat/product-spec.md,
+  docs/features/agent-general-chat/status.yaml with 13 new base commits
