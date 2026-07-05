@@ -67,9 +67,13 @@ user X about event Y," no per-user preference store, and no unified read API for
 - Email delivery must not block or fail the producer's fire-and-forget call — email send is
   best-effort and asynchronous relative to the `POST /internal/notifications` response; a
   provider outage must not cause producers to see errors or retries pile up.
-- Email provider credentials (API key / SMTP creds) are resolved from `notification-service`'s
-  own `.env`, per the workspace's existing environment-resolution convention — not hardcoded,
-  not shared with other services.
+- Email provider credentials (Gmail/Google Workspace SMTP app password) are resolved from
+  `notification-service`'s own `.env`, per the workspace's existing environment-resolution
+  convention — not hardcoded, not shared with other services.
+- No-cost constraint: the chosen provider (Gmail/Google Workspace SMTP) must not require a paid
+  third-party account. Its daily send-volume ceiling (500/day personal Gmail, 2,000/day Google
+  Workspace) is accepted as a v1 limit given this feature's expected traffic is low-volume,
+  human-triggered events (mentions, DMs, approvals, task-done) rather than bulk/marketing mail.
 
 ## Options Considered
 
@@ -109,23 +113,30 @@ audit-log DB with a concern neither currently owns.
 
 ### Email delivery channel — options considered
 
-#### Option D — SMTP relay (e.g. company Google Workspace / generic SMTP)
-- Pros: no new third-party account; works with an existing company mail domain if one exists.
-- Cons: no delivery/bounce visibility, weaker deliverability reputation management, more manual
-  setup (DKIM/SPF) than a transactional provider; no indexed evidence any SMTP relay is already
-  configured anywhere in the workspace.
+#### Option D (chosen) — Gmail / Google Workspace SMTP relay
+- Pros: **no cost** — uses an existing Google account/Workspace domain and an SMTP app password;
+  no third-party account to provision or pay for. Simple `net/smtp`-based client, no HTTP API
+  integration needed. Sufficient volume for this feature's traffic (low-volume, human-triggered
+  events, not bulk/marketing mail): personal Gmail allows ~500 emails/day, Google Workspace
+  allows ~2,000/day.
+- Cons: no delivery/bounce/complaint tracking (accepted — `email_deliveries.status` only
+  reflects "did the SMTP call succeed," not actual inbox delivery); hard daily send-volume
+  ceiling with throttling/flagging risk if traffic spikes unexpectedly; sending "from" a
+  Google-hosted address is less brand-controlled than a verified custom domain via a
+  transactional provider. Accepted for v1 given the no-cost requirement and expected volume.
 
-#### Option E (chosen) — Transactional email API provider (e.g. SendGrid/SES/Postmark; provider
-name left to implementation — the design only requires an HTTP-API transactional sender)
-- Pros: simple HTTP API call from Go (no SMTP client/connection pooling to manage), built-in
-  delivery/bounce/complaint tracking, better default deliverability, matches the "call an HTTP
-  API with a token from `.env`" pattern this workspace already uses for other integrations
-  (GitHub token for `pr-create`, Slack bot token for `go-orchestrator-slack-notifications`).
-- Cons: adds a third-party account/credential to provision and monitor.
+#### Option E (not chosen for v1) — Transactional email API provider (SES/SendGrid/Postmark)
+- Pros: built-in delivery/bounce/complaint tracking, better deliverability reputation tooling,
+  higher volume ceilings, some offer usable free tiers (e.g. SendGrid ~100/day).
+- Cons: still requires provisioning a third-party account (even "free tier" options involve
+  account setup, domain verification, and are not guaranteed indefinitely free at any volume);
+  not needed given Option D already satisfies the no-cost requirement and this feature's
+  expected volume.
 
-**Chosen: Option E.** The specific provider is an implementation/ops choice (SES, SendGrid, or
-Postmark are all viable); the design commits only to the shape — an `EmailSenderPort` interface
-with one HTTP-API-based adapter — so swapping providers later is a one-adapter change.
+**Chosen: Option D — Gmail / Google Workspace SMTP.** The design still commits only to the
+`EmailSenderPort` interface shape (see below, now backed by an SMTP adapter instead of an
+HTTP-API adapter) so migrating to Option E later — if volume outgrows the free SMTP ceiling —
+is a one-adapter change, not a redesign.
 
 ## Chosen Design
 
@@ -347,8 +358,17 @@ existence — matching the loosely-coupled, service-per-database pattern already
 
 **Email sending** (`internal/email/`, executed by the `cmd/worker` process):
 - `EmailSenderPort` interface — `Send(ctx, to, subject, body) (providerMessageID string, err
-  error)` — one adapter implementation calling the chosen transactional provider's HTTP API
-  (see Option E above) with the API key from `.env`.
+  error)` — one adapter implementation using Go's `net/smtp` (or `gomail`/similar thin wrapper)
+  against Gmail/Google Workspace's SMTP relay (`smtp.gmail.com:587`, STARTTLS) with an app
+  password from `.env` (see Option D above). `providerMessageID` is best-effort: Gmail SMTP does
+  not return a provider-native message id the way a transactional HTTP API would, so this field
+  is populated with the outbound `Message-ID` header the client itself generates, purely for
+  local traceability — not a delivery-tracking handle.
+- **Required `.env` keys**: `SMTP_HOST` (default `smtp.gmail.com`), `SMTP_PORT` (default `587`),
+  `SMTP_USERNAME` (the sending Gmail/Workspace address), `SMTP_APP_PASSWORD` (a Google
+  App Password, not the account's login password — required since Google blocks plain-password
+  SMTP auth for accounts with 2FA, which is the expected configuration), `SMTP_FROM_ADDRESS`
+  (the `From:` header value; normally same as `SMTP_USERNAME`).
 - **Global kill switch**: `NOTIFY_EMAIL_ENABLED` (bool, env/config flag, default `false`) is
   read once at startup by both `cmd/api` and `cmd/worker`. When `false`:
   - `cmd/api`'s producer-facing handler still honors the in-app `in_app_enabled` preference and
