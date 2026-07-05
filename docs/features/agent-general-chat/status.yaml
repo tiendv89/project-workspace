@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: agent-general-chat
-feature_status: ready_for_implementation
+feature_status: in_handoff
 history:
   - action: stage_approved
     at: 2026-07-05T07:30:57+0000
@@ -30,6 +30,7 @@ stages:
     review_status: draft
     reviewed_at: null
     reviewed_by: null
+    pr_url: https://github.com/tiendv89/project-workspace/pull/716
   product_spec:
     review_comment: null
     review_history:
@@ -64,3 +65,11 @@ title: agent-general-chat
 feature_branch: feature/agent-general-chat
 feature_branch_base_sha: 9f46cc2fc2a2f9edfbd13dd668b02a1787457002
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/697
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/716
+impl_feature_prs:
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/51
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/166
+    status: open
