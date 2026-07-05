@@ -52,6 +52,8 @@ user X about event Y," no per-user preference store, and no unified read API for
   by `user-service` (`workflow-sync-go-templates`, `m1-identity-and-workspaces`): Go, Gin,
   pgx, `pressly/goose/v3` migrations, `internal/` layout, cookie/service-token auth boundary —
   not the older stdlib/sqlc style still present in `workflow-backend`.
+- Repo name is `notification-service` (`git@github.com:tiendv89/notification-service.git`) —
+  must be registered in `workspace.yaml` under that name before task work can target it.
 - Producers (`hermes-agent`, `agent-workflow`) must be decoupled from the notification service's
   schema — they call a small, stable HTTP API, not the DB directly.
 
@@ -75,7 +77,7 @@ user X about event Y," no per-user preference store, and no unified read API for
   Still requires a second component somewhere to do the actual routing/allowlist/preference-gate
   logic, so it only solves half the problem.
 
-### Option C (chosen) — New standalone service: `workflow-notification-service`
+### Option C (chosen) — New standalone service: `notification-service`
 - Pros: single owner for notification fan-out, per-user preferences, and read/unread state,
   independent of hermes-agent's and workflow-backend's own schemas and deploy cadence. Producers
   (hermes-agent, agent-workflow orchestrator) integrate through one small internal HTTP API,
@@ -93,12 +95,13 @@ audit-log DB with a concern neither currently owns.
 
 ## Chosen Design
 
-### New repo: `workflow-notification-service`
+### New repo: `notification-service`
 
-Go 1.22+, following the `go-microservice` template used by `user-service`:
+`git@github.com:tiendv89/notification-service.git` — Go 1.22+, following the `go-microservice`
+template used by `user-service`:
 
 ```
-workflow-notification-service/
+notification-service/
   cmd/server/main.go            # HTTP entrypoint (cobra: api, migration subcommands)
   configs/                      # viper config, env overrides
   internal/
@@ -182,7 +185,7 @@ workflow-notification-service/
 ### Frontend (`digital-factory-ui`)
 - New `Activity` nav-rail entry (alongside Channels, Team Chat) rendering three tabs — All, DMs,
   Mentions — backed by `GET /api/notifications`.
-- New `src/services/workflow-notification-service/client.ts` + `useNotifications` /
+- New `src/services/notification-service/client.ts` + `useNotifications` /
   `useNotificationPreferences` hooks (TanStack Query), following the same client/hook pattern as
   `src/services/workflow-backend/client.ts` / `useActivity`.
 - New **Notification Settings** section (Settings page) backed by
@@ -191,7 +194,7 @@ workflow-notification-service/
 
 ## Dependency Analysis
 
-- `workflow-notification-service` must exist (repo scaffolded, migrated, deployed, registered in
+- `notification-service` must exist (repo scaffolded, migrated, deployed, registered in
   `workspace.yaml`) before any producer integration work can land — it is the hard dependency
   root.
 - `hermes-agent` producer wiring and `agent-workflow` producer wiring are independent of each
@@ -206,7 +209,7 @@ workflow-notification-service/
 
 ## Parallelization / Blocking Analysis
 
-- **Wave 1 (parallel):** scaffold `workflow-notification-service` (repo, schema, migrations,
+- **Wave 1 (parallel):** scaffold `notification-service` (repo, schema, migrations,
   producer + user-facing API, service-token auth) — this is the single blocking task for
   everything else.
 - **Wave 2 (parallel once Wave 1 lands):**
