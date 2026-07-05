@@ -2,7 +2,7 @@ id: T1
 title: Scaffold notification-service repo (cmd/api, cmd/worker, cmd/main.go,
   Dockerfile)
 repo: notification-service
-status: reviewing
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -103,3 +103,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T10:32:38.675Z
     note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: retried
+    by: pye
+    at: 2026-07-05T18:31:25+0700
+    note: >-
+      Manual override: status forced from reviewing to in_review at explicit
+      human request. This is not a rule-defined transition (reviewing has no
+      direct path back to in_review under the task status transition rules) —
+      recorded here for audit visibility. The orchestrator's reviewing-status
+      duplicate-dispatch guard no longer applies to this task until it is
+      re-claimed.
