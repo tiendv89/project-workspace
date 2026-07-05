@@ -2,7 +2,7 @@ id: T9
 title: digital-factory-ui Notification Settings page (per-category in-app/email
   toggles)
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on:
   - T4
 blocked_reason: null
@@ -13,13 +13,13 @@ branch: feature/notification-service-T9
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T14:08:45+0000
+  last_updated_at: 2026-07-05T14:21:10.266Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/digital-factory-ui/pull/167
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/718
   status: open
