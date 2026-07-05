@@ -54,6 +54,15 @@ All / DMs / Mentions), and no way for a user to control what they get notified a
 - Let each user configure, per notification category, whether they want to be notified:
   at minimum **Mentions**, **Channel messages**, **DMs**, and **Feature lifecycle approvals**
   (spec/design/tasks approved), and **Task done**. Default: all categories on.
+- Let each user additionally choose, per category, the **delivery channel(s)**: **in-app**
+  (this feature's Activity surface) and/or **email**. Default: in-app on for all categories,
+  email off for all categories (opt-in, not opt-out — avoids surprising users with inbox noise
+  on day one). A user may enable email for a subset of categories (e.g. email for
+  "Feature lifecycle approvals" and "Task done" — things worth acting on even when away from the
+  app — while keeping Mentions/DMs/Channel messages in-app only).
+- Send an email when a user has email enabled for a category and that category's event fires,
+  using the email address already on file in `user-service` (no new email-collection flow).
+  Each email links back to the same deep link the in-app notification uses.
 - Reuse existing event sources rather than re-deriving them:
   - Mention/DM/channel events come from `hermes-agent`'s existing `messages` /
     `session_members` / mention-resolution pipeline (the same pipeline that already backs
@@ -66,10 +75,16 @@ All / DMs / Mentions), and no way for a user to control what they get notified a
 
 ## Non-goals
 
-- Email, push, or any off-app delivery channel — this feature is in-app only. (Slack delivery for
+- Push notifications (mobile/browser) or any other off-app channel besides email — only
+  **in-app** and **email** delivery are in scope for this feature. (Slack delivery for
   ops/feature-run visibility already exists via `slack-thread-notifications` /
-  `go-orchestrator-slack-notifications` and is out of scope here — this is the *personal, in-app*
-  surface.)
+  `go-orchestrator-slack-notifications` and is out of scope here — this is the *personal*
+  in-app + email surface, distinct from that ops-facing channel.)
+- Email design/branding polish, transactional-email deliverability tuning (SPF/DKIM/DMARC,
+  bounce handling, unsubscribe-link compliance beyond a basic per-category opt-out) — plain
+  text/simple HTML emails are sufficient for v1; hardening is a follow-up.
+- Email digesting/batching (e.g. "daily summary" email) — each qualifying event sends one
+  immediate email, same as in-app; no scheduling or batching layer.
 - Real-time delivery transport changes — this reuses whatever polling/SSE mechanism
   `digital-factory-ui` already uses for `useActivity` / chat streaming
   (`m3-agent-chat-v4`'s SSE fan-out); this feature does not introduce a new transport.
@@ -93,3 +108,10 @@ All / DMs / Mentions), and no way for a user to control what they get notified a
 - How does the fan-out determine "who is watching" a feature/task for the approval and
   task-done notifications (feature members? task assignee? anyone who has visited it)? To be
   resolved in technical design against existing membership/assignment models.
+- What email provider/transport should send outbound mail (SMTP relay vs. a transactional API
+  provider such as SES/SendGrid/Postmark), and where do provider credentials live (`.env` on the
+  new notification service, matching the existing project convention of provider tokens
+  resolved from `.env`)? To be resolved in technical design.
+- How is a user's email address obtained for the email channel — a direct lookup against
+  `user-service` per send, or a denormalized copy synced into the notification service? To be
+  resolved in technical design against `user-service`'s existing `FindByEmail`/`Me` surface.
