@@ -30,3 +30,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T11:18:16.918Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T11:18:24.779Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/547,
+      docs/features/m3-agent-chat-v2/handoffs/handoff.md,
+      docs/features/m3-agent-chat/handoffs/handoff.md"
+    rag_query: "digital-factory-ui: new Chat nav entry + Slack-style sidebar shell
+      agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
