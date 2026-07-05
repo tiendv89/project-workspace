@@ -33,3 +33,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T13:26:06.378Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T13:26:14.078Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/709,
+      docs/features/m3-agent-chat-v4/technical-design.md,
+      docs/features/agent-general-chat/product-spec.md"
+    rag_query: "digital-factory-ui: retire /channels + Team Chat standalone routes
+      to redirects agent-general-chat"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
