@@ -1,7 +1,7 @@
 id: T2
 title: "hermes-agent: dispatch gate — DM follows Channel bare-message rule"
 repo: hermes-agent
-status: ready
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/agent-general-chat-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T08:50:23.873Z
+  last_updated_at: 2026-07-05T09:31:25.807Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -45,14 +45,15 @@ log:
   - action: blocked
     by: pye@swellnetwork.io
     at: 2026-07-05T16:28:14+0700
-    note: >-
-      Claim by tiendv.52@gmail.com went stale — no work committed in
-      hermes-agent for this task. Marking blocked before resetting to
-      ready per the unblock target rule (pr.url is empty).
+    note: Claim by tiendv.52@gmail.com went stale — no work committed in
+      hermes-agent for this task. Marking blocked before resetting to ready per
+      the unblock target rule (pr.url is empty).
   - action: ready
     by: pye@swellnetwork.io
     at: 2026-07-05T16:28:14+0700
-    note: >-
-      Human resolved the stale claim block. pr.url is empty, so status
-      resets to ready (not in_review) for re-claim via
-      start-implementation.
+    note: Human resolved the stale claim block. pr.url is empty, so status resets to
+      ready (not in_review) for re-claim via start-implementation.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:31:25.807Z
+    note: Claimed via git-based claim protocol.
