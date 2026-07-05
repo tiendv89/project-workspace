@@ -33,3 +33,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T10:04:27.672Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T10:04:36.677Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/m3-agent-review-pr-skill/technical-design.md,
+      docs/features/m3-agent-chat/handoffs/handoff.md,
+      github.com/tiendv89/digital-factory-ui/pull/132"
+    rag_query: ReviewCard chat rendering (optional fast-follow) m3-agent-review-pr-skill
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
