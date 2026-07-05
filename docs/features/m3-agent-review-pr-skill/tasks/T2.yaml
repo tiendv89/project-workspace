@@ -1,7 +1,7 @@
 id: T2
 title: PR review posting tool (two-call pattern + self-review handling)
 repo: hermes-agent
-status: in_review
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -10,10 +10,10 @@ branch: feature/m3-agent-review-pr-skill-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T09:41:32.312Z
+  last_updated_at: 2026-07-05T09:56:07.814Z
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/46
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/701
   status: open
@@ -85,9 +85,12 @@ log:
   - action: retried
     by: pye@swellnetwork.io
     at: 2026-07-05T16:48:36+0700
-    note: >-
-      Manual override: reset reviewing -> in_review at human request. This is
-      not a defined transition in the task status transition table (valid
-      exits from reviewing are review_passed, change_requested, or
-      review_incomplete) — recorded here for audit since it deviates from the
-      standard workflow, consistent with the prior override on this task.
+    note: "Manual override: reset reviewing -> in_review at human request. This is
+      not a defined transition in the task status transition table (valid exits
+      from reviewing are review_passed, change_requested, or review_incomplete)
+      — recorded here for audit since it deviates from the standard workflow,
+      consistent with the prior override on this task."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T09:56:07.814Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
