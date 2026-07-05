@@ -2,7 +2,7 @@ id: T2
 title: DB schema + goose migrations (notifications, notification_preferences,
   email_deliveries)
 repo: notification-service
-status: in_progress
+status: ready
 depends_on:
   - T1
 blocked_reason: null
@@ -12,8 +12,8 @@ blocked_context: null
 branch: feature/notification-service-T2
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-05T11:38:29+0000
+  last_updated_by: pye@swellnetwork.io
+  last_updated_at: 2026-07-05T19:44:24+0700
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -47,3 +47,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-05T11:38:29+0000
     note: executor work phase begun.
+  - action: manual_override
+    by: pye@swellnetwork.io
+    at: 2026-07-05T19:44:24+0700
+    note: "Human override: status reset from in_progress to ready. This is not a
+      documented transition in the task status transition rules — done at
+      explicit human request to invalidate the in-progress claim (no PR had been
+      created yet: pr.url was empty) so the task can be re-claimed cleanly."
