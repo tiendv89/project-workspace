@@ -1,7 +1,7 @@
 id: T4
 title: "hermes-agent: metering-parity regression tests (G6)"
 repo: hermes-agent
-status: in_review
+status: done
 depends_on:
   - T1
   - T2
@@ -13,14 +13,14 @@ blocked_context: null
 branch: feature/agent-general-chat-T4
 execution:
   actor_type: agent
-  last_updated_by: pye@swellnetwork.io
-  last_updated_at: 2026-07-05T19:42:54+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-05T12:49:43.768Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/49
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/706
   status: open
@@ -72,3 +72,7 @@ log:
       documented transition in the task status transition rules — done at
       explicit human request to invalidate the prior reviewer claim (cycle 2) so
       the task can be re-dispatched to review cleanly."
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-05T12:49:43.768Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
