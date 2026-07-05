@@ -2,21 +2,21 @@ current_stage: handoff
 feature_id: notification-service
 feature_status: ready_for_implementation
 history:
-- action: stage_approved
-  at: 2026-07-05T08:19:17+0000
-  by: agent
-  note: product_spec approved by agent.
-  stage: product_spec
-- action: stage_approved
-  at: 2026-07-05T08:50:31+0000
-  by: agent
-  note: technical_design approved by agent.
-  stage: technical_design
-- action: stage_approved
-  at: 2026-07-05T09:37:17+0000
-  by: agent
-  note: tasks approved by agent.
-  stage: tasks
+  - action: stage_approved
+    at: 2026-07-05T08:19:17+0000
+    by: agent
+    note: product_spec approved by agent.
+    stage: product_spec
+  - action: stage_approved
+    at: 2026-07-05T08:50:31+0000
+    by: agent
+    note: technical_design approved by agent.
+    stage: technical_design
+  - action: stage_approved
+    at: 2026-07-05T09:37:17+0000
+    by: agent
+    note: tasks approved by agent.
+    stage: tasks
 next_action: Tasks ready for implementation.
 revalidation:
   deployment_checklist_required: false
@@ -33,31 +33,33 @@ stages:
   product_spec:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T08:19:17+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T08:19:17+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T08:19:17+0000
     reviewed_by: agent
   tasks:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T09:37:17+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T09:37:17+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T09:37:17+0000
     reviewed_by: agent
   technical_design:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-05T08:50:31+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-05T08:50:31+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-05T08:50:31+0000
     reviewed_by: agent
 title: notification-service
+feature_branch: feature/notification-service
+feature_branch_base_sha: c97b67161946d5ac5a2477aa9ac62356b37d9808
