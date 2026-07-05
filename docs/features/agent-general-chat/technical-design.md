@@ -119,6 +119,84 @@ entirely inside **hermes-agent**, in its own Postgres (async SQLAlchemy + asyncp
   returns the session; `GET /dms` lists the caller's DMs (thin wrapper over
   `list_member_sessions(kind='dm')`).
 
+### 1a. Table changes and DB migration (hermes-agent)
+
+No new tables. One additive migration, following the same pattern as the prior `kind` additions
+(`channel`/`thread`) in the v4 migration set under `migrations/`.
+
+**Table: `sessions`** — widen the existing `kind` check constraint to accept `'dm'`.
+
+| Column | Change |
+|---|---|
+| `kind` | Existing `CHECK (kind IN ('session','thread','channel'))` (or equivalent enum) is replaced with `CHECK (kind IN ('session','thread','channel','dm'))`. No column type/name change. |
+| `feature_id` | Unchanged — `dm` sessions use `feature_id=''`, same convention as `channel`/`thread`. |
+| `title` | Unchanged — for `dm` sessions the UI derives a display title client-side from the other member's name; no title is required server-side. |
+
+**Table: `session_members`** — no column changes. A `dm` session simply has exactly two rows
+(the two human participants); this is enforced in application code (`create_dm`), not a new
+DB constraint, to stay consistent with how membership cardinality for `channel`/`thread` is
+also app-enforced today.
+
+**New index** — supports the resolve-or-create lookup (`create_dm`) without a full-table scan:
+
+```sql
+CREATE INDEX IF NOT EXISTS idx_session_members_session_member
+    ON session_members (session_id, member_id);
+```
+
+(Session/member pair uniqueness for a `dm` — i.e. "only one DM session per pair of humans per
+workspace" — is resolved by `create_dm` querying existing `dm` sessions via this index and the
+`sessions.workspace_id` column before inserting; no DB-level uniqueness constraint is added,
+matching the existing app-enforced-uniqueness pattern used for channel names in v4.)
+
+**Migration file** — new file under `migrations/`, next sequential number after the latest v4
+migration (e.g. `migrations/00017_add_dm_session_kind.sql` — exact number to be confirmed against
+the latest file in the directory at task time):
+
+```sql
+-- 00017_add_dm_session_kind.sql
+-- Additive: widen sessions.kind to support 1:1 Direct Message sessions (agent-general-chat G2).
+
+BEGIN;
+
+ALTER TABLE sessions
+    DROP CONSTRAINT IF EXISTS sessions_kind_check;
+
+ALTER TABLE sessions
+    ADD CONSTRAINT sessions_kind_check
+    CHECK (kind IN ('session', 'thread', 'channel', 'dm'));
+
+CREATE INDEX IF NOT EXISTS idx_session_members_session_member
+    ON session_members (session_id, member_id);
+
+COMMIT;
+```
+
+**Rollback** (down migration, if the project's migration runner supports it):
+
+```sql
+-- 00017_add_dm_session_kind_rollback.sql
+BEGIN;
+
+DROP INDEX IF EXISTS idx_session_members_session_member;
+
+ALTER TABLE sessions
+    DROP CONSTRAINT IF EXISTS sessions_kind_check;
+
+ALTER TABLE sessions
+    ADD CONSTRAINT sessions_kind_check
+    CHECK (kind IN ('session', 'thread', 'channel'));
+
+COMMIT;
+```
+
+Rollback is only safe pre-launch (before any `dm` rows exist) — once `dm` sessions are created,
+the rollback `ALTER` would fail on the `CHECK` unless those rows are migrated/deleted first. This
+matches the same rollback caveat v4 documented for the hard-delete channel migration.
+
+**No changes required** to `workflow-backend` (Go/Postgres) or `user-service` tables — both are
+read-only dependencies in this design (§Dependency Analysis) and own no chat data.
+
 ### 2. Dispatch gate for DMs — no new logic (hermes-agent)
 DMs behave exactly like workspace Team Chat threads in the v4 dispatch gate (`messages.py`):
 `feature_id=''` ⇒ bare message does **not** trigger the agent; only explicit `@agent` does (C1).
