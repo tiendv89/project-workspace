@@ -1,7 +1,7 @@
 id: T1
 title: Read-only GitHub PR context tool + shared client
 repo: hermes-agent
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -103,3 +103,21 @@ log:
       docs/features/m3-agent-review-pr-skill/product-spec.md"
     rag_query: Read-only GitHub PR context tool + shared client m3-agent-review-pr-skill
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pye@swellnetwork.io
+    at: 2026-07-05T15:06:02+0700
+    note: >-
+      Human-directed reset requested (in_progress has no valid direct path to
+      ready). Transitioning via blocked as the sanctioned intermediate state.
+      No hermes-agent local checkout available in this session to verify or
+      commit in-progress work — see blocked_suggestion. Note: this is the
+      third claim/reset cycle for T1 within minutes, with no started work
+      progressing past rag_pre_flight — worth investigating why the executor
+      isn't advancing before re-claiming again.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-05T15:06:02+0700
+    note: >-
+      Human resolved the block and reset T1 to ready (pr.url was null, so
+      ready is the correct unblock target per the unblock target rule). Task
+      is available for re-claim.
