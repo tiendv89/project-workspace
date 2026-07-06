@@ -1,6 +1,6 @@
-current_stage: tasks
+current_stage: product_spec
 feature_id: test-feature-4
-feature_status: in_tdd
+feature_status: in_design
 history:
 - action: stage_approved
   at: 2026-07-06T15:53:40+0000
@@ -12,12 +12,17 @@ history:
   by: agent
   note: technical_design approved by agent.
   stage: technical_design
-next_action: Task breakdown required. Use the tech-lead skill (Phase 2).
+- action: stage_reopened
+  at: 2026-07-06T18:33:33+0000
+  by: agent
+  note: product_spec reopened by agent.
+  stage: product_spec
+next_action: Product spec reopened. Update the artifact and re-submit for approval.
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
-  tasks_required: false
-  technical_design_required: false
+  tasks_required: true
+  technical_design_required: true
 stages:
   handoff:
     review_comment: null
@@ -32,9 +37,13 @@ stages:
       review_status: approved
       reviewed_at: 2026-07-06T15:53:40+0000
       reviewed_by: agent
-    review_status: approved
-    reviewed_at: 2026-07-06T15:53:40+0000
-    reviewed_by: agent
+    - comment: Stage reopened by agent.
+      review_status: draft
+      reviewed_at: 2026-07-06T18:33:33+0000
+      reviewed_by: agent
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
   tasks:
     review_comment: null
     review_history: []
