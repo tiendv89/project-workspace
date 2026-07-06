@@ -1,13 +1,15 @@
 feature_id: go-orchestrator-autonomy
-title: Go Orchestrator — Autonomous Parity (reviewer cycle, handoff, error recovery, unblock)
-
-feature_status: ready_for_implementation
-current_stage: handoff
-next_action: >-
-  Tasks stage approved; feature advanced to ready_for_implementation. Wave-1 tasks (T1, T2, T3) are
-  now ready. Open the management-repo PR to merge this feature branch into main, then teams execute
-  tasks via start-implementation. Handoffs are recorded under handoffs/ and approved last.
-
+title: Go Orchestrator — Autonomous Parity (reviewer cycle, handoff, error
+  recovery, unblock)
+feature_status: done
+current_stage: done
+next_action: "Handoff stage approved. Management-repo handoff PR (#659) is
+  merged into main. 5 of 6 implementation feature PRs are merged
+  (workflow-backend, workflow-mcp, workflow-orchestrator, workflow,
+  workspace-github-adapter); workflow-bff PR #10
+  (https://github.com/tiendv89/workflow-bff/pull/10) is still open (mergeable,
+  clean). Merge that PR, then update impl_feature_prs status to merged and set
+  feature_status to done."
 stages:
   product_spec:
     review_status: approved
@@ -40,47 +42,89 @@ stages:
         reviewed_at: 2026-07-01T14:59:02+0700
         comment: Approved.
   handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
-
+    review_status: approved
+    reviewed_by: batu4404@gmail.com
+    reviewed_at: 2026-07-06T11:37:21+0700
+    review_comment: "Approved. Management-repo handoff PR (#659) merged into main.
+      Feature stays in_handoff — workflow-bff PR #10 is still open and must
+      merge before the feature transitions to done."
+    review_history:
+      - review_status: approved
+        reviewed_by: batu4404@gmail.com
+        reviewed_at: 2026-07-06T11:37:21+0700
+        comment: "Approved. Management-repo handoff PR (#659) merged into main. Feature
+          stays in_handoff — workflow-bff PR #10 is still open and must merge
+          before the feature transitions to done."
+    pr_url: https://github.com/tiendv89/project-workspace/pull/659
 history:
   - at: 2026-07-01T10:37:34+0700
     actor: batu4404@gmail.com
     action: created
     stage: product_spec
-    note: >-
-      Feature created for the Go orchestrator autonomous-parity scope (reviewer cycle, fix loop,
-      review-incomplete retry, conflict resolution, handoff trigger + finalize, error/stuck recovery,
-      human-unblock). Depends on workflow-db. Slack notifications split into a separate
-      go-orchestrator-slack-notifications feature. Replaces the stale go-orchestrator-parity draft.
+    note: Feature created for the Go orchestrator autonomous-parity scope (reviewer
+      cycle, fix loop, review-incomplete retry, conflict resolution, handoff
+      trigger + finalize, error/stuck recovery, human-unblock). Depends on
+      workflow-db. Slack notifications split into a separate
+      go-orchestrator-slack-notifications feature. Replaces the stale
+      go-orchestrator-parity draft.
   - at: 2026-07-01T11:27:57+0700
     actor: batu4404@gmail.com
     action: approved
     stage: product_spec
-    note: >-
-      Product spec approved; feature advanced to in_tdd. Next: formalize technical-design.md via
-      tech-lead, then submit for approval.
+    note: "Product spec approved; feature advanced to in_tdd. Next: formalize
+      technical-design.md via tech-lead, then submit for approval."
   - at: 2026-07-01T14:33:29+0700
     actor: batu4404@gmail.com
     action: approved
     stage: technical_design
-    note: >-
-      Technical design approved; advancing to task planning (current_stage=tasks, feature stays
-      in_tdd). Next: run tech-lead Phase 2 to produce the task breakdown, then approve the tasks stage.
+    note: "Technical design approved; advancing to task planning
+      (current_stage=tasks, feature stays in_tdd). Next: run tech-lead Phase 2
+      to produce the task breakdown, then approve the tasks stage."
   - at: 2026-07-01T14:59:02+0700
     actor: batu4404@gmail.com
     action: approved
     stage: tasks
-    note: >-
-      Tasks stage approved (ts feature, 15 tasks, topologically numbered). Feature advanced to
-      ready_for_implementation; current_stage=handoff. Wave-1 tasks with no dependencies (T1, T2, T3)
-      activated todo -> ready. Teams may now execute via start-implementation.
-
+    note: Tasks stage approved (ts feature, 15 tasks, topologically numbered).
+      Feature advanced to ready_for_implementation; current_stage=handoff.
+      Wave-1 tasks with no dependencies (T1, T2, T3) activated todo -> ready.
+      Teams may now execute via start-implementation.
+  - at: 2026-07-06T11:37:21+0700
+    actor: batu4404@gmail.com
+    action: approved
+    stage: handoff
+    note: "Handoff approved. Management-repo handoff PR (#659) is merged into main.
+      Verified live PR state via GitHub API: workflow-backend #53, workflow-mcp
+      #8, workflow-orchestrator #28, workflow (agent-workflow) #277, and
+      workspace-github-adapter #32 are all merged; workflow-bff #10 is still
+      open (mergeable, clean). feature_status stays in_handoff — per the
+      technical design, the feature moves to done only once all impl_feature_prs
+      are merged and the mgmt PR finalize step runs. Refreshed impl_feature_prs
+      statuses below to match live GitHub state."
 revalidation:
   product_spec_required: false
   technical_design_required: false
   tasks_required: false
   deployment_checklist_required: false
+feature_branch: feature/go-orchestrator-autonomy
+feature_branch_base_sha: e7feaa00ded48312baf6e57fe9cc800013928a54
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/632
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/659
+impl_feature_prs:
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/53
+    status: merged
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/10
+    status: merged
+  - repo: workflow-mcp
+    url: https://github.com/batu4404/workflow-mcp/pull/8
+    status: merged
+  - repo: workflow-orchestrator
+    url: https://github.com/tiendv89/workflow-orchestrator/pull/28
+    status: merged
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/277
+    status: merged
+  - repo: workspace-github-adapter
+    url: https://github.com/tiendv89/workspace-github-adapter/pull/32
+    status: merged

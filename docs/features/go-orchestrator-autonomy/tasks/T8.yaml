@@ -1,24 +1,115 @@
 id: T8
-title: Conflict resolution — conflict_state, rebase, cap, merged-is-truth, terminal guard
+title: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
+  terminal guard
 repo: workflow-orchestrator
-status: todo
-depends_on: [T5]
+status: done
+depends_on:
+  - T5
 blocked_reason: null
 blocked_context: null
 branch: feature/go-orchestrator-autonomy-T8
-
 execution:
   actor_type: agent
-  last_updated_by: batu4404@gmail.com
-  last_updated_at: 2026-07-01T14:54:39+0700
-
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-01T17:44:25.204Z
 pr:
-  url: null
-  status: null
-
+  url: https://github.com/tiendv89/workflow-orchestrator/pull/23
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/640
+  status: open
 log:
   - action: created
     by: batu4404@gmail.com
     at: 2026-07-01T14:54:39+0700
-    note: >-
-      Task created from the approved task breakdown (tech-lead Phase 2). depends_on: [T5].
+    note: "Task created from the approved task breakdown (tech-lead Phase 2).
+      depends_on: [T5]."
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:33:27.439Z
+    note: Task activated — dependency T5 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:37:33.438Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:37:41.268Z
+    rag_context_injected: false
+    rag_summary: query_returned_no_chunks
+    rag_query: Conflict resolution — conflict_state, rebase, cap, merged-is-truth,
+      terminal guard go-orchestrator-autonomy
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T09:44:58+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: batu4404@gmail.com
+    at: 2026-07-01T23:43:13+0700
+    note: "Recovering a stuck implementation run: the executor completed the work
+      and opened PR #23 (tiendv89/workflow-orchestrator) as a draft, but died
+      before marking it ready and updating task state. By the time this was
+      investigated, PR #23 had also gone mergeable:false — the base branch had
+      advanced (T3/T6/T9 merged). Rebased once onto that state; while resolving,
+      T7's PR #24 merged into the base mid-rebase (a live race), requiring a
+      second rebase pass to reconcile with T7's verdict-routing additions in
+      reap.go. Also found and fixed a real bug in T8's own code surfaced during
+      the merge: DispatchRebase generated a nonce, persisted it via
+      SetResolving, then dispatched via a separate DispatchWithKind helper that
+      generated its OWN internal nonce — the nonce sent to the broker would not
+      have matched the one persisted in the DB, breaking executor /callback
+      validation. Fixed by routing DispatchRebase through T7's existing
+      DispatchWithNonce (already generic over kind) instead, and removed the
+      redundant DispatchWithKind path. Also deduped a hand-written
+      ListPRPollTasks against the already-existing sqlc
+      ListMergeablePRTasksForOwner (same pattern as T7's FindReviewableTasks
+      dedup against T9). go build/test/lint all pass clean; PR #23 is now
+      mergeable:true (mergeable_state:unstable, pending CI — not a conflict).
+      Transitioning to in_review so the orchestrator dispatches a reviewer."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T16:45:43.527Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T16:56:34.491Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T16:57:32.277Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/23"
+    at: 2026-07-01T17:14:24.087Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T17:15:37.233Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-01T17:24:34.385Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T17:25:34.392Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR:
+      https://github.com/tiendv89/workflow-orchestrator/pull/23"
+    at: 2026-07-01T17:34:47.259Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T17:35:57.414Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-01T17:43:14.919Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-01T17:44:25.204Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
