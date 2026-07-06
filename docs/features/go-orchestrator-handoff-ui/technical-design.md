@@ -63,10 +63,9 @@ New handler in `internal/handler/` (new file, e.g. `handoff.go`, alongside the e
 GET /api/workspaces/{workspaceId}/features/{featureId}/handoff
 ```
 
-Response shape:
+Response shape (handoff exists — HTTP 200):
 ```json
 {
-  "exists": true,
   "created_at": "2026-07-03T14:22:00Z",
   "prs": [
     { "repo": "workflow-orchestrator", "pr_url": "https://github.com/.../pull/741", "status": "merged" },
@@ -74,9 +73,9 @@ Response shape:
   ]
 }
 ```
-When no handoff row exists: `{"exists": false}` (HTTP 200 — this is an expected, non-error state per the product spec's "no handoff" UI requirement, not a 404).
+When no handoff row exists: HTTP `404 Not Found` (empty body, or a minimal `{"error": "handoff not found"}` following this codebase's existing error-response conventions in `internal/app/api/response/http_response.go`) — per REST convention, absence of the handoff sub-resource for this feature is represented as a 404, distinct from a 404 caused by an unknown `workspaceId`/`featureId` (which is validated and rejected earlier in the handler chain, before the handoff lookup, so the two 404 cases are not conflated at the point they're raised).
 
-This endpoint only makes sense for `owner: go` features; for ts-flow features it returns `{"exists": false}` (or the handler may short-circuit based on the feature's `owner` field, mirroring existing owner-based branching such as `TestCreateTasks_400_NonGoFeature`) — no behavior change to the ts-flow `handoffs/handoff.md` path.
+This endpoint only makes sense for `owner: go` features; for ts-flow features it returns `404` (or the handler may short-circuit based on the feature's `owner` field, mirroring existing owner-based branching such as `TestCreateTasks_400_NonGoFeature`) — no behavior change to the ts-flow `handoffs/handoff.md` path.
 
 ### 3. `workflow-bff` — routing only
 Add one entry to `RoutingTable` (`internal/app/api/handler/proxy/routing.go`) mapping the new route pattern `GET /api/workspaces/:workspaceId/features/:featureId/handoff` to the `workflow-backend` target host, following the exact pattern already used for task-create / feature-name-filter / unblock (see `routing_test.go: TestTaskCreateAndFeatureNameRoutesResolveToWorkflowBackend`). No changes to `ProxyHandler.Proxy` itself, no new BFF business logic — pure pass-through, per the product spec's non-goal.
@@ -85,8 +84,8 @@ Add one entry to `RoutingTable` (`internal/app/api/handler/proxy/routing.go`) ma
 - Add a new service function alongside `src/services/workflow-backend/documents.ts` (or a sibling `handoff.ts` in the same `services/workflow-backend/` directory) that calls the **`workflow-bff` URL** for the new route (never the raw `workflow-backend` host) — consistent with how `documents.ts:getDocumentContent` already routes through the BFF.
 - Add a `HandoffSection` component (new file near `feature-document-panel.tsx` / `feature-ide-docs-panel.tsx`) rendered on the feature detail view for `owner: go` features:
   - Calls the new endpoint on mount/feature-change.
-  - `exists: false` → renders the "No handoff yet." empty state (per product-spec mockup).
-  - `exists: true` → renders `Created: <created_at>` once above a table with columns **Repo / PR (link) / Status**, one row per entry in `prs[]`. Status renders as a colored badge (🟢 Merged / 🟡 Open / 🔴 Conflicted), reusing the existing status-glyph conventions in `src/components/board/status-glyph.tsx` where feasible for visual consistency with the rest of the board.
+  - `404` response → renders the "No handoff yet." empty state (per product-spec mockup) — the FE treats this specific 404 as an expected, non-error UI state (distinct from network/auth/other errors, which render a generic error state instead).
+  - `200` response → renders `Created: <created_at>` once above a table with columns **Repo / PR (link) / Status**, one row per entry in `prs[]`. Status renders as a colored badge (🟢 Merged / 🟡 Open / 🔴 Conflicted), reusing the existing status-glyph conventions in `src/components/board/status-glyph.tsx` where feasible for visual consistency with the rest of the board.
 - ts-flow features continue to use the existing `handoffs/handoff.md`-based path unchanged; the new `HandoffSection` is only mounted for `owner: go` features (mirrors the existing owner-based branching already present in the codebase, e.g. `TestNullOwnerFeatureAndTasks_SurfaceWithoutOwnerField`, `TestCreateTasks_400_NonGoFeature`).
 
 ## Dependency Analysis
