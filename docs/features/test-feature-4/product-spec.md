@@ -2,19 +2,22 @@
 
 ## Feature
 - Feature ID: `test-feature-4`
-- Title: `test-feature-4`
+- Title: `Smart Notification Center`
 
 ## Problem
-Users currently have no way to save and organize their favorite items across sessions. Each time they return to the application, they must manually search for and re-locate items they previously found useful. This creates friction and reduces overall user satisfaction and engagement.
+Users are overwhelmed by a flood of unorganized notifications from multiple sources within the application. Important alerts get buried under low-priority ones, causing users to miss critical updates. There is currently no way to filter, prioritize, or snooze notifications, leading to notification fatigue and reduced engagement.
 
 ## Goals
-- Allow users to bookmark/favorite individual items from any list view
-- Persist favorites across sessions (tied to user account)
-- Provide a dedicated "Favorites" view where users can browse, search, and remove saved items
-- Surface favorite items with higher priority in relevant search results
+- Centralize all in-app notifications into a single Notification Center panel
+- Allow users to filter notifications by type (alerts, updates, reminders, system)
+- Support snoozing individual notifications for a user-defined duration
+- Mark notifications as read/unread individually or in bulk
+- Persist notification state (read/unread, snoozed) tied to the user account
+- Display an unread badge count on the notification bell icon in the nav bar
 
 ## Non-goals
-- Sharing favorites with other users (social/collaborative features are out of scope)
-- Syncing favorites across multiple devices in real-time (standard session sync is sufficient)
-- Categorizing or tagging favorites (plain flat list only for v1)
-- Bulk import/export of favorites
+- Push notifications to mobile or desktop OS (in-app only for v1)
+- Email or SMS digests of notifications
+- Custom notification sounds or vibration patterns
+- Third-party notification integrations (Slack, PagerDuty, etc.)
+- Per-channel granular notification preferences (simple on/off toggle only for v1)
