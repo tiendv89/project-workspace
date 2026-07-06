@@ -25,8 +25,11 @@ Today none of this handoff/handoff-PR data is exposed to the workspace UI for go
 - Display this information in `digital-factory-ui` on the feature detail view, in a manner comparable to how ts-flow features surface their `handoffs/handoff.md` content today (e.g. alongside `FeatureIDEDocsPanel` / `feature-document-panel.tsx`), but sourced from the Go orchestrator's DB-backed handoff/handoff-PR data instead of a git file.
 - If no handoff exists yet for the feature, the UI should clearly indicate "no handoff" rather than showing an error or blank section.
 
+- The `digital-factory-ui` frontend must call the new endpoint through the existing `workflow-bff` proxy — not directly against `workflow-backend`. `workflow-bff` already has a generic pass-through (`ProxyHandler.Proxy` + `RoutingTable.Resolve` in `internal/app/api/handler/proxy/`) that forwards requests to `workflow-backend` by route pattern, matching how other `workflow-backend` endpoints (e.g. task-create, feature-name-filter, unblock — see `routing_test.go`) are already reached from the FE. The new handoff endpoint's route must be added to `workflow-bff`'s routing table so it resolves to `workflow-backend`, and the FE must call the corresponding `workflow-bff` URL (not the raw `workflow-backend` URL).
+
 ## Non-goals
 - Do not change how ts-flow features track or display handoffs (the `handoffs/handoff.md` file-based mechanism is untouched).
 - Do not change the Go orchestrator's handoff creation, finalization, or PR-conflict-resolution logic (`CheckAndFinalizeHandoffs`, `maybeFinalize`, `SetHandoffPRConflicted`, etc.) — this feature is read/display only.
 - Do not add the ability to approve/merge/act on handoff PRs from this UI — this is a display-only surface; actions on PRs continue to happen on GitHub (or existing approval flows) as today.
 - Do not build a generic multi-orchestrator abstraction beyond what's needed to branch UI/API behavior between ts (file-based) and go (DB-based) handoff sources.
+- Do not modify `workflow-bff`'s proxy/routing logic itself — only add a routing-table entry for the new endpoint using the existing pass-through mechanism. No new BFF-side business logic, aggregation, or transformation.
