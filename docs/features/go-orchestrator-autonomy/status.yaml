@@ -1,15 +1,15 @@
 feature_id: go-orchestrator-autonomy
 title: Go Orchestrator — Autonomous Parity (reviewer cycle, handoff, error
   recovery, unblock)
-feature_status: in_handoff
-current_stage: handoff
-next_action: >-
-  Handoff stage approved. Management-repo handoff PR (#659) is merged
-  into main. 5 of 6 implementation feature PRs are merged (workflow-backend,
-  workflow-mcp, workflow-orchestrator, workflow, workspace-github-adapter);
-  workflow-bff PR #10 (https://github.com/tiendv89/workflow-bff/pull/10) is
-  still open (mergeable, clean). Merge that PR, then update impl_feature_prs
-  status to merged and set feature_status to done.
+feature_status: done
+current_stage: done
+next_action: "Handoff stage approved. Management-repo handoff PR (#659) is
+  merged into main. 5 of 6 implementation feature PRs are merged
+  (workflow-backend, workflow-mcp, workflow-orchestrator, workflow,
+  workspace-github-adapter); workflow-bff PR #10
+  (https://github.com/tiendv89/workflow-bff/pull/10) is still open (mergeable,
+  clean). Merge that PR, then update impl_feature_prs status to merged and set
+  feature_status to done."
 stages:
   product_spec:
     review_status: approved
@@ -45,18 +45,16 @@ stages:
     review_status: approved
     reviewed_by: batu4404@gmail.com
     reviewed_at: 2026-07-06T11:37:21+0700
-    review_comment: >-
-      Approved. Management-repo handoff PR (#659) merged into main. Feature
-      stays in_handoff — workflow-bff PR #10 is still open and must merge
-      before the feature transitions to done.
+    review_comment: "Approved. Management-repo handoff PR (#659) merged into main.
+      Feature stays in_handoff — workflow-bff PR #10 is still open and must
+      merge before the feature transitions to done."
     review_history:
       - review_status: approved
         reviewed_by: batu4404@gmail.com
         reviewed_at: 2026-07-06T11:37:21+0700
-        comment: >-
-          Approved. Management-repo handoff PR (#659) merged into main.
-          Feature stays in_handoff — workflow-bff PR #10 is still open and
-          must merge before the feature transitions to done.
+        comment: "Approved. Management-repo handoff PR (#659) merged into main. Feature
+          stays in_handoff — workflow-bff PR #10 is still open and must merge
+          before the feature transitions to done."
     pr_url: https://github.com/tiendv89/project-workspace/pull/659
 history:
   - at: 2026-07-01T10:37:34+0700
@@ -94,15 +92,14 @@ history:
     actor: batu4404@gmail.com
     action: approved
     stage: handoff
-    note: >-
-      Handoff approved. Management-repo handoff PR (#659) is merged into
-      main. Verified live PR state via GitHub API: workflow-backend #53,
-      workflow-mcp #8, workflow-orchestrator #28, workflow (agent-workflow)
-      #277, and workspace-github-adapter #32 are all merged; workflow-bff #10
-      is still open (mergeable, clean). feature_status stays in_handoff —
-      per the technical design, the feature moves to done only once all
-      impl_feature_prs are merged and the mgmt PR finalize step runs. Refreshed
-      impl_feature_prs statuses below to match live GitHub state.
+    note: "Handoff approved. Management-repo handoff PR (#659) is merged into main.
+      Verified live PR state via GitHub API: workflow-backend #53, workflow-mcp
+      #8, workflow-orchestrator #28, workflow (agent-workflow) #277, and
+      workspace-github-adapter #32 are all merged; workflow-bff #10 is still
+      open (mergeable, clean). feature_status stays in_handoff — per the
+      technical design, the feature moves to done only once all impl_feature_prs
+      are merged and the mgmt PR finalize step runs. Refreshed impl_feature_prs
+      statuses below to match live GitHub state."
 revalidation:
   product_spec_required: false
   technical_design_required: false
@@ -118,7 +115,7 @@ impl_feature_prs:
     status: merged
   - repo: workflow-bff
     url: https://github.com/tiendv89/workflow-bff/pull/10
-    status: open
+    status: merged
   - repo: workflow-mcp
     url: https://github.com/batu4404/workflow-mcp/pull/8
     status: merged
