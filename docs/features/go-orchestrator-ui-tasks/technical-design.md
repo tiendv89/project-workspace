@@ -89,6 +89,6 @@ Conclusion: the frontend's merged-badge check `task.pr.status === "merged"` is c
 - No changes to `useTaskDiff`, `getTaskDiff` client, or `DiffPanel`.
 
 ## Parallelization / Blocking Analysis
-- **T1 (frontend-only, `digital-factory-ui`)**: implement `parsePRRefLabel`, update `TaskDiffTab` header rendering (owner-gated branch/PR display + merged badge), thread `owner` prop from the call site. Fully self-contained; no backend dependency since the required data (`task.pr`, `feature.owner`) already exists in the API surface.
-- **T2 (verification-only, `workflow-backend`)**: confirm `pr.status` value set for go tasks matches `"open"`/`"merged"` expectations via existing/extended handler tests. Can run in parallel with T1; only blocks final sign-off if a status-value mismatch is found (in which case a small backend normalization fix would be needed before T1's merged-badge check is correct in production).
-- No sequencing dependency between T1 and T2 for implementation, but T1's merged-badge logic should be validated against T2's findings before merge.
+- **T1 (frontend-only, `digital-factory-ui`)**: implement `parsePRRefLabel`, update `TaskDiffTab` header rendering (owner-gated branch/PR display + merged badge), thread `owner` prop from the call site. Fully self-contained; no backend dependency since the required data (`task.pr`, `feature.owner`) already exists in the API surface, and `pr.status`'s value set (`"open"` / `"merged"`) is confirmed above — no backend verification step remains.
+
+Single-task breakdown: this feature is frontend-only. There is no backend task (T2) — the diff-fetch endpoint and `pr.status` semantics are both confirmed unchanged/correct for go tasks without any code modification.
