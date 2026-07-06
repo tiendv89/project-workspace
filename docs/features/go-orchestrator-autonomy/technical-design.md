@@ -135,8 +135,8 @@ Rebase cap `MAX_REBASE_ATTEMPTS`=3: Path A → `blocked (rebase_failed)`; Path B
 (`ensureImplFeatureBranch`); the orchestrator never creates it and its only git-write is handoff PRs.
 
 **Handoff + handoff-PR rebase loop.** Predicate: all tasks `done`/`cancelled`. On trigger: guarded
-`feature_status='handoff'` (idempotency + multi-instance guard) + `UNIQUE(feature_id)` on `handoffs`;
-create a `handoffs` row + one `handoff_prs` row per **distinct repo referenced by the feature's tasks**;
+`feature_status='handoff'` (idempotency + multi-instance guard) + `UNIQUE(feature_id)` on `workspace_feature_handoffs`;
+create a `workspace_feature_handoffs` row + one `workspace_feature_handoff_prs` row per **distinct repo referenced by the feature's tasks**;
 open draft feature→main PRs + the mgmt-repo status PR; missing feature branch in a touched repo → skip
 + Slack TODO. A **high-priority loop** rebases `CONFLICTING` handoff PRs before task dispatch (close
 features fast); these count toward the soft-claim budget and are covered by the reconciler. Finalize:
@@ -194,7 +194,7 @@ dispatch).
 | blocked | ready / in_review | human unblock (cause-aware) | human (unblock API) |
 | any **non-terminal** | cancelled | human | human, guarded `WHERE status NOT IN ('done','cancelled')` |
 
-### conflict_state FSM (tasks AND handoff_prs)
+### conflict_state FSM (tasks AND workspace_feature_handoff_prs)
 `none → conflicted` (poll `mergeable=false`) → `resolving` (rebase dispatched, guarded) → `resolved`
 (success). `resolving → conflicted` (retriable failure `< MAX_REBASE_ATTEMPTS`). Cap: task Path A →
 `blocked`; task Path B (`review_passed`) / handoff_pr → stay + `conflicted` + Slack.
@@ -213,12 +213,12 @@ not clobber those.
 | reenqueue_attempts | per-dispatch | 0 on dispatch-in; clear on dispatch-out (NOT on enqueue-success) |
 | max_turns_retry_count | per-work-episode | 0 on success exit `→in_review`; also 0 on unblock |
 | review_incomplete_count | per-review | reset when review concludes; also 0 on unblock |
-| rebase_attempts | per-conflict-episode | 0 on `conflict_state=resolved`; also 0 on unblock |
+| rebase_attempts (tasks) / conflict_resolution_attempts (handoff PRs) | per-conflict-episode | 0 on `conflict_state=resolved`; also 0 on unblock |
 | blocked_from_status | — | set on `→blocked`; read on unblock |
 
 ### In-flight (soft-claim) predicate
 `count(workspace_tasks WHERE status IN ('in_progress','reviewing') OR conflict_state='resolving')`
-`+ count(handoff_prs WHERE conflict_state='resolving')` ≤ `MAX_INFLIGHT`.
+`+ count(workspace_feature_handoff_prs WHERE conflict_state='resolving')` ≤ `MAX_INFLIGHT`.
 
 ### Cycle order (per poll)
 feature-branch/handoff triggers → **handoff-PR conflict-rebase + finalize (HIGH prio)** → task dispatch
@@ -242,48 +242,62 @@ migration task. All new columns are additive/nullable-or-defaulted → backward 
 | `rebase_attempts` | int | `0` | rebase-failure count (per-conflict-episode) |
 | `conflict_state` | text | `'none'` | `none` \| `conflicted` \| `resolving` \| `resolved` |
 | `blocked_from_status` | text | null | status held at `→blocked` (cause-aware unblock target) |
+| `blocked_details` | text | null | structured/free-text failure context set alongside `blocked_reason` (see §"Error/stuck recovery") |
 | `dispatch_kind` | text | null | (optional) `impl`\|`fix`\|`review`\|`rebase` — lets the reconciler rebuild the right job |
 
-### New table — `handoffs` (one row per feature handoff)
+> **Correction (post-implementation):** the original version of this table omitted `blocked_details`,
+> even though the "Error/stuck recovery" prose above and T6's implementation both required it. Migration
+> `00021_go_orchestrator_autonomy.sql` (T1) shipped without it, which broke every orchestrator poll
+> query (`column blocked_details does not exist`). Fixed by a follow-up migration,
+> `00022_workspace_tasks_add_blocked_details.sql`, in `workflow-backend`.
+
+### New table — `workspace_feature_handoffs` (one row per feature handoff)
+
+> **Migration note:** `00021_go_orchestrator_autonomy.sql` created this table as `handoffs`.
+> `00023_workspace_feature_handoffs.sql` adds `create_attempts`, sets the `status` default to
+> `'draft'`, and renames the table (and `handoff_prs` → `workspace_feature_handoff_prs`) for
+> naming consistency with other `workspace_feature_*` tables.
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK, `gen_random_uuid()` |
 | `workspace_id` | uuid | not null |
 | `feature_id` | uuid | not null; **`UNIQUE(feature_id)`** — one handoff per feature + the multi-instance trigger guard |
 | `mgmt_pr_url` | text | null — the management-repo status PR |
-| `status` | text | `open` \| `finalized` |
+| `status` | text | `'draft'` default; `draft` → `open` (all PRs created) → `finalized`; `failed` when create-attempt budget exhausted |
+| `create_attempts` | int | `0` — handoff-reconcile retry counter; bounded before terminal `failed` |
 | `created_at` / `finalized_at` | timestamptz | `now()` / null |
 
-### New table — `handoff_prs` (one row per impl-repo handoff PR)
+### New table — `workspace_feature_handoff_prs` (one row per impl-repo handoff PR)
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid | PK |
-| `handoff_id` | uuid | not null, **FK → `handoffs(id)` ON DELETE CASCADE** |
+| `handoff_id` | uuid | not null, **FK → `workspace_feature_handoffs(id)` ON DELETE CASCADE** |
 | `repo` | text | `workspace.yaml` repo id |
 | `pr_url` | text | null when skipped |
 | `status` | text | `open` \| `merged` \| `skipped_no_branch` |
-| `conflict_state` | text | `'none'` default — drives the handoff-PR rebase loop |
-| `rebase_attempts` | int | `0` |
-| `dispatch_handle` / `dispatch_nonce` / `dispatched_at` / `reenqueue_attempts` | (as tasks) | for the rebase dispatch + reconciler |
+| `conflict_state` | text | `'none'` default — drives the handoff-PR conflict-resolution loop |
+| `conflict_resolution_attempts` | int | `0` (per-conflict-episode) |
+| `dispatch_handle` / `dispatch_nonce` / `dispatched_at` / `reenqueue_attempts` | (as tasks) | for the conflict-resolution dispatch + reconciler |
 | `created_at` | timestamptz | `now()` |
 - Constraint: **`UNIQUE(handoff_id, repo)`** (one handoff PR per repo per handoff).
 
 ### Indexes
 The per-cycle **soft-claim in-flight count spans BOTH tables** —
-`count(workspace_tasks … dispatched) + count(handoff_prs WHERE conflict_state='resolving')` — so both
+`count(workspace_tasks … dispatched) + count(workspace_feature_handoff_prs WHERE conflict_state='resolving')` — so both
 halves want an index; likewise the reconciler scans both tables for stuck dispatches.
 - **Reused (no change):** `workspace_tasks (workspace_id, owner, status)` — all status scans;
   `UNIQUE(workspace_id, feature_id, task_name)` prefix — handoff-completion predicate;
-  `handoffs UNIQUE(feature_id)`.
+  `workspace_feature_handoffs UNIQUE(feature_id)`.
 - **ADD — partial index on `workspace_tasks` (needed):**
   `... (workspace_id) WHERE owner='go' AND (status IN ('in_progress','reviewing') OR conflict_state='resolving')`.
   Serves the tasks half of the per-cycle in-flight count (O(dispatched), not O(all go tasks — which grow
   unbounded)) and the reconciler's `dispatched_at < deadline` scan. Tiny (only in-flight rows).
-- **ADD — partial index on `handoff_prs` (mirrors the above for the handoff half):**
+- **ADD — partial index on `workspace_feature_handoff_prs` (mirrors the above for the handoff half):**
   `... WHERE conflict_state='resolving'`. Serves the handoff-PR half of the same per-cycle count and the
-  handoff-PR reconciler. Lower priority than the tasks index — `handoff_prs` grows slowly (bounded by
+  handoff-PR reconciler. Lower priority than the tasks index — `workspace_feature_handoff_prs` grows slowly (bounded by
   handed-off features × repos), so a scan is cheap — but added for consistency of the per-cycle query.
-- **ADD — `handoff_prs(handoff_id)`:** FK-join index for the finalize check (all PRs of a handoff merged?)
+- **ADD — `workspace_feature_handoff_prs(handoff_id)`:** FK-join index for the finalize check (all PRs of a handoff merged?)
   and per-handoff PR listing (Postgres does not auto-index FK columns).
 - **Not indexed:** the counter/handle columns (read as part of the row, never filtered on); the
   handoff-PR-rebase loop's `status='open'` scan (small table — a scan is cheap).
@@ -361,7 +375,7 @@ state is derived server-side); the bff proxy + backend endpoint above are the co
 D1: Confirm respond-to-review can rebase feature→main (else flag-for-human) ── resolve before T6 handoff rebase
 D2: Decide CLAUDE.md unblock-rule refinement (cause-aware)                   ── minor; resolve at/around T8
 
-T1: workflow-backend — schema migration (task columns + handoffs/handoff_prs tables)
+T1: workflow-backend — schema migration (task columns + workspace_feature_handoffs/workspace_feature_handoff_prs tables)
   └── Can begin now — no blockers
 T2: workspace-github-adapter — owner-scope feature_status/current_stage/next_action for owner='go'
   └── Can begin now — no blockers
@@ -380,7 +394,7 @@ T13: workflow-orchestrator — README/AGENTS state-machine docs (from the approv
   │     │
   │     ├── T6: workflow-orchestrator — feature lifecycle (in_implementation, handoff trigger,
   │     │        handoff_prs, handoff-PR rebase loop, finalize)
-  │     │     └── BLOCKED on T1 (handoffs/handoff_prs tables)
+  │     │     └── BLOCKED on T1 (workspace_feature_handoffs/workspace_feature_handoff_prs tables)
   │     │     └── BLOCKED on T5 (reuses conflict/rebase machinery for handoff-PR rebase)
   │     │     └── BLOCKED on T2 (adapter owner-scope so feature_status writes survive)
   │     │
@@ -406,7 +420,7 @@ Wave summary: **Wave 1** = T1, T2, T13 (no blockers). **Wave 2** = T3, T4, T5, T
 | Repo (`workspace.yaml` id) | Why |
 |---|---|
 | `workflow-orchestrator` | All new orchestrator loops (reviewer, error-recovery, conflict, handoff + handoff-PR rebase, soft-claim, unblock-resume) + README/AGENTS state-machine docs. |
-| `workflow-backend` | Migrations (task columns + `handoffs`/`handoff_prs`) and the unblock API endpoint. |
+| `workflow-backend` | Migrations (task columns + `workspace_feature_handoffs`/`workspace_feature_handoff_prs`) and the unblock API endpoint. |
 | `workspace-github-adapter` | Owner-scope `feature_status`/`current_stage`/`next_action` off `owner='go'`. |
 | `workflow-bff` | Proxy the unblock endpoint with identity injection (UI path; UI out of scope). |
 | `workflow-mcp` | Add the `unblock_task` tool. |
