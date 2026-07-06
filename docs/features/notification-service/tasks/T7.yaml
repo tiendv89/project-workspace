@@ -31,3 +31,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-06T19:14:12.900Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-06T19:14:21.410Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      github.com/tiendv89/project-workspace/pull/720,
+      github.com/tiendv89/hermes-agent/pull/52,
+      docs/features/notification-service/technical-design.md"
+    rag_query: agent-workflow producer wiring (lifecycle approvals, task done)
+      notification-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
