@@ -1,6 +1,6 @@
-current_stage: product_spec
+current_stage: technical_design
 feature_id: test-feature-4
-feature_status: in_design
+feature_status: in_tdd
 history:
 - action: stage_approved
   at: 2026-07-06T15:53:40+0000
@@ -17,7 +17,12 @@ history:
   by: agent
   note: product_spec reopened by agent.
   stage: product_spec
-next_action: Product spec reopened. Update the artifact and re-submit for approval.
+- action: stage_approved
+  at: 2026-07-06T18:41:33+0000
+  by: agent
+  note: product_spec approved by agent.
+  stage: product_spec
+next_action: Technical design required. Use the tech-lead skill (Phase 1).
 revalidation:
   deployment_checklist_required: false
   product_spec_required: false
@@ -41,9 +46,13 @@ stages:
       review_status: draft
       reviewed_at: 2026-07-06T18:33:33+0000
       reviewed_by: agent
-    review_status: draft
-    reviewed_at: null
-    reviewed_by: null
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-07-06T18:41:33+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-07-06T18:41:33+0000
+    reviewed_by: agent
   tasks:
     review_comment: null
     review_history: []
