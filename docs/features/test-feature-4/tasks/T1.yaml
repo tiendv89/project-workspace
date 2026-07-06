@@ -1,7 +1,7 @@
 id: T1
 title: DB migrations — add search_vector columns, GIN indexes, and search_logs table
 repo: ''
-status: todo
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -19,4 +19,8 @@ pr:
   url: ''
   status: not_created
 workspace_pr: null
-log: []
+log:
+- action: ready
+  by: agent
+  at: 2026-07-06T18:48:40+0000
+  note: Task activated on tasks-stage approval — dependencies met.
