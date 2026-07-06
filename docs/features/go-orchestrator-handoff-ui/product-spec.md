@@ -25,6 +25,35 @@ Today none of this handoff/handoff-PR data is exposed to the workspace UI for go
 - Display this information in `digital-factory-ui` on the feature detail view, in a manner comparable to how ts-flow features surface their `handoffs/handoff.md` content today (e.g. alongside `FeatureIDEDocsPanel` / `feature-document-panel.tsx`), but sourced from the Go orchestrator's DB-backed handoff/handoff-PR data instead of a git file. Specifically, the Handoff section renders as:
   - A single **created time** for the handoff (from `GetHandoffFeatureInfo`), shown once above the table — not per PR row.
   - A **table of handoff PRs** (from `ListHandoffPRsByHandoff`) with exactly three columns: **Repo**, **PR** (a link to the GitHub PR), and **Status** (Open / Merged / Conflicted). No PR title/description text is shown — only the repo name, the PR link, and its status per row.
+
+### Mockup
+
+**No handoff yet:**
+```
+┌─ Handoff ───────────────────────────────────────────────────────────┐
+│                                                              │
+│   No handoff yet.                                           │
+│                                                              │
+└───────────────────────────────────────────────────────────────┐
+```
+
+**Handoff exists (table view):**
+```
+┌─ Handoff ───────────────────────────────────────────────────────────────┐
+│  Created: 2026-07-03 14:22 UTC                               │
+│                                                              │
+│  ┌─────────────────────────┬────────────────┬─────────────┐ │
+│  │ Repo                  │ PR               │ Status      │ │
+│  ├─────────────────────────┼────────────────┼─────────────┤ │
+│  │ workflow-orchestrator │ #741 (link)      │ 🟢 Merged   │ │
+│  │ workflow-backend      │ #742 (link)      │ 🟢 Merged   │ │
+│  │ digital-factory-ui    │ #318 (link)      │ 🟡 Open     │ │
+│  └─────────────────────────┴────────────────┴─────────────┘ │
+│                                                              │
+└───────────────────────────────────────────────────────────────┘
+```
+
+Columns: **Repo**, **PR** (links to the GitHub PR), **Status** (Open / Merged / Conflicted). Row order is not significant. Status values map to the underlying PR/handoff-PR state (`SetHandoffPRConflicted` implies a `conflicted` state exists alongside `open`/`merged`).
 - If no handoff exists yet for the feature, the UI should clearly indicate "no handoff" rather than showing an error or blank section.
 
 - The `digital-factory-ui` frontend must call the new endpoint through the existing `workflow-bff` proxy — not directly against `workflow-backend`. `workflow-bff` already has a generic pass-through (`ProxyHandler.Proxy` + `RoutingTable.Resolve` in `internal/app/api/handler/proxy/`) that forwards requests to `workflow-backend` by route pattern, matching how other `workflow-backend` endpoints (e.g. task-create, feature-name-filter, unblock — see `routing_test.go`) are already reached from the FE. The new handoff endpoint's route must be added to `workflow-bff`'s routing table so it resolves to `workflow-backend`, and the FE must call the corresponding `workflow-bff` URL (not the raw `workflow-backend` URL).
