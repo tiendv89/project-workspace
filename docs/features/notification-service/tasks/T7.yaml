@@ -1,6 +1,6 @@
 id: T7
 title: agent-workflow producer wiring (lifecycle approvals, task done)
-repo: agent-workflow
+repo: workflow
 status: ready
 depends_on:
   - T3
