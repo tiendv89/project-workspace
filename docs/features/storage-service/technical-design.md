@@ -426,12 +426,19 @@ Wave 1 (parallel, no blockers):
   - rag-service: POST /internal/index endpoint (additive, independent of storage-service)
   - digital-factory-ui: folder-tree sidebar component (can be built against a
     mocked document-list API; HeroUI primitives, no new dependency)
+  - workflow-bff: add /bff/storage-service/* upstream prefix (config-only, §11)
+  - infra: provision the Hocuspocus WebSocket endpoint's own public
+    ingress/TLS (§11, WS-B) — independent of the BFF change above; needed
+    before Wave 3's Tiptap integration can connect end-to-end
 
 Wave 2 (depends on Wave 1's blob module):
   - storage-service: internal/document module (CRUD, doc_version, markdown import,
     folder-tree read API) — depends on internal/blob for snapshot storage
   - storage-service: Node Hocuspocus sidecar (onLoadDocument/onStoreDocument/
-    onAuthenticate) — depends on internal/blob's internal read/write endpoints
+    onAuthenticate against the §11 sync token) — depends on internal/blob's
+    internal read/write endpoints
+  - storage-service: sync-token mint endpoint (POST .../sync-token, §11) —
+    depends on the Go API's identity/ACL middleware from Wave 1
 
 Wave 3 (depends on Wave 2):
   - digital-factory-ui: Tiptap editor component wired to Hocuspocus + document
