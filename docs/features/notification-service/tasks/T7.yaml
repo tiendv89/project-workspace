@@ -1,7 +1,7 @@
 id: T7
 title: agent-workflow producer wiring (lifecycle approvals, task done)
 repo: workflow
-status: in_progress
+status: ready
 depends_on:
   - T3
 blocked_reason: null
@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/notification-service-T7
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T03:42:27+0000
+  last_updated_by: pye@swellnetwork.io
+  last_updated_at: 2026-07-07T11:11:50+0700
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -71,3 +71,11 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-07T03:42:27+0000
     note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-07T11:11:50+0700
+    note: >-
+      Second human rework rejection — an executor re-claimed this task within
+      minutes of the prior reset and resumed work. Resetting to ready again
+      per repeated user request. No valid in_progress->ready transition
+      exists in the workflow; treated as an in_review-style rejection.
