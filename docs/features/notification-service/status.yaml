@@ -1,6 +1,6 @@
-current_stage: handoff
+current_stage: done
 feature_id: notification-service
-feature_status: in_handoff
+feature_status: done
 history:
   - action: stage_approved
     at: 2026-07-05T08:19:17+0000
@@ -69,13 +69,13 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/729
 impl_feature_prs:
   - repo: notification-service
     url: https://github.com/tiendv89/notification-service/pull/6
-    status: open
+    status: merged
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/53
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/173
-    status: open
+    status: merged
 drift_detected: true
 drift_reason: "Rebase conflict: 9 new commits on main. checkout failed: Error:
   spawnSync /bin/sh ETIMEDOUT"
