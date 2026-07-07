@@ -1,0 +1,23 @@
+id: T11
+title: Version-history timeline API (list/diff/restore)
+repo: storage-service
+status: todo
+depends_on:
+- T6
+blocked_reason: null
+blocked_suggestion: null
+blocked_details: null
+blocked_context: null
+branch: feature/storage-service
+execution:
+  actor_type: agent
+  last_updated_by: null
+  last_updated_at: null
+  suggested_next_step: null
+  requires_human_review: false
+execution_handle: null
+pr:
+  url: ''
+  status: not_created
+workspace_pr: null
+log: []
