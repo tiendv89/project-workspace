@@ -1,7 +1,7 @@
 id: T3
 title: Folder-tree sidebar component (mocked API)
 repo: digital-factory-ui
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/storage-service-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T15:39:13.258Z
+  last_updated_at: 2026-07-07T16:07:25.092Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -42,12 +42,14 @@ log:
   - action: blocked
     by: pye
     at: 2026-07-07T23:01:44+0700
-    note: >-
-      No implementation work or PR exists yet for this claim (pr.url is empty). Abandoning
-      the in-progress claim so the task can be re-claimed cleanly.
+    note: No implementation work or PR exists yet for this claim (pr.url is empty).
+      Abandoning the in-progress claim so the task can be re-claimed cleanly.
   - action: ready
     by: pye
     at: 2026-07-07T23:01:44+0700
-    note: >-
-      Unblocked per unblock target rule — pr.url was null, so task resets to ready
-      for re-claim rather than in_review.
+    note: Unblocked per unblock target rule — pr.url was null, so task resets to
+      ready for re-claim rather than in_review.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-07T16:07:25.092Z
+    note: Claimed via git-based claim protocol.
