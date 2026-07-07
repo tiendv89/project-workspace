@@ -140,3 +140,9 @@ repos:
     local_path: env:NOTIFICATION_SERVICE_LOCAL_PATH
     base_branch: main
     owner_role: tech_lead
+
+  - id: storage-service
+    github: git@github.com:tiendv89/storage-service.git
+    local_path: env:STORAGE_SERVICE_LOCAL_PATH
+    base_branch: main
+    owner_role: tech_lead
