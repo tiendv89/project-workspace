@@ -1,9 +1,9 @@
 id: T2
 title: POST /internal/index webhook endpoint
 repo: rag-service
-status: blocked
+status: ready
 depends_on: []
-blocked_reason: "executor_failed:rag_pre_flight_error: Error: spawnSync /bin/sh ETIMEDOUT"
+blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
@@ -30,3 +30,10 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-07T15:38:21.426Z
     note: Claimed via git-based claim protocol.
+  - action: ready
+    by: pye
+    at: 2026-07-07T23:00:31+0700
+    note: >-
+      Unblocked per unblock target rule — pr.url was null, so task resets to ready
+      for re-claim. Previous block reason: executor_failed:rag_pre_flight_error
+      (spawnSync /bin/sh ETIMEDOUT).
