@@ -1,0 +1,46 @@
+current_stage: handoff
+feature_id: ui-go-owned-task-status-and-block
+feature_status: ready_for_implementation
+history:
+- action: stage_approved
+  at: 2026-07-07T06:57:55+0000
+  by: agent
+  note: tasks approved by agent.
+  stage: tasks
+next_action: Tasks ready for implementation.
+owner: go
+revalidation:
+  deployment_checklist_required: false
+  product_spec_required: false
+  tasks_required: false
+  technical_design_required: false
+stages:
+  handoff:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  product_spec:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  tasks:
+    review_comment: null
+    review_history:
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-07-07T06:57:55+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-07-07T06:57:55+0000
+    reviewed_by: agent
+  technical_design:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+title: ui-go-owned-task-status-and-block
