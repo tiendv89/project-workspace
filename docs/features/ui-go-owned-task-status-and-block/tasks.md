@@ -9,16 +9,13 @@ T1: Expose dispatched_at/conflict_state/blocked_details/blocked_from_status (wor
   ├──> T2: Add POST .../tasks/:taskId/recover endpoint (workflow-backend)
   │      └── depends on T1 (sequenced into a separate commit/PR on the same files to avoid merge conflicts — see technical-design.md Parallelization section)
   │
-  └──> T3: Status display in Task tab detail panel (digital-factory-ui)
-         │
-         ├──> T4: Explicit "Unblock" action for blocked tasks (digital-factory-ui)
-         │      └── depends on T3 (same file, sequenced to avoid concurrent edits)
-         │
-         └──> T5: "Task is stuck? Unblock it" recover action (digital-factory-ui)
-                └── depends on T2 (needs the recover endpoint) and T4 (same file, sequenced to avoid concurrent edits)
+  └──> T3: Task tab status display + Unblock + recover actions (digital-factory-ui)
+         └── depends on T1 (needs the new read fields) and T2 (needs the recover endpoint)
 ```
 
 No `workflow-bff` task exists — per technical-design.md, the BFF's existing longest-prefix-match routing already forwards the new `/recover` path to `workflow-backend` automatically; no BFF code, config, or test change is required.
+
+T3 combines what was originally three separate frontend tasks (status display, explicit unblock, stuck-task recover) into one, since all three land in the same file (`SpecPanel` in `task-review-view.tsx`) and were only sequenced against each other to avoid concurrent edits — merging avoids that artificial overhead while preserving the real dependencies on T1 and T2.
 
 ## Index
 
@@ -26,9 +23,7 @@ No `workflow-bff` task exists — per technical-design.md, the BFF's existing lo
 |---|---|---|---|---|
 | T1 | Expose dispatched_at/conflict_state/blocked_details/blocked_from_status in task read API | workflow-backend | | agent |
 | T2 | Add guarded POST .../tasks/:taskId/recover endpoint | workflow-backend | T1 | agent |
-| T3 | Add status display for conflict state, dispatched-at, and blocked details in Task tab detail panel | digital-factory-ui | T1 | agent |
-| T4 | Add explicit "Unblock" action for blocked tasks | digital-factory-ui | T3 | agent |
-| T5 | Add "Task is stuck? Unblock it" recover action for stuck processing tasks | digital-factory-ui | T2, T4 | agent |
+| T3 | Task tab: status display, explicit Unblock action, and stuck-task recover action | digital-factory-ui | T1, T2 | agent |
 
 ---
 
@@ -88,18 +83,37 @@ Add a new endpoint that recovers a task stuck in an in-flight processing state, 
 
 ---
 
-## T3 — Add status display for conflict state, dispatched-at, and blocked details in Task tab detail panel
+## T3 — Task tab: status display, explicit Unblock action, and stuck-task recover action
 
 ### Description
-Surface the new fields (from T1) in the Task tab detail panel (`SpecPanel` in `src/components/tasks/task-review-view.tsx`), per product-spec.md Goal 1:
+Combines the full Task tab detail panel work for this feature into one task: status display (product-spec.md Goal 1), the explicit "Unblock" action for `blocked` tasks (Goal 2), and the "Task is stuck? Unblock it" recover action for stuck processing tasks (Goal 3). All three land in `SpecPanel` (`src/components/tasks/task-review-view.tsx`) and depend on the new backend surface from T1 and T2.
 
-- Extend `TaskSummary` / `TaskDetail` types in `src/services/workflow-backend/types.ts` with `dispatched_at?: string`, `conflict_state?: "none" | "conflicted" | "resolving" | "resolved"`, `blocked_details?: string`, `blocked_from_status?: string`.
+**Types** (`src/services/workflow-backend/types.ts`)
+- Add `dispatched_at?: string`, `conflict_state?: "none" | "conflicted" | "resolving" | "resolved"`, `blocked_details?: string`, `blocked_from_status?: string` to `TaskSummary`; ensure `TaskDetail` inherits them.
+
+**Status display**
 - Keep the existing `StatusBadge` as the primary status display (already explicit text, unchanged).
 - Add a conflict-state indicator rendered only when `task.conflict_state` is present and not `"none"` — explicit text (e.g. "Conflict: Resolving"), rendered as a separate element from `StatusBadge`, not merged into it and not icon-only.
 - Add a "Dispatched at: `<formatted timestamp>`" line rendered only when the task is in a processing state (`status === "in_progress" || status === "reviewing" || conflict_state === "resolving"`) and `dispatched_at` is present. Reuse the existing `formatTime` helper already in this file.
 - Extend the existing "Blocked" card to also render `blocked_details` (when present) under `blocked_reason`.
-- No action buttons in this task — those are T4 and T5.
-- All other statuses (`todo`, `ready`, `done`, `cancelled`, `change_requested`, `review_incomplete`, `review_passed`) continue to show only the plain status with no additional fields.
+- All other statuses (`todo`, `ready`, `done`, `cancelled`, `change_requested`, `review_incomplete`, `review_passed`) continue to show only the plain status with no additional fields and no action buttons.
+
+**Explicit unblock action**
+- New "Unblock" button rendered only when `task.status === "blocked"`.
+- Clicking opens a confirmation dialog showing a preview of the resume target, computed client-side using `task.blocked_from_status`: `"reviewing"` or `"in_review"` → preview "In Review", anything else → preview "Ready" (mirrors the backend's `deriveUnblockTarget` logic documented in technical-design.md).
+- On confirm, call the existing `POST .../tasks/:taskId/unblock` endpoint, then refetch task detail using the existing query-invalidation/`reload()` pattern already used by `useWorkspaceTask`/`useFeatureTask`.
+- This button must not be shown for any status other than `blocked`.
+
+**Stuck-task recover action**
+- New button labeled **"Task is stuck? Unblock it"**, rendered only when the task is in one of the three processing sub-cases: `status === "in_progress"`, `status === "reviewing"`, or `conflict_state === "resolving"`.
+- This button must **not** be shown when `status === "blocked"` (that's the Unblock action above) or for any idle/terminal status.
+- Clicking opens a confirmation dialog with:
+  - Warning copy: *"Resetting will let the task re-dispatch. Please make sure the task is actually stuck to avoid dispatching multiple jobs at the same time for the same task. Confirm to continue?"*
+  - A client-computed preview of the target, using the same three-branch mapping as the backend (T2): `conflict_state === "resolving"` → preview "Conflict: Conflicted" (task status unchanged); `status === "reviewing"` → preview "In Review"; `status === "in_progress"` → preview "Ready".
+- On confirm, call the new `POST .../tasks/:taskId/recover` endpoint, then refetch task detail using the same pattern.
+
+**Shared UX**
+- Both dialogs are simple confirm/cancel modals — reuse whatever confirmation-dialog primitive already exists elsewhere in `digital-factory-ui` (e.g. the delete-workspace confirmation flow) rather than introducing a new modal framework.
 
 ### Required skills
 - typescript-best-practices
@@ -109,55 +123,9 @@ Surface the new fields (from T1) in the Task tab detail panel (`SpecPanel` in `s
 - [ ] Add the conflict-state indicator element to `SpecPanel`
 - [ ] Add the "Dispatched at" line, gated on the three processing sub-cases
 - [ ] Extend the Blocked card to show `blocked_details`
-- [ ] Add/update component tests covering: conflict indicator only shown when not `none`, dispatched-at only shown for the three processing sub-cases, blocked details rendered when present, no extra fields for idle/terminal statuses
-- [ ] Run full test suite + lint clean
-
----
-
-## T4 — Add explicit "Unblock" action for blocked tasks
-
-### Description
-Add the explicit-unblock UI action for `status = 'blocked'` tasks, per product-spec.md Goal 2:
-
-- New "Unblock" button rendered only when `task.status === "blocked"`.
-- Clicking opens a confirmation dialog showing a preview of the resume target, computed client-side using `task.blocked_from_status` (exposed in T3): `"reviewing"` or `"in_review"` → preview "In Review", anything else → preview "Ready" (mirrors the backend's `deriveUnblockTarget` logic documented in technical-design.md).
-- On confirm, call the existing `POST .../tasks/:taskId/unblock` endpoint, then refetch task detail using the existing query-invalidation/`reload()` pattern already used by `useWorkspaceTask`/`useFeatureTask`.
-- Reuse whatever confirmation-dialog primitive already exists elsewhere in `digital-factory-ui` (e.g. the delete-workspace confirmation flow) rather than introducing a new modal framework.
-- This button must not be shown for any status other than `blocked`.
-
-### Required skills
-- typescript-best-practices
-
-### Subtasks
-- [ ] Add the `unblock` API call site in the workflow-backend service client
-- [ ] Add the "Unblock" button, gated on `status === "blocked"`
-- [ ] Add the confirmation dialog with the client-computed preview target
-- [ ] Wire confirm → API call → refetch task detail
-- [ ] Add/update tests: button visibility gating, preview computation for both branches, successful call triggers refetch, error handling
-- [ ] Run full test suite + lint clean
-
----
-
-## T5 — Add "Task is stuck? Unblock it" recover action for stuck processing tasks
-
-### Description
-Add the force-recover UI action for stuck processing tasks, per product-spec.md Goal 3:
-
-- New button labeled **"Task is stuck? Unblock it"**, rendered only when the task is in one of the three processing sub-cases: `status === "in_progress"`, `status === "reviewing"`, or `conflict_state === "resolving"`.
-- This button must **not** be shown when `status === "blocked"` (that's T4's action) or for any idle/terminal status (`todo`, `ready`, `done`, `cancelled`, `change_requested`, `review_incomplete`, `review_passed`).
-- Clicking opens a confirmation dialog with:
-  - Warning copy: *"Resetting will let the task re-dispatch. Please make sure the task is actually stuck to avoid dispatching multiple jobs at the same time for the same task. Confirm to continue?"*
-  - A client-computed preview of the target, using the same three-branch mapping as the backend (T2): `conflict_state === "resolving"` → preview "Conflict: Conflicted" (task status unchanged); `status === "reviewing"` → preview "In Review"; `status === "in_progress"` → preview "Ready".
-- On confirm, call the new `POST .../tasks/:taskId/recover` endpoint (T2), then refetch task detail using the existing query-invalidation/`reload()` pattern.
-- Reuse the same confirmation-dialog primitive as T4 for consistency.
-
-### Required skills
-- typescript-best-practices
-
-### Subtasks
-- [ ] Add the `recover` API call site in the workflow-backend service client
-- [ ] Add the "Task is stuck? Unblock it" button, gated on the three processing sub-cases and explicitly excluded for `blocked`/idle/terminal statuses
-- [ ] Add the confirmation dialog with the specified warning copy and client-computed preview
-- [ ] Wire confirm → API call → refetch task detail
-- [ ] Add/update tests: button visibility gating for all seven excluded statuses plus the three included sub-cases, preview computation for all three branches, successful call triggers refetch, error handling (409 from backend when task already resolved)
+- [ ] Add the `unblock` and `recover` API call sites in the workflow-backend service client
+- [ ] Add the "Unblock" button (gated on `status === "blocked"`) with its confirmation dialog and client-computed preview
+- [ ] Add the "Task is stuck? Unblock it" button (gated on the three processing sub-cases, excluded for `blocked`/idle/terminal statuses) with its confirmation dialog, warning copy, and client-computed preview
+- [ ] Wire both confirm flows → API call → refetch task detail
+- [ ] Add/update tests: status-display gating for all statuses, both buttons' visibility gating (including mutual exclusivity), preview computation for both actions, successful calls trigger refetch, error handling (e.g. 409 from `/recover` when task already resolved)
 - [ ] Run full test suite + lint clean
