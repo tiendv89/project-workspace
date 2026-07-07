@@ -1,7 +1,7 @@
 id: T1
 title: Bootstrap storage-service repo + register in workspace.yaml
 repo: storage-service
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -66,3 +66,17 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-07T16:01:35+0000
     note: executor work phase begun.
+  - action: blocked
+    by: pye
+    at: 2026-07-07T23:32:49+0700
+    note: >-
+      Manual override — resetting claim per explicit human instruction despite
+      evidence of an active/in-progress executor (PR #1 open on storage-service,
+      workspace PR #734 open). pr.url on this task file was still empty at time
+      of reset.
+  - action: ready
+    by: pye
+    at: 2026-07-07T23:32:49+0700
+    note: >-
+      Unblocked per unblock target rule — pr.url was null on this task file, so
+      task resets to ready for re-claim rather than in_review.
