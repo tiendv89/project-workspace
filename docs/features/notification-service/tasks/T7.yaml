@@ -11,8 +11,8 @@ blocked_context: null
 branch: feature/notification-service-T7
 execution:
   actor_type: agent
-  last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T04:26:44+0000
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-07-07T11:45:54+0700
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -97,3 +97,14 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-07T04:26:44+0000
     note: executor work phase begun.
+  - action: ready
+    by: pye@swellnetwork.io
+    at: 2026-07-07T11:45:54+0700
+    note: >-
+      Third human rework rejection — resetting to ready immediately followed
+      by a self-claim in the same commit to close the re-claim race window,
+      per explicit user instruction to move to ready then start-implementation.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-07-07T11:45:54+0700
+    note: Claimed via git-based claim protocol (interactive start-implementation run).
