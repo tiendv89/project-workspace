@@ -11,7 +11,7 @@ T18 pending the repo's existence.
 
 | ID | Wave | Title | Repo | Depends on | Actor |
 |---|---|---|---|---|---|
-| T1 | 0 | Bootstrap `storage-service` repo + register in `workspace.yaml` | project-workspace | — | agent |
+| T1 | 0 | Bootstrap `storage-service` repo + register in `workspace.yaml` | storage-service | — | agent |
 | T2 | 1 | `POST /internal/index` webhook endpoint | rag-service | — | agent |
 | T3 | 1 | Folder-tree sidebar component (mocked API) | digital-factory-ui | — | agent |
 | T4 | 1 | Add `/bff/storage-service/*` upstream prefix | workflow-bff | T1 | agent |
@@ -41,7 +41,7 @@ T1.
 
 ```
 Wave 0 (bootstrap):
-  T1  project-workspace  Bootstrap storage-service repo + register in workspace.yaml
+  T1  storage-service  Bootstrap storage-service repo + register in workspace.yaml
 
 Wave 1 (parallel):
   T2  rag-service        POST /internal/index webhook endpoint
