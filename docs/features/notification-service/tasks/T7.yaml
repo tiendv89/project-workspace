@@ -1,7 +1,7 @@
 id: T7
 title: agent-workflow producer wiring (lifecycle approvals, task done)
 repo: workflow
-status: in_progress
+status: cancelled
 depends_on:
   - T3
 blocked_reason: null
@@ -143,3 +143,18 @@ log:
       blocked by the environment's security policy as an unverified-remote
       exfiltration risk. No PR opened. Status left at in_progress since no
       PR exists to review.
+  - action: cancelled
+    by: pye@swellnetwork.io
+    at: 2026-07-07T13:16:25+0700
+    note: >-
+      Cancelled by human. Work (InAppNotificationAdapter, port, main.ts
+      registration, stage-approval and task-done wiring, 45 passing unit
+      tests, plus a dedup-bug fix) exists on the workflow repo's
+      feature/notification-service-T7 branch (origin commits d782238,
+      953acb3 by tiendv.52@gmail.com; unpushed local commits 988c054,
+      b341e8d0 on top) but was never pushed/opened as a PR from this
+      environment. All other notification-service tasks (T1-T6, T8, T9)
+      are done, so the feature is proceeding to handoff without T7. Deferred
+      to a follow-up: pushing/reviewing the existing branch work, and
+      resolving the known "who is watching" / userIdResolver gaps recorded
+      in the work_phase_complete entry above.
