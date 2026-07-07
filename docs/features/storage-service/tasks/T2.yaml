@@ -1,7 +1,7 @@
 id: T2
 title: POST /internal/index webhook endpoint
 repo: rag-service
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,13 +11,13 @@ branch: feature/storage-service-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T16:09:53+0000
+  last_updated_at: 2026-07-07T16:20:28.359Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/rag-service/pull/22
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/732
   status: open
