@@ -12,8 +12,12 @@ branch: feature/notification-service-T7
 execution:
   actor_type: agent
   last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-07T11:45:54+0700
-  suggested_next_step: null
+  last_updated_at: 2026-07-07T13:04:23+0700
+  suggested_next_step: >-
+    Push feature/notification-service-T7 (commits 988c054, b341e8d0 on top of
+    953acb3) from a machine with GitHub network access, then open the PR via
+    pr-create. Before merging, decide how to handle the "who is watching" gap
+    (session-member fan-out, userIdResolver wiring) — likely a follow-up task.
   requires_human_review: false
 execution_handle: null
 pr:
@@ -108,3 +112,34 @@ log:
     by: pentative@gmail.com
     at: 2026-07-07T11:45:54+0700
     note: Claimed via git-based claim protocol (interactive start-implementation run).
+  - action: work_phase_complete
+    by: pentative@gmail.com
+    at: 2026-07-07T13:04:23+0700
+    note: >-
+      Reviewed prior WIP on origin/feature/notification-service-T7 (commits
+      d782238, 953acb3 by tiendv.52@gmail.com): InAppNotificationAdapter,
+      port, main.ts registration, and stage-approval/task-done wiring were
+      already implemented with 44 passing unit tests. Fixed a real bug in
+      check-tasks-done.ts — task_done notifications fired unconditionally
+      before fireHandoffTrigger, so a transient handoff failure caused
+      re-sends on every retry poll; added a notifiedTaskDone dedup set
+      (mirrors notifiedStageApprovals) threaded through main.ts's
+      per-workspace FeatureNotificationState, plus a regression test.
+      Confirmed no regressions against origin/main (same 2 pre-existing,
+      unrelated run-claude.test.ts failures and same @workflow/runtime-abi
+      workspace-linking typecheck errors on both branches). Checked off
+      completed subtasks in tasks.md. Known unresolved gap, left unchecked:
+      stage-approval "who is watching" falls back to reviewed_by (the
+      approver) rather than hermes-agent session members, since
+      agent-workflow has no existing integration to resolve that set; and
+      main.ts's InAppNotificationAdapter factory never supplies a
+      userIdResolver, so resolveUserId always returns null and every in-app
+      notification is currently a silent no-op end-to-end. Both require new
+      cross-repo work (a hermes-agent session-member API; an email->user_id
+      lookup, undesigned anywhere in the technical design) beyond this
+      task's repo scope. Committed locally on feature/notification-service-T7
+      (988c054, b341e8d0) but NOT pushed — this sandbox has no network
+      route to github.com over SSH, and an HTTPS+token push attempt was
+      blocked by the environment's security policy as an unverified-remote
+      exfiltration risk. No PR opened. Status left at in_progress since no
+      PR exists to review.
