@@ -120,12 +120,34 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   `workspace-github-adapter`, since that service is slated for removal and this
   migration tool is a throwaway, one-time job. Per-task `tasks/*.yaml` state
   files are not migrated by this tool (roadmap item 4's territory).
+- Ship **soft-delete / trash semantics** as a first-class part of the blob and
+  document domain, not just an admin operation:
+  - A user who can edit a document or uploaded file can **delete** it (document:
+    remove from the folder tree; blob: remove from its referencing doc/message) —
+    this sets a `deleted_at` marker, it never hard-deletes the underlying GCS
+    object or Postgres row at delete time.
+  - A **trash view**, scoped the same way as the folder tree (§ folder/tree
+    navigation goal), lists a workspace's soft-deleted documents/files and offers
+    **restore** (clears `deleted_at`, reappears in its original folder location).
+  - **Retention + purge policy:** soft-deleted items are permanently purged
+    (GCS object deleted, row hard-deleted) after a fixed retention window (default
+    30 days — confirm with the human, see Open Questions) via a scheduled job, or
+    immediately by an admin's explicit "empty trash" action on `/admin/storage`.
+  - Deleting a document does not delete its version history until the retention
+    window's purge runs — a restored document keeps its full `doc_version`
+    timeline intact.
+  - This is distinct from the admin object browser's orphan cleanup (unattached
+    blobs with no referencing doc/message) — trash is for content a user
+    intentionally deleted; orphan cleanup is for content that was never properly
+    attached in the first place. Both funnel into the same purge job.
 - Ship an **admin surface** at `/admin/storage` in `digital-factory-ui`, as a
   sibling page under `m1-admin-panel`'s existing role-guarded layout (not a new
   admin app), backed entirely by routes on `storage-service` itself
   (`/api/admin/storage/...`): usage/quota overview (bytes + object count per
   workspace), an object browser (list/search/filter, delete-to-trash not
-  hard-delete), orphan cleanup (sweep unattached objects older than N days), and
+  hard-delete), an **empty-trash** action (immediate permanent purge of
+  soft-deleted items, bypassing the retention window), orphan cleanup (sweep
+  unattached objects older than N days), and
   migration status (git-only / migrated / failed, with retry/trigger inline).
 
 ## Non-goals
@@ -156,7 +178,9 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 - **Dual-live git + `storage-service` copies of a migrated document.** Once a
   feature's docs are migrated, the git copy is frozen/read-only; `storage-service`
   becomes canonical. Parallel dual-write is not supported.
-- **Cloudflare R2/CDN fronting for images.** Worth doing later if pasted-image
+- **Hard delete as a user-facing action.** All user-initiated deletes are soft
+  (trash + restore window); only the scheduled purge job or an admin's explicit
+  "empty trash" action performs a hard delete. Worth doing later if pasted-image
   egress volume becomes meaningful, but not required to ship v1 on GCS directly.
 - **Moving `hermes-agent`'s `document_repo.py`/tools, `workflow-backend`'s document
   handler, and a Claude Code document MCP tool onto `storage-service` all within
@@ -197,6 +221,11 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   `handoffs/*.md`) into `storage-service` (single feature or bulk), see
   per-feature migration status, and re-run migration idempotently without
   duplicating documents.
+- A user can delete a document or uploaded file they can edit; it disappears from
+  the folder tree/message but is recoverable from a trash view within the
+  retention window, with its version history intact on restore. After the
+  retention window (or an admin's "empty trash" action), the object and its
+  metadata are permanently purged.
 - `/admin/storage` in `digital-factory-ui` shows per-workspace usage, an object
   browser with soft-delete, an orphan-cleanup action, and migration status —
   gated by the same `platform_admin`/`admin` role guard as `/admin/members`.
