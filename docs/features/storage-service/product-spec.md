@@ -180,7 +180,8 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   becomes canonical. Parallel dual-write is not supported.
 - **Hard delete as a user-facing action.** All user-initiated deletes are soft
   (trash + restore window); only the scheduled purge job or an admin's explicit
-  "empty trash" action performs a hard delete. Worth doing later if pasted-image
+  "empty trash" action performs a hard delete.
+- **Cloudflare R2/CDN fronting for images.** Worth doing later if pasted-image
   egress volume becomes meaningful, but not required to ship v1 on GCS directly.
 - **Moving `hermes-agent`'s `document_repo.py`/tools, `workflow-backend`'s document
   handler, and a Claude Code document MCP tool onto `storage-service` all within
@@ -232,9 +233,9 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 
 ## Open Questions
 
-These two are flagged as needing an explicit decision before technical design
-locks the `init-feature` and migration-tool behavior (recommendations noted, not
-yet confirmed):
+These four are flagged as needing an explicit decision before technical design
+locks the `init-feature`, migration-tool, and trash/purge behavior (recommendations
+noted, not yet confirmed):
 
 1. **Does the docs-backend choice ride along with `init-feature`'s existing
    `go`/`ts` question, or become a second independent axis?** Recommended: ride
@@ -251,3 +252,7 @@ yet confirmed):
    consumers migrated? This needs its own task breakdown and is explicitly
    deferred (see Non-goals) but should be scheduled as a fast-follow technical
    design once this platform core ships.
+4. **Trash retention window length.** Recommended default: 30 days before
+   automatic permanent purge. Confirm the exact window (and whether it should be
+   workspace-configurable per-workspace) before technical design finalizes the
+   purge job's schedule.
