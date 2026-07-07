@@ -126,9 +126,13 @@ this feature creates it.**
   it is slated for removal; the migration tool reads GitHub directly.
 - **Three existing consumers keep working during rollout.** `workflow-backend`'s
   document handler, `hermes-agent`'s tools, and the executor's clone-and-`Read`
-  path are NOT cut over in this feature (see product spec Non-goals) — they must
-  continue to serve `ts`-backend features unmodified while `storage-service`
-  onboards `go`-backend features in parallel.
+  path are NOT rewritten to call `storage-service` in this feature (see product
+  spec Non-goals) — they must continue to serve `ts`-backend features unmodified
+  while `storage-service` onboards `go`-backend features in parallel. However,
+  `hermes-agent`'s four document tools DO require a minimal owner-guard change
+  (§12) to prevent them from writing stray, divergent git commits against
+  `go`-backend (storage-service-native) features — this is a safety guard, not
+  a rewrite of the tools' git-write logic, and is in scope.
 - **All new management-repo/`storage-service` writes must go through PRs / normal
   git flow** — no direct commits to `main` (workspace-wide rule).
 
