@@ -50,6 +50,31 @@ for `task_log`). None of this fires for a document that is not a git commit.
 `/admin/storage` page is a sibling under this existing layout/guard, not a new
 shell.
 
+**The real auth/gateway architecture — confirmed via `workflow-bff`'s own README
+and `m3-agent-chat-v4`'s technical design, corrected from an earlier assumption
+in this design:**
+
+- **`workflow-bff` owns sessions and auth**, not `user-service` per-request.
+  It runs the OAuth (Google/GitHub) dance, issues an opaque `session_id`
+  HttpOnly cookie, and holds session state server-side in **Redis**. It is the
+  frontend's single origin: `ANY /bff/<service>/*` reverse-proxies by
+  longest-prefix match (`/bff/workflow-backend/...`, `/bff/user-service/...`,
+  `/bff/hermes-agent/...`), stripping the prefix and **injecting a trusted
+  identity** (`X-User-Id`, `X-Org-Id`, `X-Accessible-Org-Ids`) plus a shared
+  `internal_token` service secret. Backends authorize from those headers —
+  **they never see the session cookie.** `hermes-agent`'s `require_identity`
+  (`src/api/identity.py:23-49`) already trusts exactly this: BFF-injected
+  `X-User-Id`/`X-Org-Id` behind a `GATEWAY_SERVICE_TOKEN` bearer check.
+- **`workflow-bff`'s proxy explicitly does not support WebSocket.**
+  `internal/app/api/handler/proxy/proxy_handler.go`'s `isWebSocketUpgrade()`
+  returns **HTTP 501 Not Implemented** — no hijack, no `gorilla/websocket`. SSE
+  (`text/event-stream`) is fully supported (flushed per read, write deadline
+  cleared) and requires zero BFF change; WebSocket would require new BFF code.
+  **`m3-agent-chat-v4` hit this exact constraint and deliberately chose SSE over
+  WebSocket specifically to avoid writing it.** This is directly relevant here:
+  Hocuspocus's Yjs sync protocol is a genuine bidirectional binary WebSocket —
+  it cannot be reframed as SSE. See §11 for the transport decision this forces.
+
 **GitNexus `list_repos`** confirms the current repo universe:
 `project-workspace` (management), `agent-workflow`, `workflow-orchestrator`,
 `workflow-mcp`, `digital-factory-ui`, `workflow-bff`, `workflow-backend`,
