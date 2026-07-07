@@ -1,6 +1,6 @@
 id: T1
 title: Bootstrap storage-service repo + register in workspace.yaml
-repo: project-workspace
+repo: storage-service
 status: ready
 depends_on: []
 blocked_reason: null
