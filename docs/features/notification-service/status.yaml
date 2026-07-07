@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: notification-service
-feature_status: ready_for_implementation
+feature_status: in_handoff
 history:
   - action: stage_approved
     at: 2026-07-05T08:19:17+0000
@@ -30,6 +30,7 @@ stages:
     review_status: draft
     reviewed_at: null
     reviewed_by: null
+    pr_url: https://github.com/tiendv89/project-workspace/pull/729
   product_spec:
     review_comment: null
     review_history:
@@ -64,3 +65,14 @@ title: notification-service
 feature_branch: feature/notification-service
 feature_branch_base_sha: c97b67161946d5ac5a2477aa9ac62356b37d9808
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/703
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/729
+impl_feature_prs:
+  - repo: notification-service
+    url: https://github.com/tiendv89/notification-service/pull/6
+    status: open
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/53
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/173
+    status: open
