@@ -2,21 +2,21 @@ current_stage: handoff
 feature_id: storage-service
 feature_status: ready_for_implementation
 history:
-- action: stage_approved
-  at: 2026-07-07T10:02:18+0000
-  by: agent
-  note: product_spec approved by agent.
-  stage: product_spec
-- action: stage_approved
-  at: 2026-07-07T10:22:21+0000
-  by: agent
-  note: technical_design approved by agent.
-  stage: technical_design
-- action: stage_approved
-  at: 2026-07-07T15:32:33+0000
-  by: agent
-  note: tasks approved by agent.
-  stage: tasks
+  - action: stage_approved
+    at: 2026-07-07T10:02:18+0000
+    by: agent
+    note: product_spec approved by agent.
+    stage: product_spec
+  - action: stage_approved
+    at: 2026-07-07T10:22:21+0000
+    by: agent
+    note: technical_design approved by agent.
+    stage: technical_design
+  - action: stage_approved
+    at: 2026-07-07T15:32:33+0000
+    by: agent
+    note: tasks approved by agent.
+    stage: tasks
 next_action: Tasks ready for implementation.
 revalidation:
   deployment_checklist_required: false
@@ -33,31 +33,33 @@ stages:
   product_spec:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T10:02:18+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T10:02:18+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-07T10:02:18+0000
     reviewed_by: agent
   tasks:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T15:32:33+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T15:32:33+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-07T15:32:33+0000
     reviewed_by: agent
   technical_design:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T10:22:21+0000
-      reviewed_by: agent
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T10:22:21+0000
+        reviewed_by: agent
     review_status: approved
     reviewed_at: 2026-07-07T10:22:21+0000
     reviewed_by: agent
 title: storage-service
+feature_branch: feature/storage-service
+feature_branch_base_sha: 5a6ed195016b2057e233fbf015b4eedb926c93ec
