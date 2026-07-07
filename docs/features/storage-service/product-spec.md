@@ -166,6 +166,21 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   soft-deleted items, bypassing the retention window), orphan cleanup (sweep
   unattached objects older than N days), and
   migration status (git-only / migrated / failed, with retry/trigger inline).
+- **Guard `hermes-agent`'s document tools against corrupting `go`-backend
+  features.** `hermes-agent`'s chat-copilot write path
+  (`read_document`/`write_product_spec`/`write_technical_design`/
+  `edit_document`) has no owner-awareness today — it always reads/writes git.
+  Once a `go`-backend feature's documents live in `storage-service` instead
+  (per the `init-feature` goal above), these tools must not blindly keep
+  writing git: doing so would either fail outright or silently create a stray
+  git copy that diverges from the canonical `storage-service` document —
+  exactly the dual-live-copy problem this spec's Non-goals forbid. This feature
+  adds the minimum owner-aware guard so these four tools route to
+  `storage-service` for `go`-backend features (reusing whatever read/write
+  primitives this feature already builds) while leaving their git-commit
+  behavior for `ts`-backend features completely unchanged. This is a narrow
+  safety fix, not the full migration of `hermes-agent` onto `storage-service`
+  (see Non-goals).
 
 ## Non-goals
 
@@ -209,13 +224,19 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   (e.g. a short-lived sync credential for the WebSocket connection,
   service-to-service tokens) are scoped narrowly to the specific gap they close
   and must not become a parallel login/authorization system.
-- **Moving `hermes-agent`'s `document_repo.py`/tools, `workflow-backend`'s document
-  handler, and a Claude Code document MCP tool onto `storage-service` all within
-  this spec's task breakdown.** These three existing GitHub-Contents-API consumers
-  (see Problem) must eventually cut over, and each is a real, non-trivial
-  migration surface — but sequencing and scoping that cutover across three repos
-  is deferred to a dedicated technical-design/task breakdown once the platform
-  core (this spec) exists, not solved here.
+- **A full architectural cutover of `hermes-agent`'s `document_repo.py`/tools,
+  `workflow-backend`'s document handler, and a Claude Code document MCP tool
+  onto `storage-service` as their primary backend, within this spec's task
+  breakdown.** These three existing GitHub-Contents-API consumers (see Problem)
+  must eventually cut over fully, and each is a real, non-trivial migration
+  surface — but sequencing and scoping that full cutover across three repos is
+  deferred to a dedicated technical-design/task breakdown once the platform
+  core (this spec) exists, not solved here. **This is narrower than "no change
+  to `hermes-agent` at all"** — see Goals for the one exception: a defensive
+  owner-guard on `hermes-agent`'s document tools is in scope, to prevent them
+  from silently corrupting `go`-backend features' documents (see Goals), even
+  though the tools' git-commit logic for `ts` features, and their full
+  migration to `storage-service`, are not.
 
 ## Acceptance Criteria
 
@@ -248,6 +269,11 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   `handoffs/*.md`) into `storage-service` (single feature or bulk), see
   per-feature migration status, and re-run migration idempotently without
   duplicating documents.
+- When an agent (via `hermes-agent`'s chat copilot) calls `write_product_spec`,
+  `write_technical_design`, or `edit_document` against a `go`-backend feature,
+  the write lands in `storage-service` (not git), and no stray git file is
+  created for that feature's documents. The same tools called against a
+  `ts`-backend feature behave exactly as they do today (git commit + PR).
 - A user can delete a document or uploaded file they can edit; it disappears from
   the folder tree/message but is recoverable from a trash view within the
   retention window, with its version history intact on restore. After the
