@@ -1,7 +1,7 @@
 id: T3
 title: Folder-tree sidebar component (mocked API)
 repo: digital-factory-ui
-status: in_progress
+status: in_review
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/storage-service-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T16:35:12.327Z
+  last_updated_at: 2026-07-07T16:40:53.314Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
