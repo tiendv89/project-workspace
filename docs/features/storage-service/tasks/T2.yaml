@@ -1,9 +1,9 @@
 id: T2
 title: POST /internal/index webhook endpoint
 repo: rag-service
-status: in_progress
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: "executor_failed:rag_pre_flight_error: Error: spawnSync /bin/sh ETIMEDOUT"
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
@@ -11,7 +11,7 @@ branch: feature/storage-service-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T15:38:21.426Z
+  last_updated_at: 2026-07-07T15:39:01.073Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
