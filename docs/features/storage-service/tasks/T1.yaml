@@ -1,7 +1,7 @@
 id: T1
 title: Bootstrap storage-service repo + register in workspace.yaml
 repo: storage-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/storage-service-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T15:42:59.702Z
+  last_updated_at: 2026-07-07T15:59:32.913Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -40,12 +40,14 @@ log:
   - action: blocked
     by: pye
     at: 2026-07-07T22:58:03+0700
-    note: >-
-      No implementation work or PR exists yet for this claim (pr.url is empty). Abandoning
-      the in-progress claim so the task can be re-claimed cleanly.
+    note: No implementation work or PR exists yet for this claim (pr.url is empty).
+      Abandoning the in-progress claim so the task can be re-claimed cleanly.
   - action: ready
     by: pye
     at: 2026-07-07T22:58:03+0700
-    note: >-
-      Unblocked per unblock target rule — pr.url was null, so task resets to ready
-      for re-claim rather than in_review.
+    note: Unblocked per unblock target rule — pr.url was null, so task resets to
+      ready for re-claim rather than in_review.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-07T15:59:32.913Z
+    note: Claimed via git-based claim protocol.
