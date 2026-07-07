@@ -51,6 +51,21 @@ While verifying the go flow manually, opening a task's diff in the UI returned:
 
 This fix is orthogonal to (and must land alongside, in the same task) the owner-gated PR-header work below — without it, the go-owned task diff view this feature adds will never load any diff data to display next to the new PR link.
 
+**Safety of the fix for ts-owned tasks (proven, not just assumed):** switching `task.id` → `task.task_id` is a no-op for ts tasks and only changes behavior for go tasks. Traced via `workspace-github-adapter`'s generated `UpsertWorkspaceTask` query (`internal/database/workspace_tasks.sql.go`), which is the sync path for every ts task:
+```sql
+WITH task_input AS (
+    SELECT COALESCE(
+        (SELECT id FROM workspace_tasks WHERE workspace_id = $1 AND feature_id = $2 AND task_name = $4),
+        gen_random_uuid()
+    ) AS task_uuid
+)
+INSERT INTO workspace_tasks (id, workspace_id, feature_id, feature_name, task_id, task_name, ...)
+SELECT task_uuid, $1, $2, $3, task_uuid, $4, ...
+```
+Note `task_id` is set to the **same generated value** (`task_uuid`) as `id` in the same INSERT — for every ts task, `id` and `task_id` are identical by construction, on every insert and every upsert-driven update. So for ts tasks, `task.id === task.task_id` always holds; passing one or the other to the diff/thread hooks produces byte-identical URLs and byte-identical backend behavior.
+
+For go tasks, by contrast, `workflow-backend`'s `insertGoTask` (`internal/database/queries.go`) does **not** include `task_id` in its INSERT column list at all — it lets the column take its own independent default (whatever `workspace_tasks.task_id`'s schema default is, e.g. its own `gen_random_uuid()`), so `id` and `task_id` diverge for go tasks. This is precisely why the bug only surfaces for go-owned tasks in practice, even though the frontend code path is shared and always technically wrong (it happens to work for ts by coincidence of the sync-time INSERT, not by any invariant enforced elsewhere).
+
 ## Constraints
 - Must not change `DiffPanel`'s diff-body rendering — it is already owner-agnostic and works for both flows once `hasPr`/diff data are supplied correctly.
 - Must not change ts-owned task behavior — the branch-name display and its underlying data path stay exactly as-is.
