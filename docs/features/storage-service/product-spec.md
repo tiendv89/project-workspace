@@ -6,9 +6,9 @@
 
 ## Problem
 
-`product-spec.md` and `technical-design.md` are today plain markdown files committed
-to the management repo (`project-workspace`) via GitHub. Three production consumers
-already depend on that git-file model:
+`product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/*.md` are today
+plain markdown files committed to the management repo (`project-workspace`) via
+GitHub. Three production consumers already depend on that git-file model:
 
 - `workflow-backend`'s `internal/handler/document.go` reads/writes them via the
   GitHub Contents API (`internal/github/client.go`) to serve `digital-factory-ui`'s
@@ -40,23 +40,26 @@ This git-file model has four concrete problems that get worse as usage grows:
    git commit.
 
 This is a distinct problem from roadmap item 4 (*workspace storage migration*),
-which moves task/feature **state** (`status.yaml`, `tasks/*.yaml` — status,
-depends_on, log) off GitHub into Postgres. This feature is about **document
-content** (`product-spec.md`, `technical-design.md`, and new arbitrary uploaded
-files/images) becoming live, editable documents instead of markdown files
-committed to git. The two efforts should share infrastructure where practical
-(same object store, same DB) but are separable workstreams — this feature does
-not touch `status.yaml` or `tasks/*.yaml`.
+which moves task/feature **state** (`status.yaml` and the per-task `tasks/*.yaml`
+files — status, depends_on, log) off GitHub into Postgres. This feature is about
+**document content** — `product-spec.md`, `technical-design.md`, `tasks.md`
+(the narrative task breakdown — description, subtasks, required skills; distinct
+from the per-task `tasks/*.yaml` state files), `handoffs/*.md`, and new arbitrary
+uploaded files/images — becoming live, editable documents instead of markdown
+files committed to git. The two efforts should share infrastructure where
+practical (same object store, same DB) but are separable workstreams — this
+feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 
 ## Goals
 
 - **Scope boundary (explicit):** this feature's goals cover **document content**
-  (`product-spec.md`, `technical-design.md`, and new uploaded files/images) only.
-  Migrating `tasks.md`/`tasks/*.yaml`/`status.yaml` (task/feature **state**) off git
-  into Postgres is roadmap item 4 (*workspace storage migration*) — a separate,
-  already-tracked workstream, explicitly out of scope for this feature's goals
-  (see Non-goals). The two efforts may share infrastructure (same object store,
-  same DB) but ship independently.
+  — `product-spec.md`, `technical-design.md`, `tasks.md` (the narrative
+  breakdown), `handoffs/*.md`, and new uploaded files/images. Migrating
+  `status.yaml` and the per-task `tasks/*.yaml` state files (task/feature
+  **state**) off git into Postgres is roadmap item 4 (*workspace storage
+  migration*) — a separate, already-tracked workstream, explicitly out of scope
+  for this feature's goals (see Non-goals). The two efforts may share
+  infrastructure (same object store, same DB) but ship independently.
 - Stand up a single new service, **`storage-service`** (parallel to `rag-service` /
   `user-service` / `notification-service` in `workspace.yaml`), that owns:
   - a **generic blob layer** wrapping **GCS** (chosen over Cloudflare R2 / AWS S3 /
@@ -100,21 +103,23 @@ not touch `status.yaml` or `tasks/*.yaml`.
   snapshot" (not on every keystroke).
 - Wire `storage-service` into `init-feature`: extend the existing Step 0
   `go` (DB-backed task state) vs `ts` (git-backed task state) question so it also
-  determines the docs backend — `go` ⇒ `product-spec.md`/`technical-design.md`
-  live in `storage-service`, `ts` ⇒ they stay in git as today. Same hard-stop
-  discipline as today: if the choice isn't explicit, ask again, don't guess.
-  Scope stays narrow to `product-spec.md`/`technical-design.md` only —
-  `status.yaml`, `tasks.md`, and `tasks/*.yaml` are out of scope (roadmap item 4's
-  territory).
+  determines the docs backend — `go` ⇒ `product-spec.md`, `technical-design.md`,
+  `tasks.md`, and `handoffs/*.md` live in `storage-service`, `ts` ⇒ they stay in
+  git as today. Same hard-stop discipline as today: if the choice isn't explicit,
+  ask again, don't guess. Scope stays narrow to these narrative documents —
+  `status.yaml` and the per-task `tasks/*.yaml` state files are out of scope
+  (roadmap item 4's territory).
 - Ship a **one-time migration tool** to move existing git-backed
-  `product-spec.md`/`technical-design.md` into `storage-service`, reusing the
-  `.md`-import path in bulk: admin-triggered (per-feature and bulk), idempotent
-  (skip or confirm-reimport if a `storage-service` doc already exists for that
-  feature+slug), seeding `doc_version` #1 as "imported from git @ `<commit-sha>`"
-  to preserve history continuity, and firing the RAG webhook per migrated doc.
-  Sourced via a direct GitHub Contents API read / shallow clone — explicitly not
-  built on `workspace-github-adapter`, since that service is slated for removal
-  and this migration tool is a throwaway, one-time job.
+  `product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/*.md` into
+  `storage-service`, reusing the `.md`-import path in bulk: admin-triggered
+  (per-feature and bulk), idempotent (skip or confirm-reimport if a
+  `storage-service` doc already exists for that feature+slug), seeding
+  `doc_version` #1 as "imported from git @ `<commit-sha>`" to preserve history
+  continuity, and firing the RAG webhook per migrated doc. Sourced via a direct
+  GitHub Contents API read / shallow clone — explicitly not built on
+  `workspace-github-adapter`, since that service is slated for removal and this
+  migration tool is a throwaway, one-time job. Per-task `tasks/*.yaml` state
+  files are not migrated by this tool (roadmap item 4's territory).
 - Ship an **admin surface** at `/admin/storage` in `digital-factory-ui`, as a
   sibling page under `m1-admin-panel`'s existing role-guarded layout (not a new
   admin app), backed entirely by routes on `storage-service` itself
@@ -132,9 +137,10 @@ not touch `status.yaml` or `tasks/*.yaml`.
   document upload/import is `.md` only. PDFs/design assets may still be uploaded
   as opaque blob attachments (the generic blob primitive), just not parsed into
   editable documents.
-- **Migrating `status.yaml`, `tasks.md`, or `tasks/*.yaml` off git.** That is
-  roadmap item 4 (workspace storage migration) and is explicitly out of scope for
-  this feature, which only touches document *content*, not task/feature *state*.
+- **Migrating `status.yaml` or the per-task `tasks/*.yaml` state files off git.**
+  That is roadmap item 4 (workspace storage migration) and is explicitly out of
+  scope for this feature, which only touches document *content* (including the
+  narrative `tasks.md` and `handoffs/*.md` files) — not task/feature *state*.
 - **GCS Pub/Sub-based RAG re-index triggering.** v1 uses an app-level webhook from
   `storage-service` to `rag-service`'s indexer; Pub/Sub is a possible future
   revisit if the two services need to decouple further, not a v1 requirement.
@@ -165,10 +171,11 @@ not touch `status.yaml` or `tasks/*.yaml`.
 - A new `storage-service` exists (Go API + Node Hocuspocus sidecar), deployed
   alongside existing services, with GCS-backed blob storage and Postgres-backed
   metadata/ACL/version tables.
-- A `go`-backend feature's `product-spec.md`/`technical-design.md` can be opened
-  as a live Tiptap document, edited concurrently by two sessions (human+human or
-  human+agent) without a conflict/lock error, and both sets of edits are present
-  in the resulting document (Yjs CRDT merge, not last-write-wins).
+- A `go`-backend feature's `product-spec.md`, `technical-design.md`, `tasks.md`,
+  or a `handoffs/*.md` document can be opened as a live Tiptap document, edited
+  concurrently by two sessions (human+human or human+agent) without a
+  conflict/lock error, and both sets of edits are present in the resulting
+  document (Yjs CRDT merge, not last-write-wins).
 - A document's version history can be browsed as a timeline, any two versions can
   be diffed, and any past version can be restored as the live state.
 - A feature's documents are browsable via a folder/tree UI scoped to
@@ -182,12 +189,14 @@ not touch `status.yaml` or `tasks/*.yaml`.
   indexer via the app-level webhook (debounced), and the resulting content is
   retrievable via RAG query shortly after.
 - Creating a new `go`-backend feature via `init-feature` creates its
-  `product-spec.md`/`technical-design.md` in `storage-service`, seeded from the
-  existing templates, instead of writing git files; `ts`-backend features are
-  unaffected and continue to use git as today.
-- An admin can trigger migration of an existing git-backed feature's documents
-  into `storage-service` (single feature or bulk), see per-feature migration
-  status, and re-run migration idempotently without duplicating documents.
+  `product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/*.md` in
+  `storage-service`, seeded from the existing templates, instead of writing git
+  files; `ts`-backend features are unaffected and continue to use git as today.
+- An admin can trigger migration of an existing git-backed feature's narrative
+  documents (`product-spec.md`, `technical-design.md`, `tasks.md`,
+  `handoffs/*.md`) into `storage-service` (single feature or bulk), see
+  per-feature migration status, and re-run migration idempotently without
+  duplicating documents.
 - `/admin/storage` in `digital-factory-ui` shows per-workspace usage, an object
   browser with soft-delete, an orphan-cleanup action, and migration status —
   gated by the same `platform_admin`/`admin` role guard as `/admin/members`.
