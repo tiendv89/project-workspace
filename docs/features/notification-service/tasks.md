@@ -230,13 +230,13 @@ cycle and status-detection logic — no new polling loop.
 - typescript-best-practices
 
 ### Subtasks
-- [ ] Implement `InAppNotificationAdapter` conforming to the existing `NotificationPort` interface
-- [ ] Register `InAppNotificationAdapter` alongside the existing Slack adapter (parallel sink, not a replacement)
-- [ ] Extend `runFeatureNotificationStep` to detect stage-approval transitions and emit `spec_approved`/`design_approved`/`tasks_approved`
-- [ ] Extend `check-tasks-done.ts` to emit `task_done` to the task's assignee
+- [x] Implement `InAppNotificationAdapter` conforming to the existing `NotificationPort` interface
+- [x] Register `InAppNotificationAdapter` alongside the existing Slack adapter (parallel sink, not a replacement)
+- [x] Extend `runFeatureNotificationStep` to detect stage-approval transitions and emit `spec_approved`/`design_approved`/`tasks_approved`
+- [x] Extend `check-tasks-done.ts` to emit `task_done` to the task's assignee
 - [ ] Resolve "who is watching" per the technical design (feature session members for approvals; task assignee/last-updated-by for task_done)
-- [ ] Unit tests for each new trigger scenario, mirroring the existing Slack notification test coverage
-- [ ] Confirm existing Slack notification behavior is unchanged (regression tests pass)
+- [x] Unit tests for each new trigger scenario, mirroring the existing Slack notification test coverage
+- [x] Confirm existing Slack notification behavior is unchanged (regression tests pass)
 
 ---
 
