@@ -76,3 +76,6 @@ impl_feature_prs:
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/173
     status: open
+drift_detected: true
+drift_reason: "Rebase conflict: 9 new commits on main. checkout failed: Error:
+  spawnSync /bin/sh ETIMEDOUT"
