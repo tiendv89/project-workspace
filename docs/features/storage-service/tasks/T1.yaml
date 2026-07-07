@@ -1,9 +1,22 @@
 id: T1
 title: Bootstrap storage-service repo + register in workspace.yaml
 repo: storage-service
-status: in_review
+status: blocked
 depends_on: []
-blocked_reason: null
+blocked_reason: "executor_failed:repo_materialization_failed: Error: Command
+  failed: git clone \"git@github.com:tiendv89/storage-service.git\"
+  \"/workspace/impl\"
+
+  Cloning into '/workspace/impl'...
+
+  ssh: connect to host github.com port 22: Connection timed out\r
+
+  fatal: Could not read from remote repository.
+
+
+  Please make sure you have the correct access rights
+
+  and the repository exists.\n"
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
@@ -11,7 +24,7 @@ branch: feature/storage-service-T1
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T16:34:20.906Z
+  last_updated_at: 2026-07-07T16:45:35.423Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
