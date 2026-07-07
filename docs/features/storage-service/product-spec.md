@@ -76,9 +76,26 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   using **Yjs** as the CRDT, **Tiptap** (ProseMirror + Yjs) as the editor, and a
   **self-hosted Hocuspocus** sync layer running as a small Node sidecar (own
   Dockerfile/compose entry) — GCS-backed persistence via Hocuspocus's
-  `onStoreDocument`/`onLoadDocument` hooks, and connection-time auth via its
-  `onAuthenticate` hook. The stage-approval gate model is unchanged: editing a
-  live doc's content is separate from flipping `status: approved`.
+  `onStoreDocument`/`onLoadDocument` hooks. The stage-approval gate model is
+  unchanged: editing a live doc's content is separate from flipping
+  `status: approved`.
+- **Authenticate `storage-service` consistently with the rest of the platform,
+  and solve the WebSocket gap explicitly rather than skip it.** The workspace's
+  gateway (`workflow-bff`) owns sessions and injects trusted identity headers
+  into every backend call — but it does not support proxying WebSocket
+  connections (a prior feature, agent-chat v4, hit this exact limitation and
+  deliberately avoided extending the proxy for it). Since Hocuspocus's live-sync
+  protocol requires a genuine WebSocket, this feature must:
+  - Authenticate all normal `storage-service` REST calls (including admin
+    routes) the same way every other backend does — trusting the gateway's
+    injected identity, not a separate auth scheme.
+  - Provide a secure way for the browser to open a direct WebSocket connection
+    to the sync layer without going through the gateway, using a short-lived
+    credential obtained via an already-authenticated REST call — not a raw,
+    unauthenticated WebSocket endpoint, and not a change to the shared gateway's
+    proxy behavior.
+  - Admin routes additionally require the same platform-admin check already
+    used by the existing admin panel — not a new admin-auth mechanism.
 - Ship **document version history** as a linear timeline (not a branch DAG),
   self-built against Yjs's native snapshot API (`Y.snapshot()` /
   `createDocFromSnapshot()`), backed by a `doc_version` table (doc_id,
