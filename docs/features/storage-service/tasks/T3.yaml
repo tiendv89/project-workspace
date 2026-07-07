@@ -1,7 +1,7 @@
 id: T3
 title: Folder-tree sidebar component (mocked API)
 repo: digital-factory-ui
-status: review_passed
+status: done
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,13 +11,13 @@ branch: feature/storage-service-T3
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T17:05:30.205Z
+  last_updated_at: 2026-07-07T17:06:25.505Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/digital-factory-ui/pull/174
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/733
   status: open
@@ -96,3 +96,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-07T17:05:30.205Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-07T17:06:25.505Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
