@@ -164,13 +164,16 @@ One repo, two deployables, matching the approved spec:
     created_at, source` [`edit|import|migration`]), markdown import endpoint
     (`POST /api/documents/import` — parses `.md` → ProseMirror JSON → seeds a
     `Y.Doc` → snapshot #1).
-  - Auth: same session-cookie validation pattern as `workflow-backend`
-    (`RequireAuth` calling `user-service`/sessions), workspace-scoped ACL check
-    on every read/write.
-- **Node sidecar** (`sync/`, own `Dockerfile`) — Hocuspocus server.
-  - `onAuthenticate`: validates the same session cookie / bearer token against
-    `user-service`, resolves `{workspace_id, document_id}` from the connection
-    request, rejects if the caller lacks workspace access.
+  - Auth: trusts BFF-injected identity headers (`X-User-Id`, `X-Org-Id`,
+    `X-Accessible-Org-Ids`) behind a shared internal token, exactly like
+    `hermes-agent`'s `require_identity` — not a direct session/cookie check (see
+    §11). Workspace-scoped ACL check on every read/write using
+    `X-Accessible-Org-Ids`.
+- **Node sidecar** (`sync/`, own `Dockerfile`) — Hocuspocus server, reached
+  **directly by the browser over its own public WebSocket endpoint** (not via
+  `workflow-bff` — see §11 for why).
+  - `onAuthenticate`: verifies a short-lived signed **sync token** (see §11) —
+    no per-connection network call needed.
   - `onLoadDocument`: reads the current `doc_version.snapshot_ref` blob from GCS
     (via the Go API's internal blob-read, called over localhost/private network
     — not the public API), decodes into a `Y.Doc`.
