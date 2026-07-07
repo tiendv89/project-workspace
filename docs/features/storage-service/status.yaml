@@ -63,3 +63,4 @@ stages:
 title: storage-service
 feature_branch: feature/storage-service
 feature_branch_base_sha: 5a6ed195016b2057e233fbf015b4eedb926c93ec
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/731
