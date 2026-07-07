@@ -198,8 +198,17 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 - **Hard delete as a user-facing action.** All user-initiated deletes are soft
   (trash + restore window); only the scheduled purge job or an admin's explicit
   "empty trash" action performs a hard delete.
-- **Cloudflare R2/CDN fronting for images.** Worth doing later if pasted-image
-  egress volume becomes meaningful, but not required to ship v1 on GCS directly.
+- **Extending the shared gateway (`workflow-bff`) to proxy WebSocket
+  connections.** A prior feature already evaluated and deliberately avoided
+  this (choosing SSE instead) because the gateway is shared, critical-path
+  infrastructure. This feature achieves live sync without requiring that
+  change (see Goals) rather than reopening it.
+- **A second, independent authentication/authorization mechanism for
+  `storage-service`, separate from the platform's existing gateway-issued
+  identity and admin-role check.** New credentials introduced by this feature
+  (e.g. a short-lived sync credential for the WebSocket connection,
+  service-to-service tokens) are scoped narrowly to the specific gap they close
+  and must not become a parallel login/authorization system.
 - **Moving `hermes-agent`'s `document_repo.py`/tools, `workflow-backend`'s document
   handler, and a Claude Code document MCP tool onto `storage-service` all within
   this spec's task breakdown.** These three existing GitHub-Contents-API consumers
@@ -244,9 +253,19 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   retention window, with its version history intact on restore. After the
   retention window (or an admin's "empty trash" action), the object and its
   metadata are permanently purged.
+- A `storage-service` REST call made by an authenticated user is authorized
+  using the same trusted-identity mechanism every other backend in the
+  platform already uses — no separate login or credential scheme for this
+  feature.
+- A browser can establish a live collaborative-editing WebSocket session to the
+  sync layer without that connection being routable by an unauthenticated
+  third party, and without requiring changes to the shared gateway's existing
+  proxy behavior.
 - `/admin/storage` in `digital-factory-ui` shows per-workspace usage, an object
   browser with soft-delete, an orphan-cleanup action, and migration status —
-  gated by the same `platform_admin`/`admin` role guard as `/admin/members`.
+  gated by the same `platform_admin`/`admin` role guard as `/admin/members`,
+  reached through the same authenticated request path as every other admin
+  action in the product (not a separate admin login).
 
 ## Open Questions
 
