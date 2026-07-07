@@ -53,3 +53,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-07T16:07:25.092Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-07T16:07:29.630Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/digital-factory-ui/pull/9,
+      github.com/tiendv89/digital-factory-ui/pull/19,
+      github.com/tiendv89/project-workspace/pull/730"
+    rag_query: Folder-tree sidebar component (mocked API) storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
