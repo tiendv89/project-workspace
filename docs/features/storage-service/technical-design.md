@@ -31,6 +31,23 @@
    management repo and call `Read` directly — no MCP tool, no HTTP path, per
    `executor-self-briefing`'s explicit model.
 
+**Document content is not owner-gated today — this matters for this feature.**
+Confirmed via GitNexus/RAG: `hermes-agent` already has a precedent owner-guard,
+`_owner_guard_ts_only` (`plugins/tools/artifacts.py:264-283`), and a
+corresponding e2e test (`test_product_spec_approve_uses_db_only_for_go_feature`)
+— but both are scoped to the **stage-transition's `status.yaml` write**
+(skipping the git write for `go`-owned features, per `workflow-db`'s
+owner-awareness work). Neither touches `write_product_spec` /
+`write_technical_design` / `edit_document` / `read_document` — those four tools
+commit **document content** to git identically for `go` and `ts` features today,
+because document content itself has never been owner-gated before this feature.
+Once this feature makes `go`-backend features' `product-spec.md`/
+`technical-design.md` live in `storage-service` instead of git (§7), these four
+tools would, unguarded, either write to a git path `init-feature` no longer
+populates, or create a stray git copy that diverges from the canonical
+`storage-service` document — a direct violation of this feature's own
+"no dual-live copies" non-goal. See §12 for the guard this requires.
+
 **`rag-service`'s indexer is git-diff-triggered** (confirmed via GitNexus):
 `services/indexer/git_watcher.py` (`GitWatcher.changed_files`) does `git pull` +
 `git diff --name-only`; `services/indexer/main.py` (`run_multi`, `index_repo`)
