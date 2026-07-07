@@ -26,6 +26,31 @@ The task diff view lives in `digital-factory-ui`:
 - **`workflow-orchestrator`** (go orchestrator) — task PR state lives in Postgres. `internal/orchestrator/pr_merge_poll.go` (`extractPRURL`, `processPRPoll`) and helpers like `setTaskPR` (test helper pattern) manage a task's PR URL + status (`open`/`merged`) as the go orchestrator polls GitHub. `internal/database/queries.go` (`insertGoTask`, `Reader.GetWorkspaceTask`) reads/writes go task rows, which `workflow-backend`'s service layer (`internal/service/workspace.go`, tested via `TestGetWorkspaceTask_Success`) already surfaces as part of `TaskDetail`/`TaskSummary`.
 - **Feature `owner`** (`ts` | `go`) is already a first-class field on `FeatureSummary`/`FeatureDetail` (confirmed via `feature-initialization-compatible` feature: `owner` field, `InitPRBanner`, badges in `FeatureIDEDocsPanel`). The frontend already branches UI on `owner` elsewhere.
 
+## Bug Found During Verification (blocks this feature)
+
+While verifying the go flow manually, opening a task's diff in the UI returned:
+```json
+{"success": false, "error": {"code": "DATABASE_NOT_FOUND", "message": "task not found: a3001d08-...", "source": "database", "retryable": false}}
+```
+
+**Root cause (traced end-to-end, not go-specific — affects any task, ts or go):**
+
+- `workspace_tasks` has two independently-generated UUID columns: `id` (row primary key) and `task_id` (business key). They are not guaranteed equal (confirmed via `scanTask`/`WorkspaceTask` in `internal/database/queries.go`, which scans both as distinct fields, and the frontend `TaskSummary` type in `src/services/workflow-backend/types.ts`, which likewise exposes both `id` and `task_id` separately).
+- `TaskDiffTab` (`src/components/features/task-diff-tab.tsx`) calls `useTaskDiff(..., task.id, ...)` — passing the row **primary key** `task.id`.
+- `getTaskDiff` (`src/services/workflow-backend/client.ts`) builds `GET /api/workspaces/:workspaceId/tasks/:taskId/diff` using that value.
+- The backend route resolves via `DiffHandler.GetTaskDiff` → `WorkspaceService.GetWorkspaceTask` → `Reader.GetWorkspaceTaskByID`, whose query is:
+  ```sql
+  SELECT ... FROM workspace_tasks t
+  WHERE t.workspace_id = $1 AND t.task_id = $2
+  ```
+  — it matches on the **business-key `task_id` column**, not `id`.
+- Whenever a task's `id` ≠ `task_id` (the general case — nothing in the schema or insert path guarantees they match), the lookup finds zero rows and returns `DATABASE_NOT_FOUND`, surfaced verbatim by the frontend as "Failed to load diff: task not found: `<id>`".
+- **`useTaskReviewThread`** (`src/hooks/tasks/use-task-review-thread.ts`) has the identical call pattern (`task.id` passed as `taskId`) and very likely has the same defect against its backend route — flagged here for the implementing task to verify and fix alongside the diff endpoint, since both live in the same task-review view and share the same task-identity bug class.
+
+**Fix (frontend-only, minimal, no backend/schema change):** `TaskDiffTab` and `useTaskReviewThread`'s call sites must pass **`task.task_id`** (the business key the backend actually looks up on), not `task.id`, when calling `useTaskDiff` / `useTaskReviewThread`. This is consistent with how the rest of the task-review UI already treats `task.task_id` as the externally-meaningful identifier (e.g. `SpecPanel` already renders `task.task_id?.toUpperCase()` as the task's displayed label). No backend change is required — `GetWorkspaceTaskByID`'s `task_id`-based lookup is correct and shared by both ts and go tasks; the bug is purely in which frontend field gets passed as the URL param.
+
+This fix is orthogonal to (and must land alongside, in the same task) the owner-gated PR-header work below — without it, the go-owned task diff view this feature adds will never load any diff data to display next to the new PR link.
+
 ## Constraints
 - Must not change `DiffPanel`'s diff-body rendering — it is already owner-agnostic and works for both flows once `hasPr`/diff data are supplied correctly.
 - Must not change ts-owned task behavior — the branch-name display and its underlying data path stay exactly as-is.
