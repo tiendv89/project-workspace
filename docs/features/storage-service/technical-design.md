@@ -398,6 +398,45 @@ than one shared platform-wide secret):
   chat-turn payload — the same shape as its existing scoped-bot-credential
   pattern, not a new mechanism.
 
+### 12. `hermes-agent` document-tool owner guard (new, small, in scope)
+
+**Gap identified:** `hermes-agent`'s four document tools
+(`read_document`/`write_product_spec`/`write_technical_design`/
+`edit_document`, all routed through `plugins/document_repo.py`) have no
+owner-awareness today — they always read/write git via the GitHub Contents API,
+regardless of whether a feature is `ts` or `go`. This was safe until now because
+document *content* was git-only for every feature. Once §7 makes `go`-backend
+features' `product-spec.md`/`technical-design.md`/`tasks.md`/`handoffs/*.md`
+live in `storage-service` instead, an ungated `write_product_spec` call against
+a `go` feature would either 404 (no git file was ever created for it) or —
+worse — successfully create a brand-new git file that has no relationship to
+the canonical `storage-service` document, silently reintroducing the exact
+"dual-live copy" problem the product spec's Non-goals explicitly forbid for
+migrated features.
+
+**Chosen fix:** extend the existing `_owner_guard_ts_only` pattern
+(`plugins/tools/artifacts.py:264-283`, already proven for the `status.yaml`
+stage-transition write) to the four document tools. For a `go`-owned feature,
+each tool short-circuits: `read_document` proxies the read to
+`storage-service`'s document-content endpoint instead of GitHub (using the new
+`STORAGE_SERVICE_TOKEN` from §11); `write_product_spec`/`write_technical_design`/
+`edit_document` proxy the write to `storage-service`'s document-write endpoint
+instead of committing to git. This is the minimum change that keeps the chat-
+copilot's authoring loop (roadmap item 5.2 / `m3-agent-chat-v3`) functional for
+`go`-backend features, without rewriting `document_repo.py`'s git-commit
+machinery (which remains exactly as-is for `ts` features — absent/`ts` owner
+preserves current behavior, matching every other owner-guard in the codebase).
+An absent `owner` field continues to default to `ts` (existing convention),
+so every feature created before this change is unaffected.
+
+**Explicitly not solved here:** a full architectural cutover of
+`document_repo.py` to make `storage-service` its primary backend, or unifying
+the git and `storage-service` code paths into one abstraction — that is exactly
+the "moving `hermes-agent`'s `document_repo.py`/tools onto `storage-service`"
+work the product spec Non-goals defer to a fast-follow technical design (Open
+Question #3). §12 is a narrow, defensive guard + proxy shim scoped to
+preventing data corruption for `go` features today — not that migration.
+
 ## Dependency Analysis
 
 - **`storage-service` (new repo) is the foundation** — Go API (blob + document +
@@ -432,11 +471,17 @@ than one shared platform-wide secret):
   its own task.
 - **No dependency on `workspace-github-adapter`** anywhere in this feature
   (constraint, §Constraints) — the migration tool reads GitHub directly.
-- **No dependency on cutting over `workflow-backend`'s document handler,
-  `hermes-agent`'s tools, or the executor's clone-and-`Read` path** — those
-  three consumers continue serving `ts`-backend features unmodified throughout
-  this feature's rollout (per spec Non-goals); this feature only adds a new,
-  parallel path for `go`-backend features.
+- **The `hermes-agent` owner-guard (§12)** depends on: `storage-service`'s
+  document read/write endpoints (Wave 2) and the `STORAGE_SERVICE_TOKEN`
+  credential (§11) being issued. It is independent of the Tiptap/Hocuspocus
+  live-editing UI (§2/§3) — it only needs the plain REST read/write path, the
+  same one the migration tool (§8) and `init-feature` (§7) use.
+- **No dependency on cutting over `workflow-backend`'s document handler or the
+  executor's clone-and-`Read` path** — those two consumers continue serving
+  `ts`-backend features unmodified throughout this feature's rollout (per spec
+  Non-goals); this feature only adds a new, parallel path for `go`-backend
+  features. `hermes-agent`'s document tools are the one exception requiring a
+  guard (§12), not a full cutover.
 
 ## Parallelization / Blocking Analysis
 
@@ -477,6 +522,10 @@ Wave 4 (depends on Wave 2's document module, parallel with Wave 3):
     Tiptap/Hocuspocus)
   - storage-service: migration tool (direct GitHub read + bulk import) — depends
     on the import endpoint (Wave 2), independent of Wave 3's live-editing UI
+  - hermes-agent: owner guard on the four document tools (§12) — depends on
+    storage-service's document read/write endpoints (Wave 2) and
+    STORAGE_SERVICE_TOKEN (§11); independent of init-feature/migration-tool work
+    in this wave
 
 Wave 5 (depends on storage-service's usage/object/trash/migration-status APIs
          from Waves 1-4, and user-service's existing platform_role check):
@@ -487,11 +536,13 @@ Wave 5 (depends on storage-service's usage/object/trash/migration-status APIs
 
 **What is NOT touched by any wave above, and must remain stable throughout:**
 `workflow-backend`'s `internal/handler/document.go` (GitHub-Contents-API view
-path for `ts` features), `hermes-agent`'s `document_repo.py` and its four
-document tools, and the Claude Code executor's clone-and-`Read` model. These
-three consumers' eventual migration to `storage-service` is explicitly deferred
-to a fast-follow technical design (per product spec Non-goals / Open Question
-#3) and is out of scope for this feature's task breakdown.
+path for `ts` features), `hermes-agent`'s git-commit machinery in
+`document_repo.py` for `ts` features, and the Claude Code executor's
+clone-and-`Read` model. These consumers' eventual full migration to
+`storage-service` is explicitly deferred to a fast-follow technical design (per
+product spec Non-goals / Open Question #3) and is out of scope for this
+feature's task breakdown — the one exception is `hermes-agent`'s owner-guard
+addition (§12, Wave 4), which is a narrow defensive change, not a cutover.
 
 ## Repository Impact
 
@@ -504,11 +555,11 @@ to a fast-follow technical design (per product spec Non-goals / Open Question
 | `agent-workflow` (`init-feature` skill) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features |
 | `workflow-backend` | Small guard addition: reject writes to a migrated feature's git document paths (403) — not a rewrite of `document.go` |
 | `user-service` | No schema changes — `storage-service` calls its existing internal platform-role check service-to-service (§11); no new endpoint expected but confirm at implementation time |
-| `hermes-agent` | New `STORAGE_SERVICE_TOKEN` credential (§11) to fetch blob bytes for chat-image attachments — held alongside its existing `GITHUB_TOKEN`; no change to its document tools (deferred per Non-goals) |
+| `hermes-agent` | New `STORAGE_SERVICE_TOKEN` credential (§11) to fetch blob bytes for chat-image attachments AND to proxy document reads/writes for `go`-owned features; owner-guard added to the four document tools (§12) so they route to `storage-service` instead of git when `owner=go` — git-commit logic for `ts` features is unchanged |
 
-Repos explicitly unaffected: `hermes-agent` (its document tools are unchanged in
-this feature — deferred per Non-goals), `git-nexus`, `workspace-github-adapter`,
-`notification-service`, `workflow-orchestrator`, `workflow-mcp`.
+Repos explicitly unaffected: `git-nexus`, `workspace-github-adapter`,
+`notification-service`, `workflow-orchestrator`, `workflow-mcp`. (`hermes-agent`
+is affected — see §12 — and is no longer listed as unaffected.)
 
 ## Open Items Carried From Product Spec
 
