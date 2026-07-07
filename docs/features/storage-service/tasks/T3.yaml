@@ -1,7 +1,7 @@
 id: T3
 title: Folder-tree sidebar component (mocked API)
 repo: digital-factory-ui
-status: in_progress
+status: ready
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -39,3 +39,15 @@ log:
       github.com/tiendv89/digital-factory-ui/pull/2"
     rag_query: Folder-tree sidebar component (mocked API) storage-service
     note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: blocked
+    by: pye
+    at: 2026-07-07T23:01:44+0700
+    note: >-
+      No implementation work or PR exists yet for this claim (pr.url is empty). Abandoning
+      the in-progress claim so the task can be re-claimed cleanly.
+  - action: ready
+    by: pye
+    at: 2026-07-07T23:01:44+0700
+    note: >-
+      Unblocked per unblock target rule — pr.url was null, so task resets to ready
+      for re-claim rather than in_review.
