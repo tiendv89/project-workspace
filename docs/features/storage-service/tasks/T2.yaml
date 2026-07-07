@@ -1,7 +1,7 @@
 id: T2
 title: POST /internal/index webhook endpoint
 repo: rag-service
-status: ready
+status: in_progress
 depends_on: []
 blocked_reason: null
 blocked_suggestion: null
@@ -11,7 +11,7 @@ branch: feature/storage-service-T2
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-07T15:39:01.073Z
+  last_updated_at: 2026-07-07T16:06:05.760Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -33,7 +33,10 @@ log:
   - action: ready
     by: pye
     at: 2026-07-07T23:00:31+0700
-    note: >-
-      Unblocked per unblock target rule — pr.url was null, so task resets to ready
-      for re-claim. Previous block reason: executor_failed:rag_pre_flight_error
-      (spawnSync /bin/sh ETIMEDOUT).
+    note: "Unblocked per unblock target rule — pr.url was null, so task resets to
+      ready for re-claim. Previous block reason:
+      executor_failed:rag_pre_flight_error (spawnSync /bin/sh ETIMEDOUT)."
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-07T16:06:05.760Z
+    note: Claimed via git-based claim protocol.
