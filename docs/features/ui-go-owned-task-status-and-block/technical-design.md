@@ -74,7 +74,7 @@ Required so the UI can render Goal 1 (status display) at all:
   4. Else → 409 (task is not in a resettable processing state); UI should not have shown the button, but the backend must not silently no-op.
 - On success, append a `workspace_activity_events` row: `action = 'force_reset'`, `note` (optional), `from`/`to` derived from the branch taken, in the same transaction as the guarded update (matching `UnblockTask`'s existing transaction pattern).
 - Response shape mirrors `UnblockTaskResult`: `{ task_id, from, to }` (for the conflict-resolving branch, `from`/`to` describe the conflict-state transition, e.g. `"resolving"`/`"conflicted"`, not the task status, since status doesn't change — UI must not assume `to` is always a task `status` value).
-- `workflow-bff`: add the matching routing-table entry (parallel to the existing unblock route test `TestUnblockRouteResolvesToWorkflowBackend`) so `force-reset` resolves to `workflow-backend` with identity headers injected.
+- `workflow-bff`: add the matching routing-table entry so `force-reset` resolves to `workflow-backend` with identity headers injected, following the same registration pattern already used for `unblock`. No dedicated route test is required for this addition — there is no special routing requirement beyond what the existing generic proxy mechanism already handles and already covers via its existing tests.
 
 ### 3. Frontend (`digital-factory-ui`)
 - **Types** (`src/services/workflow-backend/types.ts`): add `dispatched_at?: string`, `conflict_state?: "none" | "conflicted" | "resolving" | "resolved"`, `blocked_details?: string` to `TaskSummary`; ensure `TaskDetail` inherits them.
