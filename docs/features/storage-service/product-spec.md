@@ -50,6 +50,13 @@ not touch `status.yaml` or `tasks/*.yaml`.
 
 ## Goals
 
+- **Scope boundary (explicit):** this feature's goals cover **document content**
+  (`product-spec.md`, `technical-design.md`, and new uploaded files/images) only.
+  Migrating `tasks.md`/`tasks/*.yaml`/`status.yaml` (task/feature **state**) off git
+  into Postgres is roadmap item 4 (*workspace storage migration*) — a separate,
+  already-tracked workstream, explicitly out of scope for this feature's goals
+  (see Non-goals). The two efforts may share infrastructure (same object store,
+  same DB) but ship independently.
 - Stand up a single new service, **`storage-service`** (parallel to `rag-service` /
   `user-service` / `notification-service` in `workspace.yaml`), that owns:
   - a **generic blob layer** wrapping **GCS** (chosen over Cloudflare R2 / AWS S3 /
