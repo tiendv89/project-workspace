@@ -19,7 +19,7 @@
 - There is **no existing backend capability for Goal 3** (force-reset a stuck **processing** task: `in_progress`→`ready`, `reviewing`→`in_review`, conflict `resolving`→`conflicted`). The existing `/unblock` endpoint's guard (`status = 'blocked'`) explicitly rejects any task not already `blocked`, so it cannot be reused unmodified for the processing sub-cases.
 
 **BFF (`workflow-bff`)**
-- The proxy routing (`internal/app/api/handler/proxy/routing.go`) already resolves the `.../tasks/:taskId/unblock` route to `workflow-backend` and injects identity headers (`TestProxyInjectsIdentityHeadersForUnblock`, `TestUnblockRouteResolvesToWorkflowBackend`). A new force-reset route needs the equivalent routing table entry.
+- The proxy routing (`internal/app/api/handler/proxy/routing.go`) already resolves the `.../tasks/:taskId/unblock` route to `workflow-backend` and injects identity headers (`TestProxyInjectsIdentityHeadersForUnblock`, `TestUnblockRouteResolvesToWorkflowBackend`). A new force-reset route needs the equivalent routing table entry, added the same way as the existing `unblock` entry — no new test is required for this addition; the generic proxy/routing mechanism is already covered and the new route is not expected to need special-cased behavior beyond registering the path.
 
 ## Constraints
 - Per the approved product spec: UI/UX and status-transition *rules* are in scope; underlying orchestrator dispatch/claim mechanics, DB schema, and full API contract shapes are explicitly deferred/owned by this design only insofar as needed to unblock the UI — i.e. this design proposes the minimal backend surface needed, but detailed orchestrator-side atomicity work is implementation detail for the backend task(s).
