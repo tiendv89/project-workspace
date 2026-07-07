@@ -285,15 +285,97 @@ logic immediately, scoped to a workspace or item.
 `/admin/storage` in `digital-factory-ui`, sibling to `/admin/members` under the
 existing `AdminLayout`/`isPlatformAdmin` guard (§ Current State) — no new
 shell/auth. Backend: all routes under `/api/admin/storage/...` live on
-`storage-service` itself (owns the tables), guarded by the same
-`RequirePlatformRole` pattern `user-service` already implements — `storage-service`
-calls `user-service`'s role-check internally (or receives `platform_roles` in
-the forwarded session payload via `workflow-bff`, matching `m4-agent-cost`'s
-"forward `platform_roles` in the session/me payload" precedent). Surfaces:
-usage/quota per workspace, object browser with delete-to-trash, empty-trash
-action, orphan cleanup (blobs with no referencing `document`/chat-message older
-than N days), migration status per feature (git-only/migrated/failed, retry
-inline).
+`storage-service` itself (owns the tables). Auth mechanics for these routes are
+specified in §11 (BFF-injected identity + a service-to-service platform-role
+check against `user-service`), not re-derived here. Surfaces: usage/quota per
+workspace, object browser with delete-to-trash, empty-trash action, orphan
+cleanup (blobs with no referencing `document`/chat-message older than N days),
+migration status per feature (git-only/migrated/failed, retry inline).
+
+### 11. BFF, authentication, and the live-sync transport decision
+
+**REST API auth (`storage-service`'s Go API, including admin routes).** Add
+`/bff/storage-service/*` as a new upstream prefix in `workflow-bff`'s existing
+longest-prefix proxy config (`configs/config.yaml`'s `bff.upstreams` —
+config-only change, same shape as the existing `/bff/workflow-backend`,
+`/bff/hermes-agent`, `/bff/user-service` entries; confirmed no per-route
+registration is needed, matching the `ui-go-owned-task-status-and-block`
+precedent for a new sibling path under an existing root-path prefix).
+`storage-service` trusts the BFF-injected `X-User-Id`/`X-Org-Id`/
+`X-Accessible-Org-Ids` headers behind the shared `internal_token` bearer check
+— the identical trust model `hermes-agent`'s `require_identity` already uses,
+reused rather than reinvented. Every read/write is additionally scoped by
+`X-Accessible-Org-Ids` (workspace membership), mirroring `workflow-backend`'s
+`AuthCtx.AccessibleWorkspaceIDs` pattern.
+
+**Admin routes** (`/api/admin/storage/...`) additionally require a
+platform-role check. `storage-service` calls `user-service`'s existing internal
+role-check surface service-to-service (shared internal token, same shape as
+`user-service`'s existing `/internal/sessions/validate` — confirm the exact
+endpoint name for platform-role lookup at implementation time; `HasRole`/
+`GetRole` in `internal/billing/platform_role_store.go` are the underlying
+functions) using the `X-User-Id` from the trusted header. This avoids inventing
+a second admin-auth mechanism alongside the one `m1-admin-panel`/`m4-agent-cost`
+already established.
+
+**Live-sync transport (Hocuspocus WebSocket) — Options Considered:**
+
+- **Option WS-A — extend `workflow-bff`'s proxy to support WebSocket.**
+  Pros: single origin for the browser; the existing session cookie/Redis auth
+  is reused as-is, no new token scheme.
+  Cons: `workflow-bff` is a shared, critical-path gateway serving every other
+  service; WebSocket proxying is new code with new failure modes (long-lived
+  connections, backpressure, reconnect-on-drop semantics) that
+  `m3-agent-chat-v4` explicitly avoided by choosing SSE instead, specifically
+  to not touch this code path. Re-opening that avoided work here, for one
+  feature, has a blast radius beyond this feature if it destabilizes the shared
+  proxy. **Rejected** — inconsistent with established precedent and
+  disproportionate risk for this feature's scope.
+- **Option WS-B — Hocuspocus exposes its own public WebSocket endpoint,
+  authenticated by a short-lived signed sync token minted via the
+  BFF-authenticated REST path (chosen).** The browser's Tiptap collaboration
+  provider first calls `POST /bff/storage-service/api/documents/:id/sync-token`
+  (normal BFF-authenticated REST call, identity + ACL checked exactly as this
+  section describes above) to obtain a short-TTL (~60s) HMAC-signed token
+  carrying `{workspace_id, document_id, user_id, exp}`, signed with a secret
+  (`STORAGE_SYNC_TOKEN_SECRET`) known only to `storage-service`'s Go API and its
+  own Node sidecar — not to `workflow-bff`. The browser then opens a WebSocket
+  directly to the Hocuspocus sidecar's own public endpoint, presenting the token
+  (query param or `Sec-WebSocket-Protocol`). Hocuspocus's `onAuthenticate` hook
+  verifies the signature, expiry, and claims locally — no network call per
+  connection. On token expiry mid-session (long editing sessions), the client
+  re-fetches a fresh token through the same authenticated REST path before
+  reconnecting.
+  Pros: zero new code in `workflow-bff`; matches Hocuspocus's own idiomatic
+  self-hosted auth pattern; the REST path (fronted by the BFF, already
+  authenticated/ACL-checked) remains the single source of truth for "is this
+  user allowed to see this document," and the WS layer only verifies a
+  short-lived capability rather than re-deriving permissions.
+  Cons: a second public network endpoint (the Hocuspocus WS host) that sits
+  outside the BFF's single-origin model — needs its own TLS/ingress
+  configuration and a WS-origin/CORS allowlist; requires a token-refresh path
+  in the client for sessions longer than the token TTL.
+  **Chosen.**
+
+**Service-to-service internal tokens** (distinct secrets per pair, following the
+workspace's existing pattern of scoped bot/service credentials —
+`GITHUB_TOKEN` for `hermes-agent`, `internal_token` for `workflow-bff`, rather
+than one shared platform-wide secret):
+- `STORAGE_INTERNAL_TOKEN` — shared between `storage-service`'s Go API and its
+  own Node Hocuspocus sidecar, for the sidecar's calls back into the Go API's
+  internal blob read/write endpoints (`onLoadDocument`/`onStoreDocument`, §1).
+- `STORAGE_SYNC_TOKEN_SECRET` — as above, for signing/verifying sync tokens
+  (WS-B); distinct from `STORAGE_INTERNAL_TOKEN` since it is a signing key
+  embedded in a client-visible token, not a bearer credential.
+- A `rag-service`-side shared token for the `POST /internal/index` webhook
+  (§6) — mirrors the existing `GITHUB_TOKEN`-gated internal pattern already
+  used for `pr_indexer`.
+- `hermes-agent` obtains an image's bytes for the vision-model call (§5) by
+  calling `storage-service`'s internal blob-read endpoint with a new shared
+  service credential (`STORAGE_SERVICE_TOKEN`, held by `hermes-agent` alongside
+  its existing `GITHUB_TOKEN`), passing the `object_id` it received in the
+  chat-turn payload — the same shape as its existing scoped-bot-credential
+  pattern, not a new mechanism.
 
 ## Dependency Analysis
 
@@ -316,10 +398,17 @@ inline).
   integration if sequencing pressure requires, since it only needs the write
   path, not the CRDT sync layer.
 - **Admin surface (§10)** depends on: `storage-service`'s usage/object/trash/
-  migration-status read APIs, and `user-service`'s existing `platform_role`
-  check being reachable from `storage-service` (either a direct internal call or
-  a forwarded session claim via `workflow-bff` — decide the exact mechanism at
-  task-breakdown time; both are viable given `m4-agent-cost`'s precedent).
+  migration-status read APIs, and the §11 platform-role check being reachable
+  from `storage-service` via a service-to-service call to `user-service`.
+- **The BFF proxy config change (§11, new `/bff/storage-service/*` upstream)**
+  is a small, independent, additive change to `workflow-bff` that can happen in
+  Wave 1 — it is a prerequisite for every REST call in this feature but is not
+  itself blocked on anything.
+- **The Hocuspocus WebSocket endpoint (§11, WS-B) is deliberately NOT routed
+  through `workflow-bff`** — it needs its own ingress/TLS setup, independent of
+  the BFF proxy change above. This is a genuinely separate piece of
+  infrastructure work from the REST API's BFF wiring and should be scoped as
+  its own task.
 - **No dependency on `workspace-github-adapter`** anywhere in this feature
   (constraint, §Constraints) — the migration tool reads GitHub directly.
 - **No dependency on cutting over `workflow-backend`'s document handler,
@@ -383,10 +472,11 @@ to a fast-follow technical design (per product spec Non-goals / Open Question
 | `storage-service` (**new**) | Go API (`internal/blob`, `internal/document`), Postgres migrations, Node Hocuspocus sidecar (`sync/`), Dockerfiles for both, admin API routes |
 | `rag-service` | New `POST /internal/index` endpoint (additive); no changes to `git_watcher.py`/`pr_indexer.py` |
 | `digital-factory-ui` | New folder-tree sidebar component; Tiptap editor component (storage-service-backed docs only); version-history panel; `/admin/storage` page under existing `AdminLayout`; `workflow-bff` client for `storage-service` |
-| `workflow-bff` | Thin `/bff/storage-service/*` passthrough, alongside existing BFF clients |
+| `workflow-bff` | New `/bff/storage-service/*` upstream prefix (config-only, `bff.upstreams`) for the REST API; the Hocuspocus WebSocket endpoint is explicitly NOT routed through the BFF (§11) — it is its own public ingress |
 | `agent-workflow` (`init-feature` skill) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features |
 | `workflow-backend` | Small guard addition: reject writes to a migrated feature's git document paths (403) — not a rewrite of `document.go` |
-| `user-service` | No schema changes — `storage-service` reads existing `platform_role`/session data via internal call or forwarded claim |
+| `user-service` | No schema changes — `storage-service` calls its existing internal platform-role check service-to-service (§11); no new endpoint expected but confirm at implementation time |
+| `hermes-agent` | New `STORAGE_SERVICE_TOKEN` credential (§11) to fetch blob bytes for chat-image attachments — held alongside its existing `GITHUB_TOKEN`; no change to its document tools (deferred per Non-goals) |
 
 Repos explicitly unaffected: `hermes-agent` (its document tools are unchanged in
 this feature — deferred per Non-goals), `git-nexus`, `workspace-github-adapter`,
