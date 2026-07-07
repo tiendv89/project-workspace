@@ -97,7 +97,7 @@ Required so the UI can render Goal 1 (status display) at all:
 - **Can proceed immediately, in parallel:**
   - `workflow-backend`: read-path extension (SELECT columns, struct fields, domain mapping) — no dependency on anything else in this feature.
   - `workflow-backend`: new `force-reset` endpoint + guarded transitions — no dependency on the read-path extension (different code paths), though both touch the same `workspace_tasks` table and same files (`queries.go`, `workspace.go`, `handler/workspace.go`) so should be sequenced as two commits/PRs to avoid merge conflicts, not run as fully independent parallel workstreams within the same repo.
-  - `workflow-bff`: routing-table entry for `force-reset` — only needs the *path/method contract* agreed upfront, not the working backend implementation, so can be written in parallel and validated against a stub.
+  - `workflow-bff`: routing-table entry for `force-reset` — only needs the *path/method contract* agreed upfront, not the working backend implementation, so can be written in parallel. This is a plain registration entry (no new test required, consistent with the existing `unblock` entry's pattern) and can be verified informally once the real backend route is live.
 - **Blocked / sequenced:**
   - `digital-factory-ui` status-display changes (Goal 1) — blocked until `workflow-backend`'s read-path extension is merged (or a frozen mock contract is agreed for parallel development, then integrated).
   - `digital-factory-ui` explicit-unblock button (Goal 2) — blocked only on `blocked_from_status` being exposed (part of the same read-path extension), not on any new endpoint.
