@@ -71,9 +71,14 @@ Pass the feature's `owner` down from whichever parent already has it (`feature-w
 
 ## Chosen Design
 
-**Option B.** Feature `owner` becomes an explicit prop on `TaskDiffTab`, sourced the same way other owner-gated UI already reads it (from the currently-selected feature object held in `feature-workbench.tsx` / wherever `TaskDiffTab` is instantiated).
+**Option B.** Feature `owner` becomes an explicit prop on `TaskDiffTab`, sourced the same way other owner-gated UI already reads it (from the currently-selected feature object held in `feature-workbench.tsx` / wherever `TaskDiffTab` is instantiated). **In addition, and as a prerequisite, the task-id bug described above is fixed in the same change** — without it the diff view never loads data for either owner, ts or go.
 
 ### Frontend changes (`digital-factory-ui`)
+
+0. **Bug fix (prerequisite) — pass `task.task_id`, not `task.id`, to diff/thread hooks**
+   - In `TaskDiffTab`: change `useTaskDiff(hasPr ? selectedWorkspaceId : null, hasPr ? task.id : null, task.repo || undefined)` to use `task.task_id` instead of `task.id`.
+   - Audit and fix the equivalent call in whichever component wires up `useTaskReviewThread` (likely `task-review-view.tsx`'s consumer) — same `task.id` → `task.task_id` correction.
+   - No backend change needed — `GetWorkspaceTaskByID`'s `task_id`-based lookup already behaves correctly for both owners once the frontend sends the right field.
 
 1. **`TaskDiffTab` (`src/components/features/task-diff-tab.tsx`)**
    - Add `owner: "ts" | "go"` (or reuse the existing feature-owner type) to the component's props.
