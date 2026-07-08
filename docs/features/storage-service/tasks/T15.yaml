@@ -1,7 +1,7 @@
 id: T15
 title: hermes-agent owner guard on the four document tools
 repo: hermes-agent
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/storage-service-T15
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T02:33:09.108Z
+  last_updated_at: 2026-07-08T02:34:06.104Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/hermes-agent/pull/54
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/740
   status: open
@@ -57,3 +57,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-08T02:33:09.108Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:34:06.104Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
