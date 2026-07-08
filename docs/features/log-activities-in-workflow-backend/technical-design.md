@@ -149,7 +149,7 @@ no `user-service` change needed.
 ### 2. Actor-resolution helper + fallback rule (runs BEFORE any transaction opens)
 
 Add a small helper in `internal/service/workspace.go`, called at the top of every write-path service
-method — **before** the corresponding `Reader` method opens its `pgx.Tx**:
+method — **before** the corresponding `Reader` method opens its `pgx.Tx`:
 
 ```go
 // resolveActor returns a human-readable identity for userID: display name if
@@ -216,13 +216,13 @@ itself.
 | # | Method | Change |
 |---|---|---|
 | 1 | `Reader.CreateWorkspaceFeature` | Wrap existing single insert in an explicit `tx.Begin`/`tx.Commit` (currently a bare `QueryRow`, no transaction); add `INSERT ... action='feature_created'` in the same tx, `note = input.Title` |
-| 2–4 | `Reader.UpdateFeatureStage` | Already wraps its update in `tx.Begin`/`tx.Commit`, add the activity insert alongside; `action` derived from `input.ReviewStatus` (`approved`→`stage_approved`, `rejected`→`stage_rejected`, `draft`→`stage_reopened` — this is the exact 1:1 mapping product spec flagged as needing confirmation: `ReviewStatus` is the only signal available and covers all three cases without ambiguity); `note = input.Stage`, `+ input.RejectComment` appended when present and `ReviewStatus=="rejected"` (see item 6 below for the plumbing this requires) |
+| 2–4 | `Reader.UpdateFeatureStage` | Already wraps its update in `tx.Begin`/`tx.Commit`, add the activity insert alongside; `action` derived from `input.ReviewStatus` (`approved`→`stage_approved`, `rejected`→`stage_rejected`, `draft`→`stage_reopened` — this is the exact 1:1 mapping product spec flagged as needing confirmation: `ReviewStatus` is the only signal available and covers all three cases without ambiguity); `note = input.Stage`, `+ input.RejectComment` appended when present and `ReviewStatus=="rejected"` (see §4a below for the plumbing this requires) |
 | 5 | `Reader.CreateWorkspaceTasks` | Inside the existing tx (`Begin`/`Commit` already present around `insertGoTask` loop), add one `INSERT ... action='task_created'` per created task, in the same loop that calls `insertGoTask`, using each task's returned `WorkspaceTask.TaskID` |
 | 6 | `Reader.ActivateReadyTasks` | Add `actor` as a **required** parameter (new `actor string` arg on `Reader.ActivateReadyTasks(ctx, workspaceID, featureID, actor string)`); inside the existing tx, add one `INSERT ... action='activate'` per task transitioned in the existing loop, `note = "Activated by " + resolvedActor` |
 | — | `Reader.UnblockTask` | Actor-resolution only: replace raw `input.Actor` with `s.resolveActor(ctx, input.Actor)` result before the existing insert; extend `note` to `"Unblocked from status blocked → {toStatus}. Blocked reason: {blocked_reason}."` + `" Blocked details: {blocked_details}."` (omitted when empty) + caller's `input.Note` appended last |
 | — | `Reader.RecoverTask` | Actor-resolution only, same pattern; `note` branch-dependent per product spec: `"Recovered from {from} → {to}"` for the two `status`-based branches, `"Recovered from {from} → {to}. Current status: {status}"` for the `conflict_state` branch only |
 
-#### 3a. Reject-comment plumbing (resolves product spec open question for row #3)
+#### 4a. Reject-comment plumbing (resolves product spec open question for row #3)
 
 `UpdateFeatureStageInput` does **not** currently carry a reject comment end-to-end. This feature adds
 `RejectComment string` to `domain.UpdateFeatureStageInput` and `database.UpdateFeatureStageInput`,
@@ -232,7 +232,7 @@ threaded from the handler's request body (new optional JSON field `reject_commen
 included in the JSON body only when non-empty — this is additive to the existing call signature, no
 breaking change for hermes-agent's other callers.
 
-#### 3b. `ActivateReadyTasks` required-actor plumbing (resolves product spec open question for row #6)
+#### 4b. `ActivateReadyTasks` required-actor plumbing (resolves product spec open question for row #6)
 
 - Handler (`WorkspaceHandler.ActivateReadyTasks`): request body gains a required `actor` field
   (`{"actor": "<user_id>"}`); missing/empty → `400` via the same
@@ -286,7 +286,7 @@ subtlety, not introduced by this feature, since `UnblockTask`/`RecoverTask` are 
   exist and require no change.
 - **`workflow-backend` ↔ `hermes-agent`**: the `ActivateReadyTasks` request-shape change is a
   coordinated breaking change — hermes-agent's `activate_ready_tasks` caller must be updated
-  simultaneously (see §3b). The reject-comment addition (§3a) is additive/non-breaking for existing
+  simultaneously (see §4b). The reject-comment addition (§4a) is additive/non-breaking for existing
   hermes-agent callers.
 - **No dependency on `workflow-orchestrator`** — confirmed out of scope; no code there is touched.
 - **No dependency on `workspace-github-adapter`** — its `owner IS NULL` sync scoping is unaffected;
@@ -298,10 +298,10 @@ subtlety, not introduced by this feature, since `UnblockTask`/`RecoverTask` are 
 - **T1 (workflow-backend): new `user-service` client package + `resolveActor` helper + config wiring**
   — no blockers, can start immediately. All other `workflow-backend` tasks depend on this.
 - **T2 (workflow-backend): `CreateWorkspaceFeature` activity insert** — blocked on T1.
-- **T3 (workflow-backend): `UpdateFeatureStage` activity insert + reject-comment plumbing (§3a)** —
+- **T3 (workflow-backend): `UpdateFeatureStage` activity insert + reject-comment plumbing (§4a)** —
   blocked on T1.
 - **T4 (workflow-backend): `CreateWorkspaceTasks` per-task activity insert** — blocked on T1.
-- **T5 (workflow-backend): `ActivateReadyTasks` required-actor + activity insert (§3b, backend half)**
+- **T5 (workflow-backend): `ActivateReadyTasks` required-actor + activity insert (§4b, backend half)**
   — blocked on T1.
 - **T6 (workflow-backend): `UnblockTask`/`RecoverTask` actor-resolution + note-format fix** — blocked
   on T1. Independent of T2–T5 (different methods), can run in parallel with them once T1 lands.
@@ -310,7 +310,7 @@ subtlety, not introduced by this feature, since `UnblockTask`/`RecoverTask` are 
   churn if any action name changes during T2–T6 review).
 - **T8 (hermes-agent): update `activate_ready_tasks` caller to pass `actor`** — must land in the same
   rollout as T5, coordinated so `workflow-backend`'s validation does not go live before this ships (see
-  §3b). Can be developed in parallel with T5, but deployment must be sequenced: either deploy T8 first
+  §4b). Can be developed in parallel with T5, but deployment must be sequenced: either deploy T8 first
   (harmless — extra field ignored by old backend) then T5, or deploy both atomically. Landing T5 alone
   first would break the tasks-stage approve flow.
 - T2, T3, T4, T5, T6 all touch different methods/files-regions within `workflow-backend` and can be
