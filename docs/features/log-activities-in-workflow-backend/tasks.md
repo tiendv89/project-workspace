@@ -88,8 +88,7 @@ not change `ListActivity`'s response shape/behavior in this task — that's read
 consumed by T3/T4; no new endpoint or filtering logic is introduced here.
 
 ### Required skills
-(Standard Go/Postgres/goose conventions already used throughout `workflow-backend` — no additional
-technical skill beyond the repo's existing patterns.)
+- go-best-practices
 
 ### Subtasks
 - [ ] Add new goose migration file (`000XX_activity_events_actor_enrichment.sql` — pick the next
@@ -165,8 +164,7 @@ This client is **only ever called from the T4 poller** — never from a request-
 task does not wire the client into any HTTP handler.
 
 ### Required skills
-(Standard Go/HTTP client conventions already used throughout `workflow-backend` — no additional
-technical skill beyond the repo's existing patterns.)
+- go-best-practices
 
 ### Subtasks
 - [ ] Add `internal/adapter/userservice/client.go` with `Client`, `New`, `ResolveDisplayNames`.
@@ -231,9 +229,11 @@ any existing required field or break any existing caller that omits `reject_comm
 `domain.ErrValidationMissingInput` pattern `UpdateFeatureStage` already uses for its own required
 fields. Thread this new `actor string` parameter through `WorkspaceService.ActivateReadyTasks` →
 `Reader.ActivateReadyTasks(ctx, workspaceID, featureID, actorUserID string)`. **This is a breaking
-change** to an existing endpoint — coordinate with T6 before/at deploy time (see T6's description); do
-not merge this task's PR and deploy it to production before T6 has shipped its caller-side update, or
-the tasks-stage approve flow in hermes-agent will start failing with `400`.
+change** to an existing endpoint (per the `backend-engineer` skill's compatibility rule: breaking
+changes require explicit approval, which this feature has via the approved product spec/technical
+design) — coordinate with T6 before/at deploy time (see T6's description); do not merge this task's PR
+and deploy it to production before T6 has shipped its caller-side update, or the tasks-stage approve
+flow in hermes-agent will start failing with `400`.
 
 **`clientAudienceAllowlist` note**: do NOT touch `clientAudienceAllowlist` in this task — that is T5,
 sequenced after this task lands so the final agreed `action` string values are known first.
@@ -248,10 +248,8 @@ sequence `1`. Write a test that specifically exercises two feature-scoped events
 and asserts the second gets `sequence=2`, not `sequence=1` again, to catch this if it's wrong.
 
 ### Required skills
-(Standard Go/Postgres/pgx transaction-handling conventions already used throughout `workflow-backend`
-— no additional technical skill beyond the repo's existing patterns, particularly the
-`UnblockTask`/`RecoverTask` transaction+insert pattern already in `internal/database/queries.go` as the
-direct precedent to extend.)
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] `CreateWorkspaceFeature`: wrap in an explicit transaction; add the savepoint-wrapped
@@ -293,7 +291,11 @@ Each tick:
 1. `SELECT id, actor_id FROM workspace_activity_events WHERE enriched = false AND actor_id IS NOT NULL
    ORDER BY id LIMIT 200 FOR UPDATE SKIP LOCKED` — `SKIP LOCKED` makes this safe to run concurrently
    across multiple `workflow-backend` replicas with no distributed coordination; each replica's poller
-   just picks up whatever rows aren't already locked by another replica's in-flight batch.
+   just picks up whatever rows aren't already locked by another replica's in-flight batch. This is the
+   Postgres-native equivalent of the distributed-cron-safety concern the `backend-engineer` skill
+   documents for Redis-locked cron jobs — the same "N replicas racing the same job" problem, solved via
+   row-level locking instead of a Redis `SET NX` lock, since the unit of work here is naturally
+   row-partitionable.
 2. Strip the `user:` prefix from each `actor_id` to get the raw `user_id`, dedupe, and call the T2
    client's `ResolveDisplayNames` once for the whole batch.
 3. For each row whose `user_id` **was** resolved: `UPDATE workspace_activity_events SET actor =
@@ -317,10 +319,8 @@ This task is independent of T3 — the poller operates purely over whatever rows
 using synthetic/seeded rows without waiting on T3 to land.
 
 ### Required skills
-(Standard Go background-worker / ticker-loop conventions and Postgres `FOR UPDATE SKIP LOCKED` batch
--processing pattern — no additional technical skill beyond conventions already used elsewhere in this
-codebase for polling loops, e.g. the sync-run polling patterns in `workspace-github-adapter`'s
-equivalent worker code, if useful as a style reference.)
+- go-best-practices
+- backend-engineer
 
 ### Subtasks
 - [ ] Add the ticker-driven background goroutine, wired into process startup (`cmd/api/` or wherever
@@ -337,6 +337,9 @@ equivalent worker code, if useful as a style reference.)
       tick — verify across multiple simulated ticks in the test).
 - [ ] Integration test (if a live Postgres is available) seeding rows directly with `enriched=false`
       and asserting a poll cycle correctly enriches them, using a mock/fake `user-service` HTTP server.
+      Include a test with two simulated concurrent pollers (or two overlapping query executions) hitting
+      the same seeded rows, asserting `FOR UPDATE SKIP LOCKED` prevents double-processing (mirrors the
+      `backend-engineer` distributed-safety concern for multi-replica deployments).
 - [ ] Verify graceful shutdown: the poller goroutine must respect context cancellation / process
       shutdown signals consistently with how other background work in this process already shuts down.
 - [ ] Run `go build ./...`, `go vet ./...`, `go test ./...`, `golangci-lint run` — all clean.
@@ -372,7 +375,7 @@ This task is intentionally sequenced after T3 lands, so the exact final `action`
 confirmed (no risk of updating the allowlist with a name that changes during T3's review).
 
 ### Required skills
-(Trivial one-file map update — no additional technical skill beyond the repo's existing conventions.)
+- go-best-practices
 
 ### Subtasks
 - [ ] Add the eight map entries above to `clientAudienceAllowlist`.
@@ -422,9 +425,7 @@ the current `workflow-backend` deployment, which doesn't yet require it). Deploy
 deploy this task first (or atomically with T3), never T3 alone first.
 
 ### Required skills
-(Standard Python/async HTTP client conventions already used throughout
-`src/services/workflow_backend_client.py` — no additional technical skill beyond the file's existing
-patterns.)
+- python-best-practices
 
 ### Subtasks
 - [ ] Update `activate_ready_tasks` to include `json_body={"actor": ...}` in its `_call` invocation,
