@@ -78,8 +78,13 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
 3. Preserve the existing event shape/consumption contract: `WorkspaceActivityEvent` /
    `domain.ActivityEvent` fields (`action`, `scope_type`, `actor`, `note`, `occurred_at`, `sequence`,
    `feature_id`, `task_id`) and the `ListActivity` endpoint's `audience=internal|client` behavior.
-   `clientAudienceAllowlist` relabeling is explicitly out of scope for this feature (see Non-goals) —
-   new actions are not required to be added to it.
+   `clientAudienceAllowlist` (`internal/service/workspace.go`) is the hardcoded map that `ListActivity`
+   uses to filter+relabel events when the caller requests `audience=client`: any `action` value not
+   present as a key in this map is silently dropped from client-facing responses, and present keys are
+   relabeled to a friendlier client string (e.g. internal `done` → client `"Completed"`). Every new
+   `action` introduced by this feature MUST be added to `clientAudienceAllowlist`, or it will be logged
+   to the database but invisible to any `audience=client` consumer. See the field-mapping table below
+   for the exact entries to add.
 4. `ActivateReadyTasks` currently has no caller-supplied actor at all (it is invoked without any
    identity input). This feature requires the caller to supply an explicit `actor` on that request —
    auto-ready is a side effect of a caller's action (e.g. a tasks-stage approval or a task being marked
@@ -122,6 +127,23 @@ Columns that are **identical across every row regardless of action** (not repeat
 | 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged — already optional caller-supplied text) |
 | 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged) |
 
+### `clientAudienceAllowlist` entries to add
+
+`internal/service/workspace.go`'s `clientAudienceAllowlist` maps internal `action` → client-facing
+label; actions absent from the map are dropped from `audience=client` responses. This feature adds the
+following entries (existing entries are unchanged):
+
+| `action` (map key) | Client label (map value) | Notes |
+|---|---|---|
+| `feature_created` | `"Created"` | mirrors the existing task `created` → `"Created"` mapping |
+| `stage_approved` | `"Approved"` | new |
+| `stage_rejected` | `"Rejected"` | new |
+| `stage_reopened` | `"Reopened"` | new |
+| `task_created` | `"Created"` | new |
+| `auto_readied` | `"Ready"` | mirrors the existing `ready` → `"Ready"` mapping |
+| `unblocked` | `"Unblocked"` | not currently in the allowlist — added so client audiences can see unblock history |
+| `recovered` | `"Recovered"` | not currently in the allowlist — added so client audiences can see recovery history |
+
 ## Non-goals
 
 - No changes to the Go orchestrator (`workflow-orchestrator` repo) or its existing `AppendLogTx`
@@ -136,9 +158,6 @@ Columns that are **identical across every row regardless of action** (not repeat
   explicitly deferred to technical design, not specified here.
 - No structured `raw_event` payloads introduced by this feature — `raw_event` stays `'{}'` for every
   new insert, matching current behavior.
-- No changes to `clientAudienceAllowlist` — new `action` values are not added to it as part of this
-  feature; `audience=client` filtering behavior for these new actions is left as-is (unmapped actions
-  continue to be dropped from client-audience responses, per existing allowlist behavior).
 
 ## Open questions for technical design
 
@@ -158,6 +177,9 @@ Columns that are **identical across every row regardless of action** (not repeat
 - For row #6, which caller(s) invoke `ActivateReadyTasks` today and will need to be updated to pass
   the new required `actor` field? (e.g. hermes-agent's tasks-stage approve flow, and any other caller
   found in the codebase.) Confirm the full caller list in technical design so none are missed.
+- Confirm the `clientAudienceAllowlist` entries above are complete and correctly labeled before
+  implementation — in particular whether `unblocked`/`recovered` becoming client-visible for the first
+  time has any downstream UI impact that needs coordinating.
 - Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
   distinguishable actor (e.g. "hermes-agent on behalf of `<user>`"), or is the underlying human actor
   sufficient?
