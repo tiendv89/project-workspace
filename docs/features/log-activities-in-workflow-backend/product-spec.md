@@ -203,6 +203,12 @@ following entries (existing entries are unchanged):
 - For row #8, confirm the exact `note` phrasing for the status-based branches (this spec proposes
   `"Recovered from {from} → {to}"` with no suffix and no caller-note append) vs. the conflict_state
   branch (`"Recovered from {from} → {to}. Current status: {status}"`) — technical design should verify
-  this asymmetry is acceptable and fits the `note` column's expected length/format.- Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
+  this asymmetry is acceptable and fits the `note` column's expected length/format.
+- For row #7, confirm the exact `note` phrasing for the unblock transition summary (this spec proposes
+  `"Unblocked from status {fromStatus} → {toStatus}. Blocked reason: {blocked_reason}. Blocked details:
+  {blocked_details}"`, with the details sentence omitted when empty, and the caller-supplied note
+  appended as a final additive sentence) — technical design should verify this fits the `note` column's
+  expected length/format and any existing consumers.
+- Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
   distinguishable actor (e.g. "hermes-agent on behalf of `<user>`"), or is the underlying human actor
   sufficient?
