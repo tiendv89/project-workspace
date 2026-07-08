@@ -201,7 +201,7 @@ statement in the same transaction as the guarded update (today, an activity-inse
 
 A single background goroutine in `workflow-backend`, started at process boot alongside the HTTP
 server, on a fixed ticker configurable via `ACTIVITY_ENRICH_POLL_INTERVAL` (duration string, e.g. `1m`,
-`30s`), **defaulting to `1m`** when unset:
+`30s`), **defaulting to `30s`** when unset:
 
 ```go
 func (s *WorkspaceService) enrichActivityEvents(ctx context.Context) {
