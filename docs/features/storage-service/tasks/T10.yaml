@@ -1,7 +1,7 @@
 id: T10
 title: RAG webhook wiring in onStoreDocument
 repo: storage-service
-status: in_review
+status: reviewing
 depends_on:
   - T2
   - T7
@@ -13,7 +13,7 @@ branch: feature/storage-service-T10
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T03:20:22.843Z
+  last_updated_at: 2026-07-08T03:21:23.480Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -49,3 +49,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/6"
     at: 2026-07-08T03:20:22.843Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T03:21:23.480Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
