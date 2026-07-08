@@ -1,10 +1,10 @@
 id: T10
 title: RAG webhook wiring in onStoreDocument
 repo: storage-service
-status: todo
+status: ready
 depends_on:
-- T2
-- T7
+  - T2
+  - T7
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -18,7 +18,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T03:03:43.225Z
+    note: Task activated — dependency T7 merged and marked done.
