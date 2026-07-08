@@ -132,7 +132,7 @@ Add two columns to `workspace_activity_events`:
 | Column | Type | Default | Purpose |
 |---|---|---|---|
 | `actor_id` | `TEXT` | `NULL` | Typed, stable reference to who/what acted, e.g. `user:3f9ab21e-...`. The `user:` prefix leaves room for other actor kinds later (`system:`, `agent:`) without a further migration. Nullable because rows that don't have a resolvable identity (none exist in this feature's six actions, but future actions might) leave it unset. |
-| `enriched` | `BOOLEAN NOT NULL` | `true` | `false` means "`actor` currently holds a raw/unresolved value and is a candidate for the enrichment poller"; `true` means "`actor` is already display-ready, or enrichment does not apply." **Defaulting to `true`** is what makes this change fully backward-compatible: every row the Go orchestrator's `AppendLogTx` already writes, and every row that existed before this migration, is `true` by default and is therefore never touched or queried by the new poller — zero `workflow-orchestrator` code changes required. |
+| `enriched` | `BOOLEAN NOT NULL` | `true` | `false` means "`actor` is not yet populated and this row is a candidate for the enrichment poller"; `true` means "`actor` is already display-ready (or enrichment does not apply to this row)." **Defaulting to `true`** is what makes this change fully backward-compatible: every row the Go orchestrator's `AppendLogTx` already writes, and every row that existed before this migration, is `true` by default and is therefore never touched or queried by the new poller — zero `workflow-orchestrator` code changes required. |
 
 Add a partial index to keep poller scans cheap regardless of table growth:
 ```sql
@@ -148,12 +148,22 @@ nothing else (no `user-service` client, no HTTP call, no timeout to reason about
 
 ```go
 actorID := "user:" + userID       // typed reference, computed in-process — no I/O
-actor := userID                    // same raw string as today, until enriched
+var actor *string = nil            // NOT the raw user_id — actor starts unset/NULL until
+                                    // the poller resolves a display name for it
 enriched := false                  // this row is a candidate for the poller
 ```
 
-This is inserted into `workspace_activity_events` (`actor_id`, `actor`, `enriched` alongside the
-existing 10 columns) in the same transaction as the primary mutation. Because there is no external
+`actor` is a nullable column (already `*string`-shaped in the existing `WorkspaceActivityEvent`/
+`domain.ActivityEvent` scan/serialization path, since `derefStr` already handles a `nil` `Action`-style
+pointer elsewhere) and is written as `NULL`, not as the raw `user_id` string — the raw reference lives
+only in `actor_id`. This is a deliberate change from today's `UnblockTask`/`RecoverTask` behavior,
+which currently writes the raw UUID into `actor` directly; this feature stops doing that for every
+write path (new and existing) once `actor_id`/`enriched` exist, so `actor` never observably regresses
+to a raw UUID at any point — it is either `NULL` (not yet enriched) or a resolved display name
+(enriched), never a UUID string.
+
+This is inserted into `workspace_activity_events` (`actor_id`, `actor=NULL`, `enriched=false` alongside
+the existing columns) in the same transaction as the primary mutation. Because there is no external
 call anywhere in this path, the previously-discussed savepoint-for-isolating-an-external-call concern
 no longer applies for that specific reason. A lightweight savepoint around just the activity insert is
 still kept as generic defense-in-depth (protects the mutation from an unrelated insert failure, e.g. a
@@ -169,7 +179,7 @@ this feature) cannot roll back a successful mutation:
 // Inside Reader.<Method>, after the mandatory state-changing statement succeeds
 // and before tx.Commit(ctx):
 if spTx, spErr := tx.Begin(ctx); spErr == nil { // pgx v5: Begin() on a Tx issues SAVEPOINT
-    if _, insErr := spTx.Exec(ctx, insertActivityQ, /* ..., actorID, actor, enriched=false */); insErr != nil {
+    if _, insErr := spTx.Exec(ctx, insertActivityQ, /* ..., actorID, actor=NULL, enriched=false */); insErr != nil {
         _ = spTx.Rollback(ctx) // ROLLBACK TO SAVEPOINT — discards only the activity insert
         log.Warn().Err(insErr).Msg("activity event insert failed — mutation proceeds")
     } else {
@@ -204,15 +214,18 @@ func (s *WorkspaceService) enrichActivityEvents(ctx context.Context) {
     // 2. Extract the raw user_id from each actor_id ("user:" prefix stripped),
     //    dedupe, call user-service GET /internal/users?ids=... once for the batch
     // 3. For each row: UPDATE ... SET actor = <resolved display_name, or email
-    //    if no display_name, or leave actor unchanged if unresolved>,
-    //    enriched = true WHERE id = ...
+    //    if no display_name>, enriched = true WHERE id = ... — only when
+    //    user-service actually resolved that id.
     // 4. Rows whose id was absent from user-service's response (unknown/
     //    malformed id, or a transient user-service failure for the whole
-    //    batch) are left enriched = false and are retried on the next tick —
-    //    no separate retry-count/backoff mechanism in this feature; simple
-    //    unbounded retry is acceptable at this scale (a stuck row just means
-    //    a permanently-unknown user_id, which will never resolve regardless
-    //    of retry count, and costs nothing beyond being re-selected each poll).
+    //    batch) are left actor = NULL, enriched = false and are retried on
+    //    the next tick — no separate retry-count/backoff mechanism in this
+    //    feature; simple unbounded retry is acceptable at this scale (a stuck
+    //    row just means a permanently-unknown user_id, which will never
+    //    resolve regardless of retry count, and costs nothing beyond being
+    //    re-selected each poll — it simply keeps showing as actor=NULL in
+    //    ListActivity responses, which the read/UI side must already handle
+    //    as "unknown/unresolved actor", not as an error).
 }
 ```
 
@@ -225,9 +238,14 @@ either way.
 ### 5. Read path — unchanged
 
 `WorkspaceService.ListActivity` / `Reader.ListActivityEvents` require no code change. They already
-return whatever `actor` currently holds; before enrichment that's the raw `actor_id`-derived string,
-after enrichment (on the next poll cycle) it's the resolved display name. Fully async, eventually
-consistent, zero new read-path dependency — this was true under Option C by construction.
+return whatever `actor` currently holds; before enrichment that's `NULL` (the read/serialization path
+must render this as an empty/unknown actor — e.g. `derefStr`-style nil-safe handling, consistent with
+how other nullable string columns already serialize), after enrichment (on the next poll cycle) it's
+the resolved display name. Fully async, eventually consistent, zero new read-path dependency — this
+was true under Option C by construction. Consumers that need to distinguish "not yet enriched" from
+"resolution permanently failed" can additionally read the `enriched` boolean now exposed alongside
+`actor` — this feature's Non-goals scope does not require adding UI for this, but the field is present
+for any future consumer that wants it.
 
 ### 6. Per-action implementation (maps 1:1 to product-spec field-mapping table)
 
@@ -236,20 +254,21 @@ values computed in-process per §2 (no `user-service` call in this path).
 
 | # | Method | Change |
 |---|---|---|
-| 1 | `Reader.CreateWorkspaceFeature` | Wrap existing single insert in an explicit `tx.Begin`/`tx.Commit` (currently a bare `QueryRow`, no transaction); add `INSERT ... action='feature_created', actor_id, actor, enriched=false` in the same tx, `note = input.Title` |
-| 2–4 | `Reader.UpdateFeatureStage` | Already wraps its update in `tx.Begin`/`tx.Commit`, add the activity insert alongside; `action` derived from `input.ReviewStatus` (`approved`→`stage_approved`, `rejected`→`stage_rejected`, `draft`→`stage_reopened` — the exact 1:1 mapping product spec flagged as needing confirmation: `ReviewStatus` is the only signal available and covers all three cases without ambiguity); `note = input.Stage`, `+ input.RejectComment` appended when present and `ReviewStatus=="rejected"` (see §6a below for the plumbing this requires) |
-| 5 | `Reader.CreateWorkspaceTasks` | Inside the existing tx (`Begin`/`Commit` already present around `insertGoTask` loop), add one `INSERT ... action='task_created'` per created task, in the same loop that calls `insertGoTask`, using each task's returned `WorkspaceTask.TaskID` |
-| 6 | `Reader.ActivateReadyTasks` | Add `actor` as a **required** parameter (new `actor string` arg on `Reader.ActivateReadyTasks(ctx, workspaceID, featureID, actor string)`); inside the existing tx, add one `INSERT ... action='activate'` per task transitioned in the existing loop; `note = "Activated by " + actor` at write time uses the **raw** actor id (not yet enriched) — see open question below on whether `note` should be re-synthesized by the poller too, or left as written |
-| — | `Reader.UnblockTask` | Use `actor_id`/`actor`/`enriched=false` in place of today's plain `input.Actor` insert; extend `note` to `"Unblocked from status blocked → {toStatus}. Blocked reason: {blocked_reason}."` + `" Blocked details: {blocked_details}."` (omitted when empty) + caller's `input.Note` appended last |
-| — | `Reader.RecoverTask` | Same `actor_id`/`actor`/`enriched=false` change; `note` branch-dependent per product spec: `"Recovered from {from} → {to}"` for the two `status`-based branches, `"Recovered from {from} → {to}. Current status: {status}"` for the `conflict_state` branch only |
+| 1 | `Reader.CreateWorkspaceFeature` | Wrap existing single insert in an explicit `tx.Begin`/`tx.Commit` (currently a bare `QueryRow`, no transaction); add `INSERT ... action='feature_created', actor_id, actor=NULL, enriched=false` in the same tx, `note = input.Title` |
+| 2–4 | `Reader.UpdateFeatureStage` | Already wraps its update in `tx.Begin`/`tx.Commit`, add the activity insert alongside (`actor_id` set, `actor=NULL`, `enriched=false`); `action` derived from `input.ReviewStatus` (`approved`→`stage_approved`, `rejected`→`stage_rejected`, `draft`→`stage_reopened` — the exact 1:1 mapping product spec flagged as needing confirmation: `ReviewStatus` is the only signal available and covers all three cases without ambiguity); `note = input.Stage`, `+ input.RejectComment` appended when present and `ReviewStatus=="rejected"` (see §6a below for the plumbing this requires) |
+| 5 | `Reader.CreateWorkspaceTasks` | Inside the existing tx (`Begin`/`Commit` already present around `insertGoTask` loop), add one `INSERT ... action='task_created', actor_id, actor=NULL, enriched=false` per created task, in the same loop that calls `insertGoTask`, using each task's returned `WorkspaceTask.TaskID` |
+| 6 | `Reader.ActivateReadyTasks` | Add `actor` as a **required** parameter on the request — semantically this is the caller-supplied `user_id` used to populate `actor_id`, not the `actor` column, which still starts `NULL` (new `actorUserID string` arg on `Reader.ActivateReadyTasks(ctx, workspaceID, featureID, actorUserID string)`); inside the existing tx, add one `INSERT ... action='activate', actor_id, actor=NULL, enriched=false` per task transitioned in the existing loop; `note = "Activated by " + actorUserID` at write time necessarily uses the **raw** user id (since `actor` is not yet enriched at write time) — see open question below on whether `note` should be re-synthesized by the poller too, or left as written |
+| — | `Reader.UnblockTask` | Stop writing the raw `input.Actor` UUID into `actor` (today's behavior); write `actor_id = "user:" + input.Actor`, `actor = NULL`, `enriched = false` instead; extend `note` to `"Unblocked from status blocked → {toStatus}. Blocked reason: {blocked_reason}."` + `" Blocked details: {blocked_details}."` (omitted when empty) + caller's `input.Note` appended last |
+| — | `Reader.RecoverTask` | Same `actor_id`/`actor=NULL`/`enriched=false` change (stops writing the raw UUID into `actor`, as it does today); `note` branch-dependent per product spec: `"Recovered from {from} → {to}"` for the two `status`-based branches, `"Recovered from {from} → {to}. Current status: {status}"` for the `conflict_state` branch only |
 
-**Open question carried forward**: for row #6, `note` embeds the actor's raw id at write time (since
-enrichment hasn't happened yet) — e.g. `"Activated by user:3f9a..."` until the poller runs, then
-`actor` becomes the display name but `note`'s embedded text does not retroactively update. Confirm at
-implementation time whether this is acceptable (likely yes, since `note` is supplementary and `actor`
-is the canonical enriched field a UI would prefer to render), or whether `note` for row #6 should
-instead reference `actor` indirectly (e.g. client renders `"Activated by {actor}"` rather than baking
-the phrase into `note` at all) to avoid ever showing a stale raw id in `note` after `actor` is enriched.
+**Open question carried forward**: for row #6, `note` embeds the actor's raw user id at write time
+(since `actor` itself is `NULL` until enrichment) — e.g. `"Activated by 3f9a..."` until the poller runs
+and populates `actor` with a display name, at which point `note`'s embedded text does not
+retroactively update. Confirm at implementation time whether this is acceptable (likely yes, since
+`note` is supplementary and `actor`/`actor_id` are the canonical fields a UI would prefer to render),
+or whether `note` for row #6 should instead avoid embedding any actor text at all (e.g. client renders
+"Activated by {actor}" by joining `actor` client-side once enriched, rather than baking a phrase into
+`note` at write time) to avoid ever showing a stale raw id in `note` after `actor` is enriched.
 
 #### 6a. Reject-comment plumbing (resolves product spec open question for row #3)
 
