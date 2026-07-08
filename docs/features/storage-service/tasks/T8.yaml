@@ -1,7 +1,7 @@
 id: T8
 title: Sync-token mint endpoint
 repo: storage-service
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/storage-service-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T02:49:50.829Z
+  last_updated_at: 2026-07-08T02:50:47.248Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/storage-service/pull/4
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/739
   status: open
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-08T02:49:50.829Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:50:47.248Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
