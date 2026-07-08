@@ -31,3 +31,13 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-08T15:09:29.656Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:09:38.252Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workflow-sync-go-templates/technical-design.md,
+      docs/features/storage-service/technical-design.md,
+      github.com/tiendv89/workspace-github-adapter/pull/11"
+    rag_query: Migration tool (bulk GitHub import) storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
