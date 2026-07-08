@@ -67,8 +67,8 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
    or `workspace_tasks` state, by inserting a `workspace_activity_events` row in the same transaction
    as the mutation:
    - `UpdateFeatureStage` — one event per stage-review decision (approve/reject/reopen), `scope_type='feature'`.
-   - `CreateWorkspaceTasks` — one event per created task (or one feature-scoped summary event covering
-     the batch — resolved in technical design), `scope_type` depends on the choice.
+   - `CreateWorkspaceTasks` — one event per created task, `scope_type='task'` (see field-mapping table
+     below; batch-vs-per-task granularity is fixed here, not left open).
    - `ActivateReadyTasks` — one event per task transitioned `todo` → `ready`, `scope_type='task'`.
    - `CreateWorkspaceFeature` — one event marking feature creation, `scope_type='feature'`.
 2. **Fix actor readability** for all go-flow activity events — existing (`unblocked`, `recovered`) and
@@ -80,7 +80,7 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
    `feature_id`, `task_id`), the `ListActivity` endpoint's `audience=internal|client` behavior, and the
    `clientAudienceAllowlist` relabeling mechanism in `internal/service/workspace.go`. New `action`
    values introduced by this feature must be added to `clientAudienceAllowlist` if they should be
-   client-visible (open question for technical design: which of the new actions are client-facing).
+   client-visible (see field-mapping table for the recommended default per action).
 4. All new inserts must be transactional with their corresponding state mutation (mirroring the
    existing `UnblockTask`/`RecoverTask` pattern: single DB transaction, guarded update + activity
    insert, commit together) — no mutation should succeed while its activity log write silently fails
@@ -89,16 +89,53 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
 ## Activity event field mapping (per action)
 
 To avoid mismatch at implementation time, every new/fixed insert into `workspace_activity_events`
-must populate exactly these columns. Column names and existing values are taken verbatim from the
-live schema and the two working inserts (`UnblockTask`, `RecoverTask` in
-`internal/database/queries.go`) — new actions must follow the same shape.
+must populate exactly these columns. Column names are taken verbatim from the live schema and the two
+working inserts (`UnblockTask`, `RecoverTask` in `internal/database/queries.go`) — new actions follow
+the same shape.
 
-`workspace_activity_events` columns (all writes use this same 10-column insert):
+`workspace_activity_events` columns (every insert uses this same 10-column shape):
 `workspace_id, scope_type, feature_id, task_id, action, actor, occurred_at, note, sequence, raw_event`
 
-| # | Action / API | Handler → Service → Query (code path) | `scope_type` | `action` | `feature_id` | `task_id` | `actor` | `note` | `sequence` | `raw_event` |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | Feature stage decision (approve/reject/reopen) | `UpdateFeatureStage` handler → `WorkspaceService.UpdateFeatureStage` → `Reader.UpdateFeatureStage` | `feature` | `stage_approved` \| `stage_rejected` \| `stage_reopened` (derived 1:1 from `input.ReviewStatus` — `approved`/`rejected`/`draft` respectively; exact mapping confirmed in tech design) | feature's `feature_id` (UUID, from `feat.FeatureID`) | `NULL` | resolved human identity for `input.Actor` (see Open Question on actor resolution — today `input.Actor` is already threaded from caller, just needs identity resolution, not new plumbing) | `input.Stage` value (e.g. `"technical_design"`) — records **which stage** was acted on, since `action` alone doesn't carry it | next per-scope sequence (existing `COALESCE(MAX(sequence),0)+1` pattern, scoped to `workspace_id + feature_id`, `task_id IS NULL`) | `{}` (reserved for future structured payload — e.g. `{
+Columns that are **identical across every row regardless of action** (not repeated per-row below):
+- `workspace_id` — always the resolved `wsID` (`pgtype.UUID`) for the request's workspace.
+- `occurred_at` — always `time.Now().UTC().Format(time.RFC3339)`, set at insert time (matches
+  `UnblockTask`/`RecoverTask` today).
+- `sequence` — always `(SELECT COALESCE(MAX(sequence), 0) + 1 FROM workspace_activity_events WHERE
+  workspace_id = $1 AND feature_id = $2 AND task_id = $3)`, scoped identically to the existing
+  `UnblockTask`/`RecoverTask` inserts (task_id is `NULL` for feature-scoped events, so the same
+  scoping expression naturally partitions sequences per feature when task_id is absent).
+- `raw_event` — always `'{}'` (jsonb empty object) for this feature, matching current behavior
+  exactly. No structured payload is introduced now — a future feature may populate it.
+
+| # | Action / API | Code path (handler → service → query) | `scope_type` | `action` value | `feature_id` | `task_id` | `actor` | `note` |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Feature created | `CreateFeature` handler → `WorkspaceService.CreateFeature` → `Reader.CreateWorkspaceFeature` | `feature` | `feature_created` | new feature's `feature_id` (UUID returned by insert) | `NULL` | resolved identity for the calling user (`authmw.FromContext(ctx).UserID` → resolved per Open Question) | feature `title` (e.g. `"Add payment retry logic"`) — gives a human-readable label without a join |
+| 2 | Stage decision: approve | `UpdateFeatureStage` handler → `WorkspaceService.UpdateFeatureStage` → `Reader.UpdateFeatureStage` | `feature` | `stage_approved` | `feat.FeatureID` | `NULL` | resolved identity for `input.Actor` (already threaded from caller — only needs identity resolution, no new plumbing) | `input.Stage` value (e.g. `"technical_design"`) — required because `action` alone doesn't say which stage |
+| 3 | Stage decision: reject | same as #2 | `feature` | `stage_rejected` | `feat.FeatureID` | `NULL` | same as #2 | `input.Stage` value, plus the reject comment if the caller supplied one (thread through `UpdateFeatureStageInput` if not already present — confirm in tech design) |
+| 4 | Stage decision: reopen | same as #2 | `feature` | `stage_reopened` | `feat.FeatureID` | `NULL` | same as #2 | `input.Stage` value |
+| 5 | Task created (bulk create, one row per task) | `CreateTasks` handler → `WorkspaceService.CreateTasks` → `Reader.CreateWorkspaceTasks` (loop `insertGoTask`) | `task` | `task_created` | `fid` (feature UUID passed into `CreateWorkspaceTasks`) | each created task's `task_id` (UUID returned per row by `insertGoTask`) | resolved identity for the calling user (BFF identity on this endpoint per `RequireBFFIdentity`) | task `title` (e.g. `"Add retry queue schema"`) — mirrors the `feature_created` note choice for readability |
+| 6 | Task auto-readied (`todo` → `ready`) | `ActivateReadyTasks` handler → `WorkspaceService.ActivateReadyTasks` → `Reader.ActivateReadyTasks` (loop) | `task` | `auto_readied` | `fid` | each activated task's UUID (the `t.id` used in the `UPDATE ... WHERE id = t.id` loop) | `"system"` (literal string) — this is an automatic dependency-driven transition, not a human action; no `X-User-Id` is available or meaningful here | `"dependencies satisfied"` (fixed literal) — optionally list the just-completed dependency task names if cheaply available in the same loop (confirm in tech design) |
+| 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged — already optional caller-supplied text) |
+| 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged) |
+
+### `clientAudienceAllowlist` recommendation (default; confirm in tech design)
+
+`internal/service/workspace.go`'s `clientAudienceAllowlist` currently maps action → client-facing
+label and silently drops any action not in the map when `audience=client`. Recommended defaults for
+the new actions, to be confirmed in technical design:
+
+| `action` | Add to `clientAudienceAllowlist`? | Suggested client label |
+|---|---|---|
+| `feature_created` | yes | `"Created"` (mirrors existing task `created` → `"Created"` mapping) |
+| `stage_approved` | yes | `"Approved"` |
+| `stage_rejected` | yes | `"Rejected"` |
+| `stage_reopened` | yes | `"Reopened"` |
+| `task_created` | yes | `"Created"` |
+| `auto_readied` | yes | `"Ready"` (mirrors existing `ready` → `"Ready"` mapping) |
+| `unblocked` | not currently in the allowlist — add if client-facing unblock history is desired | `"Unblocked"` |
+| `recovered` | not currently in the allowlist — add if client-facing recovery history is desired | `"Recovered"` |
+
+## Non-goals
 
 - No changes to the Go orchestrator (`workflow-orchestrator` repo) or its existing `AppendLogTx`
   activity logging — that path is already complete and is out of scope.
@@ -110,6 +147,8 @@ live schema and the two working inserts (`UnblockTask`, `RecoverTask` in
   `go-orchestrator-status-ui`, `ui-go-owned-task-status-and-block`).
 - Mechanism for actor email/display-name resolution (header-forwarding vs. read-time join) is
   explicitly deferred to technical design, not specified here.
+- No structured `raw_event` payloads introduced by this feature — `raw_event` stays `'{}'` for every
+  new insert, matching current behavior.
 
 ## Open questions for technical design
 
@@ -121,11 +160,13 @@ live schema and the two working inserts (`UnblockTask`, `RecoverTask` in
   (b) `workflow-backend` stores `user_id` as `actor` and resolves email/display name at **read time**
       in `ListActivity`, via a new service-to-service call to `user-service` (which owns `users.email`,
       `users.display_name` — see `internal/users/users.go` `Store.FindByID`).
-- Should `CreateWorkspaceTasks` log one `workspace_activity_events` row per task, or a single
-  feature-scoped summary event for the whole batch?
-- Which of the new `action` values (e.g. `stage_approved`, `stage_rejected`, `stage_reopened`,
-  `tasks_created`, `auto_readied`, `feature_created` — exact names TBD) should be added to
-  `clientAudienceAllowlist` for `audience=client` visibility, vs. internal-only?
+- For row #3 (`stage_rejected`), does `UpdateFeatureStageInput` already carry a reject comment end to
+  end from the approval UI, or does that plumbing need to be added as part of this feature?
+- For row #6 (`auto_readied`), is it cheap to include the specific dependency task names that just
+  completed and triggered the auto-ready, given the existing `ActivateReadyTasks` loop structure — or
+  is the fixed `"dependencies satisfied"` note sufficient?
+- Confirm final `clientAudienceAllowlist` entries per the table above — in particular whether
+  `unblocked`/`recovered` should become client-visible for the first time as part of this feature.
 - Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
   distinguishable actor (e.g. "hermes-agent on behalf of `<user>`"), or is the underlying human actor
   sufficient?
