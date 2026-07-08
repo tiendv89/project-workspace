@@ -1,14 +1,14 @@
 id: T9
 title: Tiptap editor component wired to Hocuspocus + document/history APIs
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T3
-- T4
-- T5
-- T6
-- T7
-- T8
+  - T3
+  - T4
+  - T5
+  - T6
+  - T7
+  - T8
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -22,7 +22,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:05:27.762Z
+    note: Task activated — dependency T6 merged and marked done.
