@@ -1,7 +1,7 @@
 id: T7
 title: Node Hocuspocus sidecar (onLoadDocument/onStoreDocument/onAuthenticate)
 repo: storage-service
-status: review_passed
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/storage-service-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T03:02:48.286Z
+  last_updated_at: 2026-07-08T03:03:43.057Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/storage-service/pull/3
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/738
   status: open
@@ -90,3 +90,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-08T03:02:48.286Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T03:03:43.057Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
