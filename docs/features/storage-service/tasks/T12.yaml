@@ -1,10 +1,10 @@
 id: T12
 title: Version-history panel UI
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T3
-- T11
+  - T3
+  - T11
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -18,7 +18,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:50:52.461Z
+    note: Task activated — dependency T11 merged and marked done.
