@@ -52,6 +52,24 @@ repo already uses):
   pre-migration row, defaults to `true` and is therefore never picked up by the new poller (T4). Do not
   backfill or recompute `enriched` for existing rows — the default handles it.
 
+**Add a DB-level column comment on `enriched`** explaining this default-`true` rationale directly in
+the schema, so anyone inspecting the table later (`\d+ workspace_activity_events` in psql, a DB GUI,
+`information_schema.columns`, etc.) sees the "why" without needing to find this task or the technical
+design doc:
+
+```sql
+COMMENT ON COLUMN workspace_activity_events.enriched IS
+    'Whether actor has been display-name-resolved (true) or is pending async enrichment (false). '
+    'Defaults to true so that all pre-existing rows and all rows written by workflow-orchestrator''s '
+    'own AppendLogTx (a separate writer this column does not apply to) are never picked up by the '
+    'enrichment poller. Only rows explicitly written with enriched=false by workflow-backend''s own '
+    'write paths are enrichment candidates.';
+```
+
+(Escape the embedded apostrophe in `AppendLogTx's`/`writer's` as `''` per standard SQL string-literal
+escaping, as shown above — verify the exact wording compiles cleanly in the target Postgres version
+during implementation.)
+
 Add a partial index so poller scans (T4) stay cheap regardless of table growth:
 ```sql
 CREATE INDEX idx_workspace_activity_events_unenriched
@@ -76,9 +94,11 @@ technical skill beyond the repo's existing patterns.)
 ### Subtasks
 - [ ] Add new goose migration file (`000XX_activity_events_actor_enrichment.sql` — pick the next
       sequential number after the highest existing migration file) with the `actor_id`/`enriched`
-      columns and the partial index, following the exact style of migration
+      columns, the `COMMENT ON COLUMN workspace_activity_events.enriched IS ...` statement explaining
+      the default-`true` rationale, and the partial index, following the exact style of migration
       `00006_workspace_activity_events.sql` (up/down blocks, goose annotations).
-- [ ] Add a corresponding **down** migration that drops the index and both columns cleanly.
+- [ ] Add a corresponding **down** migration that drops the index and both columns cleanly (column
+      comments are dropped automatically when their column is dropped — no separate cleanup needed).
 - [ ] Update the Go struct(s) that scan/represent `workspace_activity_events` rows to add `ActorID
       *string` and `Enriched bool` fields, matching the existing nullable-string handling pattern
       already used for other nullable columns in the same struct (e.g. how `BlockedReason *string` is
@@ -91,9 +111,10 @@ technical skill beyond the repo's existing patterns.)
       expected file count is updated.
 - [ ] Run `go build ./...`, `go vet ./...`, `go test ./...`, `golangci-lint run` — all clean.
 - [ ] If a live Postgres instance is available in CI/local, run `goose up` / `goose down` / `goose up`
-      to verify both directions apply cleanly; otherwise note this as a manual verification step in the
-      PR description (matching the precedent set by migration `00015_20260607_owner.sql`'s PR, which
-      documented the same limitation).
+      to verify both directions apply cleanly, and confirm the column comment is present via
+      `\d+ workspace_activity_events` or `SELECT col_description(...)`; otherwise note this as a manual
+      verification step in the PR description (matching the precedent set by migration
+      `00015_20260607_owner.sql`'s PR, which documented the same limitation).
 
 ---
 
