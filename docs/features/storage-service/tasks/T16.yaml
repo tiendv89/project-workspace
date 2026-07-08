@@ -1,27 +1,63 @@
 id: T16
 title: "Guard: reject writes to a migrated feature's git document paths"
 repo: workflow-backend
-status: ready
+status: done
 depends_on:
   - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T16
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-08T02:39:43.654Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/workflow-backend/pull/62
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/741
+  status: open
 log:
   - action: ready
     by: tiendv.52@gmail.com
     at: 2026-07-08T01:02:49.966Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:35:24.605Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:35:32.599Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: docs/features/storage-service/product-spec.md,
+      docs/features/storage-service/technical-design.md,
+      docs/features/storage-service/product-spec.md"
+    rag_query: "Guard: reject writes to a migrated feature's git document paths
+      storage-service"
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:40:19+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/workflow-backend/pull/62"
+    at: 2026-07-08T01:53:40.497Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:27:45.153Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-08T02:38:43.475Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:39:43.654Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
