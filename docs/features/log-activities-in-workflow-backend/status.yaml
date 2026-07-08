@@ -1,30 +1,46 @@
+current_stage: handoff
 feature_id: log-activities-in-workflow-backend
-title: log-activities-in-workflow-backend
+feature_status: ready_for_implementation
+history:
+- action: stage_approved
+  at: 2026-07-08T12:37:16+0000
+  by: agent
+  note: tasks approved by agent.
+  stage: tasks
+next_action: Tasks ready for implementation.
 owner: go
-feature_status: in_design
-current_stage: product_spec
-stages:
-  product_spec:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
-  technical_design:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
-  handoff:
-    review_status: draft
-    reviewed_by: null
-    reviewed_at: null
-    review_comment: null
-    review_history: []
-history: []
 revalidation:
-  product_spec_required: false
-  technical_design_required: false
-  tasks_required: false
   deployment_checklist_required: false
+  product_spec_required: false
+  tasks_required: false
+  technical_design_required: false
+stages:
+  handoff:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  product_spec:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+  tasks:
+    review_comment: null
+    review_history:
+    - comment: null
+      review_status: approved
+      reviewed_at: 2026-07-08T12:37:16+0000
+      reviewed_by: agent
+    review_status: approved
+    reviewed_at: 2026-07-08T12:37:16+0000
+    reviewed_by: agent
+  technical_design:
+    review_comment: null
+    review_history: []
+    review_status: draft
+    reviewed_at: null
+    reviewed_by: null
+title: log-activities-in-workflow-backend
