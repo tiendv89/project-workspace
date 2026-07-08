@@ -1,7 +1,7 @@
 id: T11
 title: Version-history timeline API (list/diff/restore)
 repo: storage-service
-status: in_review
+status: reviewing
 depends_on:
   - T6
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/storage-service-T11
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T15:44:53.722Z
+  last_updated_at: 2026-07-08T15:45:55.317Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -48,3 +48,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/8"
     at: 2026-07-08T15:44:53.722Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:45:55.317Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
