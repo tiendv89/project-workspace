@@ -1,7 +1,7 @@
 id: T14
 title: Migration tool (bulk GitHub import)
 repo: storage-service
-status: change_requested
+status: in_progress
 depends_on:
   - T6
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/storage-service-T14
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T15:48:39.317Z
+  last_updated_at: 2026-07-08T15:49:28.347Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -57,3 +57,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer requested changes.
     at: 2026-07-08T15:48:39.317Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:49:28.347Z
+    note: Fix agent claimed.
