@@ -70,12 +70,18 @@ COMMENT ON COLUMN workspace_activity_events.enriched IS
 escaping, as shown above — verify the exact wording compiles cleanly in the target Postgres version
 during implementation.)
 
-Add a partial index so poller scans (T4) stay cheap regardless of table growth:
+Add a partial index so poller scans (T4) stay cheap regardless of table growth — a direct application
+of the `postgres-best-practices` skill's partial-index pattern (`CREATE INDEX ... WHERE <condition>`
+to keep the index small and scoped to only the rows that matter):
 ```sql
 CREATE INDEX idx_workspace_activity_events_unenriched
     ON workspace_activity_events (id)
     WHERE enriched = false;
 ```
+
+Follow the `postgres-best-practices` skill's data-type guidance for both new columns: `actor_id` is
+`TEXT` (not a length-bounded `varchar`), and `enriched` is `boolean` (not a `varchar`/`int` flag),
+consistent with the skill's "Data Type Quick Reference" table.
 
 Update the corresponding Go struct(s) that scan `workspace_activity_events` rows
 (`WorkspaceActivityEvent` in `internal/database/`, and `domain.ActivityEvent` in
@@ -89,6 +95,7 @@ consumed by T3/T4; no new endpoint or filtering logic is introduced here.
 
 ### Required skills
 - go-best-practices
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Add new goose migration file (`000XX_activity_events_actor_enrichment.sql` — pick the next
@@ -111,7 +118,8 @@ consumed by T3/T4; no new endpoint or filtering logic is introduced here.
 - [ ] Run `go build ./...`, `go vet ./...`, `go test ./...`, `golangci-lint run` — all clean.
 - [ ] If a live Postgres instance is available in CI/local, run `goose up` / `goose down` / `goose up`
       to verify both directions apply cleanly, and confirm the column comment is present via
-      `\d+ workspace_activity_events` or `SELECT col_description(...)`; otherwise note this as a manual
+      `\d+ workspace_activity_events` or `SELECT col_description(...)`; also confirm the partial index
+      was created with `\di+` or a query against `pg_indexes`. Otherwise note this as a manual
       verification step in the PR description (matching the precedent set by migration
       `00015_20260607_owner.sql`'s PR, which documented the same limitation).
 
@@ -250,6 +258,7 @@ and asserts the second gets `sequence=2`, not `sequence=1` again, to catch this 
 ### Required skills
 - go-best-practices
 - backend-engineer
+- postgres-best-practices
 
 ### Subtasks
 - [ ] `CreateWorkspaceFeature`: wrap in an explicit transaction; add the savepoint-wrapped
@@ -289,9 +298,12 @@ e.g. `1m`, `30s`), **defaulting to `30s`** when unset.
 
 Each tick:
 1. `SELECT id, actor_id FROM workspace_activity_events WHERE enriched = false AND actor_id IS NOT NULL
-   ORDER BY id LIMIT 200 FOR UPDATE SKIP LOCKED` — `SKIP LOCKED` makes this safe to run concurrently
-   across multiple `workflow-backend` replicas with no distributed coordination; each replica's poller
-   just picks up whatever rows aren't already locked by another replica's in-flight batch. This is the
+   ORDER BY id LIMIT 200 FOR UPDATE SKIP LOCKED` — this is the exact "Queue Processing" pattern
+   documented in the `postgres-best-practices` skill (`UPDATE jobs SET status='processing' WHERE id =
+   (SELECT id FROM jobs WHERE status='pending' ... FOR UPDATE SKIP LOCKED)`), adapted here to a
+   read-then-conditionally-update shape. `SKIP LOCKED` makes this safe to run concurrently across
+   multiple `workflow-backend` replicas with no distributed coordination; each replica's poller just
+   picks up whatever rows aren't already locked by another replica's in-flight batch. This is also the
    Postgres-native equivalent of the distributed-cron-safety concern the `backend-engineer` skill
    documents for Redis-locked cron jobs — the same "N replicas racing the same job" problem, solved via
    row-level locking instead of a Redis `SET NX` lock, since the unit of work here is naturally
@@ -321,6 +333,7 @@ using synthetic/seeded rows without waiting on T3 to land.
 ### Required skills
 - go-best-practices
 - backend-engineer
+- postgres-best-practices
 
 ### Subtasks
 - [ ] Add the ticker-driven background goroutine, wired into process startup (`cmd/api/` or wherever
@@ -339,7 +352,8 @@ using synthetic/seeded rows without waiting on T3 to land.
       and asserting a poll cycle correctly enriches them, using a mock/fake `user-service` HTTP server.
       Include a test with two simulated concurrent pollers (or two overlapping query executions) hitting
       the same seeded rows, asserting `FOR UPDATE SKIP LOCKED` prevents double-processing (mirrors the
-      `backend-engineer` distributed-safety concern for multi-replica deployments).
+      `backend-engineer` distributed-safety concern for multi-replica deployments and the
+      `postgres-best-practices` queue-processing pattern).
 - [ ] Verify graceful shutdown: the poller goroutine must respect context cancellation / process
       shutdown signals consistently with how other background work in this process already shuts down.
 - [ ] Run `go build ./...`, `go vet ./...`, `go test ./...`, `golangci-lint run` — all clean.
