@@ -349,26 +349,26 @@ inserts are the first callers to exercise the `NULL` case.
   blockers, can start immediately.
 - **T2 (workflow-backend): new `user-service` client package (enrichment-only) + config wiring** — no
   blockers, can run in parallel with T1.
-- **T3 (workflow-backend): `CreateWorkspaceFeature` activity insert** — blocked on T1.
-- **T4 (workflow-backend): `UpdateFeatureStage` activity insert + reject-comment plumbing (§6a)** —
-  blocked on T1.
-- **T5 (workflow-backend): `CreateWorkspaceTasks` per-task activity insert** — blocked on T1.
-- **T6 (workflow-backend): `ActivateReadyTasks` required-actor + activity insert (§6b, backend half)**
-  — blocked on T1.
-- **T7 (workflow-backend): `UnblockTask`/`RecoverTask` migrate to `actor_id`/`enriched` + note-format
-  fix** — blocked on T1. Independent of T3–T6 (different methods), can run in parallel with them.
-- **T8 (workflow-backend): enrichment poller (§4)** — blocked on T1 (needs the new columns) and T2
-  (needs the client). Independent of T3–T7 — the poller works over whatever rows already exist matching
+- **T3 (workflow-backend): activity insert for all five write paths —
+  `CreateWorkspaceFeature`, `UpdateFeatureStage` (+ reject-comment plumbing §6a), `CreateWorkspaceTasks`,
+  `ActivateReadyTasks` (+ required-actor plumbing §6b, backend half), `UnblockTask`/`RecoverTask`
+  (migrate to `actor_id`/`enriched` + note-format fix)** — blocked on T1. Combined into a single task
+  because all five changes are the identical savepoint-wrapped-insert pattern applied to different
+  methods in the same file/package, share the same `actor_id`/`actor=NULL`/`enriched=false` shape from
+  T1, and are small enough individually that reviewing them together (rather than as 5 separate PRs)
+  makes it easier to catch any inconsistency across the call sites. No sub-part of T3 blocks another —
+  they remain independent changes to independent methods, just delivered as one PR/one task.
+- **T4 (workflow-backend): enrichment poller (§4)** — blocked on T1 (needs the new columns) and T2
+  (needs the client). Independent of T3 — the poller works over whatever rows already exist matching
   `enriched=false`, regardless of which write path produced them, so it can be built/tested
-  concurrently with T3–T7 using synthetic rows.
-- **T9 (workflow-backend): `clientAudienceAllowlist` update** — blocked on T3–T7 landing (needs the
-  final agreed `action` string values; trivial one-file change, sequenced last to avoid churn if any
-  action name changes during T3–T7 review).
-- **T10 (hermes-agent): update `activate_ready_tasks` caller to pass `actor`** — must land in the same
-  rollout as T6, coordinated so `workflow-backend`'s validation does not go live before this ships (see
-  §6b). Can be developed in parallel with T6, but deployment must be sequenced: either deploy T10 first
-  (harmless — extra field ignored by old backend) then T6, or deploy both atomically. Landing T6 alone
-  first would break the tasks-stage approve flow.
-- T3, T4, T5, T6, T7 all touch different methods/file-regions within `workflow-backend` and can be
-  implemented and reviewed in parallel once T1 is done; T8 (poller) is independent of all of them; only
-  T9 (allowlist) and the T6/T10 deployment order have real sequencing constraints.
+  concurrently with T3 using synthetic rows.
+- **T5 (workflow-backend): `clientAudienceAllowlist` update** — blocked on T3 landing (needs the final
+  agreed `action` string values from each write path; trivial one-file change, sequenced last to avoid
+  churn if any action name changes during T3 review).
+- **T6 (hermes-agent): update `activate_ready_tasks` caller to pass `actor`** — must land in the same
+  rollout as T3's `ActivateReadyTasks` change, coordinated so `workflow-backend`'s validation does not
+  go live before this ships (see §6b). Can be developed in parallel with T3, but deployment must be
+  sequenced: either deploy T6 first (harmless — extra field ignored by old backend) then T3, or deploy
+  both atomically. Landing T3 alone first would break the tasks-stage approve flow.
+- T3 and T4 can be implemented and reviewed in parallel once T1/T2 are done; only T5 (allowlist) and
+  the T3/T6 deployment order have real sequencing constraints.
