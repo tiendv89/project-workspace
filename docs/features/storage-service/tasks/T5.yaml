@@ -1,9 +1,9 @@
 id: T5
 title: Provision Hocuspocus WebSocket public ingress/TLS
 repo: storage-service
-status: todo
+status: ready
 depends_on:
-- T1
+  - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -17,7 +17,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:02:49.974Z
+    note: Task activated — dependency T1 merged and marked done.
