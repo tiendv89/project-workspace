@@ -1,9 +1,9 @@
 id: T11
 title: Version-history timeline API (list/diff/restore)
 repo: storage-service
-status: todo
+status: ready
 depends_on:
-- T6
+  - T6
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -17,7 +17,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T15:05:27.739Z
+    note: Task activated — dependency T6 merged and marked done.
