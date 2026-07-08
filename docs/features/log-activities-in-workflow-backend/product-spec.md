@@ -77,11 +77,15 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
    is an open question for technical design, not decided here.
 3. Preserve the existing event shape/consumption contract: `WorkspaceActivityEvent` /
    `domain.ActivityEvent` fields (`action`, `scope_type`, `actor`, `note`, `occurred_at`, `sequence`,
-   `feature_id`, `task_id`), the `ListActivity` endpoint's `audience=internal|client` behavior, and the
-   `clientAudienceAllowlist` relabeling mechanism in `internal/service/workspace.go`. New `action`
-   values introduced by this feature must be added to `clientAudienceAllowlist` if they should be
-   client-visible (see field-mapping table for the recommended default per action).
-4. All new inserts must be transactional with their corresponding state mutation (mirroring the
+   `feature_id`, `task_id`) and the `ListActivity` endpoint's `audience=internal|client` behavior.
+   `clientAudienceAllowlist` relabeling is explicitly out of scope for this feature (see Non-goals) —
+   new actions are not required to be added to it.
+4. `ActivateReadyTasks` currently has no caller-supplied actor at all (it is invoked without any
+   identity input). This feature requires the caller to supply an explicit `actor` on that request —
+   auto-ready is a side effect of a caller's action (e.g. a tasks-stage approval or a task being marked
+   done) and should attribute to that caller, not to a synthetic `"system"` value. See the field-mapping
+   table below for the required request-shape change.
+5. All new inserts must be transactional with their corresponding state mutation (mirroring the
    existing `UnblockTask`/`RecoverTask` pattern: single DB transaction, guarded update + activity
    insert, commit together) — no mutation should succeed while its activity log write silently fails
    or vice versa.
@@ -114,26 +118,9 @@ Columns that are **identical across every row regardless of action** (not repeat
 | 3 | Stage decision: reject | same as #2 | `feature` | `stage_rejected` | `feat.FeatureID` | `NULL` | same as #2 | `input.Stage` value, plus the reject comment if the caller supplied one (thread through `UpdateFeatureStageInput` if not already present — confirm in tech design) |
 | 4 | Stage decision: reopen | same as #2 | `feature` | `stage_reopened` | `feat.FeatureID` | `NULL` | same as #2 | `input.Stage` value |
 | 5 | Task created (bulk create, one row per task) | `CreateTasks` handler → `WorkspaceService.CreateTasks` → `Reader.CreateWorkspaceTasks` (loop `insertGoTask`) | `task` | `task_created` | `fid` (feature UUID passed into `CreateWorkspaceTasks`) | each created task's `task_id` (UUID returned per row by `insertGoTask`) | resolved identity for the calling user (BFF identity on this endpoint per `RequireBFFIdentity`) | task `title` (e.g. `"Add retry queue schema"`) — mirrors the `feature_created` note choice for readability |
-| 6 | Task auto-readied (`todo` → `ready`) | `ActivateReadyTasks` handler → `WorkspaceService.ActivateReadyTasks` → `Reader.ActivateReadyTasks` (loop) | `task` | `auto_readied` | `fid` | each activated task's UUID (the `t.id` used in the `UPDATE ... WHERE id = t.id` loop) | `"system"` (literal string) — this is an automatic dependency-driven transition, not a human action; no `X-User-Id` is available or meaningful here | `"dependencies satisfied"` (fixed literal) — optionally list the just-completed dependency task names if cheaply available in the same loop (confirm in tech design) |
+| 6 | Task auto-readied (`todo` → `ready`) | `ActivateReadyTasks` handler → `WorkspaceService.ActivateReadyTasks` → `Reader.ActivateReadyTasks` (loop) | `task` | `auto_readied` | `fid` | each activated task's UUID (the `t.id` used in the `UPDATE ... WHERE id = t.id` loop) | **required, caller-supplied** — `ActivateReadyTasks` today takes no actor input at all; this feature adds a required `actor` field to the request body (`POST .../tasks/activate-ready`), validated the same way `UpdateFeatureStage` already requires `input.Actor` (missing → 400). No default/fallback value — the caller (e.g. hermes-agent completing a tasks-stage approval, or whatever triggers the auto-ready) must supply the identity performing the triggering action. | `"dependencies satisfied"` (fixed literal) — optionally list the just-completed dependency task names if cheaply available in the same loop (confirm in tech design) |
 | 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged — already optional caller-supplied text) |
 | 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged) |
-
-### `clientAudienceAllowlist` recommendation (default; confirm in tech design)
-
-`internal/service/workspace.go`'s `clientAudienceAllowlist` currently maps action → client-facing
-label and silently drops any action not in the map when `audience=client`. Recommended defaults for
-the new actions, to be confirmed in technical design:
-
-| `action` | Add to `clientAudienceAllowlist`? | Suggested client label |
-|---|---|---|
-| `feature_created` | yes | `"Created"` (mirrors existing task `created` → `"Created"` mapping) |
-| `stage_approved` | yes | `"Approved"` |
-| `stage_rejected` | yes | `"Rejected"` |
-| `stage_reopened` | yes | `"Reopened"` |
-| `task_created` | yes | `"Created"` |
-| `auto_readied` | yes | `"Ready"` (mirrors existing `ready` → `"Ready"` mapping) |
-| `unblocked` | not currently in the allowlist — add if client-facing unblock history is desired | `"Unblocked"` |
-| `recovered` | not currently in the allowlist — add if client-facing recovery history is desired | `"Recovered"` |
 
 ## Non-goals
 
@@ -149,6 +136,9 @@ the new actions, to be confirmed in technical design:
   explicitly deferred to technical design, not specified here.
 - No structured `raw_event` payloads introduced by this feature — `raw_event` stays `'{}'` for every
   new insert, matching current behavior.
+- No changes to `clientAudienceAllowlist` — new `action` values are not added to it as part of this
+  feature; `audience=client` filtering behavior for these new actions is left as-is (unmapped actions
+  continue to be dropped from client-audience responses, per existing allowlist behavior).
 
 ## Open questions for technical design
 
@@ -165,8 +155,9 @@ the new actions, to be confirmed in technical design:
 - For row #6 (`auto_readied`), is it cheap to include the specific dependency task names that just
   completed and triggered the auto-ready, given the existing `ActivateReadyTasks` loop structure — or
   is the fixed `"dependencies satisfied"` note sufficient?
-- Confirm final `clientAudienceAllowlist` entries per the table above — in particular whether
-  `unblocked`/`recovered` should become client-visible for the first time as part of this feature.
+- For row #6, which caller(s) invoke `ActivateReadyTasks` today and will need to be updated to pass
+  the new required `actor` field? (e.g. hermes-agent's tasks-stage approve flow, and any other caller
+  found in the codebase.) Confirm the full caller list in technical design so none are missed.
 - Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
   distinguishable actor (e.g. "hermes-agent on behalf of `<user>`"), or is the underlying human actor
   sufficient?
