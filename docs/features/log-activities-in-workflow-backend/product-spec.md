@@ -127,6 +127,28 @@ Columns that are **identical across every row regardless of action** (not repeat
 | 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged — already optional caller-supplied text) |
 | 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged) |
 
+### Worked examples (one concrete row per action)
+
+These show actual sample values the table above would produce, so the shape can be sanity-checked
+before implementation. Assume workspace `ws-9f2a`, feature `feat-77c1` ("Add payment retry logic"),
+actor resolves to display name `"Alice Nguyen"` (email `alice@acme.com`) throughout.
+
+| # | Action | Example row (`scope_type` / `action` / `feature_id` / `task_id` / `actor` / `note`) |
+|---|---|---|
+| 1 | Feature created | `feature` / `feature_created` / `feat-77c1` / `NULL` / `Alice Nguyen` / `"Add payment retry logic"` |
+| 2 | Stage approved | `feature` / `stage_approved` / `feat-77c1` / `NULL` / `Alice Nguyen` / `"technical_design"` |
+| 3 | Stage rejected | `feature` / `stage_rejected` / `feat-77c1` / `NULL` / `Alice Nguyen` / `"technical_design: needs more detail on rollback plan"` (stage + reject comment, if supplied) |
+| 4 | Stage reopened | `feature` / `stage_reopened` / `feat-77c1` / `NULL` / `Alice Nguyen` / `"product_spec"` |
+| 5 | Task created | `task` / `task_created` / `feat-77c1` / `task-T3` / `Alice Nguyen` / `"Add retry queue schema"` |
+| 6 | Task auto-readied | `task` / `activate` / `feat-77c1` / `task-T4` / `Alice Nguyen` / `"Activated by Alice Nguyen"` |
+| 7 | Task unblocked | `task` / `unblocked` / `feat-77c1` / `task-T2` / `Alice Nguyen` / `"retried after fixing Qdrant auth"` (caller-supplied, optional) |
+| 8 | Task recovered | `task` / `recovered` / `feat-77c1` / `task-T5` / `Alice Nguyen` / `"force-reset from stuck in_progress"` (caller-supplied, optional) |
+
+Note for row 6: `actor` and the human-readable name inside `note` are the same resolved identity —
+`note` intentionally restates it as `"Activated by {display_name}"` so the activity feed reads well
+as a standalone sentence even before any UI joins `actor` into a nicer display, consistent with the
+other rows using `note` for a short human-readable description of what happened.
+
 ### `clientAudienceAllowlist` entries to add
 
 `internal/service/workspace.go`'s `clientAudienceAllowlist` maps internal `action` → client-facing
@@ -140,7 +162,7 @@ following entries (existing entries are unchanged):
 | `stage_rejected` | `"Rejected"` | new |
 | `stage_reopened` | `"Reopened"` | new |
 | `task_created` | `"Created"` | new |
-| `auto_readied` | `"Ready"` | mirrors the existing `ready` → `"Ready"` mapping |
+| `auto_readied` | `"Ready"` | mirrors the existing `ready` → `"Ready"` mapping — **note**: map key updated to `activate` per the action-value correction above (was `auto_readied` in an earlier draft) |
 | `unblocked` | `"Unblocked"` | not currently in the allowlist — added so client audiences can see unblock history |
 | `recovered` | `"Recovered"` | not currently in the allowlist — added so client audiences can see recovery history |
 
@@ -171,9 +193,9 @@ following entries (existing entries are unchanged):
       `users.display_name` — see `internal/users/users.go` `Store.FindByID`).
 - For row #3 (`stage_rejected`), does `UpdateFeatureStageInput` already carry a reject comment end to
   end from the approval UI, or does that plumbing need to be added as part of this feature?
-- For row #6 (`auto_readied`), is it cheap to include the specific dependency task names that just
-  completed and triggered the auto-ready, given the existing `ActivateReadyTasks` loop structure — or
-  is the fixed `"dependencies satisfied"` note sufficient?
+- For row #6 (`activate`), is it cheap to include the specific dependency task names that just
+  completed and triggered the auto-ready in `note`, in addition to the actor attribution — or is
+  `"Activated by {display_name}"` alone sufficient?
 - For row #6, which caller(s) invoke `ActivateReadyTasks` today and will need to be updated to pass
   the new required `actor` field? (e.g. hermes-agent's tasks-stage approve flow, and any other caller
   found in the codebase.) Confirm the full caller list in technical design so none are missed.
