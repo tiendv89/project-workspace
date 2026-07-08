@@ -48,8 +48,15 @@ must be updated to supply the new required `actor`.
   (`workspace_id, scope_type, feature_id, task_id, action, actor, occurred_at, note, sequence,
   raw_event`) — no schema migration in this feature (per product spec Non-goals: no structured
   `raw_event` payload, no backfill).
-- Every insert must be transactional with its corresponding state mutation (`UnblockTask`/`RecoverTask`
-  precedent: single `pgx.Tx`, guarded `UPDATE`/`INSERT` + activity insert, commit together).
+- **No external (HTTP) call may execute inside an open database transaction.** Actor resolution (a
+  call to `user-service`) must complete, with a bounded timeout and a safe fallback, before any
+  `pgx.Tx` for the mutation is opened. This avoids holding a DB connection/lock open across a network
+  round-trip, and avoids a `user-service` hiccup ever aborting a DB transaction.
+- **Activity logging is best-effort and must never fail or roll back the primary mutation.** Neither
+  an actor-resolution failure nor an activity-event insert failure may cause the feature/task mutation
+  itself to fail. The primary state change (feature created, stage decision persisted, tasks created,
+  tasks activated, task unblocked/recovered) is the mandatory operation; the activity log entry is a
+  side effect that degrades gracefully (see Chosen Design §2–3 for the mechanism).
 - `workflow-backend` must not create a circular dependency on `workflow-bff` — it must call
   `user-service` directly (mirroring `workflow-bff`'s own client), not proxy through `workflow-bff`.
 - `ActivateReadyTasks`'s request-shape change (adding required `actor`) is a breaking change to an
@@ -139,32 +146,72 @@ New config: `USER_SERVICE_URL`, `USER_SERVICE_TOKEN` (mirrors `WORKFLOW_BACKEND_
 `user-service`'s `RequireServiceToken` middleware already gates `RegisterInternal` routes uniformly —
 no `user-service` change needed.
 
-### 2. Actor-resolution helper + fallback rule
+### 2. Actor-resolution helper + fallback rule (runs BEFORE any transaction opens)
 
-Add a small helper in `internal/service/workspace.go`:
+Add a small helper in `internal/service/workspace.go`, called at the top of every write-path service
+method — **before** the corresponding `Reader` method opens its `pgx.Tx**:
 
 ```go
 // resolveActor returns a human-readable identity for userID: display name if
-// user-service resolves it and it is non-empty, else email, else the raw
-// userID unchanged. Never returns an error to the caller — a resolution
-// failure (timeout, user-service down, unknown id) degrades to the raw UUID
-// rather than blocking the mutation. This preserves availability: an activity
-// log entry with a UUID actor is strictly better than a failed feature/task
-// mutation because an identity service hiccuped.
+// user-service resolves it (within a bounded timeout) and it is non-empty,
+// else email, else the raw userID unchanged. Never returns an error — a
+// resolution failure (timeout, user-service down, unknown id) degrades to
+// the raw UUID rather than blocking the mutation. Called with a short,
+// request-scoped timeout (e.g. 2s via context.WithTimeout) so a slow/down
+// user-service cannot stall the caller's request; the mutation proceeds
+// immediately on timeout with the raw UUID as actor.
+//
+// IMPORTANT: this must be called and fully resolved BEFORE the caller opens
+// any pgx.Tx for the mutation itself — no external HTTP call may execute
+// while a DB transaction is open (see Constraints).
 func (s *WorkspaceService) resolveActor(ctx context.Context, userID string) string
 ```
 
-This is the fallback rule technical design must fix (open question from product spec): **resolution
-failure never blocks the mutation.** All six write paths call this helper immediately before building
-their `workspace_activity_events` insert; the mutation itself (feature/task state change) always
-proceeds regardless of resolution outcome.
+All six write paths call this helper in the `WorkspaceService` method, before invoking the
+corresponding `Reader` method — so by the time any `Reader.*` function opens its transaction, `actor`
+is already a plain string with no further I/O required. This guarantees no external call is ever made
+from inside a `pgx.Tx`.
 
-### 3. Per-action implementation (maps 1:1 to product-spec field-mapping table)
+### 3. Activity-event insert: best-effort via savepoint (never blocks the primary mutation)
 
-All six new/modified `Reader` methods gain an activity insert in the *same transaction* as their
-existing guarded update, following the `UnblockTask`/`RecoverTask` pattern exactly (`tx.Exec` for the
-`INSERT INTO workspace_activity_events` alongside the state-changing `tx.Exec`/`tx.QueryRow`, both
-before `tx.Commit(ctx)`).
+The primary state mutation (the guarded `UPDATE`/`INSERT` already present in each `Reader` method) is
+the mandatory operation and is unchanged in its failure behavior. The activity-event insert is added
+as a **nested transaction (savepoint)** inside the same `pgx.Tx`, so a failure there can be rolled back
+in isolation without aborting the outer transaction:
+
+```go
+// Inside Reader.<Method>, after the mandatory state-changing statement succeeds
+// and before tx.Commit(ctx):
+if spTx, spErr := tx.Begin(ctx); spErr == nil { // pgx v5: Begin() on a Tx issues SAVEPOINT
+    if _, insErr := spTx.Exec(ctx, insertActivityQ, /* ... */); insErr != nil {
+        _ = spTx.Rollback(ctx) // ROLLBACK TO SAVEPOINT — discards only the activity insert
+        log.Warn().Err(insErr).Msg("activity event insert failed — mutation proceeds")
+    } else {
+        _ = spTx.Commit(ctx) // RELEASE SAVEPOINT
+    }
+} else {
+    log.Warn().Err(spErr).Msg("could not open savepoint for activity event — mutation proceeds")
+}
+// tx.Commit(ctx) below always persists the primary mutation regardless of the
+// savepoint outcome above.
+```
+
+This is applied identically to all six write paths (`CreateWorkspaceFeature`, `UpdateFeatureStage`,
+`CreateWorkspaceTasks`, `ActivateReadyTasks`, `UnblockTask`, `RecoverTask`) — including the two
+existing ones (`UnblockTask`/`RecoverTask`), whose current implementation inserts the activity row as
+a plain statement in the same transaction as the guarded update; this feature changes that to the
+savepoint pattern so a future activity-insert failure there also stops being able to roll back a
+successful unblock/recover.
+
+Net effect: the mutation's success/failure is now **fully decoupled** from both (a) `user-service`
+availability (resolved pre-transaction, always falls back) and (b) the activity-event insert's own
+success (isolated via savepoint) — satisfying both constraints above.
+
+### 4. Per-action implementation (maps 1:1 to product-spec field-mapping table)
+
+All six `Reader` methods gain a savepoint-wrapped activity insert per §3, using the actor string
+already resolved (per §2) and passed in as a plain parameter — no `Reader` method calls `user-service`
+itself.
 
 | # | Method | Change |
 |---|---|---|
@@ -201,7 +248,7 @@ breaking change for hermes-agent's other callers.
   (`workflow-backend` + `hermes-agent`) landing together — `workflow-backend`'s validation must not go
   live before hermes-agent's caller is updated, or the tasks-stage approve flow breaks with a 400.
 
-### 4. `clientAudienceAllowlist` update
+### 5. `clientAudienceAllowlist` update
 
 Add to the map in `internal/service/workspace.go` (exact entries from product spec):
 
@@ -219,7 +266,7 @@ var clientAudienceAllowlist = map[string]string{
 }
 ```
 
-### 5. `sequence` scoping — no change needed
+### 6. `sequence` scoping — no change needed
 
 The existing `(SELECT COALESCE(MAX(sequence), 0) + 1 FROM workspace_activity_events WHERE workspace_id
 = $1 AND feature_id = $2 AND task_id = $3)` subquery already used by `UnblockTask`/`RecoverTask` is
@@ -233,9 +280,10 @@ subtlety, not introduced by this feature, since `UnblockTask`/`RecoverTask` are 
 
 ## Dependency Analysis
 
-- **New cross-service dependency**: `workflow-backend` → `user-service` (new, synchronous, on the
-  write path only). `user-service`'s `GET /internal/users` endpoint and `RequireServiceToken` middleware
-  already exist and require no change.
+- **New cross-service dependency**: `workflow-backend` → `user-service` (new, synchronous, called
+  before any DB transaction opens, bounded by a short timeout, with a non-blocking fallback to the raw
+  UUID). `user-service`'s `GET /internal/users` endpoint and `RequireServiceToken` middleware already
+  exist and require no change.
 - **`workflow-backend` ↔ `hermes-agent`**: the `ActivateReadyTasks` request-shape change is a
   coordinated breaking change — hermes-agent's `activate_ready_tasks` caller must be updated
   simultaneously (see §3b). The reject-comment addition (§3a) is additive/non-breaking for existing
