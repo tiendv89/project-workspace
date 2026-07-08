@@ -1,7 +1,7 @@
 id: T8
 title: Sync-token mint endpoint
 repo: storage-service
-status: in_progress
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/storage-service-T8
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T01:24:04.919Z
+  last_updated_at: 2026-07-08T01:51:28.987Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/storage-service/pull/4
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/739
   status: open
@@ -38,7 +38,6 @@ log:
     rag_summary: "tool_call_failed: The operation was aborted due to timeout"
     rag_query: Sync-token mint endpoint storage-service
     note: Runtime pre-flight RAG fetch — written before executor spawn.
-
   - action: started
     by: tiendv.52@gmail.com
     at: 2026-07-08T01:38:09+0000
