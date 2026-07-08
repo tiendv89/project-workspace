@@ -86,7 +86,19 @@ what `workspace-github-adapter` does for TS-owned features (feature `history[]` 
    insert, commit together) — no mutation should succeed while its activity log write silently fails
    or vice versa.
 
-## Non-goals
+## Activity event field mapping (per action)
+
+To avoid mismatch at implementation time, every new/fixed insert into `workspace_activity_events`
+must populate exactly these columns. Column names and existing values are taken verbatim from the
+live schema and the two working inserts (`UnblockTask`, `RecoverTask` in
+`internal/database/queries.go`) — new actions must follow the same shape.
+
+`workspace_activity_events` columns (all writes use this same 10-column insert):
+`workspace_id, scope_type, feature_id, task_id, action, actor, occurred_at, note, sequence, raw_event`
+
+| # | Action / API | Handler → Service → Query (code path) | `scope_type` | `action` | `feature_id` | `task_id` | `actor` | `note` | `sequence` | `raw_event` |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Feature stage decision (approve/reject/reopen) | `UpdateFeatureStage` handler → `WorkspaceService.UpdateFeatureStage` → `Reader.UpdateFeatureStage` | `feature` | `stage_approved` \| `stage_rejected` \| `stage_reopened` (derived 1:1 from `input.ReviewStatus` — `approved`/`rejected`/`draft` respectively; exact mapping confirmed in tech design) | feature's `feature_id` (UUID, from `feat.FeatureID`) | `NULL` | resolved human identity for `input.Actor` (see Open Question on actor resolution — today `input.Actor` is already threaded from caller, just needs identity resolution, not new plumbing) | `input.Stage` value (e.g. `"technical_design"`) — records **which stage** was acted on, since `action` alone doesn't carry it | next per-scope sequence (existing `COALESCE(MAX(sequence),0)+1` pattern, scoped to `workspace_id + feature_id`, `task_id IS NULL`) | `{}` (reserved for future structured payload — e.g. `{
 
 - No changes to the Go orchestrator (`workflow-orchestrator` repo) or its existing `AppendLogTx`
   activity logging — that path is already complete and is out of scope.
