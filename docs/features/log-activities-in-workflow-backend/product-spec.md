@@ -124,8 +124,8 @@ Columns that are **identical across every row regardless of action** (not repeat
 | 4 | Stage decision: reopen | same as #2 | `feature` | `stage_reopened` | `feat.FeatureID` | `NULL` | same as #2 | `input.Stage` value |
 | 5 | Task created (bulk create, one row per task) | `CreateTasks` handler → `WorkspaceService.CreateTasks` → `Reader.CreateWorkspaceTasks` (loop `insertGoTask`) | `task` | `task_created` | `fid` (feature UUID passed into `CreateWorkspaceTasks`) | each created task's `task_id` (UUID returned per row by `insertGoTask`) | resolved identity for the calling user (BFF identity on this endpoint per `RequireBFFIdentity`) | task `title` (e.g. `"Add retry queue schema"`) — mirrors the `feature_created` note choice for readability |
 | 6 | Task auto-readied (`todo` → `ready`) | `ActivateReadyTasks` handler → `WorkspaceService.ActivateReadyTasks` → `Reader.ActivateReadyTasks` (loop) | `task` | `activate` | `fid` | each activated task's UUID (the `t.id` used in the `UPDATE ... WHERE id = t.id` loop) | **required, caller-supplied** — `ActivateReadyTasks` today takes no actor input at all; this feature adds a required `actor` field to the request body (`POST .../tasks/activate-ready`), validated the same way `UpdateFeatureStage` already requires `input.Actor` (missing → 400). No default/fallback value — the caller (e.g. hermes-agent completing a tasks-stage approval, or whatever triggers the auto-ready) must supply the identity performing the triggering action. | `"Activated by {display_name}"` — `{display_name}` is the resolved human-readable identity for the caller-supplied actor (same value as the `actor` column, restated in `note` for readability) |
-| 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged — already optional caller-supplied text) |
-| 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | `input.Note` (existing, unchanged) |
+| 7 | Task unblocked *(existing — fix actor only)* | `UnblockTask` handler → `WorkspaceService.UnblockTask` → `Reader.UnblockTask` | `task` (existing, unchanged) | `unblocked` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | **change**: `"Unblocked from {blocked_reason} — status {fromStatus} → {toStatus}"`, where `fromStatus` is always the literal `"blocked"` (the guarded precondition `Reader.UnblockTask` checks), `toStatus` is the derived resume status from `deriveUnblockTarget(blockedFromStatus)` (`"in_review"` when `blocked_from_status` was `reviewing`/`in_review`, else `"ready"`), and `{blocked_reason}` is the task's stored `blocked_reason` at the time of unblock. Append the caller-supplied `input.Note` after a separator if present (e.g. `"... ready to resume — retried after fixing Qdrant auth"`), rather than replacing it — the transition summary is required, the caller note is additive. |
+| 8 | Task recovered *(existing — fix actor only)* | `RecoverTask` handler → `WorkspaceService.RecoverTask` → `Reader.RecoverTask` | `task` (existing, unchanged) | `recovered` (existing, unchanged) | `featureIDStr` (existing, unchanged) | `taskIDStr` (existing, unchanged) | **change**: resolved human identity instead of raw `input.Actor` UUID | **change**: `"Recovered from {from} → {to}"`, where `{from}`/`{to}` are the exact branch the guarded `UPDATE` took in `Reader.RecoverTask` — one of: `conflict_state 'resolving' → 'conflicted'` (task `status` itself untouched), `status 'reviewing' → 'in_review'`, or `status 'in_progress' → 'ready'`. Use the same `from`/`to` string values the function already computes and returns in `RecoverTaskResult` — no new derivation needed, just surface them in `note`. Append the caller-supplied `input.Note` after a separator if present, same additive rule as row 7. |
 
 ### Worked examples (one concrete row per action)
 
@@ -141,8 +141,8 @@ actor resolves to display name `"Alice Nguyen"` (email `alice@acme.com`) through
 | 4 | Stage reopened | `feature` / `stage_reopened` / `feat-77c1` / `NULL` / `Alice Nguyen` / `"product_spec"` |
 | 5 | Task created | `task` / `task_created` / `feat-77c1` / `task-T3` / `Alice Nguyen` / `"Add retry queue schema"` |
 | 6 | Task auto-readied | `task` / `activate` / `feat-77c1` / `task-T4` / `Alice Nguyen` / `"Activated by Alice Nguyen"` |
-| 7 | Task unblocked | `task` / `unblocked` / `feat-77c1` / `task-T2` / `Alice Nguyen` / `"retried after fixing Qdrant auth"` (caller-supplied, optional) |
-| 8 | Task recovered | `task` / `recovered` / `feat-77c1` / `task-T5` / `Alice Nguyen` / `"force-reset from stuck in_progress"` (caller-supplied, optional) |
+| 7 | Task unblocked | `task` / `unblocked` / `feat-77c1` / `task-T2` / `Alice Nguyen` / `"Unblocked from rebase_failed — status blocked → ready — retried after fixing Qdrant auth"` |
+| 8 | Task recovered | `task` / `recovered` / `feat-77c1` / `task-T5` / `Alice Nguyen` / `"Recovered from in_progress → ready — force-reset from stuck in_progress"` |
 
 Note for row 6: `actor` and the human-readable name inside `note` are the same resolved identity —
 `note` intentionally restates it as `"Activated by {display_name}"` so the activity feed reads well
@@ -199,9 +199,10 @@ following entries (existing entries are unchanged):
 - For row #6, which caller(s) invoke `ActivateReadyTasks` today and will need to be updated to pass
   the new required `actor` field? (e.g. hermes-agent's tasks-stage approve flow, and any other caller
   found in the codebase.) Confirm the full caller list in technical design so none are missed.
-- Confirm the `clientAudienceAllowlist` entries above are complete and correctly labeled before
-  implementation — in particular whether `unblocked`/`recovered` becoming client-visible for the first
-  time has any downstream UI impact that needs coordinating.
+- For rows #7/#8, confirm the exact `note` phrasing/format for the from→to transition summary (this
+  spec proposes `"Unblocked from {blocked_reason} — status {fromStatus} → {toStatus}"` and
+  `"Recovered from {from} → {to}"`, both with the caller-supplied note appended additively) — technical
+  design should verify this fits the `note` column's expected length/format and any existing consumers.
 - Should `hermes-agent`'s service-to-service calls (vs. a human's direct BFF-proxied action) surface a
   distinguishable actor (e.g. "hermes-agent on behalf of `<user>`"), or is the underlying human actor
   sufficient?
