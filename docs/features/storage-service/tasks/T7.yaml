@@ -1,7 +1,7 @@
 id: T7
 title: Node Hocuspocus sidecar (onLoadDocument/onStoreDocument/onAuthenticate)
 repo: storage-service
-status: reviewing
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/storage-service-T7
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T02:32:54.046Z
+  last_updated_at: 2026-07-08T02:45:54.211Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -70,3 +70,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-08T02:32:54.046Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-08T02:45:54.211Z
