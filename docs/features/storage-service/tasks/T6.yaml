@@ -2,7 +2,7 @@ id: T6
 title: internal/document module (CRUD, doc_version, markdown import, folder-tree
   read API)
 repo: storage-service
-status: review_passed
+status: in_review
 depends_on:
   - T1
 blocked_reason: null
@@ -79,6 +79,15 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-08T03:18:09.679Z
     note: Rebase succeeded — conflict_state resolved. Reviewer cycle can resume.
+  - action: manual_override
+    by: pye@swellnetwork.io
+    at: 2026-07-08T17:26:47+0700
+    note: >-
+      Manually reset status from review_passed to in_review at human request.
+      No documented review_passed → in_review transition exists in the
+      workflow rules; review_passed's only valid transition is → done via
+      handleMergedPrs on PR merge. Recorded here as an explicit human
+      override, not an orchestrator-driven transition.
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-08T03:06:18.176Z
