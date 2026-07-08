@@ -3,7 +3,7 @@ title: Add /bff/storage-service/* upstream prefix
 repo: workflow-bff
 status: in_progress
 depends_on:
-  - T1
+- T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -12,32 +12,34 @@ branch: feature/storage-service-T4
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-08T01:04:09.613Z
+  last_updated_at: 2026-07-08T01:08:00+0000
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
+  url: ''
   status: not_created
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/735
   status: open
 log:
-  - action: ready
-    by: tiendv.52@gmail.com
-    at: 2026-07-08T01:02:49.971Z
-    note: Task activated — dependency T1 merged and marked done.
-  - action: claimed
-    by: tiendv.52@gmail.com
-    at: 2026-07-08T01:04:09.613Z
-    note: Claimed via git-based claim protocol.
-  - action: rag_pre_flight
-    by: tiendv.52@gmail.com
-    at: 2026-07-08T01:04:18.040Z
-    rag_context_injected: true
-    rag_summary: "Retrieved 5 chunks:
-      github.com/tiendv89/project-workspace/pull/732,
-      docs/features/storage-service/technical-design.md,
-      github.com/tiendv89/project-workspace/pull/733"
-    rag_query: Add /bff/storage-service/* upstream prefix storage-service
-    note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: ready
+  by: tiendv.52@gmail.com
+  at: 2026-07-08 01:02:49.971000+00:00
+  note: Task activated — dependency T1 merged and marked done.
+- action: claimed
+  by: tiendv.52@gmail.com
+  at: 2026-07-08 01:04:09.613000+00:00
+  note: Claimed via git-based claim protocol.
+- action: rag_pre_flight
+  by: tiendv.52@gmail.com
+  at: 2026-07-08 01:04:18.040000+00:00
+  rag_context_injected: true
+  rag_summary: 'Retrieved 5 chunks: github.com/tiendv89/project-workspace/pull/732,
+    docs/features/storage-service/technical-design.md, github.com/tiendv89/project-workspace/pull/733'
+  rag_query: Add /bff/storage-service/* upstream prefix storage-service
+  note: Runtime pre-flight RAG fetch — written before executor spawn.
+- action: started
+  by: tiendv.52@gmail.com
+  at: 2026-07-08T01:08:00+0000
+  note: executor work phase begun.
