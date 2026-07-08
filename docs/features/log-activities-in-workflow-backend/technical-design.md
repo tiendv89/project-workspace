@@ -200,7 +200,8 @@ statement in the same transaction as the guarded update (today, an activity-inse
 ### 4. Async enrichment poller (new)
 
 A single background goroutine in `workflow-backend`, started at process boot alongside the HTTP
-server, on a fixed ticker (e.g. every 15s, configurable via `ACTIVITY_ENRICH_POLL_INTERVAL`):
+server, on a fixed ticker configurable via `ACTIVITY_ENRICH_POLL_INTERVAL` (duration string, e.g. `1m`,
+`30s`), **defaulting to `1m`** when unset:
 
 ```go
 func (s *WorkspaceService) enrichActivityEvents(ctx context.Context) {
