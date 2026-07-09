@@ -1,7 +1,7 @@
 id: T19
 title: Migrate blob backend from GCS to MinIO
 repo: storage-service
-status: reviewing
+status: change_requested
 depends_on:
   - T1
 blocked_reason: null
@@ -12,7 +12,7 @@ branch: feature/storage-service-T19
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-09T05:57:31.673Z
+  last_updated_at: 2026-07-09T06:06:04.856Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -75,3 +75,7 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-09T05:57:31.673Z
     note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-09T06:06:04.856Z
