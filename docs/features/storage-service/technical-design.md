@@ -278,8 +278,9 @@ Extends the existing Step 0 `go`/`ts` question (no second axis, per spec):
 `product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/` from the
 existing templates (`<WORKSPACE_ROOT>/workflow/templates/feature/`) as
 `storage-service` documents instead of writing local git files. `ts` ⇒ unchanged
-(current git-file behavior). This touches the `agent-workflow`/`init-feature`
-skill and `workflow-backend`'s `CreateFeature` path (per
+(current git-file behavior). This touches the `workflow` repo's
+(`agent-workflow` on GitHub) `init-feature` skill and `workflow-backend`'s
+`CreateFeature` path (per
 `feature-initialization-compatible`'s existing `owner`-branching pattern —
 extend, don't duplicate, the `ts`/`go` fork already there).
 
@@ -606,7 +607,7 @@ Wave 3 (depends on Wave 2):
     digital-factory-ui history panel
 
 Wave 4 (depends on Wave 2's document module, parallel with Wave 3):
-  - agent-workflow: init-feature Step 0 wiring — go ⇒ storage-service document
+  - workflow: init-feature Step 0 wiring — go ⇒ storage-service document
     create (depends on storage-service's document-create endpoint only, not on
     Tiptap/Hocuspocus)
   - storage-service: migration tool (direct GitHub read + bulk import) — depends
@@ -627,7 +628,7 @@ Wave 6 (amended 2026-07-09, appended after Waves 1-5 shipped — see Amendment):
     (github.com/minio/minio-go/v7) [dep: T1]
   - workflow-mcp: T20 — read_storage_document/write_storage_document MCP
     tools (§13) [dep: T4, T6]
-  - agent-workflow: T21 — init-feature's go branch calls T20's tools instead
+  - workflow: T21 — init-feature's go branch calls T20's tools instead
     of storage-service directly [dep: T20]
   - storage-service: T22 — doc_version.label column + set-label endpoint
     [dep: T11]
@@ -653,7 +654,7 @@ addition (§12, Wave 4), which is a narrow defensive change, not a cutover.
 | `rag-service` | New `POST /internal/index` endpoint (additive); no changes to `git_watcher.py`/`pr_indexer.py` |
 | `digital-factory-ui` | New folder-tree sidebar component; Tiptap editor component (storage-service-backed docs only); version-history panel; `/admin/storage` page under existing `AdminLayout`; `workflow-bff` client for `storage-service` |
 | `workflow-bff` | New `/bff/storage-service/*` upstream prefix (config-only, `bff.upstreams`) for the REST API; the Hocuspocus WebSocket endpoint is explicitly NOT routed through the BFF (§11) — it is its own public ingress |
-| `agent-workflow` (`init-feature` skill) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features. **Amended 2026-07-09 (T21):** the `go` branch now calls `workflow-mcp`'s new document tools (§13) instead of `storage-service` directly; the `ts` branch is untouched. |
+| `workflow` (`init-feature` skill; GitHub repo `agent-workflow`) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features. **Amended 2026-07-09 (T21):** the `go` branch now calls `workflow-mcp`'s new document tools (§13) instead of `storage-service` directly; the `ts` branch is untouched. |
 | `workflow-backend` | Small guard addition: reject writes to a migrated feature's git document paths (403) — not a rewrite of `document.go` |
 | `user-service` | No schema changes — `storage-service` calls its existing internal platform-role check service-to-service (§11); no new endpoint expected but confirm at implementation time |
 | `hermes-agent` | New `STORAGE_SERVICE_TOKEN` credential (§11) to fetch blob bytes for chat-image attachments AND to proxy document reads/writes for `go`-owned features; owner-guard added to the four document tools (§12) so they route to `storage-service` instead of git when `owner=go` — git-commit logic for `ts` features is unchanged |

@@ -25,11 +25,15 @@ that work — it revises three forward-looking decisions and appends new tasks
    T19.
 2. **Local-agent document access moves to a `workflow-mcp` tool, not a direct
    HTTP call embedded in a skill.** T13 (done) implemented `init-feature`
-   Step 0's `go` branch by having the skill call `storage-service`'s
-   document-create endpoint directly from inside `agent-workflow`. On
-   reflection this is the wrong layer: every other local-agent-to-backend
-   integration in this workspace (task creation, unblocking) goes through
-   `workflow-mcp`'s MCP tools, not an ad hoc fetch embedded in one skill. This
+   Step 0's `go` branch (in the `workflow` repo, `agent-workflow` on GitHub)
+   as a raw `curl` straight to `storage-service`, bypassing `workflow-bff`
+   entirely and authenticated with a new static long-lived shared secret
+   plus a fixed impersonated user id — a parallel auth mechanism outside the
+   platform's gateway-issued identity model, and one that misattributes
+   document authorship. Every other local-agent-to-backend integration in
+   this workspace (task creation, unblocking) instead goes through
+   `workflow-mcp`'s MCP tools, authenticated with the real user's session.
+   This
    amendment adds document read/write MCP tools to `workflow-mcp` (T20) and
    reworks `init-feature`'s `go` branch to call them instead (T21). This is
    also a first, narrow step on Open Question #3's deferred "Claude Code
