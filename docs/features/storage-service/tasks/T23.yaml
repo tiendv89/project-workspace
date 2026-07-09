@@ -1,7 +1,7 @@
 id: T23
 title: Label/pin a version in the history panel
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
   - T12
   - T22
@@ -27,9 +27,12 @@ log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-09T12:05:22+0700
-    note: >-
-      Created via product-spec/technical-design amendment (2026-07-09) at
-      human request — add a label/pin action to T12's version-history panel,
-      consuming T22's set-label endpoint, with labeled versions visually
-      distinguished from routine autosave snapshots. Blocked on T22 shipping
-      (T12 is already done); will be auto-readied when T22 is marked done.
+    note: Created via product-spec/technical-design amendment (2026-07-09) at human
+      request — add a label/pin action to T12's version-history panel, consuming
+      T22's set-label endpoint, with labeled versions visually distinguished
+      from routine autosave snapshots. Blocked on T22 shipping (T12 is already
+      done); will be auto-readied when T22 is marked done.
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:48:40.088Z
+    note: Task activated — dependency T22 merged and marked done.
