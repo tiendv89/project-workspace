@@ -738,13 +738,28 @@ clone-and-`Read` model, with zero involvement from these tools.
 
 ### Description
 
-Amendment (2026-07-09). T13 (done) implemented `init-feature` Step 0's `go`
-branch as a direct HTTP call from the `agent-workflow` skill to
-`storage-service`'s document-create endpoint. This task reworks that branch
-to call T20's `read_storage_document`/`write_storage_document` MCP tools
-instead, removing the skill's bespoke `fetch`/auth code. The `ts` branch is
-**not** touched — same hard-stop discipline as before (if the `go`/`ts`
-choice isn't explicit, ask again, don't guess).
+Amendment (2026-07-09). T13 (done), read directly from its shipped
+`SKILL.md`, implements `init-feature` Step 0's `go` branch as a raw `curl`
+(via the Bash tool — skills have no native HTTP client) straight to
+`$STORAGE_SERVICE_URL`, **bypassing `workflow-bff` and T4's
+`/bff/storage-service/*` prefix entirely**, authenticated with two
+purpose-built env vars: `STORAGE_SERVICE_TOKEN` (a static, long-lived shared
+bearer secret every developer must provision in `.env`) and
+`STORAGE_SERVICE_ACTOR_USER_ID` (a fixed synthetic user id sent as
+`X-User-Id`, so every `go`-feature document is attributed to the same fake
+actor, not the real human/agent running the skill). This is a parallel
+static-secret auth path outside the platform's gateway-issued identity model
+— exactly what the product spec's Non-goals rule out — and it breaks
+authorship/audit trail.
+
+This task reworks that branch to call T20's `read_storage_document`/
+`write_storage_document` MCP tools instead, which reuse `workflow-mcp`'s
+existing session-cookie auth (the real actor's identity, routed through the
+BFF like every other call). `STORAGE_SERVICE_TOKEN`/
+`STORAGE_SERVICE_ACTOR_USER_ID` and the direct-`curl` code path are removed
+entirely. The `ts` branch is **not** touched — same hard-stop discipline as
+before (if the `go`/`ts` choice isn't explicit, ask again, don't guess); `ts`
+features never call `storage-service` at all, before or after this task.
 
 ### Required skills
 
@@ -752,12 +767,12 @@ choice isn't explicit, ask again, don't guess).
 
 ### Subtasks
 
-- [ ] Replace the `go` branch's direct `storage-service` HTTP call with a
-      call to T20's `write_storage_document` tool (one call per narrative
-      document: `product-spec.md`, `technical-design.md`, `tasks.md`,
-      `handoffs/`)
-- [ ] Remove the now-unused bespoke HTTP client/auth code from T13's
-      implementation
+- [ ] Replace the `go` branch's direct `curl` calls with calls to T20's
+      `write_storage_document` tool (one call per narrative document:
+      `product-spec.md`, `technical-design.md`, `tasks.md`, `handoffs/`)
+- [ ] Remove `STORAGE_SERVICE_TOKEN`/`STORAGE_SERVICE_ACTOR_USER_ID` from the
+      skill's required-env-var list and from `.env.template`; remove the
+      now-unused direct-`curl`/BFF-bypass code path from T13's SKILL.md
 - [ ] `ts` branch behavior verified unchanged (regression check)
 - [ ] Tests: `go` path calls T20's tools (mocked), `ts` path creates git
       files as before, unchanged from T13's original tests
