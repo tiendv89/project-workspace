@@ -1,7 +1,7 @@
 id: T13
 title: init-feature Step 0 wiring (go => storage-service document create)
 repo: workflow
-status: review_incomplete
+status: done
 depends_on:
   - T1
 blocked_reason: null
@@ -74,3 +74,11 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
     at: 2026-07-09T04:02:44.765Z
+  - action: done
+    by: pentative@gmail.com
+    at: "2026-07-09T11:09:56+0700"
+    note: >-
+      Implementation PR https://github.com/tiendv89/agent-workflow/pull/288
+      merged by human (pye), bypassing the automated review cycle after 3
+      consecutive reviewer_started/review_blocked pairs with no valid
+      verdict. Marked done on explicit human instruction.
