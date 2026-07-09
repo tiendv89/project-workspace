@@ -41,3 +41,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-09T05:13:01.060Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:13:09.887Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: README.md,
+      github.com/tiendv89/project-workspace/pull/737,
+      docs/features/storage-service/technical-design.md"
+    rag_query: workflow-mcp document read/write MCP tools storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
