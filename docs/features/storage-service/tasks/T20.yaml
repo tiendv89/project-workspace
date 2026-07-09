@@ -1,7 +1,7 @@
 id: T20
 title: workflow-mcp document read/write MCP tools
 repo: workflow-mcp
-status: review_passed
+status: done
 depends_on:
   - T4
   - T6
@@ -13,13 +13,13 @@ branch: feature/storage-service-T20
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-09T05:52:28.308Z
+  last_updated_at: 2026-07-09T05:54:17.788Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/batu4404/workflow-mcp/pull/9
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/756
   status: open
@@ -82,3 +82,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-09T05:52:28.308Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:54:17.788Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
