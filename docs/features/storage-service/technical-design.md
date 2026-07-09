@@ -447,19 +447,37 @@ preventing data corruption for `go` features today — not that migration.
 
 ### 13. `workflow-mcp` document tools (new, amended 2026-07-09, T20/T21)
 
-**Gap identified:** T13 (done) wired `init-feature`'s `go` branch to call
-`storage-service`'s document-create endpoint directly from inside the
-`agent-workflow` skill — a bespoke `fetch` call with its own auth handling,
-duplicating a pattern the workspace already solves generically:
-`workflow-mcp` (`src/tools.ts`, `src/bffClient.ts`) is the single local, stdio
-MCP server every Claude Code session already loads for task orchestration
-(`get_feature`, `create_tasks`, `unblock_task`), authenticated via a
-browser-obtained `session_id` cookie (`WORKFLOW_SESSION_COOKIE` env var)
-forwarded on every call — the exact same trusted-identity chain
-`storage-service`'s REST API already expects via `workflow-bff` (§11). There
-is no reason for one skill (`init-feature`) to hand-roll its own HTTP client
-and auth handling against `storage-service` when this channel already exists
-and already reaches it (T4's `/bff/storage-service/*` prefix, done).
+**Gap identified — confirmed by reading T13's actual shipped implementation,
+not assumed.** `init-feature` is a markdown skill with no native HTTP client,
+so T13's `go` branch does its "call storage-service's document-create
+endpoint" via a raw `curl` invoked through the Claude Code agent's Bash tool,
+straight to `$STORAGE_SERVICE_URL` — **bypassing `workflow-bff` entirely**,
+not going through the `/bff/storage-service/*` prefix (T4, done) at all.
+Authenticated with two new, purpose-built env vars the skill hard-requires
+in `.env`:
+- `STORAGE_SERVICE_TOKEN` — a static, long-lived shared bearer secret every
+  developer must provision locally.
+- `STORAGE_SERVICE_ACTOR_USER_ID` — a **fixed synthetic user id**, sent as
+  `X-User-Id` on every call, so every `go`-feature document `init-feature`
+  ever creates is attributed to the same fake actor rather than the real
+  human or agent running the skill.
+
+This is precisely the "second, independent authentication/authorization
+mechanism... separate from the platform's existing gateway-issued identity"
+the product spec's Non-goals explicitly rule out — a parallel static-secret
+login path, not the trusted-identity chain every other `storage-service`
+caller uses (§11). It also breaks authorship/audit trail (wrong `X-User-Id`)
+and requires `storage-service`'s raw API to be reachable outside the BFF at
+all, which nothing else in this feature needs.
+
+`workflow-mcp` (`src/tools.ts`, `src/bffClient.ts`) already solves this
+generically: it's the single local, stdio MCP server every Claude Code
+session loads for task orchestration (`get_feature`, `create_tasks`,
+`unblock_task`), authenticated via the real user's browser-obtained
+`session_id` cookie (`WORKFLOW_SESSION_COOKIE` env var) forwarded on every
+call — the actual trusted-identity chain `storage-service`'s REST API
+already expects via `workflow-bff` (§11), with the real actor's identity,
+zero new static secrets, and no bypass of the BFF.
 
 **Chosen fix:** add two new tools to `workflow-mcp`, following its existing
 tool-registration pattern (`src/tools.ts`: types → handler function →
