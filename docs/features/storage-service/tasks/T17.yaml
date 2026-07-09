@@ -2,7 +2,7 @@ id: T17
 title: Admin API routes (usage, object browser, empty-trash, orphan cleanup,
   migration status)
 repo: storage-service
-status: in_review
+status: reviewing
 depends_on:
   - T6
   - T14
@@ -14,7 +14,7 @@ branch: feature/storage-service-T17
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-09T03:11:13.472Z
+  last_updated_at: 2026-07-09T03:12:14.299Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -52,3 +52,7 @@ log:
     by: tiendv.52@gmail.com
     note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/9"
     at: 2026-07-09T03:11:13.472Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:12:14.299Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
