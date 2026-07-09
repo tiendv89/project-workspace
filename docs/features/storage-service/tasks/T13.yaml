@@ -1,27 +1,84 @@
 id: T13
 title: init-feature Step 0 wiring (go => storage-service document create)
-repo: agent-workflow
-status: ready
+repo: workflow
+status: done
 depends_on:
   - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T13
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-09T04:02:44.765Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
-workspace_pr: null
+  url: https://github.com/tiendv89/agent-workflow/pull/288
+  status: open
+workspace_pr:
+  url: "https://github.com/tiendv89/project-workspace/pull/753"
+  status: open
 log:
   - action: ready
     by: tiendv.52@gmail.com
     at: 2026-07-08T01:02:49.959Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: 2026-07-09T10:41:57+0700
+    note: Claimed via interactive start-implementation. Corrected repo field
+      (agent-workflow -> workflow, matching workspace.yaml repos[].id) and
+      branch field (feature/storage-service -> feature/storage-service-T13,
+      matching this feature's other tasks) — both were data errors in this task
+      file.
+  - action: started
+    by: pentative@gmail.com
+    at: 2026-07-09T10:41:57+0700
+    note: executor work phase begun.
+  - action: work_phase_complete
+    by: pentative@gmail.com
+    at: 2026-07-09T10:55:35+0700
+    note: "PR opened: https://github.com/tiendv89/agent-workflow/pull/288 (draft,
+      feature/storage-service-T13 -> main). Rewrote init-feature/SKILL.md's go
+      branch to create product-spec/technical-design/tasks/handoff as
+      storage-service documents via POST /api/documents/import (T6) and POST
+      /api/documents instead of local git files; ts branch unchanged. Added
+      scripts/tests/init_feature_skill.test.sh (23/23 passed). Pre-existing
+      unrelated test failure noted in create_tasks_skill.test.sh (T7,
+      WORKSPACE_ID vs WORKSPACE_UID) — not touched by this task."
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:57:17.011Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-09T03:58:29.912Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:59:26.476Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-09T04:00:39.127Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T04:01:34.220Z
+    note: Reviewer dispatch claimed (cycle 3 of 3).
+  - action: review_blocked
+    by: tiendv.52@gmail.com
+    note: Reviewer exited without result (attempt 1 of 2). Will retry next cycle.
+    at: 2026-07-09T04:02:44.765Z
+  - action: done
+    by: pentative@gmail.com
+    at: "2026-07-09T11:09:56+0700"
+    note: >-
+      Implementation PR https://github.com/tiendv89/agent-workflow/pull/288
+      merged by human (pye), bypassing the automated review cycle after 3
+      consecutive reviewer_started/review_blocked pairs with no valid
+      verdict. Marked done on explicit human instruction.
