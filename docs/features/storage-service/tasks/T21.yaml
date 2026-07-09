@@ -41,3 +41,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-09T06:34:08.407Z
     note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T06:34:16.577Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: github.com/tiendv89/agent-workflow/pull/288,
+      github.com/tiendv89/project-workspace/pull/730,
+      github.com/tiendv89/project-workspace/pull/749"
+    rag_query: Rework init-feature's go branch to call T20's tools storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
