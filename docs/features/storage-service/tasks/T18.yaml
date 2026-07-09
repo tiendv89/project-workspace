@@ -1,10 +1,10 @@
 id: T18
 title: /admin/storage page
 repo: digital-factory-ui
-status: todo
+status: ready
 depends_on:
-- T3
-- T17
+  - T3
+  - T17
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -18,7 +18,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:19:44.629Z
+    note: Task activated — dependency T17 merged and marked done.
