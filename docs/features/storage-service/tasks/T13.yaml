@@ -1,18 +1,18 @@
 id: T13
 title: init-feature Step 0 wiring (go => storage-service document create)
-repo: agent-workflow
-status: ready
+repo: workflow
+status: in_progress
 depends_on:
   - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T13
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: pentative@gmail.com
+  last_updated_at: "2026-07-09T10:41:57+0700"
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -25,3 +25,16 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-08T01:02:49.959Z
     note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: pentative@gmail.com
+    at: "2026-07-09T10:41:57+0700"
+    note: >-
+      Claimed via interactive start-implementation. Corrected repo field
+      (agent-workflow -> workflow, matching workspace.yaml repos[].id) and
+      branch field (feature/storage-service -> feature/storage-service-T13,
+      matching this feature's other tasks) — both were data errors in this
+      task file.
+  - action: started
+    by: pentative@gmail.com
+    at: "2026-07-09T10:41:57+0700"
+    note: executor work phase begun.
