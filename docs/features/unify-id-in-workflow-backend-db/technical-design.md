@@ -66,9 +66,29 @@ Add a trigger/constraint that forces `id = task_id` (and `id = feature_id`) on e
 **Option A** — unify on the business-key column name (`feature_id` for `workspace_features`, `task_id` for `workspace_tasks`), dropping the internal surrogate `id` column, using an **expand/contract migration** executed in the following phases to satisfy the zero-downtime and lockstep-deployment constraints:
 
 ### Phase 1 — Reconcile divergence (data fix, no schema change)
-Before any DDL: for every `workspace_tasks` row where `id != task_id` (currently, all go-owned rows), decide the winning value. **Winner: `id`** — not `task_id` — for this reconciliation, because `id` is the column every writer (`insertGoTask`, `UpsertWorkspaceTask`) reliably populates today via `gen_random_uuid()` default at INSERT time with no possibility of being left null or stale, whereas `task_id` for go tasks was never intentionally set (it's an accidental orphan default). Concretely: `UPDATE workspace_tasks SET task_id = id WHERE task_id != id;`. This is safe because `task_id` has no standalone unique constraint today (only composite `(workspace_id, task_id)`), and post-update every row still satisfies that composite uniqueness (each row's `task_id` becomes its own already-unique `id`). Verify no `workspace_activity_events.task_id` or `workspace_sync_runs.task_id` reference the pre-reconciliation `task_id` value in a way that would now point at the wrong row — since `workspace_activity_events.task_id` is denormalized and unconstrained, audit historical values before/after in a verification script rather than assuming.
 
-`workspace_features` needs no reconciliation — `feature_id` is already the correctly-maintained business key everywhere; `id` is simply unused elsewhere, so no divergence exists to fix.
+**Verified against actual source (not inferred) this phase:** `workflow-backend`'s `insertGoTask` (`internal/database/queries.go:1143-1184`, the sole live production path for go-owned task creation, reached via `POST /workspaces/:workspaceId/features/:featureId/tasks` → `Reader.CreateWorkspaceTasks` → `insertGoTask`) has this INSERT column list:
+```sql
+INSERT INTO workspace_tasks
+    (workspace_id, feature_id, feature_name, task_name, title, repo, status, depends_on, execution, owner)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'go')
+```
+Neither `id` nor `task_id` appears in this list — **both** get independent `gen_random_uuid()` schema defaults on every insert. Neither column is more "reliably populated" than the other; they diverge randomly, not systematically. (An earlier draft of this design incorrectly asserted `id` was the reliable column — that claim did not hold up under source inspection and has been corrected here.)
+
+Note: `workflow-orchestrator/internal/orchestrator/create.go` (`CreateTask`/`MaterializeFeature`, which explicitly sets `task_id = uuid.New()` matching a freshly generated `id`) is a test-only path (`//go:build integration`, called only from test files per GitNexus) — confirmed by the feature requester not to run in production. It is excluded from this analysis.
+
+**What breaks the tie: `workflow-orchestrator`'s live task FSM keys exclusively on `task_id`.** Every one of its ~25 production queries in `internal/database/queries/tasks.sql.go` — `GuardedUpdateTaskStatus`, `SetTaskDoneFromMergedPR`, `SetTaskResolving`, `SetTaskResolved`, `ListEligibleTasks`, `BumpReenqueueAttempts`, `TouchDispatchedAt`, `GetTaskByUUID`, and all reviewer/rebase/conflict transitions — filters `WHERE workspace_id = $1 AND task_id = $2`. None of them reference `id`. This means `task_id` is the column the live, in-flight claim/dispatch/reviewer/rebase loop is actively tracking for every task right now — it is load-bearing production state, not an incidental column.
+
+**Winner: `task_id`** — reversed from an earlier draft of this design, which incorrectly proposed `id` as the winner. Reconciliation must bring `id` in line with `task_id`, not the other way around, so that no in-flight dispatch (identified by `task_id` in `dispatch_handle`/`dispatch_nonce` bookkeeping) is silently redirected to a different value mid-execution: `UPDATE workspace_tasks SET id = task_id WHERE id != task_id;`
+
+This is safe with respect to existing constraints because `id` is the table's PK (implicitly unique already) and `task_id`'s values are already known-unique via the composite `(workspace_id, task_id)` constraint — so setting `id` to `task_id`'s value cannot introduce a PK collision, provided no other row already has that `task_id` value as its `id` (verify via `SELECT task_id, COUNT(*) FROM workspace_tasks GROUP BY task_id HAVING COUNT(*) > 1` returning zero rows before running the UPDATE, since a PK is being reassigned).
+
+**Mandatory pre-migration verification** (do not run the UPDATE from assertion — confirm against live data first):
+1. `SELECT COUNT(*) FROM workspace_tasks WHERE id != task_id;` — quantify actual divergence (expected: all/most `owner='go'` rows, zero `owner IS NULL` rows since the ts upsert path always sets them equal).
+2. `SELECT COUNT(*) FROM workspace_tasks WHERE id != task_id AND status IN ('in_progress','reviewing') OR conflict_state = 'resolving';` — identify any task **currently mid-dispatch** at migration time; these are highest-risk and should be drained (allowed to reach a terminal/idle state) before reconciliation runs, to avoid rewriting the PK out from under an active dispatch_handle lookup.
+3. Audit `workspace_activity_events.task_id` and `workspace_sync_runs.task_id` values against both the pre- and post-reconciliation `id`/`task_id` to confirm no historical reference silently starts pointing at the wrong row (both are denormalized, unconstrained UUID columns — no FK will catch a mismatch automatically).
+
+`workspace_features` needs no reconciliation — `feature_id` is already the correctly-maintained business key everywhere (confirmed: `CreateWorkspaceFeature` explicitly generates one `fid` and inserts it into `feature_id`; `id` gets its own separate default and is not read back or used by any caller found in `workflow-backend`, `workspace-github-adapter`, or `workflow-orchestrator`). `id` is simply unused elsewhere, so no divergence exists to fix.
 
 ### Phase 2 — Add-then-backfill (expand)
 1. Migration `NNNN_unify_task_and_feature_identity_expand.sql`:
