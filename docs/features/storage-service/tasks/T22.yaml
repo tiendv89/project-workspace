@@ -1,18 +1,18 @@
 id: T22
 title: doc_version label/pin column + set-label endpoint
 repo: storage-service
-status: ready
+status: in_progress
 depends_on:
   - T11
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T22
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-09T12:05:22+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-09T05:14:37.934Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -26,14 +26,16 @@ log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-09T12:05:22+0700
-    note: >-
-      Created via product-spec/technical-design amendment (2026-07-09) at
-      human request — add a nullable doc_version.label column and a
-      set/clear-label endpoint so a version can be pinned (e.g. "sent for
-      approval") distinctly from routine autosave snapshots. Metadata-only,
-      no change to T11's snapshot/diff/restore mechanics.
+    note: Created via product-spec/technical-design amendment (2026-07-09) at human
+      request — add a nullable doc_version.label column and a set/clear-label
+      endpoint so a version can be pinned (e.g. "sent for approval") distinctly
+      from routine autosave snapshots. Metadata-only, no change to T11's
+      snapshot/diff/restore mechanics.
   - action: ready
     by: pentative@gmail.com
     at: 2026-07-09T12:05:22+0700
-    note: >-
-      Auto-ready — sole dependency T11 is already done.
+    note: Auto-ready — sole dependency T11 is already done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:14:37.934Z
+    note: Claimed via git-based claim protocol.
