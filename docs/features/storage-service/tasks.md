@@ -30,7 +30,7 @@ reopened.
 | T10 | 3 | RAG webhook wiring in `onStoreDocument` | storage-service | T2, T7 | agent |
 | T11 | 3 | Version-history timeline API (list/diff/restore) | storage-service | T6 | agent |
 | T12 | 3 | Version-history panel UI | digital-factory-ui | T3, T11 | agent |
-| T13 | 4 | `init-feature` Step 0 wiring (go ⇒ storage-service document create) | agent-workflow | T1 | agent |
+| T13 | 4 | `init-feature` Step 0 wiring (go ⇒ storage-service document create) | workflow | T1 | agent |
 | T14 | 4 | Migration tool (bulk GitHub import) | storage-service | T6 | agent |
 | T15 | 4 | `hermes-agent` owner guard on the four document tools | hermes-agent | T1 | agent |
 | T16 | 4 | Guard: reject writes to a migrated feature's git document paths | workflow-backend | T1 | agent |
@@ -38,7 +38,7 @@ reopened.
 | T18 | 5 | `/admin/storage` page | digital-factory-ui | T3, T17 | agent |
 | T19 | 6 | Migrate blob backend from GCS to MinIO | storage-service | T1 | agent |
 | T20 | 6 | `workflow-mcp` document read/write MCP tools | workflow-mcp | T4, T6 | agent |
-| T21 | 6 | Rework `init-feature`'s `go` branch to call T20's tools | agent-workflow | T20 | agent |
+| T21 | 6 | Rework `init-feature`'s `go` branch to call T20's tools | workflow | T20 | agent |
 | T22 | 6 | `doc_version` label/pin column + set-label endpoint | storage-service | T11 | agent |
 | T23 | 6 | Label/pin a version in the history panel | digital-factory-ui | T12, T22 | agent |
 
@@ -73,7 +73,7 @@ Wave 3:
   T12 digital-factory-ui Version-history panel UI                            [dep: T3,T11]
 
 Wave 4:
-  T13 agent-workflow     init-feature Step 0 wiring                          [dep: T1; functional gate: T6]
+  T13 workflow           init-feature Step 0 wiring                          [dep: T1; functional gate: T6]
   T14 storage-service    Migration tool (bulk GitHub import)                 [dep: T6]
   T15 hermes-agent       Owner guard on the four document tools              [dep: T1; functional gate: T6]
   T16 workflow-backend   Guard: reject writes to migrated feature's git paths [dep: T1; functional gate: T14]
@@ -85,7 +85,7 @@ Wave 5:
 Wave 6 (amendment, 2026-07-09 — appended after T1-T18 shipped):
   T19 storage-service    Migrate blob backend from GCS to MinIO              [dep: T1]
   T20 workflow-mcp       Document read/write MCP tools                      [dep: T4,T6]
-  T21 agent-workflow     Rework init-feature's go branch onto T20's tools    [dep: T20]
+  T21 workflow           Rework init-feature's go branch onto T20's tools    [dep: T20]
   T22 storage-service    doc_version label/pin column + set-label endpoint  [dep: T11]
   T23 digital-factory-ui Label/pin a version in the history panel           [dep: T12,T22]
 ```
@@ -438,7 +438,7 @@ prefix.
 ### Description
 
 Extends the existing Step 0 `go`/`ts` question in the `init-feature` skill
-(`agent-workflow` repo) — no second axis. For `go`: calls `storage-service`'s
+(`workflow` repo, `agent-workflow` on GitHub) — no second axis. For `go`: calls `storage-service`'s
 document-create endpoint (T6) to seed `product-spec.md`, `technical-design.md`,
 `tasks.md`, and `handoffs/` from the existing templates
 (`<WORKSPACE_ROOT>/workflow/templates/feature/`) as `storage-service`

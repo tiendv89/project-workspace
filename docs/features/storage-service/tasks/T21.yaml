@@ -1,6 +1,6 @@
 id: T21
 title: Rework init-feature's go branch to call T20's tools
-repo: agent-workflow
+repo: workflow
 status: ready
 depends_on:
   - T20
@@ -26,11 +26,15 @@ log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-09T12:05:22+0700
-    note: Created via product-spec/technical-design amendment (2026-07-09) at human
-      request — replace T13's direct storage-service HTTP call in init-feature's
-      go branch with a call to T20's workflow-mcp document tools. ts branch is
-      not touched. Blocked on T20 shipping; will be auto-readied when T20 is
-      marked done.
+    note: >-
+      Created via product-spec/technical-design amendment (2026-07-09) at
+      human request — replace T13's direct storage-service HTTP call in
+      init-feature's go branch with a call to T20's workflow-mcp document
+      tools. ts branch is not touched. Blocked on T20 shipping; will be
+      auto-readied when T20 is marked done. repo field corrected
+      2026-07-09T13:05:09+0700 (agent-workflow -> workflow, matching
+      workspace.yaml repos[].id) per human catch — same data error T13.yaml
+      had before its own correction.
   - action: ready
     by: tiendv.52@gmail.com
     at: 2026-07-09T05:54:18.620Z
