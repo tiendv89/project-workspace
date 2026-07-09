@@ -92,7 +92,7 @@ This is safe with respect to existing constraints because `id` is the table's PK
 
 ### Phase 2 — Add-then-backfill (expand)
 1. Migration `NNNN_unify_task_and_feature_identity_expand.sql`:
-   - Confirm (do not assume) `feature_id`/`task_id` already satisfy PK-equivalent guarantees (`NOT NULL`, standalone unique for `feature_id`; `NOT NULL` + composite unique for `task_id` after Phase 1 reconciliation) before proceeding — add a standalone `UNIQUE (task_id)` constraint on `workspace_tasks` now (mirrors what 00016 already did for `feature_id`), so both business keys have the same uniqueness guarantee before the cutover.
+   - Confirm (do not assume) `feature_id`/`task_id` already satisfy PK-equivalent guarantees (`NOT NULL`, standalone unique for `feature_id`) before proceeding. For `workspace_tasks`, add a standalone `UNIQUE (task_id)` constraint (mirrors what 00016 already did for `feature_id`) — this is safe to add immediately after Phase 1's `id = task_id` reconciliation, since `task_id` was already guaranteed unique by the composite `(workspace_id, task_id)` constraint and Phase 1 did not change any `task_id` value (only `id` was updated to match it).
    - Add new FKs from `workspace_sync_runs.feature_id`/`task_id` pointing at `workspace_features.feature_id` / `workspace_tasks.task_id` (additive; keep the old FK to `.id` temporarily so both old and new code paths work during rollout).
 2. Deploy code changes across all three writer/reader repos (`workflow-backend`, `workspace-github-adapter`, `workflow-orchestrator`) updated to:
    - Populate `task_id` explicitly in `insertGoTask`'s INSERT column list (same value as `id`, closing the divergence going forward even before the column is dropped).
