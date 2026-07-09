@@ -1,11 +1,11 @@
 id: T17
-title: Admin API routes (usage, object browser, empty-trash, orphan cleanup, migration
-  status)
+title: Admin API routes (usage, object browser, empty-trash, orphan cleanup,
+  migration status)
 repo: storage-service
-status: todo
+status: ready
 depends_on:
-- T6
-- T14
+  - T6
+  - T14
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
@@ -19,7 +19,11 @@ execution:
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
+  url: ""
   status: not_created
 workspace_pr: null
-log: []
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T02:50:34.402Z
+    note: Task activated — dependency T14 merged and marked done.
