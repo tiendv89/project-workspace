@@ -105,6 +105,12 @@ log:
     by: tiendv.52@gmail.com
     at: 2026-07-09T02:50:34.207Z
     note: Implementation PR merged — automated close-out by pr-merge loop.
+  - action: workspace_pr_merge_failed
+    by: orchestrator
+    at: 2026-07-09T02:50:45.278Z
+    note: 'Workspace PR merge failed — will require manual recovery. Details:
+      {"message":"Pull Request is not
+      mergeable","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}'
 conflict_state: resolved
 rebase_log:
   - at: 2026-07-08T16:01:39.931Z
