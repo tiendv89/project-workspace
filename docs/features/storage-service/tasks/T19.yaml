@@ -1,0 +1,39 @@
+id: T19
+title: Migrate blob backend from GCS to MinIO
+repo: storage-service
+status: ready
+depends_on:
+  - T1
+blocked_reason: null
+blocked_suggestion: null
+blocked_details: null
+blocked_context: null
+branch: feature/storage-service
+execution:
+  actor_type: agent
+  last_updated_by: pentative@gmail.com
+  last_updated_at: 2026-07-09T12:05:22+0700
+  suggested_next_step: null
+  requires_human_review: false
+execution_handle: null
+pr:
+  url: null
+  status: null
+workspace_pr:
+  url: null
+  status: null
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-09T12:05:22+0700
+    note: >-
+      Created via product-spec/technical-design amendment (2026-07-09) at
+      human request — switch storage-service's blob backend from GCS to
+      self-hosted MinIO (AIStor), using github.com/minio/minio-go/v7.
+      Appended after T1-T18 shipped; does not modify or reopen any existing
+      task.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-09T12:05:22+0700
+    note: >-
+      Auto-ready — sole dependency T1 is already done.

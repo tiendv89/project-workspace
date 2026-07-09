@@ -17,12 +17,31 @@ history:
     by: agent
     note: tasks approved by agent.
     stage: tasks
-next_action: Tasks ready for implementation.
+  - action: amended
+    at: 2026-07-09T12:05:22+0700
+    by: pentative@gmail.com
+    note: >-
+      Amendment recorded at human request after T1-T18 shipped (7 impl PRs
+      open): blob backend GCS -> self-hosted MinIO (T19), local-agent
+      document access moved to new workflow-mcp MCP tools replacing T13's
+      direct-call approach (T20/T21), version-history labeling/pinning
+      (T22/T23). product-spec.md, technical-design.md, and tasks.md were all
+      updated in place with dated Amendment sections; no existing task
+      reopened. current_stage/feature_status left at handoff/in_handoff --
+      the amendment does not block the in-flight handoff of the completed
+      T1-T18 work, it only appends Wave 6 follow-up tasks.
+    stage: amendment
+next_action: >-
+  Human review requested for the 2026-07-09 amendment to product-spec.md,
+  technical-design.md, and tasks.md (GCS->MinIO, workflow-mcp document
+  tools, version-history labeling). T19-T23 (Wave 6) are ready/todo per
+  their dependency state and may proceed once reviewed. This does not block
+  the existing in_handoff PRs for T1-T18.
 revalidation:
   deployment_checklist_required: false
-  product_spec_required: false
-  tasks_required: false
-  technical_design_required: false
+  product_spec_required: true
+  tasks_required: true
+  technical_design_required: true
 stages:
   handoff:
     review_comment: null
@@ -38,7 +57,13 @@ stages:
         review_status: approved
         reviewed_at: 2026-07-07T10:02:18+0000
         reviewed_by: agent
-    review_status: approved
+      - comment: >-
+          Amended 2026-07-09: GCS->MinIO, workflow-mcp document-access goal,
+          version-history labeling goal. Awaiting human re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T10:02:18+0000
     reviewed_by: agent
   tasks:
@@ -48,7 +73,13 @@ stages:
         review_status: approved
         reviewed_at: 2026-07-07T15:32:33+0000
         reviewed_by: agent
-    review_status: approved
+      - comment: >-
+          Amended 2026-07-09: T19-T23 (Wave 6) appended. Awaiting human
+          re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T15:32:33+0000
     reviewed_by: agent
   technical_design:
@@ -58,7 +89,14 @@ stages:
         review_status: approved
         reviewed_at: 2026-07-07T10:22:21+0000
         reviewed_by: agent
-    review_status: approved
+      - comment: >-
+          Amended 2026-07-09: MinIO backend design (§Amendment), new §13
+          workflow-mcp document tools, version-history labeling. Awaiting
+          human re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T10:22:21+0000
     reviewed_by: agent
 title: storage-service
