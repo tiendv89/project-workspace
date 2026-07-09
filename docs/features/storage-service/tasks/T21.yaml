@@ -1,18 +1,18 @@
 id: T21
 title: Rework init-feature's go branch to call T20's tools
 repo: workflow
-status: ready
+status: in_progress
 depends_on:
   - T20
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T21
 execution:
   actor_type: agent
-  last_updated_by: pentative@gmail.com
-  last_updated_at: 2026-07-09T12:05:22+0700
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-09T06:34:08.407Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
@@ -26,16 +26,18 @@ log:
   - action: created
     by: pentative@gmail.com
     at: 2026-07-09T12:05:22+0700
-    note: >-
-      Created via product-spec/technical-design amendment (2026-07-09) at
-      human request — replace T13's direct storage-service HTTP call in
-      init-feature's go branch with a call to T20's workflow-mcp document
-      tools. ts branch is not touched. Blocked on T20 shipping; will be
-      auto-readied when T20 is marked done. repo field corrected
-      2026-07-09T13:05:09+0700 (agent-workflow -> workflow, matching
-      workspace.yaml repos[].id) per human catch — same data error T13.yaml
-      had before its own correction.
+    note: Created via product-spec/technical-design amendment (2026-07-09) at human
+      request — replace T13's direct storage-service HTTP call in init-feature's
+      go branch with a call to T20's workflow-mcp document tools. ts branch is
+      not touched. Blocked on T20 shipping; will be auto-readied when T20 is
+      marked done. repo field corrected 2026-07-09T13:05:09+0700 (agent-workflow
+      -> workflow, matching workspace.yaml repos[].id) per human catch — same
+      data error T13.yaml had before its own correction.
   - action: ready
     by: tiendv.52@gmail.com
     at: 2026-07-09T05:54:18.620Z
     note: Task activated — dependency T20 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T06:34:08.407Z
+    note: Claimed via git-based claim protocol.
