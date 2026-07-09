@@ -1,7 +1,7 @@
 id: T21
 title: Rework init-feature's go branch to call T20's tools
 repo: workflow
-status: review_passed
+status: done
 depends_on:
   - T20
 blocked_reason: null
@@ -12,13 +12,13 @@ branch: feature/storage-service-T21
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-09T06:50:05.899Z
+  last_updated_at: 2026-07-09T06:51:03.158Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/290
-  status: open
+  status: merged
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/759
   status: open
@@ -66,3 +66,7 @@ log:
     by: tiendv.52@gmail.com
     note: Reviewer approved.
     at: 2026-07-09T06:50:05.899Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T06:51:03.158Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
