@@ -19,7 +19,9 @@ execution_handle: null
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/288
   status: open
-workspace_pr: null
+workspace_pr:
+  url: "https://github.com/tiendv89/project-workspace/pull/753"
+  status: open
 log:
   - action: ready
     by: tiendv.52@gmail.com
