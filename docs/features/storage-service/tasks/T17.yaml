@@ -2,7 +2,7 @@ id: T17
 title: Admin API routes (usage, object browser, empty-trash, orphan cleanup,
   migration status)
 repo: storage-service
-status: in_progress
+status: in_review
 depends_on:
   - T6
   - T14
@@ -14,13 +14,13 @@ branch: feature/storage-service-T17
 execution:
   actor_type: agent
   last_updated_by: tiendv.52@gmail.com
-  last_updated_at: 2026-07-09T02:57:07+0000
+  last_updated_at: 2026-07-09T03:11:07.630Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ""
-  status: not_created
+  url: https://github.com/tiendv89/storage-service/pull/9
+  status: open
 workspace_pr:
   url: https://github.com/tiendv89/project-workspace/pull/751
   status: open
