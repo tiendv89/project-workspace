@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: storage-service
-feature_status: ready_for_implementation
+feature_status: in_handoff
 history:
   - action: stage_approved
     at: 2026-07-07T10:02:18+0000
@@ -30,6 +30,7 @@ stages:
     review_status: draft
     reviewed_at: null
     reviewed_by: null
+    pr_url: https://github.com/tiendv89/project-workspace/pull/754
   product_spec:
     review_comment: null
     review_history:
@@ -64,3 +65,26 @@ title: storage-service
 feature_branch: feature/storage-service
 feature_branch_base_sha: 5a6ed195016b2057e233fbf015b4eedb926c93ec
 workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/731
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/754
+impl_feature_prs:
+  - repo: storage-service
+    url: https://github.com/tiendv89/storage-service/pull/10
+    status: open
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/192
+    status: open
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/289
+    status: open
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/62
+    status: open
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/70
+    status: open
+  - repo: rag-service
+    url: https://github.com/tiendv89/rag-service/pull/23
+    status: open
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/14
+    status: open
