@@ -272,19 +272,23 @@ in practice the orchestrator is down during the swap anyway.
 Migrations auto-run on `workflow-backend` startup, so swapping the backend image tag is what
 applies `00022`.
 
-1. **Pre-stage all four images** — build and push new tags for `workflow-backend`,
-   `workflow-orchestrator`, `workspace-github-adapter`, `digital-factory-ui` to the registry so
-   Portainer only pulls and recreates. Every image must already contain its code change
-   (especially the orchestrator regen + `SELECT *` fix) or that service breaks after the swap.
+1. **Pre-stage all five images** — build and push new tags for `workflow-backend`,
+   `workflow-orchestrator`, `workspace-github-adapter`, `digital-factory-ui`, and `hermes-agent`
+   to the registry so Portainer only pulls and recreates. Every image must already contain its
+   code change (especially the orchestrator regen + `SELECT *` fix, and the `hermes-agent`
+   `_resolve_feature_id_by_name` fix) or that service breaks after the swap.
 2. **Backup** — full `pg_dump` off-host (see Backup & rollback), with writers quiesced.
 3. **Swap the backend image first, alone.** Its startup runs the migration; wait until healthy =
    schema flipped and reconciled. From this instant, any still-old container errors on the dropped
    columns (this is the downtime window for the others).
-4. **Then swap adapter, UI, and orchestrator.** Order among them does not matter for correctness
-   once the migration is done. Do **not** let a new orchestrator start before the migration
-   completes — a new orchestrator reading unreconciled `id` could mis-claim/mis-transition a go
-   task. A briefly-down old orchestrator is safe (its queries just error and retry; the reconcile
-   preserves its `task_id`-tracked dispatch identity under `id`).
+4. **Then swap adapter, UI, orchestrator, and hermes-agent.** Order among them does not matter for
+   correctness once the migration is done. Do **not** let a new orchestrator start before the
+   migration completes — a new orchestrator reading unreconciled `id` could mis-claim/mis-transition
+   a go task. A briefly-down old orchestrator is safe (its queries just error and retry; the
+   reconcile preserves its `task_id`-tracked dispatch identity under `id`). `hermes-agent`'s fix only
+   matters on the slug-fallback path (`_resolve_feature_id_by_name`); a brief window on the old image
+   only risks a `KeyError` on that specific fallback, not data corruption, but it should still swap
+   in the same window as the others to avoid user-facing approve/create-tasks failures.
 
 **Why old code can't overlap the new schema:** new code tolerates the old schema (it only touches
 `id`, which exists before and after — at worst it briefly reads pre-reconcile values), but old
