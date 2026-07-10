@@ -3,133 +3,311 @@
 
 ## Feature
 - Feature ID: `unify-id-in-workflow-backend-db`
-- Title: Unify `id`/`task_id` and `id`/`feature_id` into a single identity column
+- Title: Unify the dual UUID columns on `workspace_features` and `workspace_tasks` into a single `id`
 
 ## Current State
 
-The `workflow-backend` Postgres schema is the single schema authority (all goose migrations live in `workflow-backend/internal/database/migrations`, 00001–00021). The physically-reconciled snapshot is checked into the management repo at `database/workspace/schema.dbml` (v005) and is the ground truth used for this design.
+`workflow-backend` is the single schema authority — all goose migrations (00001–00021) live in
+`workflow-backend/migrations/`. The physically-reconciled snapshot is checked into the management
+repo at `database/workspace/schema.dbml` (v005) and is the ground truth for this design.
 
 Both core entity tables carry two independently-generated UUID columns:
 
 **`workspace_features`**
-- `id uuid PK default gen_random_uuid()` — internal row key. Confirmed (via `schema.dbml`) to be otherwise **unused** as an FK target from any table except `workspace_sync_runs` (see inconsistency below).
-- `feature_id uuid NOT NULL default gen_random_uuid()` — the business key. Got a **standalone unique constraint in migration 00016**, making it the sole FK target for `workspace_tasks.feature_id`, `workspace_feature_documents.feature_id`. `workflow-backend`'s `Reader.CreateWorkspaceFeature` (`internal/database/queries.go:998`) is the write path.
-- Indexes: `(workspace_id, feature_name)` unique, `(workspace_id, feature_id)` unique, `feature_id` unique standalone.
+- `id uuid PK default gen_random_uuid()` — surrogate row key.
+- `feature_id uuid NOT NULL default gen_random_uuid()` — business key; got a standalone unique
+  constraint in 00016 (`workspace_features_feature_id_key`), making it the FK target for
+  `workspace_tasks.feature_id` and `workspace_feature_documents.feature_id`.
+- `id` and `feature_id` hold **different** values — each has its own default and neither is
+  reconciled against the other. `CreateWorkspaceFeature` generates one value into `feature_id`;
+  `id` gets its own separate default.
+- Constraints: `workspace_features_pkey (id)`, `workspace_features_feature_id_key (feature_id)`,
+  `workspace_features_workspace_feature_id_unique (workspace_id, feature_id)`,
+  `workspace_features_workspace_feature_name_unique (workspace_id, feature_name)`.
 
 **`workspace_tasks`**
 - `id uuid PK default gen_random_uuid()` — row key.
-- `task_id uuid NOT NULL default gen_random_uuid()` — "surrogate UUID," human id lives in `task_name`. **No standalone unique constraint** — only composite `(workspace_id, task_id)` and `(workspace_id, feature_id, task_name)`.
-- Two divergent writers, confirmed via GitNexus:
-  - **ts/legacy path** (`workspace-github-adapter`, `Queries.UpsertWorkspaceTask`, `internal/database/workspace_tasks.sql.go:248-290`): resolves one UUID (`task_uuid`, looked up by `(workspace_id, feature_id, task_name)` or freshly generated) and inserts the **same value** into both `id` and `task_id` in one `INSERT`. So `id === task_id` always holds for ts tasks — by construction, not by constraint.
-  - **go path** (`workflow-backend`, `insertGoTask`, `internal/database/queries.go:1143-1184`, called from `Reader.CreateWorkspaceTasks`): does **not** populate `task_id` in the INSERT column list, so `task_id` gets its own independent `gen_random_uuid()` default — it diverges from `id` for every go-owned task.
-  - The read path `Reader.GetWorkspaceTaskByID` (`internal/database/queries.go:713`) queries `WHERE t.workspace_id = $1 AND t.task_id = $2` — i.e., despite the method's name, it matches on the **business key** `task_id`, not the row PK `id`.
-  - The frontend (`digital-factory-ui`) `TaskDiffTab` and `useTaskReviewThread` pass `task.id` (the row PK) to this route, which silently worked for ts tasks (`id == task_id`) and silently broke for go tasks (`id != task_id`) — a confirmed shipped bug, documented in `docs/features/go-orchestrator-ui-tasks/technical-design.md`.
+- `task_id uuid NOT NULL default gen_random_uuid()` — surrogate business key; human id lives in
+  `task_name`. No standalone unique — only `workspace_tasks_workspace_task_id_unique
+  (workspace_id, task_id)` and `workspace_tasks_workspace_feature_task_unique (workspace_id,
+  feature_id, task_name)`.
+- FK `workspace_tasks_feature_id_fkey`: `feature_id → workspace_features(feature_id)` (00016),
+  `ON DELETE CASCADE`.
+- Two divergent writers create the core bug:
+  - **ts/legacy path** — `workspace-github-adapter`'s `UpsertWorkspaceTask`
+    (`internal/database/workspace_tasks.sql.go`) resolves one UUID and inserts the **same value**
+    into both `id` and `task_id`. So `id == task_id` always holds for ts tasks, by construction.
+  - **go path** — `workflow-backend`'s `insertGoTask`
+    (`internal/database/queries.go:1143-1184`, via `Reader.CreateWorkspaceTasks`) omits `task_id`
+    from its INSERT column list, so both `id` and `task_id` take independent
+    `gen_random_uuid()` defaults and **diverge** for every go-owned task.
+  - `Reader.GetWorkspaceTaskByID` (`queries.go:713`) queries `WHERE task_id = $2` despite its
+    name — it matches on the business key. The frontend passes `task.id` to this route, which
+    worked for ts tasks (`id == task_id`) and silently broke for go tasks — a confirmed shipped
+    bug (`docs/features/go-orchestrator-ui-tasks/technical-design.md`).
 
-**Third writer confirmed in this design phase: `workflow-orchestrator`.** This is a headless Go daemon, not the schema owner, but a first-class direct writer/reader of the shared Postgres for `owner = 'go'` rows:
-- Claims tasks via a guarded `UPDATE workspace_tasks SET status = 'in_progress' ... WHERE status = 'ready'` (`internal/orchestrator/claim.go` and the dispatch family — `Dispatch`, `DispatchFix`, `DispatchReviewer`, `DispatchRebase`, `DispatchHandoffPRConflictResolution` in `internal/orchestrator/dispatch.go`).
-- Reads/writes via its own sqlc-generated queries under `internal/database/queries/` (`tasks.sql.go` — `AllTasksTerminal`, `AnyTaskDispatched`, `InitialAutoReady`; `handoffs.sql.go` — `GetHandoffFeatureInfo`, `ListDraftHandoffs`, `ListOpenHandoffsToFinalize`).
-- Owns `workspace_feature_handoffs` / `workspace_feature_handoff_prs` (added migration 00021, confirmed living in the shared `workflow-backend` migrations by `schema.dbml`, despite an older doc referencing a separate `workflow-orchestrator/db/schema/schema.sql` — **this design treats `schema.dbml` as authoritative and finds no evidence of a second drifted schema copy in the indexed `workflow-orchestrator` repo**; its own test fixtures (`claim_test.go:insertReadyTask`, `conflict_test.go:insertReviewingTask`/`insertReviewPassedTask`, `feature_lifecycle_test.go:insertHandoffAndPR`) construct rows directly against the shared tables using both `id` and `feature_id`/`task_id`).
-- `test/e2e/coexistence_test.go` (`TestCoexistence`, `TestFullAutonomousPath`, `TestUnblockChain`) exercises both ts- and go-owned tasks side by side against the same tables — this is the highest-value regression suite for this migration.
+**Consumers / writers of these columns:**
+- **`workflow-orchestrator`** (headless Go daemon; direct writer of `owner='go'` rows) keys its
+  entire task FSM on **`task_id`**. All ~25 production queries in `db/queries/tasks.sql`
+  (`GuardedUpdateTaskStatus`, `SetTaskDoneFromMergedPR`, `ListEligibleTasks`, reviewer/rebase/
+  conflict transitions, etc.) filter `WHERE workspace_id = $1 AND task_id = $2`. It also owns
+  `workspace_feature_handoffs` / `workspace_feature_handoff_prs` (00021).
+  `test/e2e/coexistence_test.go` (`TestCoexistence`, `TestFullAutonomousPath`, `TestUnblockChain`)
+  is the highest-value regression suite for this change.
+- **`workspace_sync_runs`** FKs the *opposite* convention: `feature_id → workspace_features.id`
+  and `task_id → workspace_tasks.id` (the **surrogate** keys; 00011,
+  `workspace_sync_runs_{feature,task}_id_fkey`, `ON DELETE SET NULL`, **no `ON UPDATE`** →
+  `NO ACTION`). `workspace-github-adapter`'s `syncRunReferenceIDs`
+  (`internal/worker/workspace_sync.go:438-468`) writes `feature.ID`/`task.ID` (the surrogate) on
+  every sync run. This is the **only live consumer of the surrogate `id`** across the four repos.
+- **`workspace_activity_events.feature_id`/`task_id`** and
+  **`workspace_feature_handoffs.feature_id`** have no FK (denormalized) and today hold the
+  **business** values.
+- **`digital-factory-ui`** exposes both fields on `TaskSummary`/`FeatureSummary`
+  (`src/services/workflow-backend/types.ts`) and consumes them in `TaskDiffTab`,
+  `useTaskReviewThread`, `SpecPanel`, `board-meta.ts`.
 
-**Fourth, confirmed inconsistency — now traced to its exact call site.** `workspace_sync_runs.feature_id` / `.task_id` are FKs to `workspace_features.id` / `workspace_tasks.id` (the **surrogate row keys**) — the opposite convention from every other table, which FKs to the business keys (`workspace_features.feature_id`). This is not a dormant schema artifact: `workspace-github-adapter`'s `internal/worker/workspace_sync.go`, function `syncRunReferenceIDs` (lines 438-468), explicitly resolves and writes the surrogate `.id` values on **every sync run**:
-```go
-// sync_runs.feature_id FKs workspace_features.id (the surrogate), so the
-// returned reference is feature.ID. Task rows, however, key on the business
-// feature_id, so resolve the task by feature.FeatureID below.
-featureUUID = feature.ID
-...
-taskUUID = task.ID
-```
-This is called from both `ensureSyncRun` (`workspace_sync.go` — full, incremental, and targeted sync) and `ensureTaskSyncRun` (`task_sync.go` — webhook task-sync), i.e. on every sync the adapter performs, and the resulting values are persisted via `InsertSyncRun` into `workspace_sync_runs.feature_id`/`.task_id`. **This is the one genuine, live, non-test consumer of the surrogate `id` column found anywhere across `workflow-backend`, `workspace-github-adapter`, `workflow-orchestrator`, and `digital-factory-ui`** (`workflow-backend`'s `ListLatestSyncRunsPerWorkspace`/`GetLatestSyncRun` read these columns back out but never join them against `.id` to resolve a name; `workflow-orchestrator`'s ~25 production queries and `digital-factory-ui`'s TypeScript consumers were checked directly and found to reference only `feature_id`/`task_id`, never `.id`). Because it's the sole real consumer, this is a **hard blocker** for fully dropping `id`, not a side note — `syncRunReferenceIDs` must be changed to return `feature.FeatureID`/`task.TaskID` (the business keys) instead of `feature.ID`/`task.ID`, and the `workspace_sync_runs.feature_id`/`.task_id` columns' FK targets must be repointed to `workspace_features.feature_id` / `workspace_tasks.task_id`, **before** Phase 3 drops the surrogate columns. `workspace_activity_events.feature_id`/`.task_id` have no FK at all (denormalized timeline) and were not found to reference `.id` anywhere — lowest risk.
-
-**`digital-factory-ui`** exposes both fields on `TaskSummary`/`FeatureSummary` TypeScript types (`src/services/workflow-backend/types.ts`) and route builders in `client.ts`; GitNexus did not resolve a `TaskSummary` symbol directly (likely a type alias not indexed as a named node), so this design treats the RAG-confirmed shape (`id`, `task_id`, `task_name`, `feature_id`, `feature_name`, ...) as ground truth and flags the exact call sites (`TaskDiffTab`, `useTaskReviewThread`, `SpecPanel`, `board-meta.ts`) for verification at implementation time.
+**Codegen facts that shape the migration (verified against source):**
+- `workflow-backend/internal/database/queries.go` is **hand-written** (no sqlc) — explicit column
+  lists throughout, no `SELECT *` on these tables.
+- `workspace-github-adapter/sqlc.yaml` points at `../workflow-backend/migrations` — **not
+  drifted**; its structs self-correct on the next `sqlc generate`.
+- `workflow-orchestrator` has its **own sqlc schema copy** at `db/schema/schema.sql`
+  (`sqlc.yaml → schema: "db/schema/schema.sql"`). It is **stale** (still declares
+  `feature_id ... REFERENCES workspace_features(id)`, pre-00016) and must be updated + regenerated
+  as part of this feature. It also contains the one `SELECT * FROM workspace_tasks`
+  (`db/queries/tasks.sql:375`, `FindConflictedTasks`) — sqlc expands `*` against this schema at
+  codegen time, so it must be regenerated after the column change or the generated scan expects a
+  dropped column.
 
 ## Constraints
 
-- Schema authority is `workflow-backend/internal/database/migrations` only — no other repo may fork or duplicate schema.
-- Cannot break `workflow-orchestrator`'s `owner='go'` write path or `workspace-github-adapter`'s YAML→DB sync path during the migration — both must be updated in lockstep with the schema change, and a window exists where both old and new column names may need to coexist (expand/contract pattern) since these are three independently-deployed Go binaries.
-- `task_name`/`feature_name` (human slugs, e.g. `T1`, `<feature-id>`) are untouched — this migration only concerns the surrogate/business UUID duplication.
-- No behavior change to git/YAML task files — this is a Postgres-mirror-only concern.
-- Zero-downtime requirement: `workspace_tasks` and `workspace_features` are live, actively-written tables (both ts and go orchestrators write continuously); the migration must not lock out writers for an extended period and must tolerate in-flight writes from processes that haven't yet deployed the new code.
-- `workspace_sync_runs.feature_id`/`task_id` FK the *other* convention (surrogate `id`) — must be explicitly repointed, not silently left dangling.
+- Schema authority is `workflow-backend/migrations/` only. `workflow-orchestrator/db/schema/schema.sql`
+  is a codegen mirror that must be kept in sync (ideally repointed at the canonical migrations).
+- `task_name`/`feature_name` (human slugs) are untouched — this is purely a UUID-column change.
+- No behavior change to git/YAML task files — Postgres-mirror-only concern.
+- **A short downtime window is acceptable.** The system is in-house and early-stage, so this
+  design does *not* pursue zero-downtime (expand/contract). It uses a single migration plus a
+  coordinated redeploy, accepting a brief window (~minutes) during which writers are down.
+- The `workspace_sync_runs` surrogate-key FKs must be handled explicitly (dropped, re-pointed),
+  not left dangling.
 
 ## Options Considered
 
-### Option A — Drop the surrogate `id`, keep `feature_id`/`task_id` as PK
-Rename `feature_id` → `id` (or keep the name `feature_id` as the sole column and drop internal `id`), doing the same for `task_id`. This preserves the column that's already the universal FK target and already used as the external identifier by API routes and the frontend.
-- Pros: `feature_id`/`task_id` are already the correctly-referenced column nearly everywhere (except `workspace_sync_runs`); minimizes the numbre of FK repoints (only `workspace_sync_runs` needs fixing, not every other consumer); matches the existing standalone-unique constraint already in place for `feature_id` (00016); the business key is semantically the "real" identity used across the system (route params, frontend labels like `task.task_id?.toUpperCase()`).
-- Cons: requires reconciling `task_id` divergence for go tasks before collapsing (go tasks currently have `id != task_id` — need to pick a winner value, discussed below); requires dropping the internal `id` column and re-pointing any sequence/default logic that assumed a plain `id` PK name; renaming a PK column is a heavier DDL operation than dropping a non-PK column.
+### Option A — Keep the business keys (`feature_id`/`task_id`), drop the surrogate `id`
+Collapse each table onto the business-key column, promote it to PK.
+- Pros: business keys are already the FK target and external identifier nearly everywhere; only
+  `workspace_sync_runs` needs re-pointing; orchestrator FSM already keys on `task_id` (little
+  churn there).
+- Cons: requires a PK swap (`DROP CONSTRAINT pkey; ADD PRIMARY KEY (...)`); the surviving column
+  keeps the name `feature_id`/`task_id`. **If the desired end state is a column literally named
+  `id`, Option A then requires a *second* rename migration + a second full code sweep** — i.e.
+  paying two migration cycles to reach the same place Option B reaches in one.
 
-### Option B — Drop `feature_id`/`task_id`, keep the surrogate `id` as the sole identity
-Make callers use `id` everywhere; drop `feature_id`/`task_id` columns entirely (repoint FKs to `id`).
-- Pros: `id` is already the row PK, so no PK-rename DDL is needed — just drop the redundant column and repoint FKs.
-- Cons: **breaks the existing external contract** — `task_id`/`feature_id` are already used as request/response field names in workflow-backend's API and as the join key documented in `docs/features/workflow-db/technical-design.md` ("the Go orchestrator uses `workspace_features.feature_id`... as the join key"); would require renaming `id` → some business-key name across API DTOs and frontend types, a much larger and riskier blast radius across 3 repos + the frontend, for no benefit (the surrogate `id` carries no semantic value today that `feature_id`/`task_id` don't already carry, since both are opaque UUIDs). Directly contradicts the already-shipped migration 00016 decision to make `feature_id` the standalone-unique FK target — Option B would revert that intentional prior decision.
+### Option B — Keep the surrogate `id`, drop `feature_id`/`task_id` (CHOSEN)
+Make `id` the sole identity on both tables; drop the business-key columns; re-point FKs to `id`.
+- Pros: reaches a single column literally named **`id`** — the desired end state — in **one
+  migration**. No PK swap (`id` is already the PK). All denormalized references
+  (`activity_events`, `handoffs`) become consistent with the surviving `id` as a side effect of
+  the reconcile step.
+- Cons: heaviest code change lands on the orchestrator's hot loop (~25 queries move from
+  `WHERE task_id = $2` to `WHERE id = $2`); changes the API/DTO field names `task_id`/`feature_id`
+  → `id`, which every in-tree consumer must adopt in lockstep. Acceptable here because all
+  consumers are in-tree and a coordinated deploy with brief downtime is allowed.
 
-### Option C — Keep both columns, just enforce equality via a DB trigger or CHECK
-Add a trigger/constraint that forces `id = task_id` (and `id = feature_id`) on every write, without removing either column, and fix `insertGoTask` to populate `task_id` explicitly.
-- Pros: smallest DDL change (no column drop, no FK repoint); fixes the immediate bug (go/ts divergence) with minimal migration risk.
-- Cons: does not address the root confusion the product spec calls out — two columns still exist, every new endpoint/DTO must still decide which one to read/write, and the trigger is one more thing to keep in sync across 3 writer codebases. Doesn't reduce the schema's cognitive footprint; treats the symptom (divergence) not the disease (duplication). Rejected — the product spec's explicit goal is "collapse each table down to a single identity column," which this option does not satisfy.
+The original objection to Option B — that dropping the business columns discards the values used
+by every external reference — is removed by **reconciling first** (see Chosen Design): the
+surviving `id` is set to the business value before the business column is dropped, so no reference
+is orphaned.
 
-## Chosen Design
+### Option C — Keep both columns, enforce `id = task_id`/`id = feature_id` via trigger/CHECK
+Rejected — does not satisfy the product-spec goal of collapsing to a single identity column;
+leaves the two-column confusion and a cross-repo trigger to maintain.
 
-**Option A** — unify on the business-key column name (`feature_id` for `workspace_features`, `task_id` for `workspace_tasks`), dropping the internal surrogate `id` column, using an **expand/contract migration** executed in the following phases to satisfy the zero-downtime and lockstep-deployment constraints:
+## Chosen Design — Option B, single migration with accepted downtime
 
-### Phase 1 — Reconcile divergence (data fix, no schema change)
+**End state:** `workspace_features` and `workspace_tasks` each have a single identity column `id`
+(already the PK), holding the values that were previously in `feature_id`/`task_id`. The
+`feature_id`/`task_id` **columns are dropped**. Child reference columns that *point at* these
+tables keep their names (`workspace_tasks.feature_id`, `workspace_sync_runs.task_id`,
+`workspace_activity_events.task_id`, `workspace_feature_handoffs.feature_id`) — they are foreign
+references, and now target `id`. This yields the conventional shape: own PK = `id`, parent ref =
+`feature_id`.
 
-**Verified against actual source (not inferred) this phase:** `workflow-backend`'s `insertGoTask` (`internal/database/queries.go:1143-1184`, the sole live production path for go-owned task creation, reached via `POST /workspaces/:workspaceId/features/:featureId/tasks` → `Reader.CreateWorkspaceTasks` → `insertGoTask`) has this INSERT column list:
+### Reconcile first — why the surviving `id` carries the business values
+Every external/persisted reference (orchestrator FSM state keyed on `task_id`, `activity_events`,
+`handoffs`, frontend URLs) uses the **business** values. So before dropping the business columns,
+`id` is set equal to them:
 ```sql
-INSERT INTO workspace_tasks
-    (workspace_id, feature_id, feature_name, task_name, title, repo, status, depends_on, execution, owner)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'go')
+UPDATE workspace_tasks    SET id = task_id    WHERE id != task_id;
+UPDATE workspace_features SET id = feature_id WHERE id != feature_id;
 ```
-Neither `id` nor `task_id` appears in this list — **both** get independent `gen_random_uuid()` schema defaults on every insert. Neither column is more "reliably populated" than the other; they diverge randomly, not systematically. (An earlier draft of this design incorrectly asserted `id` was the reliable column — that claim did not hold up under source inspection and has been corrected here.)
+For ts tasks this is a no-op (`id == task_id` already); for go tasks it brings the divergent `id`
+into line. Because the orchestrator tracks in-flight dispatches by `task_id`, and `id` now holds
+that same value, no in-flight dispatch is redirected. `workspace_sync_runs`, which currently
+stores surrogate values, is translated to business values in the same migration (step 2 below)
+*before* the reconcile changes `features.id`, so its references survive.
 
-Note: `workflow-orchestrator/internal/orchestrator/create.go` (`CreateTask`/`MaterializeFeature`, which explicitly sets `task_id = uuid.New()` matching a freshly generated `id`) is a test-only path (`//go:build integration`, called only from test files per GitNexus) — confirmed by the feature requester not to run in production. It is excluded from this analysis.
+### The single migration (`00022_unify_identity.sql`)
+Runs in one transaction (goose default). Constraint names below are the real ones from the
+migration history — confirm `workspace_feature_documents_feature_id_fkey` against `\d` at
+implementation time.
+```sql
+-- +goose Up
+-- 1. Relax sync_runs FKs: they target the surrogate id (and NO ACTION would block the reconcile).
+ALTER TABLE workspace_sync_runs
+    DROP CONSTRAINT IF EXISTS workspace_sync_runs_feature_id_fkey,
+    DROP CONSTRAINT IF EXISTS workspace_sync_runs_task_id_fkey;
 
-**What breaks the tie: `workflow-orchestrator`'s live task FSM keys exclusively on `task_id`.** Every one of its ~25 production queries in `internal/database/queries/tasks.sql.go` — `GuardedUpdateTaskStatus`, `SetTaskDoneFromMergedPR`, `SetTaskResolving`, `SetTaskResolved`, `ListEligibleTasks`, `BumpReenqueueAttempts`, `TouchDispatchedAt`, `GetTaskByUUID`, and all reviewer/rebase/conflict transitions — filters `WHERE workspace_id = $1 AND task_id = $2`. None of them reference `id`. This means `task_id` is the column the live, in-flight claim/dispatch/reviewer/rebase loop is actively tracking for every task right now — it is load-bearing production state, not an incidental column.
+-- 2. Translate sync_runs refs from surrogate id -> business value, while old id still exists.
+UPDATE workspace_sync_runs s SET feature_id = f.feature_id
+    FROM workspace_features f WHERE s.feature_id = f.id;
+UPDATE workspace_sync_runs s SET task_id = t.task_id
+    FROM workspace_tasks t WHERE s.task_id = t.id;
 
-**Winner: `task_id`** — reversed from an earlier draft of this design, which incorrectly proposed `id` as the winner. Reconciliation must bring `id` in line with `task_id`, not the other way around, so that no in-flight dispatch (identified by `task_id` in `dispatch_handle`/`dispatch_nonce` bookkeeping) is silently redirected to a different value mid-execution: `UPDATE workspace_tasks SET id = task_id WHERE id != task_id;`
+-- 3. Reconcile: bring the surviving id in line with the business key.
+UPDATE workspace_tasks    SET id = task_id    WHERE id != task_id;
+UPDATE workspace_features SET id = feature_id WHERE id != feature_id;
 
-This is safe with respect to existing constraints because `id` is the table's PK (implicitly unique already) and `task_id`'s values are already known-unique via the composite `(workspace_id, task_id)` constraint — so setting `id` to `task_id`'s value cannot introduce a PK collision, provided no other row already has that `task_id` value as its `id` (verify via `SELECT task_id, COUNT(*) FROM workspace_tasks GROUP BY task_id HAVING COUNT(*) > 1` returning zero rows before running the UPDATE, since a PK is being reassigned).
+-- 4. Re-point child FKs from the business column to id (values already equal -> validates fine).
+ALTER TABLE workspace_tasks
+    DROP CONSTRAINT workspace_tasks_feature_id_fkey,
+    ADD  CONSTRAINT workspace_tasks_feature_id_fkey
+        FOREIGN KEY (feature_id) REFERENCES workspace_features(id) ON DELETE CASCADE;
+ALTER TABLE workspace_feature_documents
+    DROP CONSTRAINT workspace_feature_documents_feature_id_fkey,
+    ADD  CONSTRAINT workspace_feature_documents_feature_id_fkey
+        FOREIGN KEY (feature_id) REFERENCES workspace_features(id) ON DELETE CASCADE;
 
-**Mandatory pre-migration verification** (do not run the UPDATE from assertion — confirm against live data first):
-1. `SELECT COUNT(*) FROM workspace_tasks WHERE id != task_id;` — quantify actual divergence (expected: all/most `owner='go'` rows, zero `owner IS NULL` rows since the ts upsert path always sets them equal).
-2. `SELECT COUNT(*) FROM workspace_tasks WHERE id != task_id AND status IN ('in_progress','reviewing') OR conflict_state = 'resolving';` — identify any task **currently mid-dispatch** at migration time; these are highest-risk and should be drained (allowed to reach a terminal/idle state) before reconciliation runs, to avoid rewriting the PK out from under an active dispatch_handle lookup.
-3. Audit `workspace_activity_events.task_id` and `workspace_sync_runs.task_id` values against both the pre- and post-reconciliation `id`/`task_id` to confirm no historical reference silently starts pointing at the wrong row (both are denormalized, unconstrained UUID columns — no FK will catch a mismatch automatically).
+-- 5. Drop the business-key columns and their now-redundant unique constraints.
+ALTER TABLE workspace_tasks
+    DROP CONSTRAINT workspace_tasks_workspace_task_id_unique,
+    DROP COLUMN task_id;
+ALTER TABLE workspace_features
+    DROP CONSTRAINT workspace_features_feature_id_key,
+    DROP CONSTRAINT workspace_features_workspace_feature_id_unique,
+    DROP COLUMN feature_id;
 
-`workspace_features` needs no reconciliation — `feature_id` is already the correctly-maintained business key everywhere (confirmed: `CreateWorkspaceFeature` explicitly generates one `fid` and inserts it into `feature_id`; `id` gets its own separate default and is not read back or used by any caller found in `workflow-backend`, `workspace-github-adapter`, or `workflow-orchestrator`). `id` is simply unused elsewhere, so no divergence exists to fix.
+-- 6. Re-add sync_runs FKs at id (now holding the business values).
+ALTER TABLE workspace_sync_runs
+    ADD CONSTRAINT workspace_sync_runs_feature_id_fkey
+        FOREIGN KEY (feature_id) REFERENCES workspace_features(id) ON DELETE SET NULL,
+    ADD CONSTRAINT workspace_sync_runs_task_id_fkey
+        FOREIGN KEY (task_id) REFERENCES workspace_tasks(id) ON DELETE SET NULL;
+-- id is already the PK on both tables — no PK promotion needed.
+```
+All steps are metadata-only or small-table scans; in the accepted downtime window there is no
+need for `CONCURRENTLY`/`NO TRANSACTION`. Keeping it in one transaction means a failure rolls back
+cleanly with the old schema intact.
 
-### Phase 2 — Add-then-backfill (expand)
-1. Migration `NNNN_unify_task_and_feature_identity_expand.sql`:
-   - Confirm (do not assume) `feature_id`/`task_id` already satisfy PK-equivalent guarantees (`NOT NULL`, standalone unique for `feature_id`) before proceeding. For `workspace_tasks`, add a standalone `UNIQUE (task_id)` constraint (mirrors what 00016 already did for `feature_id`) — this is safe to add immediately after Phase 1's `id = task_id` reconciliation, since `task_id` was already guaranteed unique by the composite `(workspace_id, task_id)` constraint and Phase 1 did not change any `task_id` value (only `id` was updated to match it).
-   - Add new FKs from `workspace_sync_runs.feature_id`/`task_id` pointing at `workspace_features.feature_id` / `workspace_tasks.task_id` (additive; keep the old FK to `.id` temporarily so both old and new code paths work during rollout).
-2. Deploy code changes across all three writer/reader repos (`workflow-backend`, `workspace-github-adapter`, `workflow-orchestrator`) updated to:
-   - Populate `task_id` explicitly in `insertGoTask`'s INSERT column list (same value as `id`, closing the divergence going forward even before the column is dropped).
-   - Read/write via `feature_id`/`task_id` exclusively, never via `id`, in every sqlc query file (`workflow-backend/internal/database/queries.go`, `workspace-github-adapter/internal/database/workspace_tasks.sql.go` and its features equivalent, `workflow-orchestrator/internal/database/queries/*.sql.go`).
-   - `Reader.GetWorkspaceTaskByID` renamed to `Reader.GetWorkspaceTaskByTaskID` (or equivalent) for clarity — no more misleading "ByID" naming when the query is actually keyed on the business identifier.
-3. Deploy `digital-factory-ui` change: `TaskSummary`/`FeatureSummary` types drop `id`, all consumers (`TaskDiffTab`, `useTaskReviewThread`, `SpecPanel`, `board-meta.ts`) use `task_id`/`feature_id` exclusively. This is a superset of (and replaces the need for) the standalone frontend fix noted in `docs/features/go-orchestrator-ui-tasks/technical-design.md`.
+**Down migration** re-adds `task_id`/`feature_id` as `uuid NOT NULL DEFAULT gen_random_uuid()`,
+sets them `= id`, restores the unique constraints, and re-points the FKs back to the business
+columns. The pre-migration go-task divergence is not reconstructed (it was the bug); the restored
+invariant is `id == task_id`/`id == feature_id`, matching the ts convention.
 
-### Phase 3 — Contract (drop old columns)
-Once all three Go services and the frontend are confirmed deployed and no code references `workspace_features.id` / `workspace_tasks.id` (grep + GitNexus impact check for zero remaining references):
-1. Migration `NNNN_unify_task_and_feature_identity_contract.sql`:
-   - Drop the old `workspace_sync_runs` FKs pointing at `.id`; keep only the new FKs pointing at `.feature_id`/`.task_id` (added in Phase 2).
-   - Drop `workspace_features.id` and `workspace_tasks.id` columns.
-   - Promote `feature_id` to be the table's primary key on `workspace_features` (`ALTER TABLE ... DROP CONSTRAINT workspace_features_pkey, ADD PRIMARY KEY (feature_id)`); same for `task_id` on `workspace_tasks`.
-   - Verify all existing FKs (`workspace_tasks.feature_id → workspace_features.feature_id`, `workspace_feature_documents.feature_id → workspace_features.feature_id`) still resolve correctly against the new PK — they already point at `feature_id`, so this is a no-op for them, confirming Option A's lower blast radius versus Option B.
-2. Down-migration restores the `id` column with fresh `gen_random_uuid()` defaults (data is not recoverable bit-for-bit since the column is dropped, matching the precedent set by migration 00016's down migration per PR #35).
+### Pre-migration verification (run against live data first)
+```sql
+-- collision guard: setting id := business must not collide (must return 0 rows)
+SELECT task_id, count(*) FROM workspace_tasks    GROUP BY task_id    HAVING count(*) > 1;
+SELECT feature_id, count(*) FROM workspace_features GROUP BY feature_id HAVING count(*) > 1;
+-- divergence census (informational)
+SELECT owner, count(*) FILTER (WHERE id != task_id) AS diverging, count(*) FROM workspace_tasks GROUP BY owner;
+```
+Drain in-flight go dispatches (`status IN ('in_progress','reviewing')` /
+`conflict_state = 'resolving'`) before deploying, so no PK is rewritten under an active dispatch —
+in practice the orchestrator is down during the swap anyway.
 
-## Dependency Analysis
+### Code changes (all four repos, shipped in the coordinated deploy)
+- **workflow-orchestrator** (heaviest): rewrite the ~25 `tasks.sql` queries from `task_id` → `id`;
+  convert `FindConflictedTasks` (`db/queries/tasks.sql:375`) to an explicit column list; update
+  `db/schema/schema.sql` (drop `feature_id`/`task_id`, `id` is the sole key) and run
+  `sqlc generate`; update `internal/orchestrator/*.go` struct fields (`.TaskID`/`.FeatureID` for
+  the *own* key → `.ID`; parent-ref `FeatureID` follows the surviving reference column). Verify
+  `test/e2e/coexistence_test.go` green.
+- **workflow-backend** (`queries.go`, hand-written): own-key reads/writes move to `id`; drop the
+  now-unnecessary `task_id` handling in `insertGoTask`; rename `GetWorkspaceTaskByID` (query is
+  now genuinely keyed on `id`). Update handler DTOs (`task_id`/`feature_id` → `id`).
+- **workspace-github-adapter**: `UpsertWorkspaceTask` + features equivalent write `id` only;
+  `syncRunReferenceIDs` returns `feature.ID`/`task.ID` (unchanged in spirit — the struct now has
+  only `ID`); `sqlc generate` against the new migrations.
+- **digital-factory-ui**: `TaskSummary`/`FeatureSummary` drop `task_id`/`feature_id`, use `id`;
+  fix `TaskDiffTab`, `useTaskReviewThread`, `SpecPanel` (`task.task_id` → `task.id`),
+  `board-meta.ts`, and route builders.
 
-- **Blocking**: Phase 1 (data reconciliation) must complete and be verified before Phase 2 migration runs — a partially-reconciled table would let the Phase 2 standalone-unique constraint on `task_id` fail to apply (duplicate values from divergent go/ts pairs).
-- **Blocking**: Phase 2 code deploys (all of `workflow-backend`, `workspace-github-adapter`, `workflow-orchestrator`, `digital-factory-ui`) must land and be confirmed live before Phase 3 DDL runs — dropping `id` while any deployed binary still reads/writes it would break that service immediately.
-- **Non-blocking / parallel**: the four repos' Phase-2 code changes are independent of each other (different codebases, different call sites) and can be implemented and reviewed in parallel once the Phase-1 data reconciliation and Phase-2 expand migration are in place — each just needs the expand migration to have landed first so both old and new columns exist simultaneously.
-- **Sequencing constraint**: `workflow-orchestrator`'s claim/dispatch queries (`internal/orchestrator/claim.go`, `dispatch.go`) must be verified deployed and passing `test/e2e/coexistence_test.go` (`TestCoexistence`, `TestFullAutonomousPath`, `TestUnblockChain`) before Phase 3 — this is the highest-risk consumer since it directly claims/mutates task rows in a hot loop.
+## Deployment sequence (Portainer, accepting downtime)
 
-## Parallelization / Blocking Analysis
+Migrations auto-run on `workflow-backend` startup, so swapping the backend image tag is what
+applies `00022`.
 
-- **Task 1 (blocking, first)**: Phase 1 data reconciliation script + verification, run directly in `workflow-backend`'s migration tooling against the shared DB.
-- **Task 2 (blocking on 1)**: Phase 2 expand migration in `workflow-backend/internal/database/migrations`.
-- **Tasks 3a/3b/3c/3d (parallel, blocked on 2)**: code updates in `workflow-backend` (rename `GetWorkspaceTaskByID`, fix `insertGoTask`, update all sqlc queries), `workspace-github-adapter` (`UpsertWorkspaceTask` and features equivalent), `workflow-orchestrator` (claim/dispatch/handoff query updates), `digital-factory-ui` (types + call sites) — these touch four different repos and have no code dependency on each other, only a data dependency on Task 2 having landed.
-- **Task 3e (blocking, sequenced with 3a–3d, same repo as 3b)**: `workspace-github-adapter`'s `syncRunReferenceIDs` (`internal/worker/workspace_sync.go:438-468`) must be changed to return `feature.FeatureID`/`task.TaskID` instead of `feature.ID`/`task.ID` — this is the **one confirmed live, non-test consumer of the surrogate `id` column** anywhere in the four repos, so it is the hard gate for Task 4 (nothing else was found to reference `.id`). Must land and be verified deployed before the contract migration runs, since after Phase 3 `workspace_sync_runs.feature_id`/`.task_id` will no longer have any surrogate `id` to resolve against.
-- **Task 4 (blocking on all of 3a–3e being deployed and verified)**: Phase 3 contract migration (drop columns, repoint FKs, promote PK).
-- **Verification gate before Task 4**: re-run GitNexus `impact` queries for `workspace_features.id` and `workspace_tasks.id` across all four repos to confirm zero remaining references before dropping the columns.
+1. **Pre-stage all four images** — build and push new tags for `workflow-backend`,
+   `workflow-orchestrator`, `workspace-github-adapter`, `digital-factory-ui` to the registry so
+   Portainer only pulls and recreates. Every image must already contain its code change
+   (especially the orchestrator regen + `SELECT *` fix) or that service breaks after the swap.
+2. **Backup** — full `pg_dump` off-host (see Backup & rollback), with writers quiesced.
+3. **Swap the backend image first, alone.** Its startup runs the migration; wait until healthy =
+   schema flipped and reconciled. From this instant, any still-old container errors on the dropped
+   columns (this is the downtime window for the others).
+4. **Then swap adapter, UI, and orchestrator.** Order among them does not matter for correctness
+   once the migration is done. Do **not** let a new orchestrator start before the migration
+   completes — a new orchestrator reading unreconciled `id` could mis-claim/mis-transition a go
+   task. A briefly-down old orchestrator is safe (its queries just error and retry; the reconcile
+   preserves its `task_id`-tracked dispatch identity under `id`).
+
+**Why old code can't overlap the new schema:** new code tolerates the old schema (it only touches
+`id`, which exists before and after — at worst it briefly reads pre-reconcile values), but old
+code does **not** tolerate the new schema (its `WHERE task_id = $2` / `SELECT *` hit a dropped
+column and crash). So minimize the interval between step 3 and step 4.
+
+### Post-deploy verification
+- `workflow-orchestrator` e2e (`coexistence_test.go`) green on the new build.
+- `rg -ni 'select \*\s+from\s+workspace_(tasks|features)'` empty across the three Go repos.
+- One full orchestrator cycle + one sync cycle complete without error.
+- Update `database/workspace/schema.dbml` to v006 (single `id`, FKs re-pointed), re-index RAG, and
+  trigger a GitNexus re-index once the code changes are merged.
+
+## Backup & rollback
+
+A single full `pg_dump` before the migration is the backup and rollback mechanism. This system is
+in-house and early-stage — it can tolerate a short window and the small write-delta risk of a
+logical dump, so the heavier options (in-DB mapping snapshots, physical volume tars, WAL/PITR) are
+deliberately out of scope. (PITR is not available anyway — no WAL archiving is configured.)
+
+### Context
+- Postgres **16** (`postgres:16-alpine`) in a Docker container (Portainer in prod), data in the
+  named volume `db_data`.
+- Database and role **`workflow_backend`** (per `workflow-backend/docker-compose.yml`; confirm the
+  prod values). Local dev exposes it on host port `25432`.
+
+Set the container name (find it via `docker ps | grep postgres` or the Portainer stack):
+```bash
+PG=workflow-backend-db-1      # replace with the real container name
+DB=workflow_backend
+USER=workflow_backend
+```
+
+### Backup — full dump, taken right before the backend image swap
+```bash
+docker exec -t "$PG" pg_dump -U "$USER" -d "$DB" -Fc \
+  -f /tmp/unify_id_pre_$(date +%Y%m%d_%H%M%S).dump
+docker cp "$PG:/tmp/unify_id_pre_"*.dump ./     # copy it OFF the container
+```
+`-Fc` = compressed custom format (supports selective restore). Use plain SQL (`-f *.sql`, no
+`-Fc`) if you want a greppable copy.
+
+### Restore — if the migration or new images go bad
+```bash
+# stop the services first, then:
+docker exec -i "$PG" pg_restore -U "$USER" -d "$DB" --clean --if-exists < unify_id_pre_*.dump
+# start the OLD images back up
+```
+
+### Three things that make the dump actually sufficient
+1. **Copy it off-host** (`docker cp`) — a dump inside the volume you might wipe is worthless.
+2. **Verify it once** — check the exit code and file size; ideally restore into a scratch DB to
+   confirm it's valid. An untested backup isn't a backup.
+3. **Take it with writers quiesced** — `pg_dump` is internally consistent, but writes after it
+   starts aren't captured. In the downtime window writers are stopped/crashing, so the delta is
+   ~zero.
+
+Note: the task-sync queue lives in Redis/asynq, not Postgres, so it is not in the dump — this is
+fine, queue items are re-derivable and a full reconciliation clears the queue anyway.
