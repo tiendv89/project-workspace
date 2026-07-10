@@ -5,7 +5,7 @@
 ```
 T1 (workflow-backend: migration 00022 + reconcile + hand-written query updates)
  ├──> T2 (workflow-orchestrator: sqlc schema fix + ~25 query rewrite + FSM code)
- ├──> T3 (workspace-github-adapter: own schema.sql + sqlc config + UpsertWorkspaceTask/Feature + syncRunReferenceIDs)
+ ├──> T3 (workspace-github-adapter: refresh vendored schema.sql + UpsertWorkspaceTask/Feature + syncRunReferenceIDs)
  ├──> T4 (digital-factory-ui: TaskSummary/FeatureSummary + call sites)
  └──> T5 (hermes-agent: _resolve_feature_id_by_name fix)
         │
@@ -20,22 +20,13 @@ code dependency on each other — only a data/schema dependency on T1 having lan
 though the migration should not be *run* against shared environments until all five
 code changes are ready to deploy together — see the Human Verification Phase below).
 
-**Note on T3 (workspace-github-adapter):** as of this task breakdown, `workspace-github-adapter`
-is undergoing separate, concurrent, in-progress work to switch from `sqlc.yaml` pointing directly
-at `../workflow-backend/migrations` to carrying its **own local `schema.sql` copy** (mirroring
-the pattern `workflow-orchestrator` already uses), with a corresponding `sqlc.yaml` config
-change. T3 has been updated to account for this — it now includes maintaining that local
-`schema.sql` copy against the post-00022 shape, the same class of fix T2 already does for
-`workflow-orchestrator`'s existing schema mirror. Confirm the current state of that in-progress
-work in `workspace-github-adapter` before starting T3.
-
 ### Index
 
 | ID | Title | Repo | Depends On | Actor |
 |---|---|---|---|---|
 | T1 | Migration 00022 (unify identity) + workflow-backend query/handler updates | workflow-backend | | agent |
 | T2 | workflow-orchestrator: sqlc schema fix + query/FSM rewrite to `id` | workflow-orchestrator | T1 | agent |
-| T3 | workspace-github-adapter: own `schema.sql` + sqlc config + writer updates to `id` | workspace-github-adapter | T1 | agent |
+| T3 | workspace-github-adapter: refresh vendored `schema.sql` + writer updates to `id` | workspace-github-adapter | T1 | agent |
 | T4 | digital-factory-ui: TaskSummary/FeatureSummary + call-site updates | digital-factory-ui | T1 | agent |
 | T5 | hermes-agent: fix `_resolve_feature_id_by_name` slug-fallback | hermes-agent | T1 | agent |
 
@@ -168,37 +159,38 @@ Update `workflow-orchestrator`'s entire task/feature FSM to key on `id` instead 
 
 ---
 
-## T3 — workspace-github-adapter: own `schema.sql` + sqlc config + writer updates to `id`
+## T3 — workspace-github-adapter: refresh vendored `schema.sql` + writer updates to `id`
 
 ### Description
-Update the YAML→DB sync adapter's writers to the new single-`id` schema.
+Update the YAML→DB sync adapter's writers to the new single-`id` schema, and refresh its
+vendored schema snapshot.
 
-**Concurrent change to account for:** `workspace-github-adapter` is separately, and currently
-in progress, switching from `sqlc.yaml` pointing directly at `../workflow-backend/migrations`
-to carrying its **own local `schema.sql` copy** (the same pattern `workflow-orchestrator`
-already uses), with a corresponding `sqlc.yaml` update. Before this change, the adapter's
-generated structs "self-corrected" for free on `sqlc generate` because they read the
-migrations directly; after this change, that free self-correction goes away — the local
-`schema.sql` copy becomes a second schema mirror that must be kept in sync by hand, exactly
-like `workflow-orchestrator`'s existing (and, until T2, stale) `db/schema/schema.sql`.
-**Confirm the actual current state of this in-progress work** (has the `sqlc.yaml`/`schema.sql`
-switch already landed, or is it still using the migrations pointer?) before starting — this
-task must be implemented against whichever state is live in `workspace-github-adapter` at
-the time, not assumed from this description.
+`workspace-github-adapter` carries a **vendored, consolidated schema snapshot** at
+`database/schema/schema.sql` (produced via `pg_dump --schema-only` against
+`workflow-backend`'s applied migrations, not a live pointer at the migrations directory),
+with `sqlc.yaml` pointing `schema: "database/schema"` at it. Confirmed current contents
+(pre-00022) show the dual-column shape on both tables and `workspace_sync_runs`'s FKs
+pointing at the surrogate `workspace_features(id)` / `workspace_tasks(id)` — consistent
+with the rest of this feature's findings.
 
-1. **If the local `schema.sql` switch has landed**: update that local copy to the post-00022
-   single-`id` shape (drop `feature_id`/`task_id` columns, single `id` PK on each table, FKs
-   pointing at `id`) — the same class of fix as T2's "Fix the stale schema mirror" step.
-   **If it has not yet landed** (still pointing at `../workflow-backend/migrations`): no local
-   schema file to update — structs self-correct automatically once T1's migration lands, same
-   as before.
-2. **`UpsertWorkspaceTask`** (`internal/database/workspace_tasks.sql.go`, generated from
-   `workspace_tasks.sql`) and the equivalent features upsert
-   (`internal/database/workspace_features.sql.go` / `UpsertWorkspaceFeature`): these currently
-   resolve one UUID and insert it into both `id` and `task_id`/`feature_id`. Post-migration
-   there is only `id` to write — update the SQL source files and regenerate; there is no
-   remaining divergence risk to guard against (this repo's ts/legacy path was already the
-   "safe" side of the original bug).
+1. **Refresh `database/schema/schema.sql`** per the file's own documented procedure (its
+   header comment): apply `workflow-backend`'s migrations (including `00022`) to a scratch
+   Postgres via `goose -dir <path-to-migrations> postgres "<dsn>" up`, then
+   `pg_dump --schema-only --no-owner --no-privileges -T goose_db_version` against that
+   database, and replace this file's body with the output. The refreshed snapshot must show:
+   single `id` PK on `workspace_features`/`workspace_tasks` (no more `feature_id`/`task_id`
+   columns), `workspace_tasks_feature_id_fkey`/`workspace_feature_documents_feature_id_fkey`
+   pointing at `workspace_features(id)`, and `workspace_sync_runs_{feature,task}_id_fkey`
+   pointing at `workspace_features(id)`/`workspace_tasks(id)` (already the surrogate-`id`
+   convention pre-migration, but confirm those FKs still resolve correctly against the
+   post-reconcile values).
+2. **Update `database/queries/*.sql`** for the changed columns per the same refresh
+   procedure, in particular:
+   - `UpsertWorkspaceTask` (`workspace_tasks.sql`) and the equivalent features upsert
+     (`workspace_features.sql` / `UpsertWorkspaceFeature`): these currently resolve one UUID
+     and insert it into both `id` and `task_id`/`feature_id`. Post-migration there is only
+     `id` to write — update the SQL source and there is no remaining divergence risk to guard
+     against (this repo's ts/legacy path was already the "safe" side of the original bug).
 3. **`syncRunReferenceIDs`** (`internal/worker/workspace_sync.go:438-468`) — this function
    currently explicitly resolves and returns `feature.ID`/`task.ID` (the surrogate) for
    writing into `workspace_sync_runs.feature_id`/`.task_id`. Confirmed as the **only live,
@@ -208,23 +200,20 @@ the time, not assumed from this description.
    to work correctly post-migration with no logic change — but update its comment
    (currently: `"sync_runs.feature_id FKs workspace_features.id (the surrogate), so the
    returned reference is feature.ID..."`) since that comment's premise (a surrogate vs.
-   business distinction) no longer exists after T1. Confirm via a test that `workspace_sync_runs`
-   rows continue to resolve correctly against the new schema.
-4. Check for any other place a local `schema.sql` copy (if the switch has landed) may go stale
-   in the future — note in the PR description that this file now requires manual upkeep
-   alongside `workflow-backend`'s migrations, same caveat as `workflow-orchestrator`'s copy.
-5. Run `sqlc generate`; fix any resulting compile errors.
-6. Run `go test ./...` and `golangci-lint run` — zero errors required.
+   business distinction) no longer exists after T1. Add/update a test confirming
+   `workspace_sync_runs` rows continue to resolve correctly against the new schema.
+4. Run `make sqlc` (or `sqlc generate` directly, per the schema header's documented refresh
+   steps); fix any resulting compile errors in `internal/adapter/db` and related callers.
+5. Run `go test ./...` and `golangci-lint run` — zero errors required.
 
 ### Required skills
 - go-best-practices
 
 ### Subtasks
-- [ ] Confirm current state of the in-progress `sqlc.yaml`/own-`schema.sql` switch in `workspace-github-adapter` before starting
-- [ ] If the local `schema.sql` copy exists: update it to the post-00022 single-`id` shape
-- [ ] Update `workspace_tasks.sql` / `workspace_features.sql` source (UpsertWorkspaceTask + features equivalent) for the single-`id` shape
-- [ ] Run `sqlc generate`; fix compile errors in `internal/adapter/db/adapter.go` and related callers
-- [ ] Update `syncRunReferenceIDs`'s comment/behavior confirmation in `internal/worker/workspace_sync.go`
+- [ ] Refresh `database/schema/schema.sql` via the documented `goose up` + `pg_dump --schema-only` procedure against migration 00022
+- [ ] Update `workspace_tasks.sql` / `workspace_features.sql` (UpsertWorkspaceTask + features equivalent) for the single-`id` shape
+- [ ] Run `make sqlc`/`sqlc generate`; fix compile errors in `internal/adapter/db/adapter.go` and related callers
+- [ ] Update `syncRunReferenceIDs`'s comment in `internal/worker/workspace_sync.go` to remove the stale surrogate/business distinction
 - [ ] Add/update a test confirming `workspace_sync_runs.feature_id`/`.task_id` resolve correctly post-migration
 - [ ] `go test ./...` and `golangci-lint run` clean
 
