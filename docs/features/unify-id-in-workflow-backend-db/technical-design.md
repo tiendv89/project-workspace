@@ -243,6 +243,29 @@ in practice the orchestrator is down during the swap anyway.
 - **digital-factory-ui**: `TaskSummary`/`FeatureSummary` drop `task_id`/`feature_id`, use `id`;
   fix `TaskDiffTab`, `useTaskReviewThread`, `SpecPanel` (`task.task_id` → `task.id`),
   `board-meta.ts`, and route builders.
+- **hermes-agent (fifth deploy target — confirmed, not optional)**: `src/services/workflow_backend_client.py`,
+  function `_resolve_feature_id_by_name` (used by `get_feature_detail`'s slug-fallback path), reads
+  the literal JSON key `"feature_id"` off `GET /api/workspaces/:workspaceId/features?name=...`:
+  ```python
+  items = data.get("items") or []
+  return items[0]["feature_id"] if items else None
+  ```
+  This must change to `items[0]["id"]`. Two live call sites depend on this fallback and will break
+  the moment a caller resolves a feature by name-slug instead of UUID:
+  - `plugins/tools/approve.py` (`approve_feature` tool) — `handle()` calls `get_feature_detail(wid, fid, ...)`
+    on every approve/reject/reopen invocation. The tool's `feature_id` parameter is documented as
+    accepting either a UUID or a `feature_name` slug, so this is a real, frequently-exercised path,
+    not dead code — any human invoking `/approve-feature` with a slug (or a session whose
+    thread-local `feature_id` context was set to something other than the UUID) hits it.
+  - `plugins/tools/create_tasks.py` (`create_tasks` backup command) — `load_feature_tasks_md()` calls
+    the same `get_feature_detail`, same fallback.
+  Both call sites route through the one shared function, so the fix is a single-line change, but it
+  must ship in the same coordinated deploy window as the other four repos — `hermes-agent` is
+  therefore a required fifth target, not an optional cleanup. No other `hermes-agent` code path was
+  found to reference `.id`/`.task_id` on workflow-backend's task or feature responses (`get_feature_detail`,
+  `get_feature_tasks`, and `create_feature_tasks`'s outbound payload construction were all checked and
+  only touch `feature_name`, `title`, `current_stage`, `status`, `next_action`, `owner`, `init_pr_url`,
+  `task_name`, `blocked_reason`, `depends_on`, `pr`, `execution` — never the identity column itself).
 
 ## Deployment sequence (Portainer, accepting downtime)
 
