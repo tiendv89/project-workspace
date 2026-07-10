@@ -210,6 +210,16 @@ invariant is `id == task_id`/`id == feature_id`, matching the ts convention.
 -- collision guard: setting id := business must not collide (must return 0 rows)
 SELECT task_id, count(*) FROM workspace_tasks    GROUP BY task_id    HAVING count(*) > 1;
 SELECT feature_id, count(*) FROM workspace_features GROUP BY feature_id HAVING count(*) > 1;
+
+-- cross-collision guard: setting id := task_id/feature_id must not collide with a
+-- DIFFERENT row's pre-existing id (the internal-duplicate check above does not catch
+-- this; astronomically unlikely with random UUIDs, but cheap to verify before a PK
+-- reassignment on a live table -- must return 0 rows).
+SELECT count(*) FROM workspace_tasks a
+    JOIN workspace_tasks b ON a.task_id = b.id AND a.id != b.id;
+SELECT count(*) FROM workspace_features a
+    JOIN workspace_features b ON a.feature_id = b.id AND a.id != b.id;
+
 -- divergence census (informational)
 SELECT owner, count(*) FILTER (WHERE id != task_id) AS diverging, count(*) FROM workspace_tasks GROUP BY owner;
 ```
