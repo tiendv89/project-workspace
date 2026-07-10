@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: agent-workflow-improve-activities-logs
-feature_status: ready_for_implementation
+feature_status: done
 history:
 - action: stage_approved
   at: 2026-07-08T09:10:18+0000

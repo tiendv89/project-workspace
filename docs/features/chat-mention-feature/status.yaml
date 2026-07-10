@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: chat-mention-feature
-feature_status: ready_for_implementation
+feature_status: done
 history:
 - action: stage_approved
   at: 2026-07-08T05:39:21+0000

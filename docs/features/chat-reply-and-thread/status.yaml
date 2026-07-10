@@ -1,6 +1,6 @@
 current_stage: handoff
 feature_id: chat-reply-and-thread
-feature_status: ready_for_implementation
+feature_status: done
 history:
 - action: stage_approved
   at: 2026-07-08T04:52:56+0000
