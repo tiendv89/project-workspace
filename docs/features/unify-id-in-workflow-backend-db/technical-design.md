@@ -70,19 +70,17 @@ Both core entity tables carry two independently-generated UUID columns:
 **Codegen facts that shape the migration (verified against source):**
 - `workflow-backend/internal/database/queries.go` is **hand-written** (no sqlc) — explicit column
   lists throughout, no `SELECT *` on these tables.
-- `workspace-github-adapter/sqlc.yaml` points at `../workflow-backend/migrations` — **not
-  drifted**; its structs self-correct on the next `sqlc generate`. **Update (in progress,
-  concurrent with this feature):** `workspace-github-adapter` is being changed to carry its
-  own local `schema.sql` copy (mirroring `workflow-orchestrator`'s existing pattern) instead of
-  pointing `sqlc.yaml` directly at `../workflow-backend/migrations`, with a corresponding
-  `sqlc.yaml` config update. This means `workspace-github-adapter` no longer "self-corrects" for
-  free — its local `schema.sql` copy must be updated to the post-00022 single-`id` shape
-  explicitly, the same class of fix already required for `workflow-orchestrator`'s stale mirror
-  below. This is being done as separate, concurrent, in-progress work in that repo; this feature's
-  task for `workspace-github-adapter` (T3) must land its schema.sql update against whichever
-  shape (own copy vs. migrations pointer) is live in that repo at implementation time — confirm
-  the current `sqlc.yaml`/`schema.sql` state in `workspace-github-adapter` before starting T3,
-  rather than assuming the historical migrations-pointer setup described above.
+- `workspace-github-adapter/sqlc.yaml` points at `database/schema` (a vendored, consolidated
+  schema snapshot at `database/schema/schema.sql`, produced via `pg_dump --schema-only` against
+  workflow-backend's applied migrations — not a migrations-directory pointer). The file's own
+  header documents its refresh procedure: apply `workflow-backend`'s migrations to a scratch
+  Postgres, `pg_dump --schema-only --no-owner --no-privileges -T goose_db_version`, replace the
+  file body, update `database/queries/*.sql`, run `sqlc generate`. Confirmed current (pre-00022)
+  contents show the dual-column shape on both tables and `workspace_sync_runs`'s FKs pointing at
+  the surrogate `workspace_features(id)` / `workspace_tasks(id)` — consistent with the rest of
+  this design's "Current State" findings. This snapshot must be refreshed as part of this feature
+  (see T3-equivalent code changes below), the same class of fix `workflow-orchestrator`'s own
+  schema mirror needs.
 - `workflow-orchestrator` has its **own sqlc schema copy** at `db/schema/schema.sql`
   (`sqlc.yaml → schema: "db/schema/schema.sql"`). It is **stale** (still declares
   `feature_id ... REFERENCES workspace_features(id)`, pre-00016) and must be updated + regenerated
