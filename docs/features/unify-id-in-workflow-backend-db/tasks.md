@@ -10,7 +10,7 @@ T1 (workflow-backend: migration 00022 + reconcile + hand-written query updates)
  └──> T5 (hermes-agent: _resolve_feature_id_by_name fix)
         │
         ▼
-       T6 (coordinated deploy: backup, pre-stage images, sequenced swap, verification — human)
+  [Human Verification Phase — deploy + rollout, not tracked as a task; see below]
 ```
 
 T1 is the sole blocker: it owns the schema authority and the migration that every other
@@ -18,8 +18,7 @@ repo's code change is written against. T2–T5 touch four independent repos and 
 code dependency on each other — only a data/schema dependency on T1 having landed
 (so they can be implemented and reviewed in parallel once T1's migration file exists,
 though the migration should not be *run* against shared environments until all five
-code changes are ready to deploy together — see T6). T6 is the actual coordinated
-rollout and is blocked on all of T1–T5 being merged and their images buildable.
+code changes are ready to deploy together — see the Human Verification Phase below).
 
 ### Index
 
@@ -30,7 +29,6 @@ rollout and is blocked on all of T1–T5 being merged and their images buildable
 | T3 | workspace-github-adapter: sqlc regen + writer updates to `id` | workspace-github-adapter | T1 | agent |
 | T4 | digital-factory-ui: TaskSummary/FeatureSummary + call-site updates | digital-factory-ui | T1 | agent |
 | T5 | hermes-agent: fix `_resolve_feature_id_by_name` slug-fallback | hermes-agent | T1 | agent |
-| T6 | Coordinated deploy: backup, pre-stage, sequenced swap, verification | workflow-backend | T1, T2, T3, T4, T5 | human |
 
 ---
 
@@ -280,25 +278,26 @@ breaks once workflow-backend's API returns `id` instead.
 
 ---
 
-## T6 — Coordinated deploy: backup, pre-stage, sequenced swap, verification
+## Human Verification Phase (not a tracked task)
 
-### Description
-Execute the actual production rollout per the technical design's "Deployment sequence" and
-"Backup & rollback" sections. This is a human-actor operational task — no code changes,
-but it is the task that actually applies migration `00022` and cuts over all five services.
+This feature's actual rollout — applying migration `00022` and cutting over all five
+services — is deliberately **not** represented as a task in the Index above and will not
+be created in the database. It is a manual, human-executed operational phase that runs
+after T1–T5 are all merged, per the technical design's "Deployment sequence" and
+"Backup & rollback" sections:
 
 1. **Pre-stage all five images** (`workflow-backend`, `workflow-orchestrator`,
-   `workspace-github-adapter`, `digital-factory-ui`, `hermes-agent`) with the code changes
-   from T1–T5 built and pushed to the registry.
-2. **Backup**: full `pg_dump` off-host per the design's "Backup & rollback" section
-   (`docker exec ... pg_dump -Fc`, then `docker cp` off the container), with writers quiesced.
-   Verify the dump (check exit code/size; ideally restore into a scratch DB).
+   `workspace-github-adapter`, `digital-factory-ui`, `hermes-agent`) with the T1–T5 code
+   changes built and pushed to the registry.
+2. **Backup**: full `pg_dump` off-host (`docker exec ... pg_dump -Fc`, then `docker cp` off
+   the container), with writers quiesced. Verify the dump (exit code/size; ideally restore
+   into a scratch DB).
 3. **Swap the `workflow-backend` image first, alone.** Its startup runs migration `00022`.
    Wait for healthy status — schema flipped and reconciled.
 4. **Then swap `workspace-github-adapter`, `digital-factory-ui`, `workflow-orchestrator`,
    and `hermes-agent`** — order among these four does not matter for correctness. Minimize
    the interval between step 3 and this step (old code does not tolerate the new schema).
-5. **Post-deploy verification** per the design:
+5. **Post-deploy verification**:
    - `workflow-orchestrator` e2e (`coexistence_test.go`) green on the new build.
    - `rg -ni 'select \*\s+from\s+workspace_(tasks|features)'` returns empty across the three
      Go repos.
@@ -307,18 +306,9 @@ but it is the task that actually applies migration `00022` and cuts over all fiv
 6. **Update `database/workspace/schema.dbml`** (management repo, `project-workspace`) to v006
    reflecting the new schema, and trigger a GitNexus re-index once all five repos' code
    changes are merged.
-7. If anything goes wrong: restore per the "Restore" runbook in the design
-   (`pg_restore --clean --if-exists` from the pre-migration dump, then start the OLD images
-   back up).
+7. **If anything goes wrong**: restore per the rollback runbook (`pg_restore --clean
+   --if-exists` from the pre-migration dump, then start the OLD images back up).
 
-### Required skills
-(none — operational/deployment task, no code authored)
-
-### Subtasks
-- [ ] Confirm all five images (T1–T5) are built, pushed, and contain their respective fixes
-- [ ] Take and verify the pre-migration `pg_dump`, copied off-host
-- [ ] Swap `workflow-backend` alone; confirm migration `00022` applied and healthy
-- [ ] Swap the remaining four services (adapter, UI, orchestrator, hermes-agent)
-- [ ] Run post-deploy verification checklist (e2e, grep for `SELECT *`, one full poll/sync cycle)
-- [ ] Update `database/workspace/schema.dbml` to v006; trigger GitNexus re-index
-- [ ] Confirm rollback runbook is ready and understood before starting (do not execute unless needed)
+This phase is monitored manually by a human operator and intentionally has no corresponding
+task file, status, or lifecycle tracking — it is operational execution of an already-approved
+plan, not a unit of implementation work.
