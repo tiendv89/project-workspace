@@ -1,17 +1,24 @@
 # Tasks — storage-service
 
-Feature status: `in_tdd` | Stage: `tasks` | Machine state lives in `tasks/T<n>.yaml`.
+Feature status: `in_handoff` | Stage: `tasks` | Machine state lives in `tasks/T<n>.yaml`.
 
 `storage-service` is now created and indexed in GitNexus (bootstrapped by T1).
 All 18 tasks from the approved technical design are now registered below —
 this supersedes the earlier partial breakdown that deferred T5–T12, T14, T17,
 T18 pending the repo's existence.
 
+**Amendment (2026-07-09):** T1–T18 are done (7 implementation PRs open,
+awaiting merge). T19–T23 (Wave 6) are appended below per the product-spec/
+technical-design Amendment sections — GCS→MinIO (T19), `workflow-mcp`
+document tools replacing T13's direct-call approach (T20/T21), and
+version-history labeling (T22/T23). No existing task (T1–T18) is modified or
+reopened.
+
 ## Index
 
 | ID | Wave | Title | Repo | Depends on | Actor |
 |---|---|---|---|---|---|
-| T1 | 0 | Bootstrap `storage-service` repo + register in `workspace.yaml` | project-workspace | — | agent |
+| T1 | 0 | Bootstrap `storage-service` repo + register in `workspace.yaml` | storage-service | — | agent |
 | T2 | 1 | `POST /internal/index` webhook endpoint | rag-service | — | agent |
 | T3 | 1 | Folder-tree sidebar component (mocked API) | digital-factory-ui | — | agent |
 | T4 | 1 | Add `/bff/storage-service/*` upstream prefix | workflow-bff | T1 | agent |
@@ -23,12 +30,17 @@ T18 pending the repo's existence.
 | T10 | 3 | RAG webhook wiring in `onStoreDocument` | storage-service | T2, T7 | agent |
 | T11 | 3 | Version-history timeline API (list/diff/restore) | storage-service | T6 | agent |
 | T12 | 3 | Version-history panel UI | digital-factory-ui | T3, T11 | agent |
-| T13 | 4 | `init-feature` Step 0 wiring (go ⇒ storage-service document create) | agent-workflow | T1 | agent |
+| T13 | 4 | `init-feature` Step 0 wiring (go ⇒ storage-service document create) | workflow | T1 | agent |
 | T14 | 4 | Migration tool (bulk GitHub import) | storage-service | T6 | agent |
 | T15 | 4 | `hermes-agent` owner guard on the four document tools | hermes-agent | T1 | agent |
 | T16 | 4 | Guard: reject writes to a migrated feature's git document paths | workflow-backend | T1 | agent |
 | T17 | 5 | Admin API routes (usage, object browser, empty-trash, orphan cleanup, migration status) | storage-service | T6, T14 | agent |
 | T18 | 5 | `/admin/storage` page | digital-factory-ui | T3, T17 | agent |
+| T19 | 6 | Migrate blob backend from GCS to MinIO | storage-service | T1 | agent |
+| T20 | 6 | `workflow-mcp` document read/write MCP tools | workflow-mcp | T4, T6 | agent |
+| T21 | 6 | Rework `init-feature`'s `go` branch to call T20's tools | workflow | T20 | agent |
+| T22 | 6 | `doc_version` label/pin column + set-label endpoint | storage-service | T11 | agent |
+| T23 | 6 | Label/pin a version in the history panel | digital-factory-ui | T12, T22 | agent |
 
 **Implementation-gate note for T13/T15/T16:** these are functionally
 dependent on T6 (real storage-service document endpoints) even though their
@@ -41,7 +53,7 @@ T1.
 
 ```
 Wave 0 (bootstrap):
-  T1  project-workspace  Bootstrap storage-service repo + register in workspace.yaml
+  T1  storage-service  Bootstrap storage-service repo + register in workspace.yaml
 
 Wave 1 (parallel):
   T2  rag-service        POST /internal/index webhook endpoint
@@ -61,7 +73,7 @@ Wave 3:
   T12 digital-factory-ui Version-history panel UI                            [dep: T3,T11]
 
 Wave 4:
-  T13 agent-workflow     init-feature Step 0 wiring                          [dep: T1; functional gate: T6]
+  T13 workflow           init-feature Step 0 wiring                          [dep: T1; functional gate: T6]
   T14 storage-service    Migration tool (bulk GitHub import)                 [dep: T6]
   T15 hermes-agent       Owner guard on the four document tools              [dep: T1; functional gate: T6]
   T16 workflow-backend   Guard: reject writes to migrated feature's git paths [dep: T1; functional gate: T14]
@@ -69,6 +81,13 @@ Wave 4:
 Wave 5:
   T17 storage-service    Admin API routes                                    [dep: T6,T14]
   T18 digital-factory-ui /admin/storage page                                 [dep: T3,T17]
+
+Wave 6 (amendment, 2026-07-09 — appended after T1-T18 shipped):
+  T19 storage-service    Migrate blob backend from GCS to MinIO              [dep: T1]
+  T20 workflow-mcp       Document read/write MCP tools                      [dep: T4,T6]
+  T21 workflow           Rework init-feature's go branch onto T20's tools    [dep: T20]
+  T22 storage-service    doc_version label/pin column + set-label endpoint  [dep: T11]
+  T23 digital-factory-ui Label/pin a version in the history panel           [dep: T12,T22]
 ```
 
 ---
@@ -419,7 +438,7 @@ prefix.
 ### Description
 
 Extends the existing Step 0 `go`/`ts` question in the `init-feature` skill
-(`agent-workflow` repo) — no second axis. For `go`: calls `storage-service`'s
+(`workflow` repo, `agent-workflow` on GitHub) — no second axis. For `go`: calls `storage-service`'s
 document-create endpoint (T6) to seed `product-spec.md`, `technical-design.md`,
 `tasks.md`, and `handoffs/` from the existing templates
 (`<WORKSPACE_ROOT>/workflow/templates/feature/`) as `storage-service`
@@ -595,4 +614,209 @@ patterns where applicable.
 - [ ] Empty-trash action (with confirmation)
 - [ ] Orphan-cleanup action
 - [ ] Migration-status view (retry/trigger inline)
+- [ ] Component tests
+
+---
+
+## T19 — Migrate blob backend from GCS to MinIO
+
+### Description
+
+Amendment (2026-07-09, technical design §Amendment / point 1). Swaps
+`internal/blob/store.go`'s GCS SDK calls for MinIO, using
+**`github.com/minio/minio-go/v7`** — required, not the AWS S3 SDK or another
+S3-compatible client, per explicit human direction. Confirmed via code survey
+of the merged `feature/storage-service` branch: `blob.Store` is the single
+chokepoint (only file besides `cmd/api/main.go`'s client construction that
+imports `cloud.google.com/go/storage`); the three consumer interfaces
+(`document.BlobStore`, `migration.BlobUploader`, `admin.GCSDeleter`) are
+unchanged in shape, so `internal/document`, `internal/migration`,
+`internal/admin` need no code changes. No presigned URLs exist anywhere
+today — every blob read/write already goes through the Go API's own internal
+HTTP endpoints, so there is no client-visible signing scheme to port.
+
+Also renames the `blob.gcs_path` column to `blob.object_key` (new migration;
+safe now — no production data exists yet, T1–T18's impl PRs are still open)
+and updates the `"gcs_path"` JSON field in `internal/admin/handler.go` and
+all references in `internal/admin/store.go`. Enables MinIO bucket versioning
+on the blob bucket at provisioning time — defense-in-depth underneath the
+app's own `doc_version` history (T6/T11), not a replacement for it; no API
+shape changes as a result.
+
+Local dev: adds a MinIO (AIStor) service to `docker-compose.yml`, with the
+AIStor license file bind-mounted (`-v $HOME/minio/minio.license:/minio.license
+--license /minio.license`, per the AIStor container install docs) and
+`MINIO_ENDPOINT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/
+`MINIO_USE_SSL`/`MINIO_LICENSE_PATH` replacing `GCS_BUCKET`/
+`GOOGLE_APPLICATION_CREDENTIALS` in `.env.template`. The human provides the
+AIStor license — resolve via `resolve-project-env`; if missing, ask the human
+rather than guessing or falling back to a different MinIO edition.
+
+**Backward compatibility:** entirely internal to `storage-service`'s
+`internal/blob` package. Zero change to the Node sidecar, `digital-factory-ui`,
+`hermes-agent`, `workflow-mcp`, or any git-backed (`ts`-owner) path — none of
+them touch the blob SDK or hold a presigned URL.
+
+### Required skills
+
+- go-best-practices
+
+### Subtasks
+
+- [ ] Add `github.com/minio/minio-go/v7` dependency; remove
+      `cloud.google.com/go/storage`
+- [ ] Rewrite `blob.Store`'s Upload/Download/Delete methods against the MinIO
+      SDK, keeping `document.BlobStore`/`migration.BlobUploader`/
+      `admin.GCSDeleter`'s method signatures unchanged (rename
+      `GCSDeleter`→`BlobDeleter` as a drive-by cleanup)
+- [ ] Migration: rename `blob.gcs_path` column → `blob.object_key`; update
+      `internal/admin/store.go` and the `"gcs_path"` JSON field in
+      `internal/admin/handler.go`
+- [ ] Config: replace `GCS_BUCKET`/`GOOGLE_APPLICATION_CREDENTIALS` with
+      `MINIO_ENDPOINT`/`MINIO_ACCESS_KEY`/`MINIO_SECRET_KEY`/`MINIO_BUCKET`/
+      `MINIO_USE_SSL`/`MINIO_LICENSE_PATH` in `internal/config/config.go` and
+      `.env.template`
+- [ ] `docker-compose.yml`: add a local MinIO (AIStor) service with the
+      license file bind-mounted for dev
+- [ ] Enable bucket versioning on the blob bucket at provisioning/startup
+- [ ] Existing tests (`fakeBlobStore`, `mockGCS`→`mockBlobDeleter`) continue
+      passing unmodified (interface-based, no GCS/MinIO reference) —
+      regression check
+- [ ] New unit tests for `blob.Store` against the MinIO SDK (can use MinIO's
+      own test server or an interface-level fake, matching the existing
+      untested-`blob.Store` gap noted in the survey)
+
+---
+
+## T20 — `workflow-mcp` document read/write MCP tools
+
+### Description
+
+Amendment (2026-07-09, technical design §13). Adds two tools to
+`workflow-mcp` (`src/tools.ts`), following its existing tool-registration
+pattern (types → handler function → `server.tool(...)` registration → tests
+→ README/AGENTS.md update, best exemplified by `unblock_task`):
+
+- `read_storage_document({feature_id, kind})` — reads a `go`-owned feature's
+  document content via `/bff/storage-service/api/workspaces/:wid/features/:fid/documents`
+  (T6).
+- `write_storage_document({feature_id, kind, content})` — writes/imports
+  markdown content via `storage-service`'s document-create/import endpoint
+  (T6); content is sent as a JSON string field — no multipart/binary body
+  support needed for this text-only case.
+
+Both reuse `BffClient`'s existing `Cookie`-header injection
+(`WORKFLOW_SESSION_COOKIE`) and error formatting — no new credential, no new
+auth scheme. A new thin client (or an extended `BffClient`) targets
+`storage-service`'s base URL via the `/bff/storage-service/*` prefix (T4,
+done), following the `WORKFLOW_BFF_URL` config pattern in `src/config.ts`.
+
+**Scope guard:** both tools operate only on `go`-owned features'
+`storage-service`-backed documents. Neither reads nor writes git. This is
+what keeps the change backward compatible — a `ts`-owned feature's documents
+remain reachable only through the Claude Code executor's existing
+clone-and-`Read` model, with zero involvement from these tools.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] `read_storage_document` tool: types, handler, zod schema, registration
+- [ ] `write_storage_document` tool: types, handler, zod schema, registration
+- [ ] New client (or `BffClient` extension) targeting
+      `/bff/storage-service/*`, reusing the existing session-cookie auth
+- [ ] Error formatting consistent with `formatBffError()`'s existing pattern
+- [ ] Unit tests mirroring `src/tools.test.ts`/`src/bffClient.test.ts`
+- [ ] Update `README.md` (tool table + architecture diagram) and `AGENTS.md`
+      (usage example) per this repo's convention for new tools
+
+---
+
+## T21 — Rework `init-feature`'s `go` branch to call T20's tools
+
+### Description
+
+Amendment (2026-07-09). T13 (done), read directly from its shipped
+`SKILL.md`, implements `init-feature` Step 0's `go` branch as a raw `curl`
+(via the Bash tool — skills have no native HTTP client) straight to
+`$STORAGE_SERVICE_URL`, **bypassing `workflow-bff` and T4's
+`/bff/storage-service/*` prefix entirely**, authenticated with two
+purpose-built env vars: `STORAGE_SERVICE_TOKEN` (a static, long-lived shared
+bearer secret every developer must provision in `.env`) and
+`STORAGE_SERVICE_ACTOR_USER_ID` (a fixed synthetic user id sent as
+`X-User-Id`, so every `go`-feature document is attributed to the same fake
+actor, not the real human/agent running the skill). This is a parallel
+static-secret auth path outside the platform's gateway-issued identity model
+— exactly what the product spec's Non-goals rule out — and it breaks
+authorship/audit trail.
+
+This task reworks that branch to call T20's `read_storage_document`/
+`write_storage_document` MCP tools instead, which reuse `workflow-mcp`'s
+existing session-cookie auth (the real actor's identity, routed through the
+BFF like every other call). `STORAGE_SERVICE_TOKEN`/
+`STORAGE_SERVICE_ACTOR_USER_ID` and the direct-`curl` code path are removed
+entirely. The `ts` branch is **not** touched — same hard-stop discipline as
+before (if the `go`/`ts` choice isn't explicit, ask again, don't guess); `ts`
+features never call `storage-service` at all, before or after this task.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Replace the `go` branch's direct `curl` calls with calls to T20's
+      `write_storage_document` tool (one call per narrative document:
+      `product-spec.md`, `technical-design.md`, `tasks.md`, `handoffs/`)
+- [ ] Remove `STORAGE_SERVICE_TOKEN`/`STORAGE_SERVICE_ACTOR_USER_ID` from the
+      skill's required-env-var list and from `.env.template`; remove the
+      now-unused direct-`curl`/BFF-bypass code path from T13's SKILL.md
+- [ ] `ts` branch behavior verified unchanged (regression check)
+- [ ] Tests: `go` path calls T20's tools (mocked), `ts` path creates git
+      files as before, unchanged from T13's original tests
+
+---
+
+## T22 — `doc_version` label/pin column + set-label endpoint
+
+### Description
+
+Amendment (2026-07-09, technical design §Amendment / point 3). Adds a
+nullable `label` column to `doc_version` (T6/T11's table) and
+`POST /api/documents/:id/versions/:version_id/label` (set/clear a label,
+e.g. "sent for approval"). Metadata-only — no change to T11's
+snapshot/diff/restore mechanics.
+
+### Required skills
+
+- go-best-practices
+
+### Subtasks
+
+- [ ] Migration: add nullable `doc_version.label` column
+- [ ] `POST /api/documents/:id/versions/:version_id/label` endpoint (set/clear)
+- [ ] Include `label` in T11's list-versions response
+- [ ] Unit tests: set, clear, included in list response
+
+---
+
+## T23 — Label/pin a version in the history panel
+
+### Description
+
+Amendment (2026-07-09). Small addition to T12's version-history panel: a
+label input/badge per timeline entry (consuming T22's endpoint via T4's BFF
+prefix), with labeled versions visually distinguished (e.g. a pin icon) from
+unlabeled autosave snapshots.
+
+### Required skills
+
+- typescript-best-practices
+
+### Subtasks
+
+- [ ] Label input/action on a timeline entry, calling T22's set-label endpoint
+- [ ] Visual distinction for labeled vs. unlabeled versions in the timeline list
 - [ ] Component tests

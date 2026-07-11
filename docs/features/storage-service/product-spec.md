@@ -4,6 +4,57 @@
 - Feature ID: `storage-service`
 - Title: Docs & File Storage Platform — `storage-service`
 
+## Amendment (2026-07-09)
+
+Recorded after all 18 original tasks (T1–T18) were implemented and their PRs
+opened (feature status: `in_handoff`). This amendment does not reopen or redo
+that work — it revises three forward-looking decisions and appends new tasks
+(T19–T23, see `tasks.md`) on top of the completed baseline.
+
+1. **Blob backend: GCS → self-hosted MinIO.** The original "GCS, zero new
+   vendor" decision (see the blob-layer Goal below, superseded by this
+   amendment) is reversed in favor of a self-hosted MinIO deployment (AIStor),
+   licensed by the human. Two things drove this: MinIO's native object/bucket
+   versioning is a useful complement to this feature's own `doc_version`
+   snapshot history (see point 3), and self-hosting removes the GCP
+   dependency. This is an internal swap inside `storage-service`'s
+   `internal/blob` package only — no other repo's integration surface
+   changes: no consumer (including the Node Hocuspocus sidecar) ever calls
+   the GCS/MinIO SDK directly or receives a presigned URL, every read/write
+   already goes through `storage-service`'s own HTTP endpoints. See `tasks.md`
+   T19.
+2. **Local-agent document access moves to a `workflow-mcp` tool, not a direct
+   HTTP call embedded in a skill.** T13 (done) implemented `init-feature`
+   Step 0's `go` branch (in the `workflow` repo, `agent-workflow` on GitHub)
+   as a raw `curl` straight to `storage-service`, bypassing `workflow-bff`
+   entirely and authenticated with a new static long-lived shared secret
+   plus a fixed impersonated user id — a parallel auth mechanism outside the
+   platform's gateway-issued identity model, and one that misattributes
+   document authorship. Every other local-agent-to-backend integration in
+   this workspace (task creation, unblocking) instead goes through
+   `workflow-mcp`'s MCP tools, authenticated with the real user's session.
+   This
+   amendment adds document read/write MCP tools to `workflow-mcp` (T20) and
+   reworks `init-feature`'s `go` branch to call them instead (T21). This is
+   also a first, narrow step on Open Question #3's deferred "Claude Code
+   document MCP tool" — full parity with `tech-lead`/`start-implementation`'s
+   git-based reads for `ts` features is still not in scope (see Non-goals).
+3. **Version history gets a bit more product depth.** T11/T12 (done) ship a
+   timeline, diff, and restore. This amendment adds the ability to label/pin
+   a specific version (e.g. "sent for approval") so it reads distinctly from
+   routine autosave snapshots in the timeline UI (T22/T23).
+4. **Hard backward-compatibility constraint, unchanged from the original
+   spec and reaffirmed here: nothing in this amendment touches the git-backed
+   path for `ts`-owned features.** A `ts` feature's `product-spec.md`/
+   `technical-design.md`/`tasks.md`/`handoffs/*.md` continue to live in git
+   and are read/written exactly as they are today — by `workflow-backend`'s
+   document handler, `hermes-agent`'s `document_repo.py`, and the Claude Code
+   executor's clone-and-`Read` model. Both the MinIO swap (internal to
+   `storage-service`, transparent to every consumer) and the new
+   `workflow-mcp` document tools (scoped to `go`-owned features only — see
+   T20/T21's owner guard) are strictly additive. A human authoring a feature
+   with `ts` sees no change to their workflow.
+
 ## Problem
 
 `product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/*.md` are today
@@ -62,12 +113,17 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   infrastructure (same object store, same DB) but ship independently.
 - Stand up a single new service, **`storage-service`** (parallel to `rag-service` /
   `user-service` / `notification-service` in `workspace.yaml`), that owns:
-  - a **generic blob layer** wrapping **GCS** (chosen over Cloudflare R2 / AWS S3 /
-    Supabase Storage / self-hosted MinIO — GCS reuses existing GCP IAM/service-account
-    plumbing with zero new vendor) — upload endpoint, presigned URLs, and file
+  - a **generic blob layer** wrapping **self-hosted MinIO (AIStor)**
+    (superseded by [Amendment (2026-07-09)](#amendment-2026-07-09); originally
+    GCS, chosen for zero new vendor over Cloudflare R2 / AWS S3 / Supabase
+    Storage / self-hosted MinIO — GCS reuses existing GCP IAM/service-account
+    plumbing). MinIO is now chosen for its native object/bucket versioning
+    (complements this feature's own `doc_version` snapshot history, see the
+    version-history goal below) and to remove the GCP dependency; the human
+    provides the AIStor license — upload endpoint, presigned URLs, and file
     metadata for any file (pasted images, chat attachments, future PDFs/design
     assets); Postgres holds all metadata (doc id, current version pointer, ACL,
-    workspace_id) as the source of truth, GCS is bytes-only.
+    workspace_id) as the source of truth, MinIO is bytes-only.
   - a **document domain** built on top of the blob layer: document CRUD, the
     folder-tree read API, snapshot/version history, and markdown import — as
     internal modules (`internal/blob`, `internal/document`) in the same Go
@@ -75,7 +131,7 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 - Ship **live collaborative editing** for `product-spec.md` / `technical-design.md`
   using **Yjs** as the CRDT, **Tiptap** (ProseMirror + Yjs) as the editor, and a
   **self-hosted Hocuspocus** sync layer running as a small Node sidecar (own
-  Dockerfile/compose entry) — GCS-backed persistence via Hocuspocus's
+  Dockerfile/compose entry) — MinIO-backed persistence via Hocuspocus's
   `onStoreDocument`/`onLoadDocument` hooks. The stage-approval gate model is
   unchanged: editing a live doc's content is separate from flipping
   `status: approved`.
@@ -101,7 +157,24 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   `createDocFromSnapshot()`), backed by a `doc_version` table (doc_id,
   snapshot_ref, parent_version, author, created_at). No paid Tiptap Cloud
   Snapshot/Snapshot Compare extensions — zero ongoing external SaaS spend for
-  this feature.
+  this feature. **Amended 2026-07-09:** a version can additionally be labeled/
+  pinned (e.g. "sent for approval") so it stands out from routine autosave
+  snapshots in the timeline UI — the label is `doc_version` metadata, not a
+  new storage mechanism. MinIO's own object/bucket versioning (see the
+  blob-layer goal above) is enabled underneath as defense-in-depth against
+  accidental overwrite/corruption of a snapshot blob; it is not a substitute
+  for the app-level `doc_version` timeline, which remains the CRDT-aware
+  source of truth for what the UI shows.
+- **Amended 2026-07-09 — local-agent document access via `workflow-mcp`.**
+  Add document read/write MCP tools to `workflow-mcp` (the local, stdio MCP
+  server Claude Code agents already use for task orchestration) so a `go`-
+  owned feature's `storage-service`-backed documents are reachable the same
+  way task-orchestration calls already are — a first-class MCP tool, not a
+  one-off HTTP call embedded in a single skill. `init-feature`'s `go` branch
+  (T13, done) is reworked to call this tool instead of hitting
+  `storage-service` directly. Scoped strictly to `go`-owned features — a
+  `ts`-owned feature's documents are untouched, still git, still read via the
+  Claude Code executor's existing clone-and-`Read` model.
 - Ship **folder/tree navigation** ("worktree") as a plain read-surface over
   `workspace` → `feature` → `document` (with a `kind`/`slug`, e.g. `product-spec`,
   `technical-design`) — no sub-pages (a document is always a leaf), no CRDT
@@ -141,13 +214,13 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   document domain, not just an admin operation:
   - A user who can edit a document or uploaded file can **delete** it (document:
     remove from the folder tree; blob: remove from its referencing doc/message) —
-    this sets a `deleted_at` marker, it never hard-deletes the underlying GCS
+    this sets a `deleted_at` marker, it never hard-deletes the underlying MinIO
     object or Postgres row at delete time.
   - A **trash view**, scoped the same way as the folder tree (§ folder/tree
     navigation goal), lists a workspace's soft-deleted documents/files and offers
     **restore** (clears `deleted_at`, reappears in its original folder location).
   - **Retention + purge policy:** soft-deleted items are permanently purged
-    (GCS object deleted, row hard-deleted) after a fixed retention window (default
+    (MinIO object deleted, row hard-deleted) after a fixed retention window (default
     30 days — confirm with the human, see Open Questions) via a scheduled job, or
     immediately by an admin's explicit "empty trash" action on `/admin/storage`.
   - Deleting a document does not delete its version history until the retention
@@ -195,9 +268,11 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
   That is roadmap item 4 (workspace storage migration) and is explicitly out of
   scope for this feature, which only touches document *content* (including the
   narrative `tasks.md` and `handoffs/*.md` files) — not task/feature *state*.
-- **GCS Pub/Sub-based RAG re-index triggering.** v1 uses an app-level webhook from
-  `storage-service` to `rag-service`'s indexer; Pub/Sub is a possible future
-  revisit if the two services need to decouple further, not a v1 requirement.
+- **Object-store-native pub/sub-based RAG re-index triggering** (GCS Pub/Sub,
+  MinIO bucket notifications, or equivalent). v1 uses an app-level webhook from
+  `storage-service` to `rag-service`'s indexer; object-store-native
+  notifications are a possible future revisit if the two services need to
+  decouple further, not a v1 requirement.
 - **Image captioning/OCR for RAG indexing of pasted images.** Only in scope if a
   concrete use case emerges; not built speculatively in v1.
 - **Comments/threads anchored to document sections, and multi-user presence UI
@@ -241,8 +316,15 @@ feature does not touch `status.yaml` or the per-task `tasks/*.yaml` state files.
 ## Acceptance Criteria
 
 - A new `storage-service` exists (Go API + Node Hocuspocus sidecar), deployed
-  alongside existing services, with GCS-backed blob storage and Postgres-backed
+  alongside existing services, with MinIO-backed blob storage and Postgres-backed
   metadata/ACL/version tables.
+- A `go`-owned feature's `storage-service`-backed documents are readable and
+  writable from a local Claude Code agent via a `workflow-mcp` MCP tool — not
+  a one-off HTTP call embedded in a single skill — while a `ts`-owned
+  feature's documents continue to be read/written exactly as before (git,
+  via the Claude Code executor's clone-and-`Read` model).
+- A document's version-history timeline supports labeling/pinning a specific
+  version so it is visually distinct from routine autosave snapshots.
 - A `go`-backend feature's `product-spec.md`, `technical-design.md`, `tasks.md`,
   or a `handoffs/*.md` document can be opened as a live Tiptap document, edited
   concurrently by two sessions (human+human or human+agent) without a

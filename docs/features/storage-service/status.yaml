@@ -1,63 +1,151 @@
 current_stage: handoff
 feature_id: storage-service
-feature_status: ready_for_implementation
+feature_status: done
 history:
-- action: stage_approved
-  at: 2026-07-07T10:02:18+0000
-  by: agent
-  note: product_spec approved by agent.
-  stage: product_spec
-- action: stage_approved
-  at: 2026-07-07T10:22:21+0000
-  by: agent
-  note: technical_design approved by agent.
-  stage: technical_design
-- action: stage_approved
-  at: 2026-07-07T15:32:33+0000
-  by: agent
-  note: tasks approved by agent.
-  stage: tasks
-next_action: Tasks ready for implementation.
+  - action: stage_approved
+    at: 2026-07-11T16:47:18+0700
+    by: pentative@gmail.com
+    note: >-
+      Feature marked done by human. All impl_feature_prs merged except the
+      workflow repo's feature-branch PR (agent-workflow #289), which the
+      human closed without merging since its content was already delivered
+      via task-level PRs T13 (#288) and T21 (#290), both merged directly.
+      T13.yaml's pr.status/workspace_pr.status fields were also corrected
+      from stale "open" to "merged" (#288, project-workspace #753) after
+      verifying via GitHub API. The 2026-07-09 amendment's awaiting_approval
+      review status on product_spec/technical_design/tasks stages was left
+      untouched — that is a separate spec/design approval gate, not covered
+      by this "feature is done" confirmation.
+    stage: handoff
+  - action: stage_approved
+    at: 2026-07-07T10:02:18+0000
+    by: agent
+    note: product_spec approved by agent.
+    stage: product_spec
+  - action: stage_approved
+    at: 2026-07-07T10:22:21+0000
+    by: agent
+    note: technical_design approved by agent.
+    stage: technical_design
+  - action: stage_approved
+    at: 2026-07-07T15:32:33+0000
+    by: agent
+    note: tasks approved by agent.
+    stage: tasks
+  - action: amended
+    at: 2026-07-09T12:05:22+0700
+    by: pentative@gmail.com
+    note: >-
+      Amendment recorded at human request after T1-T18 shipped (7 impl PRs
+      open): blob backend GCS -> self-hosted MinIO (T19), local-agent
+      document access moved to new workflow-mcp MCP tools replacing T13's
+      direct-call approach (T20/T21), version-history labeling/pinning
+      (T22/T23). product-spec.md, technical-design.md, and tasks.md were all
+      updated in place with dated Amendment sections; no existing task
+      reopened. current_stage/feature_status left at handoff/in_handoff --
+      the amendment does not block the in-flight handoff of the completed
+      T1-T18 work, it only appends Wave 6 follow-up tasks.
+    stage: amendment
+next_action: >-
+  Feature marked done 2026-07-11. All implementation PRs are resolved
+  (merged, or closed as redundant for the workflow repo). Outstanding
+  housekeeping: the 2026-07-09 amendment's awaiting_approval review status
+  on product_spec/technical_design/tasks stages has not been formally
+  re-approved, even though the Wave 6 tasks it covers (T19-T23) already
+  merged. The management-repo workspace feature PR
+  (https://github.com/tiendv89/project-workspace/pull/731, feature/storage-service
+  -> main) is also still open and should be rebased/merged to close out the
+  workspace-level branch per the Branch merge rule.
 revalidation:
   deployment_checklist_required: false
-  product_spec_required: false
-  tasks_required: false
-  technical_design_required: false
+  product_spec_required: true
+  tasks_required: true
+  technical_design_required: true
 stages:
   handoff:
     review_comment: null
-    review_history: []
-    review_status: draft
-    reviewed_at: null
-    reviewed_by: null
+    review_history:
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-11T16:47:18+0700
+        reviewed_by: pentative@gmail.com
+    review_status: approved
+    reviewed_at: 2026-07-11T16:47:18+0700
+    reviewed_by: pentative@gmail.com
+    pr_url: https://github.com/tiendv89/project-workspace/pull/754
   product_spec:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T10:02:18+0000
-      reviewed_by: agent
-    review_status: approved
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T10:02:18+0000
+        reviewed_by: agent
+      - comment: >-
+          Amended 2026-07-09: GCS->MinIO, workflow-mcp document-access goal,
+          version-history labeling goal. Awaiting human re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T10:02:18+0000
     reviewed_by: agent
   tasks:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T15:32:33+0000
-      reviewed_by: agent
-    review_status: approved
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T15:32:33+0000
+        reviewed_by: agent
+      - comment: >-
+          Amended 2026-07-09: T19-T23 (Wave 6) appended. Awaiting human
+          re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T15:32:33+0000
     reviewed_by: agent
   technical_design:
     review_comment: null
     review_history:
-    - comment: null
-      review_status: approved
-      reviewed_at: 2026-07-07T10:22:21+0000
-      reviewed_by: agent
-    review_status: approved
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-07T10:22:21+0000
+        reviewed_by: agent
+      - comment: >-
+          Amended 2026-07-09: MinIO backend design (§Amendment), new §13
+          workflow-mcp document tools, version-history labeling. Awaiting
+          human re-approval.
+        review_status: awaiting_approval
+        reviewed_at: null
+        reviewed_by: null
+    review_status: awaiting_approval
     reviewed_at: 2026-07-07T10:22:21+0000
     reviewed_by: agent
 title: storage-service
+feature_branch: feature/storage-service
+feature_branch_base_sha: 5a6ed195016b2057e233fbf015b4eedb926c93ec
+workspace_feature_pr_url: https://github.com/tiendv89/project-workspace/pull/731
+handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/754
+impl_feature_prs:
+  - repo: storage-service
+    url: https://github.com/tiendv89/storage-service/pull/10
+    status: merged
+  - repo: digital-factory-ui
+    url: https://github.com/tiendv89/digital-factory-ui/pull/192
+    status: merged
+  - repo: workflow
+    url: https://github.com/tiendv89/agent-workflow/pull/289
+    status: closed
+  - repo: hermes-agent
+    url: https://github.com/tiendv89/hermes-agent/pull/62
+    status: merged
+  - repo: workflow-backend
+    url: https://github.com/tiendv89/workflow-backend/pull/70
+    status: merged
+  - repo: rag-service
+    url: https://github.com/tiendv89/rag-service/pull/23
+    status: merged
+  - repo: workflow-bff
+    url: https://github.com/tiendv89/workflow-bff/pull/14
+    status: merged

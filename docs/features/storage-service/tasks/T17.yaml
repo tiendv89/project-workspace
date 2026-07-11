@@ -1,25 +1,66 @@
 id: T17
-title: Admin API routes (usage, object browser, empty-trash, orphan cleanup, migration
-  status)
+title: Admin API routes (usage, object browser, empty-trash, orphan cleanup,
+  migration status)
 repo: storage-service
-status: todo
+status: done
 depends_on:
-- T6
-- T14
+  - T6
+  - T14
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T17
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-09T03:19:44.429Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
-log: []
+  url: https://github.com/tiendv89/storage-service/pull/9
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/751
+  status: open
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T02:50:34.402Z
+    note: Task activated — dependency T14 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T02:54:27.907Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T02:54:36.153Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/workspace-tabs-data-flow/technical-design.md,
+      docs/features/storage-service/technical-design.md,
+      docs/features/m4-admin-control-model-config/handoffs/handoff.md"
+    rag_query: Admin API routes (usage, object browser, empty-trash, orphan cleanup,
+      migration status) storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T02:57:07+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/9"
+    at: 2026-07-09T03:11:13.472Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:12:14.299Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-09T03:18:48.264Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T03:19:44.429Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

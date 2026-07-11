@@ -109,9 +109,12 @@ this feature creates it.**
 - **No external SaaS cost.** Tiptap Cloud's paid Snapshot/Snapshot Compare
   extensions are explicitly rejected; history must be self-built against the raw
   Yjs snapshot API.
-- **GCP-native, zero new vendor for the primary store.** GCS is the object store;
+- **Self-hosted MinIO (AIStor) for the primary store, amended 2026-07-09 —
+  see the Amendment section below** (originally GCS/GCP-native; superseded).
   Postgres holds metadata/ACL — mirrors the roadmap-item-4 pattern (DB is
-  source-of-truth for state/metadata, object storage is bytes-only).
+  source-of-truth for state/metadata, object storage is bytes-only). The Go
+  client SDK is fixed to `github.com/minio/minio-go/v7` — not the AWS S3 SDK
+  or another S3-compatible client — per explicit human direction.
 - **CRDT sync must self-host.** No Go CRDT library is mature enough; Hocuspocus
   (Node) is the only viable self-hosted sync server for Yjs. This is one
   contained new-language service, not a language-standard change — the shop
@@ -142,7 +145,7 @@ this feature creates it.**
 - Pros: matches the "one repo, `internal/blob` + `internal/document` modules"
   decision from the discussion doc; parallel to `rag-service`/`user-service`/
   `notification-service` in `workspace.yaml`; one fewer repo/deploy/on-call
-  surface; Postgres/GCS clients shared between blob and document code with no
+  surface; Postgres/MinIO clients shared between blob and document code with no
   network hop.
 - Cons: couples the generic blob primitive to document-domain logic in one
   codebase; the Node sidecar is a second deployable inside "one service."
@@ -170,19 +173,23 @@ this feature creates it.**
 One repo, two deployables, matching the approved spec:
 
 - **Go API** (`internal/blob`, `internal/document`) — Gin, pgx/Postgres (consistent
-  with `workflow-backend`/`user-service`'s stack), GCS client SDK.
+  with `workflow-backend`/`user-service`'s stack), MinIO client SDK
+  (`github.com/minio/minio-go/v7`, amended 2026-07-09 — see the Amendment
+  section; originally a GCS client SDK).
   - `internal/blob`: `POST /api/blobs` (upload, returns `{object_id, url}`),
     `GET /api/blobs/:id` (presigned URL or proxy read), soft-delete
     (`DELETE /api/blobs/:id` → `deleted_at`), Postgres `blob` table
-    (`id, workspace_id, gcs_path, content_type, size_bytes, uploaded_by,
-    created_at, deleted_at`).
+    (`id, workspace_id, object_key, content_type, size_bytes, uploaded_by,
+    created_at, deleted_at` — column amended 2026-07-09 from `gcs_path` to the
+    backend-neutral `object_key`, see T19).
   - `internal/document`: CRUD for `document` rows (`id, workspace_id, feature_id,
     kind` [`product_spec|technical_design|tasks|handoff`], `slug, folder_id NULL,
     current_version_id, created_at, deleted_at`), folder-tree read API
     (`GET /api/workspaces/:wid/features/:fid/documents` → flat list scoped by
     `feature_id` today, `folder` table deferred per spec), `doc_version` table
-    (`id, document_id, snapshot_ref [GCS blob id], parent_version_id, author,
-    created_at, source` [`edit|import|migration`]), markdown import endpoint
+    (`id, document_id, snapshot_ref [blob object key], parent_version_id, author,
+    created_at, source` [`edit|import|migration`], `label` [nullable, amended
+    2026-07-09 — see T22]), markdown import endpoint
     (`POST /api/documents/import` — parses `.md` → ProseMirror JSON → seeds a
     `Y.Doc` → snapshot #1).
   - Auth: trusts BFF-injected identity headers (`X-User-Id`, `X-Org-Id`,
@@ -195,8 +202,9 @@ One repo, two deployables, matching the approved spec:
   `workflow-bff` — see §11 for why).
   - `onAuthenticate`: verifies a short-lived signed **sync token** (see §11) —
     no per-connection network call needed.
-  - `onLoadDocument`: reads the current `doc_version.snapshot_ref` blob from GCS
-    (via the Go API's internal blob-read, called over localhost/private network
+  - `onLoadDocument`: reads the current `doc_version.snapshot_ref` blob from
+    MinIO (amended 2026-07-09, originally GCS) via the Go API's internal
+    blob-read, called over localhost/private network
     — not the public API), decodes into a `Y.Doc`.
   - `onStoreDocument`: on debounce (see below), calls `Y.snapshot(ydoc)` →
     `Y.encodeSnapshot()`, POSTs the bytes to the Go API's internal blob-write,
@@ -270,8 +278,9 @@ Extends the existing Step 0 `go`/`ts` question (no second axis, per spec):
 `product-spec.md`, `technical-design.md`, `tasks.md`, and `handoffs/` from the
 existing templates (`<WORKSPACE_ROOT>/workflow/templates/feature/`) as
 `storage-service` documents instead of writing local git files. `ts` ⇒ unchanged
-(current git-file behavior). This touches the `agent-workflow`/`init-feature`
-skill and `workflow-backend`'s `CreateFeature` path (per
+(current git-file behavior). This touches the `workflow` repo's
+(`agent-workflow` on GitHub) `init-feature` skill and `workflow-backend`'s
+`CreateFeature` path (per
 `feature-initialization-compatible`'s existing `owner`-branching pattern —
 extend, don't duplicate, the `ts`/`go` fork already there).
 
@@ -296,7 +305,7 @@ that handler is out of scope per spec Non-goals).
 from folder-tree/message reads. A `GET /api/workspaces/:wid/trash` endpoint lists
 soft-deleted items for a workspace; `POST /api/.../restore` clears `deleted_at`.
 A scheduled purge job (cron in the Go API, or a lightweight worker) hard-deletes
-GCS objects + rows where `deleted_at < now() - retention_window` (default 30
+MinIO objects + rows where `deleted_at < now() - retention_window` (default 30
 days, see product spec Open Question #4 — confirm before this job's schedule is
 finalized). Admin "empty trash" action (`/admin/storage`) calls the same purge
 logic immediately, scoped to a workspace or item.
@@ -437,6 +446,75 @@ work the product spec Non-goals defer to a fast-follow technical design (Open
 Question #3). §12 is a narrow, defensive guard + proxy shim scoped to
 preventing data corruption for `go` features today — not that migration.
 
+### 13. `workflow-mcp` document tools (new, amended 2026-07-09, T20/T21)
+
+**Gap identified — confirmed by reading T13's actual shipped implementation,
+not assumed.** `init-feature` is a markdown skill with no native HTTP client,
+so T13's `go` branch does its "call storage-service's document-create
+endpoint" via a raw `curl` invoked through the Claude Code agent's Bash tool,
+straight to `$STORAGE_SERVICE_URL` — **bypassing `workflow-bff` entirely**,
+not going through the `/bff/storage-service/*` prefix (T4, done) at all.
+Authenticated with two new, purpose-built env vars the skill hard-requires
+in `.env`:
+- `STORAGE_SERVICE_TOKEN` — a static, long-lived shared bearer secret every
+  developer must provision locally.
+- `STORAGE_SERVICE_ACTOR_USER_ID` — a **fixed synthetic user id**, sent as
+  `X-User-Id` on every call, so every `go`-feature document `init-feature`
+  ever creates is attributed to the same fake actor rather than the real
+  human or agent running the skill.
+
+This is precisely the "second, independent authentication/authorization
+mechanism... separate from the platform's existing gateway-issued identity"
+the product spec's Non-goals explicitly rule out — a parallel static-secret
+login path, not the trusted-identity chain every other `storage-service`
+caller uses (§11). It also breaks authorship/audit trail (wrong `X-User-Id`)
+and requires `storage-service`'s raw API to be reachable outside the BFF at
+all, which nothing else in this feature needs.
+
+`workflow-mcp` (`src/tools.ts`, `src/bffClient.ts`) already solves this
+generically: it's the single local, stdio MCP server every Claude Code
+session loads for task orchestration (`get_feature`, `create_tasks`,
+`unblock_task`), authenticated via the real user's browser-obtained
+`session_id` cookie (`WORKFLOW_SESSION_COOKIE` env var) forwarded on every
+call — the actual trusted-identity chain `storage-service`'s REST API
+already expects via `workflow-bff` (§11), with the real actor's identity,
+zero new static secrets, and no bypass of the BFF.
+
+**Chosen fix:** add two new tools to `workflow-mcp`, following its existing
+tool-registration pattern (`src/tools.ts`: types → handler function →
+`server.tool(...)` registration → tests → README/AGENTS.md update):
+- `read_storage_document({feature_id, kind})` — GETs a `go`-owned feature's
+  document content via `/bff/storage-service/api/workspaces/:wid/features/:fid/documents`
+  (T6, done).
+- `write_storage_document({feature_id, kind, content})` — POSTs/PUTs content
+  via `storage-service`'s document-create/import endpoint (T6, done); the
+  `.md` → ProseMirror/`Y.Doc` parsing is already server-side (§1), so this
+  tool just needs to send raw markdown text as a JSON string field — no new
+  multipart/binary body support needed for the text-document case (unlike a
+  hypothetical opaque-blob-upload tool, which is out of scope here).
+
+Both tools reuse `BffClient`'s existing `Cookie`-header injection and error
+formatting (`src/bffClient.ts`) — no new credential, no new auth scheme, and
+no change to `workflow-mcp`'s "no DB credentials held by this server"
+property. `init-feature`'s `go` branch (T21) is reworked to call these tools
+instead of `fetch`-ing `storage-service` directly; its `ts` branch is
+untouched.
+
+**Scope guard, mirroring §12's owner-check:** both tools operate only against
+`go`-owned features' `storage-service`-backed documents. Neither tool reads or
+writes git. A `ts`-owned feature's documents remain exactly as they are today
+— reachable only through the Claude Code executor's existing clone-and-`Read`
+model, with no `workflow-mcp` involvement at all. This is what keeps the
+change backward compatible: nothing about how a human or agent works with a
+`ts` feature's docs changes.
+
+**Explicitly not solved here:** an opaque-blob-upload tool (e.g. for pasting
+an image from a local machine into a chat prompt) — that would need
+multipart/binary body support `BffClient` doesn't have today, and no concrete
+local-agent use case for it exists yet. If one emerges, it is a natural
+follow-up in the same shape as `read_storage_document`/
+`write_storage_document`, not built speculatively here.
+
 ## Dependency Analysis
 
 - **`storage-service` (new repo) is the foundation** — Go API (blob + document +
@@ -482,13 +560,25 @@ preventing data corruption for `go` features today — not that migration.
   Non-goals); this feature only adds a new, parallel path for `go`-backend
   features. `hermes-agent`'s document tools are the one exception requiring a
   guard (§12), not a full cutover.
+- **Amended 2026-07-09 — T19 (MinIO swap)** depends only on T1 (done); the
+  survey confirms `internal/blob/store.go` is the single chokepoint (the only
+  file that imports `cloud.google.com/go/storage`) and no consumer anywhere
+  else in the codebase or in another repo ever touches the GCS/MinIO SDK
+  directly or holds a presigned URL — so this is independent of every other
+  Wave 6 task and safe to run in parallel with them.
+- **Amended 2026-07-09 — T20 (`workflow-mcp` document tools)** depends on T4
+  and T6 (both done, §13). **T21 (`init-feature` rework)** depends on T20.
+  **T22 (version-label backend)** depends on T11 (done). **T23 (version-label
+  UI)** depends on T22 and T12 (done). None of T19–T23 depend on each other
+  except T21→T20 and T23→T22.
 
 ## Parallelization / Blocking Analysis
 
 ```
 Wave 1 (parallel, no blockers):
   - storage-service: repo scaffold + Postgres schema (blob, document, doc_version)
-    + GCS client wiring + internal/blob module (upload, presigned URL, soft-delete)
+    + MinIO client wiring (amended 2026-07-09, originally GCS) + internal/blob
+    module (upload, presigned URL, soft-delete)
   - rag-service: POST /internal/index endpoint (additive, independent of storage-service)
   - digital-factory-ui: folder-tree sidebar component (can be built against a
     mocked document-list API; HeroUI primitives, no new dependency)
@@ -517,7 +607,7 @@ Wave 3 (depends on Wave 2):
     digital-factory-ui history panel
 
 Wave 4 (depends on Wave 2's document module, parallel with Wave 3):
-  - agent-workflow: init-feature Step 0 wiring — go ⇒ storage-service document
+  - workflow: init-feature Step 0 wiring — go ⇒ storage-service document
     create (depends on storage-service's document-create endpoint only, not on
     Tiptap/Hocuspocus)
   - storage-service: migration tool (direct GitHub read + bulk import) — depends
@@ -532,6 +622,18 @@ Wave 5 (depends on storage-service's usage/object/trash/migration-status APIs
   - storage-service: admin API routes (/api/admin/storage/...) — usage, object
     browser, empty-trash, orphan cleanup, migration status
   - digital-factory-ui: /admin/storage page under existing AdminLayout guard
+
+Wave 6 (amended 2026-07-09, appended after Waves 1-5 shipped — see Amendment):
+  - storage-service: T19 — swap internal/blob's GCS client for MinIO
+    (github.com/minio/minio-go/v7) [dep: T1]
+  - workflow-mcp: T20 — read_storage_document/write_storage_document MCP
+    tools (§13) [dep: T4, T6]
+  - workflow: T21 — init-feature's go branch calls T20's tools instead
+    of storage-service directly [dep: T20]
+  - storage-service: T22 — doc_version.label column + set-label endpoint
+    [dep: T11]
+  - digital-factory-ui: T23 — label/pin a version in the history panel
+    [dep: T22, T12]
 ```
 
 **What is NOT touched by any wave above, and must remain stable throughout:**
@@ -552,14 +654,94 @@ addition (§12, Wave 4), which is a narrow defensive change, not a cutover.
 | `rag-service` | New `POST /internal/index` endpoint (additive); no changes to `git_watcher.py`/`pr_indexer.py` |
 | `digital-factory-ui` | New folder-tree sidebar component; Tiptap editor component (storage-service-backed docs only); version-history panel; `/admin/storage` page under existing `AdminLayout`; `workflow-bff` client for `storage-service` |
 | `workflow-bff` | New `/bff/storage-service/*` upstream prefix (config-only, `bff.upstreams`) for the REST API; the Hocuspocus WebSocket endpoint is explicitly NOT routed through the BFF (§11) — it is its own public ingress |
-| `agent-workflow` (`init-feature` skill) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features |
+| `workflow` (`init-feature` skill; GitHub repo `agent-workflow`) | Extend Step 0 `go`/`ts` fork to call `storage-service`'s document-create endpoint for `go` features. **Amended 2026-07-09 (T21):** the `go` branch now calls `workflow-mcp`'s new document tools (§13) instead of `storage-service` directly; the `ts` branch is untouched. |
 | `workflow-backend` | Small guard addition: reject writes to a migrated feature's git document paths (403) — not a rewrite of `document.go` |
 | `user-service` | No schema changes — `storage-service` calls its existing internal platform-role check service-to-service (§11); no new endpoint expected but confirm at implementation time |
 | `hermes-agent` | New `STORAGE_SERVICE_TOKEN` credential (§11) to fetch blob bytes for chat-image attachments AND to proxy document reads/writes for `go`-owned features; owner-guard added to the four document tools (§12) so they route to `storage-service` instead of git when `owner=go` — git-commit logic for `ts` features is unchanged |
+| `workflow-mcp` (**amended 2026-07-09, T20**) | New document read/write MCP tools, reusing the existing `BffClient`/session-cookie auth pattern against `/bff/storage-service/*` (§11/§13) — scoped to `go`-owned features only, no change to any existing tool |
 
 Repos explicitly unaffected: `git-nexus`, `workspace-github-adapter`,
-`notification-service`, `workflow-orchestrator`, `workflow-mcp`. (`hermes-agent`
-is affected — see §12 — and is no longer listed as unaffected.)
+`notification-service`, `workflow-orchestrator`. (`hermes-agent` and
+`workflow-mcp` are both affected — see §12 and §13 respectively — and are no
+longer listed as unaffected.)
+
+## Amendment (2026-07-09)
+
+Recorded after T1–T18 shipped (feature status `in_handoff`, 7 implementation
+PRs open). Mirrors the product spec's Amendment section; this is the
+technical detail behind those three decisions. Adds Wave 6 (T19–T23, see
+`tasks.md`) — no existing task is reopened or redone.
+
+**1. GCS → self-hosted MinIO (T19).** Confirmed via direct code survey of the
+merged `feature/storage-service` branch:
+- The only file in the whole repo that imports `cloud.google.com/go/storage`
+  besides `cmd/api/main.go`'s client construction is `internal/blob/store.go`
+  — a single chokepoint. Three narrow consumer interfaces
+  (`document.BlobStore`, `migration.BlobUploader`, `admin.GCSDeleter`) are
+  all satisfied by one concrete `*blob.Store`; none of them, nor any other
+  file, calls the GCS SDK directly.
+- **No presigned URLs exist anywhere in the current implementation** — every
+  blob read/write already goes through the Go API's own HTTP endpoints
+  (`InternalGetSnapshot`/`InternalPutSnapshot`, and the Node sidecar's
+  `fetchDocumentBlob`/write calls against `{GO_API_BASE}/internal/blobs/...`).
+  This means the swap has no client-visible signing-scheme to port — it is
+  entirely internal to `blob.Store`.
+- **Go SDK is fixed to `github.com/minio/minio-go/v7`** (explicit human
+  direction — not the AWS S3 SDK, not another S3-compatible client), even
+  though MinIO is S3-API-compatible and either would technically work.
+- **Schema:** `blob.gcs_path` is renamed to `blob.object_key` (new migration;
+  cheap now — the feature hasn't reached production, `handoffs`/impl PRs for
+  T1–T18 are still open, so there is no live data to backfill). All
+  references (`internal/admin/store.go`, the `"gcs_path"` JSON field in
+  `internal/admin/handler.go`) are updated at the same time.
+- **Config:** `GCS_BUCKET`/`GOOGLE_APPLICATION_CREDENTIALS` env vars are
+  replaced with `MINIO_ENDPOINT`, `MINIO_ACCESS_KEY`, `MINIO_SECRET_KEY`,
+  `MINIO_BUCKET`, `MINIO_USE_SSL`, and `MINIO_LICENSE_PATH` (AIStor requires
+  a license for production use; the human provides it — see
+  `resolve-project-env`/environment-resolution rules. Community MinIO has no
+  license requirement, but the human specifically asked for AIStor per the
+  linked install docs, so the license path is required, not optional).
+- **`docker-compose.yml`** gains a local MinIO (AIStor) service for dev, with
+  the license file bind-mounted, mirroring the container install docs'
+  `-v $HOME/minio/minio.license:/minio.license --license /minio.license`
+  shape.
+- **Bucket versioning is enabled** on the blob bucket at provisioning time —
+  MinIO's native object-versioning is defense-in-depth underneath the app's
+  own `doc_version` history, not a replacement for it (see point 3 below and
+  the product spec's version-history goal). This does not change any API
+  shape; it is an ops-level bucket setting.
+- **Zero change** to `internal/document`, `internal/migration`,
+  `internal/admin`'s calling code — their interfaces (`BlobStore`,
+  `BlobUploader`, `GCSDeleter`) are unchanged in shape (the `GCSDeleter` name
+  is legacy and can be renamed to `BlobDeleter` as a drive-by cleanup in T19,
+  not a new interface), and existing tests (`fakeBlobStore`, `mockGCS`) are
+  interface-based fakes that don't reference GCS at all — they keep working
+  against the same interfaces unmodified.
+- Zero change to the Node sidecar, `digital-factory-ui`, `hermes-agent`,
+  `workflow-mcp`, or any other consumer — confirmed by point 2 above (nobody
+  else touches the SDK or holds a presigned URL).
+
+**2. `workflow-mcp` document tools (T20/T21).** See §13 above for the full
+design. Summary: two new tools on the existing local stdio MCP server,
+reusing its existing `BffClient`/session-cookie auth — no new credential.
+`init-feature`'s `go` branch is reworked to call them (T21); `ts` branch
+untouched.
+
+**3. Version-history labeling (T22/T23).** `doc_version` gains a nullable
+`label` column (T22) and a `POST /api/documents/:id/versions/:version_id/label`
+endpoint (set/clear). The version-history panel (T12, done) gets a small
+addition (T23): a label input/badge per timeline entry, and labeled versions
+are visually distinguished (e.g. a pin icon) from unlabeled autosave
+snapshots. This is a metadata-only addition — no change to the underlying
+snapshot/diff/restore mechanics from T11.
+
+**Backward compatibility, restated as a technical constraint:** T19, T20/T21,
+and T22/T23 touch only `storage-service`'s internal blob backend,
+`workflow-mcp`'s tool set (additive), and `storage-service`'s document
+version metadata (additive), respectively. None of them touch
+`workflow-backend`'s `document.go`, `hermes-agent`'s git-commit path for
+`ts`-owned features, or the Claude Code executor's clone-and-`Read` model.
+A `ts`-owned feature's docs are unaffected by every task in this amendment.
 
 ## Open Items Carried From Product Spec
 

@@ -1,23 +1,63 @@
 id: T5
 title: Provision Hocuspocus WebSocket public ingress/TLS
 repo: storage-service
-status: todo
+status: done
 depends_on:
-- T1
+  - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T5
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-08T02:09:54.717Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
-log: []
+  url: https://github.com/tiendv89/storage-service/pull/2
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/736
+  status: open
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:02:49.974Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:05:27.025Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:05:35.089Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks:
+      docs/features/storage-service/technical-design.md,
+      docs/features/storage-service/technical-design.md,
+      docs/features/storage-service/technical-design.md"
+    rag_query: Provision Hocuspocus WebSocket public ingress/TLS storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:11:27+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/2"
+    at: 2026-07-08T01:32:11.936Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:55:00.859Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-08T02:04:09.893Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:09:54.717Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

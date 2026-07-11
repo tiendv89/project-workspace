@@ -1,0 +1,88 @@
+id: T20
+title: workflow-mcp document read/write MCP tools
+repo: workflow-mcp
+status: done
+depends_on:
+  - T4
+  - T6
+blocked_reason: null
+blocked_suggestion: null
+blocked_details: null
+blocked_context: null
+branch: feature/storage-service-T20
+execution:
+  actor_type: agent
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-09T05:54:17.788Z
+  suggested_next_step: null
+  requires_human_review: false
+execution_handle: null
+pr:
+  url: https://github.com/batu4404/workflow-mcp/pull/9
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/756
+  status: open
+log:
+  - action: created
+    by: pentative@gmail.com
+    at: 2026-07-09T12:05:22+0700
+    note: Created via product-spec/technical-design amendment (2026-07-09) at human
+      request — add read_storage_document/write_storage_document MCP tools to
+      workflow-mcp so local Claude Code agents reach a go-owned feature's
+      storage-service documents the same way task-orchestration calls already
+      do, replacing T13's embedded direct-HTTP approach (see T21). Scoped to
+      go-owned features only; ts-owned features are untouched.
+  - action: ready
+    by: pentative@gmail.com
+    at: 2026-07-09T12:05:22+0700
+    note: Auto-ready — dependencies T4 and T6 are both already done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:13:01.060Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:13:09.887Z
+    rag_context_injected: true
+    rag_summary: "Retrieved 5 chunks: README.md,
+      github.com/tiendv89/project-workspace/pull/737,
+      docs/features/storage-service/technical-design.md"
+    rag_query: workflow-mcp document read/write MCP tools storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:18:23+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/batu4404/workflow-mcp/pull/9"
+    at: 2026-07-09T05:28:53.411Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:30:50.462Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-09T05:37:16.871Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:38:09.739Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/batu4404/workflow-mcp/pull/9"
+    at: 2026-07-09T05:43:11.080Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:44:39.529Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-09T05:52:28.308Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-09T05:54:17.788Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.

@@ -1,23 +1,76 @@
 id: T8
 title: Sync-token mint endpoint
 repo: storage-service
-status: todo
+status: done
 depends_on:
-- T1
+  - T1
 blocked_reason: null
 blocked_suggestion: null
 blocked_details: null
 blocked_context: null
-branch: feature/storage-service
+branch: feature/storage-service-T8
 execution:
   actor_type: agent
-  last_updated_by: null
-  last_updated_at: null
+  last_updated_by: tiendv.52@gmail.com
+  last_updated_at: 2026-07-08T02:50:47.248Z
   suggested_next_step: null
   requires_human_review: false
 execution_handle: null
 pr:
-  url: ''
-  status: not_created
-workspace_pr: null
-log: []
+  url: https://github.com/tiendv89/storage-service/pull/4
+  status: merged
+workspace_pr:
+  url: https://github.com/tiendv89/project-workspace/pull/739
+  status: open
+log:
+  - action: ready
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:02:49.982Z
+    note: Task activated — dependency T1 merged and marked done.
+  - action: claimed
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:24:04.919Z
+    note: Claimed via git-based claim protocol.
+  - action: rag_pre_flight
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:24:19.795Z
+    rag_context_injected: false
+    rag_summary: "tool_call_failed: The operation was aborted due to timeout"
+    rag_query: Sync-token mint endpoint storage-service
+    note: Runtime pre-flight RAG fetch — written before executor spawn.
+  - action: started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T01:38:09+0000
+    note: executor work phase begun.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/4"
+    at: 2026-07-08T01:51:35.302Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:11:18.102Z
+    note: Reviewer dispatch claimed (cycle 1 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer requested changes.
+    at: 2026-07-08T02:16:50.591Z
+  - action: fix_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:17:47.460Z
+    note: Fix agent claimed.
+  - action: run_completed
+    by: tiendv.52@gmail.com
+    note: "Implementation PR: https://github.com/tiendv89/storage-service/pull/4"
+    at: 2026-07-08T02:28:46.826Z
+  - action: reviewer_started
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:35:29.876Z
+    note: Reviewer dispatch claimed (cycle 2 of 3).
+  - action: reviewer_complete
+    by: tiendv.52@gmail.com
+    note: Reviewer approved.
+    at: 2026-07-08T02:49:50.829Z
+  - action: done
+    by: tiendv.52@gmail.com
+    at: 2026-07-08T02:50:47.248Z
+    note: Implementation PR merged — automated close-out by pr-merge loop.
