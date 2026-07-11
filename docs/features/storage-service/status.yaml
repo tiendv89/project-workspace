@@ -1,7 +1,22 @@
 current_stage: handoff
 feature_id: storage-service
-feature_status: in_handoff
+feature_status: done
 history:
+  - action: stage_approved
+    at: 2026-07-11T16:47:18+0700
+    by: pentative@gmail.com
+    note: >-
+      Feature marked done by human. All impl_feature_prs merged except the
+      workflow repo's feature-branch PR (agent-workflow #289), which the
+      human closed without merging since its content was already delivered
+      via task-level PRs T13 (#288) and T21 (#290), both merged directly.
+      T13.yaml's pr.status/workspace_pr.status fields were also corrected
+      from stale "open" to "merged" (#288, project-workspace #753) after
+      verifying via GitHub API. The 2026-07-09 amendment's awaiting_approval
+      review status on product_spec/technical_design/tasks stages was left
+      untouched — that is a separate spec/design approval gate, not covered
+      by this "feature is done" confirmation.
+    stage: handoff
   - action: stage_approved
     at: 2026-07-07T10:02:18+0000
     by: agent
@@ -32,11 +47,15 @@ history:
       T1-T18 work, it only appends Wave 6 follow-up tasks.
     stage: amendment
 next_action: >-
-  Human review requested for the 2026-07-09 amendment to product-spec.md,
-  technical-design.md, and tasks.md (GCS->MinIO, workflow-mcp document
-  tools, version-history labeling). T19-T23 (Wave 6) are ready/todo per
-  their dependency state and may proceed once reviewed. This does not block
-  the existing in_handoff PRs for T1-T18.
+  Feature marked done 2026-07-11. All implementation PRs are resolved
+  (merged, or closed as redundant for the workflow repo). Outstanding
+  housekeeping: the 2026-07-09 amendment's awaiting_approval review status
+  on product_spec/technical_design/tasks stages has not been formally
+  re-approved, even though the Wave 6 tasks it covers (T19-T23) already
+  merged. The management-repo workspace feature PR
+  (https://github.com/tiendv89/project-workspace/pull/731, feature/storage-service
+  -> main) is also still open and should be rebased/merged to close out the
+  workspace-level branch per the Branch merge rule.
 revalidation:
   deployment_checklist_required: false
   product_spec_required: true
@@ -45,10 +64,14 @@ revalidation:
 stages:
   handoff:
     review_comment: null
-    review_history: []
-    review_status: draft
-    reviewed_at: null
-    reviewed_by: null
+    review_history:
+      - comment: null
+        review_status: approved
+        reviewed_at: 2026-07-11T16:47:18+0700
+        reviewed_by: pentative@gmail.com
+    review_status: approved
+    reviewed_at: 2026-07-11T16:47:18+0700
+    reviewed_by: pentative@gmail.com
     pr_url: https://github.com/tiendv89/project-workspace/pull/754
   product_spec:
     review_comment: null
@@ -107,22 +130,22 @@ handoff_pr_url: https://github.com/tiendv89/project-workspace/pull/754
 impl_feature_prs:
   - repo: storage-service
     url: https://github.com/tiendv89/storage-service/pull/10
-    status: open
+    status: merged
   - repo: digital-factory-ui
     url: https://github.com/tiendv89/digital-factory-ui/pull/192
-    status: open
+    status: merged
   - repo: workflow
     url: https://github.com/tiendv89/agent-workflow/pull/289
-    status: open
+    status: closed
   - repo: hermes-agent
     url: https://github.com/tiendv89/hermes-agent/pull/62
-    status: open
+    status: merged
   - repo: workflow-backend
     url: https://github.com/tiendv89/workflow-backend/pull/70
-    status: open
+    status: merged
   - repo: rag-service
     url: https://github.com/tiendv89/rag-service/pull/23
-    status: open
+    status: merged
   - repo: workflow-bff
     url: https://github.com/tiendv89/workflow-bff/pull/14
-    status: open
+    status: merged

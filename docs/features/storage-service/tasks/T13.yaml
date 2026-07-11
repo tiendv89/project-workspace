@@ -18,10 +18,10 @@ execution:
 execution_handle: null
 pr:
   url: https://github.com/tiendv89/agent-workflow/pull/288
-  status: open
+  status: merged
 workspace_pr:
   url: "https://github.com/tiendv89/project-workspace/pull/753"
-  status: open
+  status: merged
 log:
   - action: ready
     by: tiendv.52@gmail.com
@@ -82,3 +82,11 @@ log:
       merged by human (pye), bypassing the automated review cycle after 3
       consecutive reviewer_started/review_blocked pairs with no valid
       verdict. Marked done on explicit human instruction.
+  - action: done
+    by: pentative@gmail.com
+    at: "2026-07-11T16:47:18+0700"
+    note: >-
+      Corrected stale pr.status and workspace_pr.status fields (were left as
+      "open" despite the task already being done) — verified via GitHub API
+      that agent-workflow #288 and project-workspace #753 are both merged,
+      and updated both fields to "merged" accordingly.
