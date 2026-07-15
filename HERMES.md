@@ -81,14 +81,17 @@ Incremental commits:
 - Make PR review easier
 - Allow the orchestrator to detect forward progress
 
-Never commit `result.json` or `handover.md` files to the implementation repo.
-These are executor artefacts, not project artefacts.
-
 ## MCP lookup priority
 
 ### RAG -- project knowledge retrieval
 
 **Always query RAG before opening a file to look up code or context.**
+
+Exception for implementation, reviewer, and review-fixes runs: product_spec,
+technical_design, and your assigned task section are already in the briefing
+under `## Spec documents`. Do not use `rag_query` (or `rag_get_document`) as a
+substitute for those briefing specs. Conflict-resolution (rebase) runs do not
+inject Spec documents. Use `rag_query` for other project knowledge.
 
 Lookup order:
 1. Call `mcp_rag_rag_query(query="<your question>")` first.
@@ -102,6 +105,7 @@ configuration purpose, any concept specific to this codebase.
 Skip RAG and read directly when:
 - You know the exact file path and need a targeted line-range edit.
 - The file is a lock file, generated output, or config file unlikely to be indexed.
+- The answer is already in the briefing `## Spec documents` block.
 
 ### GitNexus -- structural code questions
 
@@ -146,14 +150,12 @@ Do NOT use `mcp__` (double underscore) -- that is Claude's syntax.
   (user input, external APIs).
 - Do not commit secrets, tokens, or credentials to the repository.
 
-## What the wrapper handles (do not duplicate)
+## Delivery ownership (agent runtime)
 
-The executor wrapper handles these steps after you exit -- you must NOT do them:
+In headless agent runtime you own the full delivery:
 
-- `git push` to the remote
-- Opening the pull request
-- Writing `result.json` to `$RESULT_PATH`
-
-Your job ends when all local commits are made and the test suite passes.
+- Commit, `git push`, open the draft pull request, and write `result.json` to `$RESULT_PATH`
+- PR title/body must describe the real changes (Summary + Test plan), not a placeholder
+- Do not exit without completing those steps when you have work to deliver
 
 <!-- END SHARED WORKFLOW RULES -->
